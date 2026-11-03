@@ -1,0 +1,12 @@
+name: bq_J_monthly_sma10_soxl_tqqq
+family: beat_qld_repro
+known: 2
+idea: 'beat_qld J (plugin): 월초 NDX 10개월선 아래면 QQQ, 위면 SOX 모멘텀이 낫다면 SOXL 아니면 TQQQ'
+plugin: plugins/beat_qld.py:J
+sleeves:
+- QQQ
+- SOXL
+- TQQQ
+inputs:
+- QLD
+- SOXL

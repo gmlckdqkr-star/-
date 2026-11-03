@@ -1,0 +1,17 @@
+name: bq_I_monthly_semis_vs_ndx
+family: beat_qld_repro
+known: 2
+idea: 'beat_qld I: 월초 SOX 6개월 수익이 NDX보다 크면 USD, 아니면 QLD'
+rebalance: monthly
+signals:
+  mx: ret(SOXL, 126)
+  mn: ret(QLD, 126)
+rules:
+- when: mx > mn
+  hold:
+    USD: 1.0
+- when: mx > -1e9
+  hold:
+    QLD: 1.0
+- else:
+    CASH: 1.0

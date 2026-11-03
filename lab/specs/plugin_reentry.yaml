@@ -1,0 +1,8 @@
+name: plugin_reentry
+family: price_trend
+known: 1
+idea: 예시 플러그인 - 200일선 추세 QLD, 1년 안에 이탈이 잦을수록 재진입 대기일을 늘림 (DSL로 못 쓰는 모양)
+plugin: plugins/reentry_wait.py:weights
+sleeves: [QLD]
+inputs: [QQQ]
+params: {n: 200, wait: 5, w: 0.88}

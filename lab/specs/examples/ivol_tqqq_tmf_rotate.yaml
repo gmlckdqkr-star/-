@@ -1,0 +1,13 @@
+name: ivol_tqqq_tmf_rotate
+family: risk_parity_mix
+known: 3
+idea: 같은 역변동성 혼합을 rotate 문법으로 (내부 일치 점검용)
+rules:
+- rotate:
+    assets:
+    - TQQQ
+    - TMF
+    weight: invvol
+    n: 60
+    every: monthly
+    total: 0.88

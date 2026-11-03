@@ -1,0 +1,17 @@
+name: bq_M_pullback_latch
+family: beat_qld_repro
+known: 2
+idea: 'beat_qld M: 1년 고점 대비 -20% 이하 & 50일선 위에서 TQQQ 진입, 고점 회복 또는 50일선 이탈 시 QLD'
+signals:
+  ok: lag(price(QLD), 251) > 0
+  hi: high(QLD, 252)
+  s50: sma(QLD, 50)
+  go: ok and price(QLD) <= 0.8 * hi and price(QLD) > s50
+  stop: price(QLD) >= hi or price(QLD) < s50
+  st: latch(go, stop)
+rules:
+- when: st
+  hold:
+    TQQQ: 1.0
+- else:
+    QLD: 1.0

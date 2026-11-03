@@ -1,0 +1,12 @@
+# 국내 상장 2배 나스닥 ETF 계좌 예시: 200일 추세 위면 2배(QLD 수익 계열) 0.88, 아래면 현금.
+# account: kr_etf = 편도 13bp, 매도할 때마다 이익의 15.4% 원천징수(손실 상계 없음, 보수적). 개발 요약만, 기준 판정은 '판정 불가'.
+name: kr_qld_trend
+family: kr_etf_examples
+known: 2
+account: kr_etf
+signals:
+  up: price(QLD) > sma(QLD, 200)
+rules:
+  - when: up
+    hold: {QLD: 0.88}
+  - else: {CASH: 1.0}

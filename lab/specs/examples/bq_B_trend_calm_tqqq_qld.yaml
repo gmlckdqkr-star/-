@@ -1,0 +1,16 @@
+name: bq_B_trend_calm_tqqq_qld
+family: beat_qld_repro
+known: 2
+idea: 'beat_qld B: NDX 200일선 위 & 20일 변동성 < 0.25면 TQQQ, 위이기만 하면 QLD, 아니면 현금'
+signals:
+  up: price(TQQQ) > sma(TQQQ, 200)
+  calm: vol(TQQQ, 20) < 0.25
+rules:
+- when: up and calm
+  hold:
+    TQQQ: 1.0
+- when: up
+  hold:
+    QLD: 1.0
+- else:
+    CASH: 1.0

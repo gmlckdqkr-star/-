@@ -1,0 +1,9 @@
+name: rp_tqqq_tmf
+family: risk_parity_mix
+known: 3
+idea: TQQQ·TMF 위험균형(60일 공분산, 위험기여 같게) 혼합, 합 0.88, 월초 조정
+rebalance: monthly
+rules:
+- else:
+    TQQQ: 0.88 * rp(TQQQ, [TQQQ, TMF], 60)
+    TMF: 0.88 * rp(TMF, [TQQQ, TMF], 60)

@@ -1,0 +1,17 @@
+name: f10_monthly_trend_mom
+family: monthly_trend_mom
+known: 3
+idea: F10 - 월 1회(기간 첫 거래일 종가) 나스닥100 200일선 위 & 6개월 수익 양수 둘 다면 QLD 0.88, 하나만이면 0.44, 아니면 현금 (상수는 탐색 안 한 교과서 값)
+rebalance: monthly
+signals:
+  trend: price(QQQ) > sma(QQQ, 200)
+  mom: ret(QQQ, 126) > 0
+rules:
+- when: trend and mom
+  hold:
+    QLD: 0.88
+- when: trend or mom
+  hold:
+    QLD: 0.44
+- else:
+    CASH: 1.0

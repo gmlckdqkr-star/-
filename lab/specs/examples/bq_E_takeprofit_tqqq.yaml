@@ -1,0 +1,13 @@
+name: bq_E_takeprofit_tqqq
+family: beat_qld_repro
+known: 2
+idea: 'beat_qld E (plugin): TQQQ 거래 가격 수준으로 +30% 익절 후 -10% 되돌림 또는 63일 대기 뒤 재진입 (strats.E와 개발 비중 일치)'
+plugin: plugins/beat_qld.py:E
+sleeves:
+- TQQQ
+inputs:
+- level(TQQQ)
+params:
+  tp: 0.3
+  pb: 0.1
+  wait: 63

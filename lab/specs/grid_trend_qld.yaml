@@ -1,0 +1,11 @@
+name: grid_trend_qld
+family: price_trend
+known: 3
+idea: 나스닥100이 N일 평균 위면 QLD 0.88, 아니면 현금 (N 3개 = 시험 3개로 셈)
+grid: {N: [150, 200, 250]}
+signals:
+  up: price(QQQ) > sma(QQQ, {N})
+rules:
+  - when: up
+    hold: {QLD: 0.88}
+  - else: {CASH: 1.0}

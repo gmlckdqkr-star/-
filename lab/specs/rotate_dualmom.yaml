@@ -1,0 +1,13 @@
+name: rotate_dualmom
+family: rotation
+known: 3
+idea: QLD·SSO·TLT 중 6개월 수익률 1위(200일선 위인 것만)를 월초에 교체, 합 0.88, 필터가 깨지면 그날 현금
+rules:
+  - rotate:
+      assets: [QLD, SSO, TLT]
+      score: ret(*, 126)
+      filter: price(*) > sma(*, 200)
+      top: 1
+      every: monthly
+      exit: daily
+      total: 0.88

@@ -1,0 +1,7 @@
+name: brake_qld
+family: dd_brake
+known: 2
+idea: QLD 0.88 보유, 자기 장부 낙폭 -25%에서 절반, -10%까지 회복하면 원래대로
+rules:
+  - else: {QLD: 0.88}
+brake: {dd: -0.25, scale: 0.5, recover: -0.10}

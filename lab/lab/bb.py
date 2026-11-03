@@ -31,6 +31,14 @@ Notes for spec writers
   - Signal names mean the UNDERLYING (as in lab real-data runs): price(TQQQ) = the path's QQQ, price(UPRO) = SPY,
     price(TMF) = TLT. Only QQQ/_NDX, SPY, TLT, IEF families can be judged.
   - The spec's `delay` is not used for the bar (broker delay 0: decide at close t, fill from the t+1 open).
+  - v2 shapes run per path like any rule: rotate / invvol / rp read each sleeve's underlying (x leverage for vols);
+    the brake's paper equity uses the DSL weights (before the G0 cap below) x the path's own sleeve close-to-close
+    prices, from row 0 (the 300-day warm-up included), no costs, cash return 0; a plugin is called on every path
+    in a fresh forked child of lab/sandbox.py (no panel, no files, no state across builds), and its `inputs` must be
+    judgeable series (SIG_BASE). level(x) reads the path's own price of held sleeve x.
+  - Inputs the blackbox paths do not resample (_IRX, KRW_X, *.KS, GLD, ...) anywhere in a spec (expressions,
+    rotate score / filter, invvol / rp lists, brake floor_when, plugin inputs) -> NotJudgeable ->
+    'REJECT (version impossible)'; the dev summary still computes on them.
 """
 import inspect, math, os, sys, time
 import numpy as np, pandas as pd
@@ -70,7 +78,8 @@ Q60_MISS = 'Q60 미달 (Q 미판정)'
 LAB_PORT = ('real:G4_dev',)                      # Q-level checks that are lab ports, not confirmed by the bar owner
 LAB_INTERP = ('real:GMKT_c_real_episodes',)      # Q60-level, episode list is a lab interpretation
 N_CUTS = 40                                      # causality: random truncation cuts per path (+ fixed ones)
-BAR_VERSION = 2                                  # bump when the adapter logic changes (ledger keys use it)
+BAR_VERSION = 3                                  # bump when the adapter logic changes (ledger keys use it)
+                                                 # 3: plugins out of process, rp solver, invvol warm-up, cuts
 
 
 class SealError(RuntimeError):
@@ -123,26 +132,10 @@ def _no_series(*a, **k):
 
 
 def _spec_names(spec):
-    """Series names used by the spec's expressions: bare names (minus the DSL functions and the spec's own signal
-    names) and every string constant (price('XLK') reads a series just like price(XLK))."""
-    import ast
-    exprs = list((spec.get('signals') or {}).values())
-    for r in spec['rules']:
-        if 'when' in r:
-            exprs.append(r['when'])
-        exprs += list((r.get('hold') or r.get('else') or {}).values())
-    fn = set(dsl._mk(pd.DataFrame(index=pd.DatetimeIndex([]))).keys())
-    own = set(spec.get('signals') or {})
-    out = set()
-    for e in exprs:
-        if isinstance(e, (int, float)):
-            continue
-        for n in ast.walk(ast.parse(str(e), mode='eval')):
-            if isinstance(n, ast.Name) and n.id not in fn and n.id not in own:
-                out.add(n.id)
-            elif isinstance(n, ast.Constant) and isinstance(n.value, str):
-                out.add(n.value)
-    return out
+    """Series names used by the spec (dsl.spec_names): bare names in expressions (minus the DSL functions and the
+    spec's own signal names), every string constant (price('XLK') reads a series just like price(XLK)), rotate '*'
+    expansions, invvol / rp asset lists and a plugin's declared `inputs`."""
+    return dsl.spec_names(spec)
 
 
 class LabCandidate:
@@ -154,7 +147,7 @@ class LabCandidate:
         self.spec = dsl.check_spec(spec)
         self.hash = dsl.spec_hash(spec)
         self.name = spec.get('name', self.hash)
-        held = sorted({a for r in spec['rules'] for a in (r.get('hold') or r.get('else') or {})} - {'CASH'})
+        held = dsl.held_sleeves(spec)
         bad = [s for s in held if s not in TRADE_MAP]
         if bad:
             raise NotJudgeable(f'sleeve(s) {bad} have no common-source proxy (A3-2): version impossible')
@@ -440,26 +433,34 @@ def _episodes(qc):
     return sorted(set(_episodes_ath(qc)) | set(loc) | set(_episodes_recover(qc, sorted({a for a, _ in loc}))))
 
 
-def causality(cand, pm, n_cuts=N_CUTS, fixed=(), seed=None):
+def causality(cand, pm, n_cuts=None, fixed=(), seed=None):
     """Targets built on the path truncated at a cut must equal the full-path targets up to the cut. Cuts: the fixed
-    dates (if any) + n_cuts random rows drawn from a fresh OS seed (recorded), so a spec cannot know them in advance.
-    Returns (ok, violations, seed)."""
+    dates (if any) + n_cuts random rows (default N_CUTS; N_CUTS_PLUGIN for a plugin spec) + 4 week / month / quarter
+    boundaries each, drawn from a fresh OS seed (recorded), so a spec cannot know them in advance. The builds run in
+    increasing length with the full path LAST, inside one plugin session (dsl.plugin_calls), and each build is
+    compared with the next longer one (all agree <=> each agrees with the full path). Returns (ok, violations, seed)."""
     if seed is None:
         seed = int.from_bytes(os.urandom(8), 'little')
+    if n_cuts is None:
+        n_cuts = dsl.N_CUTS_PLUGIN if (getattr(cand, 'spec', None) or {}).get('plugin') else N_CUTS
     rng = np.random.default_rng(seed)
-    tg = np.asarray(cand.build(pm), float)
     N = len(pm.dates)
-    cuts = [int(np.searchsorted(pm.dates.values, np.datetime64(pd.Timestamp(c)), side='right')) for c in fixed]
-    cuts += sorted(int(x) for x in rng.integers(2, N, size=n_cuts))
+    cuts = {int(np.searchsorted(pm.dates.values, np.datetime64(pd.Timestamp(c)), side='right')) for c in fixed}
+    cuts |= {int(x) for x in rng.integers(2, N, size=n_cuts)}
+    cuts |= set(dsl.boundary_cuts(pm.dates, rng, 4, 2))
+    cuts = sorted(c for c in cuts if 2 <= c < N)
     bad = []
-    for n in cuts:
-        if n < 2:
-            continue
-        pt = B.PathMarket(pm.dates[:n], {k: v[:n] for k, v in pm.C.items()},
-                          {k: v[:n] for k, v in pm.O.items()}, pm.irx[:n])
-        d = float(np.max(np.abs(np.asarray(cand.build(pt), float) - tg[:n])))
-        if not d <= 1e-9:
-            bad.append((str(pm.dates[n - 1].date()), d))
+    with dsl.plugin_calls():
+        prev = None
+        for n in cuts + [N]:
+            pt = pm if n == N else B.PathMarket(pm.dates[:n], {k: v[:n] for k, v in pm.C.items()},
+                                                {k: v[:n] for k, v in pm.O.items()}, pm.irx[:n])
+            tg = np.asarray(cand.build(pt), float)
+            if prev is not None:
+                d = float(np.max(np.abs(prev[1] - tg[:prev[0]])))
+                if not d <= 1e-9:
+                    bad.append((str(pm.dates[prev[0] - 1].date()), d))
+            prev = (n, tg)
     return not bad, bad, seed
 
 
@@ -618,7 +619,14 @@ def full(cand, workers=4, early_stop=True, log=None):
 
 
 def judge(spec, mode='quick', **kw):
-    """mode 'quick' | 'full'. A spec that cannot be put on the blackbox paths -> REJECT (version impossible)."""
+    """mode 'quick' | 'full'. A spec that cannot be put on the blackbox paths -> REJECT (version impossible).
+    A non-US account (dsl.ACCOUNTS, e.g. kr_etf) -> '판정 불가': the bar broker models only US-listed ETFs."""
+    from . import dsl as _dsl
+    acct, _ = _dsl.account_of(spec)
+    if acct != 'us':
+        return {'mode': mode, 'verdict': '판정 불가 (KR 계좌)', 'failed': ['account_not_on_bar'],
+                'reason': f'account {acct}: the bar broker (blackbox2) models US-listed ETFs only; dev summary only',
+                'screen': 'fail'}
     try:
         cand = LabCandidate(spec)
     except NotJudgeable as e:

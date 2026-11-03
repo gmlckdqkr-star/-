@@ -1,0 +1,10 @@
+name: bq_H_monthly_sma10_tqqq
+family: beat_qld_repro
+known: 2
+idea: 'beat_qld H (plugin): 월초 NDX가 10개월 이동평균 위면 TQQQ, 아니면 QQQ (원본은 월말 결정)'
+plugin: plugins/beat_qld.py:H
+sleeves:
+- TQQQ
+- QQQ
+inputs:
+- TQQQ

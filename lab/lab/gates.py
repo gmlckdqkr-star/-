@@ -8,6 +8,8 @@ import numpy as np, pandas as pd
 from . import dsl, engine
 
 DEV_END = pd.Timestamp('2014-12-31')
+DEV_VERSION = 2          # bump when the dev summary changes for an unchanged spec hash (cli recomputes stale rows)
+                         # 2: periodic rebalance trades drift back on sampled rows; rp solver; invvol warm-up
 SCREEN_LABEL = '개발 선별 (기준 아님)'
 
 
@@ -33,20 +35,25 @@ def evaluate(W, R, spec, baseline='QQQ'):
     R = R[R.index <= DEV_END]
     W = W[W.index <= DEV_END]
     dsl.check_spec(spec)                                  # delay >= 2 (no same-bar / future fills)
-    cost = max(dsl.MIN_COST, float(spec.get('cost', dsl.MIN_COST))); delay = int(spec.get('delay', dsl.MIN_DELAY))
+    acct, A = dsl.account_of(spec)
+    cost = max(A['min_cost'], float(spec.get('cost', A['min_cost']))); delay = int(spec.get('delay', dsl.MIN_DELAY))
+    kw = dict(cost=cost, delay=delay, tax=A['tax'], tax_mode=A['tax_mode'])
     start = pd.Timestamp(spec.get('dev_start', '1986-10-01'))
     Wb = pd.DataFrame({baseline: 1.0, 'CASH': 0.0}, index=R.index)
     # start only when every held sleeve and the baseline have return data (no silent zero returns)
     held = [c for c in W.columns if c != 'CASH' and (W[c] > 0).any()] + [baseline]
     start = max([start] + [R[c].first_valid_index() for c in held])
-    dev = engine.run(W, R, start, DEV_END, cost=cost, delay=delay)
-    devb = engine.run(Wb, R, start, DEV_END, cost=cost, delay=delay)
+    reb = spec.get('rebalance', 'daily')
+    # a non-daily `rebalance` trades back to target on its sampled rows (else constant weights would just drift)
+    rebal = None if reb == 'daily' else pd.Series(dsl.reb_rows(W.index, reb), index=W.index)
+    dev = engine.run(W, R, start, DEV_END, rebal=rebal, **kw)
+    devb = engine.run(Wb, R, start, DEV_END, **kw)
     assert dev['E'].index[-1] <= DEV_END
     rs = dev['E'].pct_change().dropna(); rb = devb['E'].pct_change().reindex(rs.index).fillna(0.0)
     bs = paired_bootstrap(rs.values, rb.values)
     screen = (bs['s_med_y12'] >= bs['b_med_y12']) and (bs['s_p_dd80'] < 0.01)
     return dict(
-        baseline=baseline, dev_start=str(start.date()), dev_end=str(DEV_END.date()),
+        baseline=baseline, account=acct, dev_start=str(start.date()), dev_end=str(DEV_END.date()), dev_version=DEV_VERSION,
         dev=dict(cagr_at=dev['cagr_at'], mdd=dev['mdd'], turn=dev['turn'], trades=dev['trades'],
                  yrs=dev['yrs'], base_cagr_at=devb['cagr_at'], base_mdd=devb['mdd']),
         boot=bs, screen=SCREEN_LABEL, screen_pass=bool(screen))

@@ -1,0 +1,10 @@
+name: f13_static_mix_quarterly
+family: static_mix
+known: 3
+idea: 'F13: 신호 없는 고정 혼합 QLD 0.50 / TLT 0.20 / IEF 0.18, 분기 첫 거래일마다 목표 비중으로 되돌림 (예시 값)'
+rebalance: quarterly
+rules:
+- else:
+    QLD: 0.5
+    TLT: 0.2
+    IEF: 0.18

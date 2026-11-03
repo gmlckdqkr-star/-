@@ -1,0 +1,23 @@
+name: bq_D_rotate_10_sleeves
+family: beat_qld_repro
+known: 2
+idea: 'beat_qld D: 3배 상품 10개 중 6개월 수익 1위(200일선 위만)를 월초 교체'
+rules:
+- rotate:
+    assets:
+    - TQQQ
+    - SOXL
+    - TECL
+    - UPRO
+    - FAS
+    - ERX
+    - CURE
+    - TNA
+    - DRN
+    - LABU
+    score: ret(*, 126)
+    filter: price(*) > sma(*, 200)
+    top: 1
+    every: monthly
+    exit: daily
+    total: 1.0

@@ -1,5 +1,7 @@
-"""python -m lab run <spec...> [--bar none|quick|full] [--workers N]
-       run specs, print ONE line each (<= ~400 bytes; the only thing an LLM needs to read).
+"""python -m lab run <spec or dir ...> [--bar none|quick|full] [--workers N]
+       run specs (a directory = every *.yaml / *.yml / *.json in it, sorted), print ONE line each (<= ~400 bytes; the
+       only thing an LLM needs to read). A spec with `grid:` runs once per grid point (each its own hash, each counted
+       in the family N). With more than one spec, a ranked summary table (<= ~1.5 KB) follows.
        --bar quick (default): '빠른 선별 (기준 아님)' = 10y b63 10M, 400 paths, own window, KRWX, src_end 2014.
        --bar full: the project bar on blackbox2 / d6q (all required versions, ~4 min per version with 4 workers):
                    REJECT | 'REJECT (lab 판정, 미확정)' | 'Q60 미달 (Q 미판정)' (failed gates) or 'PENDING (통합 담당 대기)'.
@@ -8,13 +10,15 @@
        --all-versions (full only): keep running the remaining versions after a REJECT (default: stop, REJECT is final).
    python -m lab ledger
        family counts and stored bar results.
-Full detail goes to LAB_HOME/out/<hash>_<mode>.json (not meant for LLM context).
+Full detail goes to LAB_HOME/out/<hash>_<mode>.json, the batch to LAB_HOME/out/batch_<utc>.json (not meant for
+LLM context).
 Every number comes from data up to 2014-12-31 (design side); nothing after 2014 is computed."""
-import json, os, sys, time
+import glob, json, os, sys, time
 import pandas as pd
 from . import data, dsl, gates, ledger
 
 MAX_LINE = 400
+MAX_SUMMARY = 1500
 
 
 def _cut(s, n=MAX_LINE):
@@ -26,16 +30,18 @@ def _cut(s, n=MAX_LINE):
 
 def _dev_part(s):
     d, b = s['dev'], s['boot']
-    return (f"개발({s['dev_start'][:4]}~2014) 세후 {d['cagr_at']:.1%} 낙폭 {d['mdd']:.0%} "
+    acct = '' if s.get('account', 'us') == 'us' else f"[{s['account']} 13bp·건별15.4%] "
+    return (acct + f"개발({s['dev_start'][:4]}~2014) 세후 {d['cagr_at']:.1%} 낙폭 {d['mdd']:.0%} "
             f"({s['baseline']} {d['base_cagr_at']:.1%}/{d['base_mdd']:.0%}) 12년x{b['s_med_y12']:.1f}"
             f"({s['baseline']} x{b['b_med_y12']:.1f}) P80 {b['s_p_dd80']:.1%} "
-            f"개발선별 {'통과' if s['screen_pass'] else '탈락'}")
+            f"개발선별 {'통과' if s['screen_pass'] else '탈락'}"
+            + ('' if (s.get('dev_causality') or {}).get('ok', True) else ' 개발 인과성 위반'))
 
 
 def _bar_part(mode, r):
     if r is None:
         return ''
-    if r['verdict'].startswith('REJECT (version'):
+    if r['verdict'].startswith('REJECT (version') or r['verdict'].startswith('판정 불가'):
         return f"기준: {r['verdict']}"
     n = r.get('numbers') or {}
     if mode.startswith('quick'):
@@ -90,33 +96,101 @@ def _bar(spec, h, mode, workers, early_stop=True):
 
 
 def run_one(path, bar='quick', workers=4, early_stop=True):
+    """One spec file (no grid) -> one line. Kept for callers of v1."""
+    spec = dsl.load_spec(path)
+    return run_spec(spec, bar, workers, early_stop)[0]
+
+
+def run_spec(spec, bar='quick', workers=4, early_stop=True):
+    """One expanded spec -> (line, record for the batch summary)."""
     t0 = time.time()
-    spec = dsl.check_spec(dsl.load_spec(path))           # refuse delay < 2 / non-numeric cost before anything runs
-    h = dsl.spec_hash(spec); fam = spec.get('family', 'unset')
-    name = spec.get('name', h)
+    spec = dsl.check_spec(spec)                          # refuse delay < 2 / non-numeric cost before anything runs
+    h = dsl.spec_hash(spec); fam = str(spec.get('family', 'unset'))
+    name = str(spec.get('name', h))
     s = ledger.get(h)
     cached = s is not None
+    if cached and s.get('dev_version') != gates.DEV_VERSION:   # dev summary logic changed: recompute, same row (N same)
+        s, cached = None, False
+        known = True
+    else:
+        known = cached
     if not cached:
-        sleeves = sorted({a for r in spec['rules'] for a in (r.get('hold') or r.get('else') or {})} - {'CASH'}
-                         | {spec.get('baseline', 'QQQ')})
+        sleeves = sorted(set(dsl.held_sleeves(spec)) | {spec.get('baseline', 'QQQ')})
         F, R, rf, SRC = data.build(sleeves)
         F = F[F.index <= gates.DEV_END]; R = R[R.index <= gates.DEV_END]      # nothing after 2014 enters
-        W = dsl.compile_weights(spec, F, sleeves)
+        W = dsl.compile_weights(spec, F, sleeves, R)
         s = gates.evaluate(W, R, spec, baseline=spec.get('baseline', 'QQQ'))
+        # dev-side causality (truncation at random cuts, the same test the bar runs on its paths)
+        tc = dsl.truncation_check(spec, F, sleeves, R)
+        s['dev_causality'] = dict(tc, violations=tc['violations'][:3])
+        if not tc['ok']:
+            s['screen_pass'] = False
         ledger.put(h, spec, s)
     detail = dict(spec=spec, hash=h, dev_summary=s)
-    parts = [f"[{name}] 계열={fam} N={ledger.family_n(fam)}{' (중복)' if cached else ''}", _dev_part(s)]
+    parts = [f"[{name}] 계열={fam} N={ledger.family_n(fam)}{' (중복)' if known else ''}", _dev_part(s)]
     bcached = False
+    rec = dict(name=name, hash=h, family=fam, dev_y12=s['boot']['s_med_y12'], dev_screen=s['screen_pass'])
     if bar != 'none':
         key, r, res, bcached = _bar(spec, h, bar, workers, early_stop)
         detail['bar'] = res if res is not None else dict(r, cached=True)
         parts.append(_bar_part(key, r) + (' (저장값)' if bcached else ''))
+        nums = r.get('numbers') or {}
+        if bar == 'full' and isinstance(nums.get('own_KRWX'), dict):
+            nums = nums['own_KRWX']
+        rec.update(verdict=r['verdict'], failed=r['failed'], lg=nums.get('lg_med'), qld=nums.get('qld_lg_med'),
+                   qqqm=nums.get('qqqm_lg_med'), mode=key)
     if not (cached and (bar == 'none' or bcached)):        # keep the full detail of the first computation
         os.makedirs(os.path.join(ledger.HOME, 'out'), exist_ok=True)
         with open(os.path.join(ledger.HOME, 'out', f'{h}_{bar}.json'), 'w') as fh:
             json.dump(detail, fh, ensure_ascii=False, indent=1, default=str)
     parts.append(f'{time.time() - t0:.0f}s')
-    return _cut(' | '.join(parts))
+    return _cut(' | '.join(parts)), rec
+
+
+def collect(args):
+    """Files and directories -> spec file list (a directory gives its *.yaml / *.yml / *.json, sorted, not
+    recursive)."""
+    out = []
+    for a in args:
+        if os.path.isdir(a):
+            out += sorted(f for e in ('*.yaml', '*.yml', '*.json') for f in glob.glob(os.path.join(a, e)))
+        else:
+            out.append(a)
+    return out
+
+
+def _verdict_short(rec):
+    v = rec.get('verdict')
+    if v is None:
+        return '개발선별 ' + ('통과' if rec.get('dev_screen') else '탈락')
+    if v.startswith('REJECT (version'):
+        return '판 불가'
+    if v.startswith('판정 불가'):
+        return v
+    if str(rec.get('mode', '')).startswith('quick'):
+        f = [g for g in rec.get('failed') or []]
+        return '통과' if not f else '미달 ' + ','.join(f)
+    f = _short_failed(rec.get('failed') or [])
+    return v + (f' {f}' if f else '')
+
+
+def summary(recs, bar):
+    """Compact ranked table (<= MAX_SUMMARY bytes): top 10 by the quick screen's median log growth (10y b63 10M,
+    full: own_KRWX), or by the dev 12y bootstrap multiple when no bar ran. Errors are counted, not listed."""
+    ok = [r for r in recs if 'error' not in r]
+    by_lg = any(r.get('lg') is not None for r in ok)
+    key = (lambda r: (r.get('lg') is not None, r.get('lg') or 0.0)) if by_lg else (lambda r: r.get('dev_y12') or 0.0)
+    rows = sorted(ok, key=key, reverse=True)[:10]
+    what = ('lg 중앙값(10y b63 1000만' + (', own_KRWX' if bar == 'full' else '') + ')') if by_lg else '개발 12년 배수'
+    lines = [f"== 요약: {what} 순 상위 {len(rows)}/{len(recs)}"
+             + (f", 오류 {len(recs) - len(ok)}" if len(ok) < len(recs) else '')
+             + (' — 빠른 선별 (기준 아님)' if bar == 'quick' else '') + ' ==']
+    lines.append(' # 이름 hash  lg/QLD/QQQM  개발12y  판정')
+    for i, r in enumerate(rows, 1):
+        lg = '-' if r.get('lg') is None else f"{r['lg']:.3f}/{r.get('qld') or 0:.3f}/{r.get('qqqm') or 0:.3f}"
+        nm = _cut(str(r['name']), 34)
+        lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} {lg} x{r.get('dev_y12') or 0:.1f} {_verdict_short(r)}", 140))
+    return _cut('\n'.join(lines), MAX_SUMMARY)
 
 
 def main(argv=None):
@@ -145,10 +219,37 @@ def main(argv=None):
             specs.append(x)
     if bar not in ('none', 'quick', 'full'):
         print(f'--bar must be none|quick|full, not {bar!r}'); return 2
-    rc = 0
-    for p in specs:
-        try:
-            print(run_one(p, bar, workers, early_stop), flush=True)
-        except Exception as e:  # one bad spec must not stop the batch
-            print(_cut(f'[{os.path.basename(p)}] 오류: {type(e).__name__}: {e}'), flush=True); rc = 1
+    rc, recs, files = 0, [], collect(specs)
+    done = 0
+    try:
+        for p in files:
+            try:
+                members = dsl.expand_grid(dsl.load_spec(p))
+            except Exception as e:  # one bad spec must not stop the batch
+                print(_cut(f'[{os.path.basename(p)}] 오류: {type(e).__name__}: {e}'), flush=True); rc = 1
+                recs.append(dict(name=os.path.basename(p), error=f'{type(e).__name__}: {e}'))
+                done += 1
+                continue
+            for sp in members:
+                try:
+                    line, rec = run_spec(sp, bar, workers, early_stop)
+                    print(line, flush=True); recs.append(rec)
+                except Exception as e:
+                    nm = str(sp.get('name', os.path.basename(p)))
+                    print(_cut(f'[{nm}] 오류: {type(e).__name__}: {e}'), flush=True); rc = 1
+                    recs.append(dict(name=nm, error=f'{type(e).__name__}: {e}'))
+            done += 1
+    finally:                 # the table and the batch JSON are written even if the batch is interrupted
+        not_run = [os.path.basename(p) for p in files[done:]]
+        if not_run:
+            rc = rc or 1
+            print(_cut(f'== 중단: 실행 안 된 명세 {len(not_run)}개: {", ".join(not_run)}'), flush=True)
+        if len(recs) > 1 or not_run:
+            txt = summary(recs, bar)
+            print(txt, flush=True)
+            os.makedirs(os.path.join(ledger.HOME, 'out'), exist_ok=True)
+            fn = os.path.join(ledger.HOME, 'out', time.strftime('batch_%Y%m%dT%H%M%SZ.json', time.gmtime()))
+            with open(fn, 'w') as fh:
+                json.dump(dict(bar=bar, records=recs, summary=txt, not_run=not_run), fh, ensure_ascii=False,
+                          indent=1, default=str)
     return rc

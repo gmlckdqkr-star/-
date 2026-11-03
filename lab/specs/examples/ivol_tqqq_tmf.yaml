@@ -1,0 +1,9 @@
+name: ivol_tqqq_tmf
+family: risk_parity_mix
+known: 3
+idea: TQQQ·TMF 역변동성(60일, 배율 x 기초지수 변동성) 혼합, 합 0.88, 월초 조정
+rebalance: monthly
+rules:
+- else:
+    TQQQ: 0.88 * invvol(TQQQ, [TQQQ, TMF], 60)
+    TMF: 0.88 * invvol(TMF, [TQQQ, TMF], 60)
