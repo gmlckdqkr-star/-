@@ -5,12 +5,18 @@ Same rules as research/beat_qld/code (data.py + engine.build):
 - leveraged sleeve before its listing = synthetic L*r_under - (L-1)*rf - ER/252 (label SYN),
   actual ETF return from its first listed day on.
 Panel path: env LAB_PANEL, default the shared project folder.
+HOLDOUT SEAL: series() drops every row dated after SEAL (2014-12-31) before anything else is derived from it, so
+nothing here (build, kr_clean's gap scan, a sleeve's listing date, price_for_signal) depends on later rows.
+Row dates = the quoting session's local calendar day (FX bars of the panel are stamped 00:00 London, i.e. 23:00 UTC in
+British summer time): every timestamp is read in Europe/London before it is cut to a date (US and KR keys keep their
+UTC date: 12:00-14:00 and 00:00 UTC).
 """
 import io, lzma, os
 import numpy as np, pandas as pd
 
 PANEL = os.environ.get('LAB_PANEL', '/mnt/project-files/research/data/panel_f32.npz.xz')
 ER = 0.0095
+SEAL = pd.Timestamp('2014-12-31')     # = gates.DEV_END (asserted there); no row after it leaves series()
 # name: (actual etf, underlying for synthetic part, leverage)
 SLEEVES = {
     'QLD': ('QLD', '_NDX', 2), 'TQQQ': ('TQQQ', '_NDX', 3), 'SOXL': ('SOXL', 'SOXX', 3),
@@ -55,10 +61,18 @@ def keys():
     return sorted({k.split('|')[0] for k in _z().files})
 
 
+def _dates(ts):
+    """Unix seconds -> calendar dates of the quoting session (Europe/London wall clock: a KRW_X bar stamped
+    2014-07-07 23:00 UTC is the 2014-07-08 London bar; US / KR stamps keep their UTC date)."""
+    return pd.to_datetime(ts, unit='s', utc=True).tz_convert('Europe/London').tz_localize(None).normalize()
+
+
 def series(k, col=4):
+    """One panel column on its own dates, rows <= SEAL only (holdout seal: later rows are dropped first)."""
     z = _z()
-    d = pd.to_datetime(z[k + '|ts'], unit='s').normalize()
+    d = _dates(z[k + '|ts'])
     s = pd.Series(z[k + '|v'][:, col].astype(float), index=d)
+    s = s[s.index <= SEAL]
     s = s[~s.index.duplicated(keep='last')].dropna()
     return s[s > 0]
 
@@ -88,12 +102,12 @@ def build(sleeves=None):
     for n, (etf, u, L) in S.items():
         ru = F[u].pct_change(fill_method=None)
         ra = F[etf].pct_change(fill_method=None)
-        first = F[etf].first_valid_index()
+        first = F[etf].first_valid_index()          # None: not listed on or before SEAL -> synthetic throughout
         if L == 1:
             r = ra.where(ra.notna(), ru)
         else:
             syn = L * ru - (L - 1) * rf - ER / 252.0
-            r = syn.where(F.index <= first, ra)
+            r = syn if first is None else syn.where(F.index <= first, ra)
         R[n] = r
         SRC[n] = first
     R = pd.DataFrame(R)
@@ -106,7 +120,7 @@ def build(sleeves=None):
 MACRO_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'macro_flags_le2014.csv.gz')
 MACRO_KEYS = ('inv', 'inv2', 'shock', 'shock10', 'shock6m', 'shock6m75', 'shock3m', 'csj')   # MS1 ctx.F keys
 MACRO_SPLICE = pd.Timestamp('1986-01-02')     # spx-calendar flags before, ndx-calendar flags from (= MS1 real_ndx)
-MACRO_SEAL = pd.Timestamp('2014-12-31')
+MACRO_SEAL = SEAL
 
 
 def macro_table():

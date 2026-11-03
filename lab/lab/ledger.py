@@ -34,14 +34,24 @@ def get(h):
     return json.loads(r[0]) if r else None
 
 
+def family_of(h):
+    """The family a hash was first counted in (None if the hash is new)."""
+    with _db() as c:
+        r = c.execute('select family from runs where hash=?', (h,)).fetchone()
+    return r[0] if r else None
+
+
 def family_n(family):
     with _db() as c:
         return c.execute('select count(*) from runs where family=?', (family,)).fetchone()[0]
 
 
 def put(h, spec, summary):
+    """A new hash adds a row (name, family, known of this spec); a recomputed one (stale summary version) only
+    replaces its summary: the trial stays in the family it was first counted in."""
     with _db() as c:
-        c.execute('insert or replace into runs(hash, name, family, known, ts, summary) values(?,?,?,?,?,?)',
+        c.execute('insert into runs(hash, name, family, known, ts, summary) values(?,?,?,?,?,?) '
+                  'on conflict(hash) do update set ts=excluded.ts, summary=excluded.summary',
                   (h, spec.get('name'), spec.get('family', 'unset'), int(spec.get('known', -1)), _now(),
                    json.dumps(summary)))
 

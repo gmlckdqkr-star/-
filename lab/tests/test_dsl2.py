@@ -750,10 +750,180 @@ def test_kr_account():
               and sk['dev_end'] <= '2014-12-31' and su['account'] == 'us')
 
 
+class _FakeZ(dict):
+    """An in-memory stand-in for the panel npz (data._z()): .files + item access."""
+    @property
+    def files(self):
+        return list(self.keys())
+
+
+def _panel_variant(real, kind):
+    """The real panel with only rows dated after 2014-12-31 changed: scramble (values x random), hole2016 (every key
+    loses 2016-03-01 .. 2016-05-31), cut2014 (every later row removed)."""
+    out = _FakeZ(real)
+    rng = np.random.default_rng(7)
+    for k in {f.split('|')[0] for f in real}:
+        ts, v = real[k + '|ts'], real[k + '|v']
+        d = np.asarray(data._dates(ts))
+        post = d > np.datetime64(data.SEAL)
+        if kind == 'scramble':
+            v2 = v.copy(); v2[post] = v2[post] * rng.uniform(0.2, 5.0, size=(int(post.sum()), 1)).astype(v.dtype)
+            out[k + '|v'] = v2
+        else:
+            keep = ~post if kind == 'cut2014' else ~((d >= np.datetime64('2016-03-01')) & (d <= np.datetime64('2016-05-31')))
+            out[k + '|ts'], out[k + '|v'] = ts[keep], v[keep]
+    return out
+
+
+def test_seal_and_report():
+    print('== (10) seal of the ETF panel (rows after 2014 change nothing), row dates, errors, CLI report ==')
+    from lab import gates, ledger, ms1
+    z = data._z()
+    real = {k: z[k] for k in z.files}
+    ex = os.path.join(LAB, 'specs', 'examples')
+    names = ('kr_lev_trend', 'bq_D_rotate_10_sleeves', 'bq_C_rotate_tqqq_soxl_tecl')
+    specs = [dsl.load_spec(os.path.join(ex, n + '.yaml')) for n in names]
+    strip = lambda ln: ln.rsplit(' | ', 1)[0]
+
+    def snapshot(tag):
+        data._cache.clear()
+        F, R, _, SRC = data.build()
+        P = {k: data.price_for_signal(F, k) for k in data.keys()}
+        old = ledger.HOME; ledger.HOME = tempfile.mkdtemp(prefix=f'seal_{tag}_', dir=TMP)
+        try:
+            lines = [strip(cli.run_spec(dict(sp), 'none')[0]) for sp in specs]
+        finally:
+            ledger.HOME = old
+        return F, R, SRC, P, lines
+    try:
+        F0, R0, S0, P0, L0 = snapshot('real')
+        res = {}
+        for kind in ('scramble', 'hole2016', 'cut2014'):
+            data._cache.clear(); data._cache['z'] = _panel_variant(real, kind)
+            F1, R1, S1, P1, L1 = snapshot(kind)
+            res[kind] = (F1.equals(F0) and R1.equals(R0) and S1 == S0
+                         and all(P1[k].equals(P0[k]) for k in P0), L1 == L0)
+    finally:
+        data._cache.clear()
+    check('seal: panels that differ only after 2014 (values scrambled / a 2016 hole / later rows removed) give the '
+          'same build() frames, listing dates and signal prices', all(r[0] for r in res.values()), str(res))
+    check('seal: ... and the same one-liners (kr_lev_trend: KR gap scan; bq_D: LABU listed 2015 -> synthetic)',
+          all(r[1] for r in res.values()) and all('오류' not in x for x in L0), str(res))
+    _, Rl, _, Sl = data.build(['LABU'])
+    check('seal: a sleeve with no price on or before 2014 (LABU) is synthetic throughout, no listing date',
+          Sl['LABU'] is None and Rl['LABU'].notna().sum() > 1000)
+    raw = pd.to_datetime(z['KRW_X|ts'], unit='s')
+    k = data.series('KRW_X')
+    v = z['KRW_X|v'][:, 4].astype(float)
+    hit = v[np.flatnonzero(raw == pd.Timestamp('2014-07-07 23:00'))[0]]
+    wk = {key: int((data.series(key).index.weekday >= 5).sum()) for key in data.keys()}
+    check('row dates: no panel key has a weekend-dated row (<= 2014); KRW_X summer bars (23:00 UTC = 00:00 London) '
+          'carry the London date', sum(wk.values()) == 0 and k.index.max() <= data.SEAL
+          and float(k[pd.Timestamp('2014-07-08')]) == float(hit), str({a: b for a, b in wk.items() if b}))
+    # readable one-line errors
+    bad = {'empty': '', 'list': '- a\n- b\n', 'yaml': 'name: x\nrules:\n  - when: "price(QQQ\n'}
+    msgs = []
+    for n, t in bad.items():
+        try:
+            dsl.load_spec(write(f'bad/{n}.yaml', t)); msgs.append('')
+        except Exception as e:
+            msgs.append(cli._cut(f'{type(e).__name__}: {e}'))
+    check('errors: empty / list YAML refused as "a spec file must hold one mapping"; a scanner error prints as one line',
+          'one mapping' in msgs[0] and 'one mapping' in msgs[1] and msgs[2] and '\n' not in msgs[2], str(msgs)[:300])
+    etf = {'name': 'e', 'rules': [{'else': {'AAPL': 1.0}}]}
+    fn = {'name': 'f', 'signals': {'up': 'macd(QQQ, 12, 26) > 0'}, 'rules': [{'when': 'up', 'hold': {'QLD': 1}}]}
+    Fd, Rd, _, _ = data.build(['QLD'])
+    e1 = e2 = e3 = ''
+    try:
+        dsl.check_spec(etf)
+    except ValueError as e:
+        e1 = str(e)
+    try:
+        dsl.compile_weights(fn, Fd, ['QLD'], Rd)
+    except ValueError as e:
+        e2 = str(e)
+    try:
+        dsl.compile_weights(dict(fn, signals={'up': 'price(QQQ) > sma(QQQ, nn)'}), Fd, ['QLD'], Rd)
+    except ValueError as e:
+        e3 = str(e)
+    check('errors: an ETF spec holding a stock ticker names the lab sleeves; an unknown DSL function lists the DSL '
+          'functions; an unknown name says so (ValueError, not KeyError / NameError)',
+          'not a lab sleeve' in e1 and 'TQQQ' in e1 and "unknown function 'macd'" in e2 and 'sma' in e2
+          and "unknown name 'nn'" in e3, f'{e1[:60]} | {e2[:60]} | {e3[:60]}')
+    env = dict(os.environ, LAB_HOME=os.path.join(TMP, 'home_args'), PYTHONDONTWRITEBYTECODE='1')
+    run = lambda *a: subprocess.run([sys.executable, '-B', '-m', 'lab', 'run', *a], cwd=LAB, env=env,
+                                    capture_output=True, text=True, timeout=600)
+    os.makedirs(os.path.join(TMP, 'nospec', 'sub'), exist_ok=True)
+    tr = os.path.join(LAB, 'specs', 'trend_tqqq_200.yaml')
+    ps = [run('--bar', 'none'), run(os.path.join(TMP, 'nospec'), '--bar', 'none'), run(tr, '--bar'),
+          run(tr, '--workers', 'four'), run(tr, '--std')]
+    check('CLI: no spec / an empty (nested-only) folder -> 명세 없음 rc 2; --bar / --std without a value and '
+          '--workers four -> one message rc 2, no traceback',
+          all(p.returncode == 2 and 'Traceback' not in p.stdout + p.stderr for p in ps)
+          and '명세 없음' in ps[0].stdout and '명세 없음' in ps[1].stdout and 'needs a value' in ps[2].stdout
+          and '--workers must be' in ps[3].stdout, str([(p.returncode, p.stdout[:40]) for p in ps]))
+    pb = run(os.path.join(TMP, 'bad'), '--bar', 'none', '--std', 'none')
+    ol = [x for x in pb.stdout.splitlines() if x.startswith('[')]
+    check('CLI: broken / empty / list spec files -> one line each, rc 1', pb.returncode == 1 and len(ol) == 3
+          and all('오류' in x for x in ol), pb.stdout[-300:])
+    # head: a cached hash stays in the family it was first counted in; missing family / known are flagged
+    old = ledger.HOME; ledger.HOME = tempfile.mkdtemp(prefix='fam_', dir=TMP)
+    try:
+        b = {'name': 'fa', 'family': 'fam_a', 'known': 1, 'signals': {'up': 'price(QQQ) > sma(QQQ, 150)'},
+             'rules': [{'when': 'up', 'hold': {'QLD': 0.88}}, {'else': {'CASH': 1.0}}]}
+        l1, _ = cli.run_spec(dict(b), 'none')
+        l2, r2 = cli.run_spec(dict(b, family='fam_b', name='fb'), 'none')
+        h = dsl.spec_hash(b)
+        with ledger._db() as c:          # a stale summary (old DEV_VERSION) is recomputed: the family must stay
+            row = json.loads(c.execute('select summary from runs where hash=?', (h,)).fetchone()[0])
+            c.execute('update runs set summary=? where hash=?', (json.dumps(dict(row, dev_version=-1)), h))
+        l3, _ = cli.run_spec(dict(b, family='fam_b', name='fb'), 'none')
+        nf = {k: ledger.family_n(k) for k in ('fam_a', 'fam_b')}
+        l4, _ = cli.run_spec({k: v for k, v in b.items() if k not in ('family', 'known')} | {'cost': 0.004}, 'none')
+    finally:
+        ledger.HOME = old
+    check('head: same hash under a new family -> reported (and deflated) in the ledger family, '
+          '(중복: 원장 계열 fam_a, 명세 fam_b); a stale recompute keeps the row in fam_a',
+          '계열=fam_a N=1 (중복: 원장 계열 fam_a, 명세 fam_b)' in l2 and r2['family'] == 'fam_a' and '계열=fam_a' in l3
+          and nf == {'fam_a': 1, 'fam_b': 0}, f"{l2.split(' | ')[0]} {nf}")
+    check('head: a spec without family / known is flagged on the line', '계열=unset N=1 (family·known 없음)' in l4,
+          l4.split(' | ')[0])
+    # a spec that fails the dev causality test gets no MS1 / G1 and ranks last
+    pf = write('plug2/pk.py', PLUG_OK)
+    pk = {'name': 'peek', 'family': 'f_peek', 'known': 0, 'plugin': pf + ':peek', 'sleeves': ['QLD'], 'inputs': ['QQQ']}
+    old = ledger.HOME; ledger.HOME = tempfile.mkdtemp(prefix='peek_', dir=TMP)
+    try:
+        lp, rp = cli.run_spec(dict(pk), 'none', ses=ms1.Session(('ms1', 'g1')))
+    finally:
+        ledger.HOME = old
+    good = dict(name='good', hash='b' * 12, family='f', dev_y12=2.0, dev_screen=False, ms1=0.05, g1='CLOSE', causal=True)
+    t = cli.summary([rp, good], 'none')
+    body = [x for x in t.splitlines() if x[:3].strip().isdigit()]
+    check('causality: a look-ahead spec prints MS1: 계산 안 함 (개발 인과성 위반), no MS1 / G1 numbers, '
+          'ranks last in the summary with 인과성위반',
+          'MS1: 계산 안 함 (개발 인과성 위반)' in lp and '개발 인과성 위반' in lp and rp['causal'] is False
+          and rp.get('ms1') is None and len(body) == 2 and body[0].split()[1] == 'good' and '인과성위반' in body[1],
+          lp.split(' | ')[-2])
+    # the 400-byte step-down shortens the name before it cuts the verdict
+    dev = ('개' * 85,) * 3
+    ln = cli._line('[' + 'n' * 90 + '] 계열=f N=1', dev, ('', ''), ('MS1 x | G1 ... 보정 47.5 N=1 닫음 CLOSE',) * 3, '12s',
+                   cli._head('n' * 90, 'f', 1, False, 'f', {'family': 1, 'known': 1}, cut=20))
+    check('line: a long name is cut in the head first, the G1 verdict stays (<= 400 bytes)',
+          len(ln.encode()) <= 400 and ln.endswith('닫음 CLOSE | 12s') and 'n' * 30 not in ln, f'{len(ln.encode())} bytes')
+    g = ms1.g1_word
+    m = dict(ms1=dict(dev250_path=dict(cagr=0.05, ref_s085=0.16, hold1x=0.116, dd80=0.9, d_vs_s085=-0.1, pw_vs_s085=0.06),
+                      FLOOR_MS1=0.05))
+    check('summary words: G1 with no timing answer reads 상시·샤프닫음 / 상시현금 (no English n/a); short MS1 keeps '
+          'a space before §5', g({'binary': False, 'sharpe': {'ndx': 0.4, 'spx': 0.3}}) == '상시·샤프닫음'
+          and g({'binary': False, 'all_out': True}) == '상시현금' and g({'sharpe': {'a': 1.2}}) == '상시·샤프통과'
+          and '% §5' in ms1._short_text(m, ('ms1',), 1) and 'n/a' not in open(ms1.__file__).read()
+          and cli._ms_col(dict(ms1=0.05, g1='상시·샤프닫음'), True) == ' 5.0%·상시·샤프닫음')
+
+
 if __name__ == '__main__':
     t0 = time.time()
     for f in (test_functions, test_rotate, test_brake, test_grid_batch, test_plugin, test_not_resampled, test_compat,
-              test_review_fixes, test_kr_account):
+              test_review_fixes, test_kr_account, test_seal_and_report):
         try:
             f()
         except Exception as e:  # a crash is a failure, keep going

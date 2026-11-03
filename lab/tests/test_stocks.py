@@ -516,6 +516,62 @@ def test_report(P):
           and len(line.encode()) < 360, f'{len(line.encode())} bytes')
 
 
+def test_review(P):
+    print('== review fixes: gate warm-up window, empty book, ticker labels ==')
+    from lab import data
+    import warnings
+    # ticker labels: a post-2014 delisting suffix is dropped with no marker; one dated <= 2014 stays
+    post = [j for j, t in enumerate(P.tickers) if len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] > '201412']
+    pre = [j for j, t in enumerate(P.tickers) if len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] <= '201412']
+    check('labels: AET-201811 -> AET (no *), every post-2014 suffix dropped, <= 2014 suffixes kept',
+          P.label(col(P, 'AET-201811')) == 'AET' and all(P.label(j) == P.tickers[j][:-7] for j in post)
+          and all(P.label(j) == P.tickers[j] for j in pre) and len(post) > 0 and len(pre) > 0)
+    # gate warm-up: the 1986 window and the MS1 stream start at the first decision with sma(_NDX, 200) defined (+ delay)
+    g = SPECS['gate']
+    nd = data.series('_NDX').reindex(P.idx).ffill()
+    sv = nd.rolling(200, min_periods=200).mean().first_valid_index()
+    s = stocks.evaluate(g, P, null=False, pit=False)
+    a = s['windows']['w86']
+    want = P.idx[row(P, sv) + DELAY]
+    check('gate warm-up: gate_from = first day sma(_NDX, 200) exists on the stock calendar (1986-07), the 1986 window '
+          'starts delay rows later and is marked (게이트 1986-07~)',
+          s['gate_from'] == str(sv.date()) and s['gate_from'].startswith('1986-07') and a['start'] == str(want.date())
+          and a['start_by'] == 'gate' and '(게이트 1986-07~)' in stocks.dev_part(s)
+          and '(게이트86-07~)' in stocks.dev_part(s, compact=2), f"{s['gate_from']} -> {a['start']}")
+    m = stocks.ms1_stream(g, P)
+    check('gate warm-up: MS1 stream starts with the 1986 window (no forced-cash months in it)', m['start'] == a['start'])
+    gr = dict(g, stock=dict(g['stock'], exposure_every='rebalance'))
+    r, _ = stocks.gate_valid(gr, P, stocks.gate_frame(gr, P.idx))
+    rows = np.flatnonzero(dsl.reb_rows(P.idx, 'monthly'))
+    check('gate warm-up with exposure_every: rebalance = first month-start row on or after it',
+          r == int(rows[rows >= row(P, sv)][0]))
+    gt = spec({'score': 'ret(126)', 'top': 30, 'exposure': 'price(TLT) > sma(TLT, 200)'})
+    rt, _ = stocks.gate_valid(gt, P, stocks.gate_frame(gt, P.idx))
+    tl = data.series('TLT').reindex(P.idx).ffill().rolling(200, min_periods=200).mean().first_valid_index()
+    check('gate warm-up: a TLT gate (data from 2002-07) is informed only from its 200th row (2003)',
+          P.idx[rt] == tl and tl.year == 2003)
+    # a book that never holds a stock says so, computes no null / Sharpe, emits no numpy warnings
+    e = spec({'score': 'ret(252)', 'filter': 'age() > 100000', 'top': 10})
+    with warnings.catch_warnings(record=True) as wl:
+        warnings.simplefilter('always')
+        se = stocks.evaluate(e, P, pit=False)
+    ae = se['windows']['w86']
+    check('empty book: flagged, no null basket, no Sharpe, G1 not passed, line says 종목 0 (filter/게이트 확인)',
+          ae['empty'] and 'null' not in ae and ae['sharpe'] is None and not ae['g1_pass'] and not se['screen_pass']
+          and all('종목 0 (filter/게이트 확인)' in stocks.dev_part(se, c) for c in (False, True, 2)))
+    one = stocks.compile_targets(spec({'score': 'ret(252)', 'top': 1}), P)     # a one-name book the hazard wipes out
+    st = pd.Timestamp('1986-01-02')
+    with warnings.catch_warnings(record=True) as w2:
+        warnings.simplefilter('always')
+        stocks.fast_run(P, one, 0.0, st, COST, TAX, DELAY, D=stocks.N_HAZ, hits=stocks.hazard_hits(P, one, st))
+    rw = [w for w in wl + w2 if issubclass(w.category, RuntimeWarning)]
+    check('engine: no RuntimeWarning (divide by zero / invalid) for an empty book or a book wiped to 0 (one name, '
+          'hazard hit)', not rw, str([str(w.message) for w in rw][:2]))
+    tg = stocks.compile_targets(e, P)
+    o = stocks.run1(P, tg, stocks.H_CONS, pd.Timestamp('1986-01-02'), COST, 0.0, DELAY)
+    check('Sharpe of an all-T-bill book (excess stdev ~1e-15) is nan, not float noise', math.isnan(stocks.sharpe(o, P)))
+
+
 if __name__ == '__main__':
     t0 = time.time()
     test_errors()
@@ -530,6 +586,7 @@ if __name__ == '__main__':
     test_null(P)
     test_seal(P)
     test_report(P)
+    test_review(P)
     test_cli(P)
     print(f'{time.time() - t0:.0f}s')
     print('FAILS:', ', '.join(FAILS) if FAILS else 'none')

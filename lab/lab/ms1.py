@@ -388,7 +388,7 @@ def finish(st):
     if 'g1' in ses.parts:
         ev = g1_eval(hit['g1'], N)
         parts.append(fmt_g1(hit['g1'], ev, N))
-        out['g1'] = ev.get('verdict') if hit['g1'].get('binary') else 'n/a'
+        out['g1'] = ev.get('verdict') if hit['g1'].get('binary') else g1_word(hit['g1'])
     return dict(out, text=' | '.join(parts), detail=hit, cached=cached, short=_short_text(hit, ses.parts, N),
                 key=st['key'], label=LABEL)
 
@@ -486,7 +486,7 @@ def _finish_stock(st):
         if g.get('binary'):
             out['g1'] = g1_eval(g, N)['verdict']
         elif g.get('gate'):
-            out['g1'] = 'n/a'
+            out['g1'] = '게이트 해당없음'
     return dict(out, text=' | '.join(full), short=' | '.join(short), shortest=' | '.join(least), detail=hit,
                 cached=not todo, key=st['key'], label=SERIES_LABEL)
 
@@ -539,7 +539,7 @@ def _short_text(hit, parts, N):
     """Compact form for a crowded line (same numbers, fewer words)."""
     out = []
     if 'ms1' in parts:
-        out.append(fmt_ms1(hit['ms1']).replace(' §5엔진', '§5'))
+        out.append(fmt_ms1(hit['ms1']).replace(' §5엔진', ' §5'))
     if 'g1' in parts:
         g = hit['g1']
         if g.get('binary'):
@@ -570,6 +570,15 @@ def g1_eval(g, N):
     low = min(out.values()) if out else 0.0
     v = '60%-CANDIDATE' if low >= .77 else 'BUILD' if low >= .70 else 'HOLD' if low >= .65 else 'CLOSE'
     return dict(deflated=out, low=low, verdict=v)
+
+
+def g1_word(g):
+    """Summary-table word of a G1 with no timing answer (always in / always out): the Sharpe branch vs 1.1."""
+    what = '상시현금' if g.get('all_out') else '상시'
+    sh = g.get('sharpe') or {}
+    if not sh:
+        return what
+    return f"{what}·샤프{'통과' if min(sh.values()) >= SHARPE_BAR else '닫음'}"
 
 
 def fmt_g1(g, ev, N):

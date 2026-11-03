@@ -48,8 +48,9 @@ and NDX 1x hold (QQQ sleeve of the ETF panel). Annualised after-cost pre-tax Sha
 test, pass >= 1.1). Random-basket null: 200 seeded baskets with the same rebalance dates, eligibility, name count and
 name retention (see null_baskets), equal weight, same exposure, engine, costs and tax.
 MS1 / G1 (lab/ms1.py, `--std auto`): ms1_stream = the CONSERVATIVE book's daily return after trading cost, before
-tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve or the gate data
-starts later), measured on the MS1 bases by ms1.measure_series (re-sampled stream, no path recomputation). G1 = the
+tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve starts later or
+the exposure gate is warmed up later: gate_valid), measured on the MS1 bases by ms1.measure_series (re-sampled stream,
+no path recomputation). The 1986 headline window also starts at the warmed-up gate (marked). G1 = the
 Sharpe line above; a spec with an exposure gate also gets gate.test on it (gate_spec: the gate as a QQQ / cash spec on
 the G1 real frames).
 HOLDOUT SEAL: the panel and every ETF series are cut at 2014-12-31 before anything is computed; asserted below.
@@ -60,7 +61,10 @@ from . import data, dsl, engine, gates
 
 STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014.npz.xz')
 DEV_END = gates.DEV_END
-STOCK_VERSION = 1           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+STOCK_VERSION = 2           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+                            # 2: the 1986 window and the MS1 stream start once the exposure gate is warmed up
+                            #    (gate_from = first decision with every gate indicator defined); empty books say so;
+                            #    tickers delisted after 2014 print bare
 BAR_VERDICT = '판정 불가 (개별주)'
 WINDOWS = {'w86': pd.Timestamp('1986-01-02'), 'w71': pd.Timestamp('1971-01-04')}   # both end DEV_END
 H_CONS = 0.30               # conservative delisting haircut (headline)
@@ -209,10 +213,11 @@ class Panel:
         return self._get(('cs', k), f)
 
     def label(self, j):
-        """Ticker for output. A delisting suffix after 2014 (e.g. AET-201811) is a post-2014 fact: masked as AET*."""
+        """Ticker for output. A delisting suffix after 2014 (e.g. AET-201811) is a post-2014 fact: dropped with no
+        marker (AET), so a name delisted after 2014 prints exactly like one still listed. Suffixes <= 201412 stay."""
         t = str(self.tickers[j])
         m = re.match(r'^(.*)-(\d{6})$', t)
-        return m.group(1) + '*' if m and m.group(2) > '201412' else t
+        return m.group(1) if m and m.group(2) > '201412' else t
 
 
 def load(path=None):
@@ -566,16 +571,47 @@ def gate_frame(spec, idx):
     return F
 
 
+def _gate_env(spec, F):
+    env = dict(dsl._mk(F))
+    assets = set(F.columns) | set(data.SLEEVES)
+    for name, expr in (spec.get('signals') or {}).items():
+        env[name] = dsl._eval(expr, env, assets)
+    return env, assets
+
+
+def gate_valid(spec, P, F):
+    """First decision row at which the exposure gate is informed: every indicator call of the gate (signals +
+    exposure) has a value (dsl.valid_from: sma(_NDX, 200) on the stock calendar -> its 200th row after _NDX starts;
+    before it a comparison reads False = the gate is forced to the else share). With exposure_every: rebalance, the
+    first rebalance row on or after it. -> (row or None, [never-valid calls])."""
+    c = cfg_of(spec)
+    if c['exposure'] is None or F is None:
+        return None, []
+    env, assets = _gate_env(spec, F)
+    exprs = list((spec.get('signals') or {}).values()) + ([c['exposure']] if isinstance(c['exposure'], str) else [])
+    fv, never = dsl.valid_from(exprs, env, assets)
+    if fv is None:
+        return None, never
+    r = int(np.searchsorted(P.idx, fv))
+    if c['exposure_every'] == 'rebalance':
+        rows = np.flatnonzero(dsl.reb_rows(P.idx, c['rebalance']))
+        rows = rows[rows >= r]
+        r = int(rows[0]) if len(rows) else P.T - 1
+    return r, never
+
+
+def gate_start(P, row, delay):
+    """First engine row whose target was decided on an informed gate row (decision row + delay), as a date."""
+    return None if row is None else P.idx[min(row + delay, P.T - 1)]
+
+
 def exposure(spec, P, F=None):
     """[T] exposure in [0, 1] decided at each close (1.0 when the spec has no exposure gate)."""
     c = cfg_of(spec)
     if c['exposure'] is None:
         return np.ones(P.T)
     F = gate_frame(spec, P.idx) if F is None else F
-    env = dict(dsl._mk(F))
-    assets = set(F.columns) | set(data.SLEEVES)
-    for name, expr in (spec.get('signals') or {}).items():
-        env[name] = dsl._eval(expr, env, assets)
+    env, assets = _gate_env(spec, F)
     ex = c['exposure']
     v = env[ex] if isinstance(ex, str) and ex in (spec.get('signals') or {}) else dsl._eval(ex, env, assets)
     if isinstance(v, pd.Series):
@@ -794,51 +830,52 @@ def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, wa
     book = np.empty((nr, k)) if keep_book else None
     peak = np.full(D, -np.inf); mdd = np.zeros(D)
     years = idx.year.values[i0:i1 + 1]; yr = years[0]
-    for i in range(nr):
-        if years[i] != yr:
-            t = tax * np.maximum(0.0, realized); taxpaid += t
-            realized = np.zeros(D); yr = years[i]
-            if (t > 0).any():
-                s = val.sum(1); f = np.where(t > 0, t / s, 0.0)
-                realized = np.where(t > 0, f * (val[:, :cashi] - basis[:, :cashi]).sum(1), 0.0)
-                val = val * (1 - f)[:, None]; basis = basis * (1 - f)[:, None]
-        if i > 0:
-            val *= G[i]
-        if i in hit:
-            val[hit[i]] = 0.0
-        go = np.zeros(D, bool)
-        if cand[i]:
-            Wn = target(i)
-            go = np.full(D, bool(i == 0 or force[i])) | np.any(Wn != Wt, axis=1)
-            Wt = Wn
-        if pend.any():
-            go |= np.any(pend & ~FZ[i], axis=1)
-        if go.any():
-            V = val.sum(1)
-            tgt, blk = engine.limit_target(Wt * V[:, None], val, FZ[i], NB[i], cashi, V)
-            do = go & (np.abs(tgt - val).sum(1) > 1e-9 * V)
-            if do.any():
-                d = tgt - val
-                ad = np.abs(d[:, :cashi]).sum(1)
-                c = cost * ad
-                sell = (d[:, :cashi] < 0) & (val[:, :cashi] > 0)
-                vs = val[:, :cashi]
-                f = np.where(sell, np.minimum(1.0, -d[:, :cashi] / np.where(vs > 0, vs, 1.0)), 0.0)
-                g = (f * (vs - basis[:, :cashi])).sum(1)
-                bn = np.where(sell, basis[:, :cashi] * (1 - f), basis[:, :cashi])
-                bn = bn + np.where(d[:, :cashi] > 0, d[:, :cashi], 0.0)
-                dm = do[:, None]
-                realized = realized + np.where(do, g, 0.0)
-                basis[:, :cashi] = np.where(dm, bn, basis[:, :cashi])
-                turnover = turnover + np.where(do, ad / V, 0.0); trades += do
-                val = np.where(dm, tgt * (V - c)[:, None] / V[:, None], val)
-                pend = np.where(dm, blk, pend)
-        E = val.sum(1)
-        if want_E:
-            eq[:, i] = E
-        if keep_book:
-            book[i] = val[0]
-        peak = np.maximum(peak, E); mdd = np.minimum(mdd, E / peak - 1)
+    with np.errstate(divide='ignore', invalid='ignore'):     # a book wiped to 0 / an empty book divides 0 / 0
+        for i in range(nr):
+            if years[i] != yr:
+                t = tax * np.maximum(0.0, realized); taxpaid += t
+                realized = np.zeros(D); yr = years[i]
+                if (t > 0).any():
+                    s = val.sum(1); f = np.where(t > 0, t / s, 0.0)
+                    realized = np.where(t > 0, f * (val[:, :cashi] - basis[:, :cashi]).sum(1), 0.0)
+                    val = val * (1 - f)[:, None]; basis = basis * (1 - f)[:, None]
+            if i > 0:
+                val *= G[i]
+            if i in hit:
+                val[hit[i]] = 0.0
+            go = np.zeros(D, bool)
+            if cand[i]:
+                Wn = target(i)
+                go = np.full(D, bool(i == 0 or force[i])) | np.any(Wn != Wt, axis=1)
+                Wt = Wn
+            if pend.any():
+                go |= np.any(pend & ~FZ[i], axis=1)
+            if go.any():
+                V = val.sum(1)
+                tgt, blk = engine.limit_target(Wt * V[:, None], val, FZ[i], NB[i], cashi, V)
+                do = go & (np.abs(tgt - val).sum(1) > 1e-9 * V)
+                if do.any():
+                    d = tgt - val
+                    ad = np.abs(d[:, :cashi]).sum(1)
+                    c = cost * ad
+                    sell = (d[:, :cashi] < 0) & (val[:, :cashi] > 0)
+                    vs = val[:, :cashi]
+                    f = np.where(sell, np.minimum(1.0, -d[:, :cashi] / np.where(vs > 0, vs, 1.0)), 0.0)
+                    g = (f * (vs - basis[:, :cashi])).sum(1)
+                    bn = np.where(sell, basis[:, :cashi] * (1 - f), basis[:, :cashi])
+                    bn = bn + np.where(d[:, :cashi] > 0, d[:, :cashi], 0.0)
+                    dm = do[:, None]
+                    realized = realized + np.where(do, g, 0.0)
+                    basis[:, :cashi] = np.where(dm, bn, basis[:, :cashi])
+                    turnover = turnover + np.where(do, ad / V, 0.0); trades += do
+                    val = np.where(dm, tgt * (V - c)[:, None] / V[:, None], val)
+                    pend = np.where(dm, blk, pend)
+            E = val.sum(1)
+            if want_E:
+                eq[:, i] = E
+            if keep_book:
+                book[i] = val[0]
+            peak = np.maximum(peak, E); mdd = np.minimum(mdd, E / peak - 1)
     unreal = (val[:, :cashi] - basis[:, :cashi]).sum(1)
     t = tax * np.maximum(0.0, realized + unreal)
     final = E - t
@@ -970,7 +1007,8 @@ def sharpe(o, P):
     r = E.pct_change().dropna()
     rf = pd.Series(rf_on(P.idx), index=P.idx).reindex(r.index).values
     ex = r.values - rf
-    return float(ex.mean() / ex.std(ddof=1) * np.sqrt(252)) if ex.std(ddof=1) > 0 else float('nan')
+    sd = ex.std(ddof=1) if len(ex) > 1 else 0.0
+    return float(ex.mean() / sd * np.sqrt(252)) if sd > 1e-12 else float('nan')   # all T-bill: 0 / float noise
 
 
 # ---------------------------------------------------------------- causality (runtime cuts)
@@ -1013,8 +1051,8 @@ def gate_spec(spec):
 def ms1_stream(spec, P=None):
     """MS1 input of a stock spec (ms1.measure_series): the CONSERVATIVE book's (h = 0.30) daily return after trading
     cost and BEFORE tax (MS1 applies its own tax), on the real stock calendar, from MS1_FROM (1970-01-02, the first
-    point-in-time member day) or the later start of an else sleeve or of the gate data (before it the gate is all
-    cash), to 2014-12-31. turnover = min(1, one-way yearly turnover) = measure_series' realized share.
+    point-in-time member day) or the later start of an else sleeve or of the warmed-up gate (gate_start: before it
+    the gate is forced to the else share), to 2014-12-31. turnover = min(1, one-way yearly turnover) = measure_series' realized share.
     -> dict(dates, ret, label, turnover, start, min_cover)."""
     spec = dsl.check_spec(spec)
     P = load() if P is None else P
@@ -1032,6 +1070,8 @@ def ms1_stream(spec, P=None):
     if F is not None and F.shape[1]:
         fv = [F[k].first_valid_index() for k in F.columns]
         st += [pd.Timestamp(v) for v in fv if v is not None]
+        g = gate_start(P, gate_valid(spec, P, F)[0], delay)     # before it the gate is forced to the else share
+        st += [g] if g is not None else []
     st = max(st)
     o = fast_run(P, tg, H_CONS, st, cost, 0.0, delay, want_E=True)
     _sealed(o['idx'])
@@ -1061,31 +1101,41 @@ def evaluate(spec, P=None, null=True, pit=True):
     tg = compile_targets(spec, P, F)
     _cache['last_tg'] = (dsl.spec_hash(spec), id(P), tg, F)    # ms1_stream reuses it (one spec at a time)
     _, efirst = else_returns(tg.els, P.idx)
-    gate_from = None
+    gate_data_from, grow, gnever = None, None, []
     if F is not None and F.shape[1]:
         fv = [F[k].first_valid_index() for k in F.columns]
-        gate_from = None if any(v is None for v in fv) else str(max(fv).date())
+        gate_data_from = None if any(v is None for v in fv) else str(max(fv).date())
+        grow, gnever = gate_valid(spec, P, F)
+    gate_from = None if grow is None else str(P.idx[grow].date())    # first informed gate decision
+    gst = gate_start(P, grow, delay)
     out = dict(kind='stock', universe='sp500', stock_version=STOCK_VERSION, dev_end=str(DEV_END.date()),
                label='개별주 S&P500 시점편입·상폐포함 (개발 요약, 기준 아님)', cost=cost, delay=delay, tax=tax,
-               h_cons=H_CONS, gate_from=gate_from, windows={})
+               h_cons=H_CONS, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3], windows={})
     for w, st0 in WINDOWS.items():
         st = max([st0] + [pd.Timestamp(v) for v in efirst.values()])
+        by = 'else' if st > st0 else None
+        if w == 'w86' and gst is not None and gst > st:   # headline window: no forced-cash warm-up years inside
+            st, by = gst, 'gate'
         nm = avg_names(P, tg, st, delay)
         cons = run1(P, tg, H_CONS, st, cost, tax, delay)
         base = run1(P, tg, 0.0, st, cost, tax, delay)
-        row = dict(start=str(st.date()), cons=_row(cons, nm), base=_row(base, nm),
+        row = dict(start=str(st.date()), start_by=by, cons=_row(cons, nm), base=_row(base, nm),
                    ew_cons=ew_row(P, H_CONS, st, cost, tax, delay))
         if w == 'w86':
+            row['empty'] = empty = not nm > 0                  # never holds a stock (filter / gate / units typo)
             row['ew_base'] = ew_row(P, 0.0, st, cost, tax, delay)
             row['ndx'] = ndx_hold(st, cost, tax, delay)
-            pre = run1(P, tg, H_CONS, st, cost, 0.0, delay)
-            row['sharpe'] = sharpe(pre, P)
-            row['g1_pass'] = bool(row['sharpe'] >= G1_SHARPE)
+            if empty:
+                row['sharpe'], row['g1_pass'] = None, False
+            else:
+                pre = run1(P, tg, H_CONS, st, cost, 0.0, delay)
+                row['sharpe'] = sharpe(pre, P)
+                row['g1_pass'] = bool(row['sharpe'] >= G1_SHARPE)
             ex = fast_run(P, tg, 0.0, st, cost, tax, delay, D=N_HAZ, hits=hazard_hits(P, tg, st))
             row['extreme'] = dict(cagr_at=float(np.median(ex['cagr_at'])), mdd=float(np.median(ex['mdd'])),
                                   draws=[round(float(x), 6) for x in ex['cagr_at']], n=N_HAZ, seed=HAZ_SEED,
                                   hazard=HAZARD)
-            if null:
+            if null and not empty:
                 nb = null_baskets(P, tg, st, delay)
                 nr = fast_run(P, tg, H_CONS, st, cost, tax, delay, baskets=nb, D=N_NULL)
                 x = np.sort(nr['cagr_at']); s = row['cons']['cagr_at']
@@ -1120,6 +1170,16 @@ def dev_part(s, compact=False):
     a, b = s['windows']['w86'], s['windows']['w71']
     nl = a.get('null')
     yn = lambda x: '통과' if x else '미달'
+    sh = lambda x: f'{x:.2f}' if x is not None and np.isfinite(x) else '-'
+    gf = s.get('gate_from') or ''
+    g86 = a.get('start_by') == 'gate' and gf           # the headline window starts once the gate is warmed up
+    cz = '' if (s.get('causality') or {}).get('ok', True) else (' 인과성위반' if compact == 2 else ' 개발 인과성 위반')
+    if a.get('empty'):                                 # no stock is ever held: say it instead of a normal-looking line
+        y = f"{a['start'][2:4]}~14" if compact == 2 else f"{a['start'][:4]}~2014"
+        return ((f"개별주PIT {y} 종목 0 (filter/게이트 확인) 현금만 세후 {_pp(a['cons']['cagr_at'])} | 무작위·샤프 안 함"
+                 if compact == 2 else
+                 f"개별주 S&P500(시점편입·상폐포함) {y} 종목 0 (filter/게이트 확인): 현금(T-bill)만 세후 "
+                 f"{_pp(a['cons']['cagr_at'])} | 무작위 바구니·Sharpe 계산 안 함 (G1 1.1 미달)") + cz)
     if compact == 2:
         q = lambda x: f'{100 * x:.1f}' if x is not None and np.isfinite(x) else '-'
         if nl:
@@ -1127,12 +1187,12 @@ def dev_part(s, compact=False):
             npart = f"무작위 상위{'<0.5' if top < 0.5 else f'{top:.0f}'}%(99%선 {yn(nl['beat99'])})"
         else:
             npart = '무작위 미계산'
-        g71 = f"(게이트{s['gate_from'][2:4]}~)" if s.get('gate_from') and s['gate_from'] > b['start'] else ''
-        cz = '' if (s.get('causality') or {}).get('ok', True) else ' 인과성위반'
-        return (f"개별주PIT·상폐포함 {a['start'][2:4]}~14 세후보수 {_pp(a['cons']['cagr_at'])}"
+        g71 = f"(게이트{gf[2:4]}~)" if gf and gf > b['start'] and not g86 else ''   # g86 already dates the gate
+        return (f"개별주PIT·상폐포함 {a['start'][2:4]}~14{f'(게이트{gf[2:7]}~)' if g86 else ''} "
+                f"세후보수 {_pp(a['cons']['cagr_at'])}"
                 f"(기본 {q(a['base']['cagr_at'])}·극단 {q(a['extreme']['cagr_at'])}) 낙폭{a['cons']['mdd']:.0%} | "
                 f"EW {q(a['ew_cons']['cagr_at'])}·NDX {q(a['ndx']['cagr_at'])} | {b['start'][2:4]}~14 "
-                f"{_pp(b['cons']['cagr_at'])}{g71} | {npart} | 샤프 {a['sharpe']:.2f} G1 1.1 {yn(a['g1_pass'])}" + cz)
+                f"{_pp(b['cons']['cagr_at'])}{g71} | {npart} | 샤프 {sh(a['sharpe'])} G1 1.1 {yn(a['g1_pass'])}" + cz)
     if nl:
         top = nl['top'] * 100
         tp = '<0.5' if top < 0.5 else f'{top:.0f}'
@@ -1141,13 +1201,11 @@ def dev_part(s, compact=False):
     else:
         npart = '무작위 바구니 미계산'
     y86, y71 = a['start'][:4], b['start'][:4]
-    g71 = ''
-    if s.get('gate_from') and s['gate_from'] > b['start']:
-        g71 = f"(게이트 {s['gate_from'][:4]}~)"
-    cz = '' if (s.get('causality') or {}).get('ok', True) else ' 개발 인과성 위반'
-    return (f"개별주 S&P500(시점편입·상폐포함) {y86}~2014 세후 보수 {_pp(a['cons']['cagr_at'])} "
+    g71 = f"(게이트 {gf[:4]}~)" if gf and gf > b['start'] else ''
+    return (f"개별주 S&P500(시점편입·상폐포함) {y86}~2014{f'(게이트 {gf[:7]}~)' if g86 else ''} "
+            f"세후 보수 {_pp(a['cons']['cagr_at'])} "
             f"(기본 {_pp(a['base']['cagr_at'])}·극단 {_pp(a['extreme']['cagr_at'])}) 낙폭 {a['cons']['mdd']:.0%} "
             + ('' if compact else f"평균 {a['cons']['names']:.0f}종목 회전 {a['cons']['turn']:.1f}x ")
             + f"| 동일가중 {_pp(a['ew_cons']['cagr_at'])} · "
             f"NDX보유 {_pp(a['ndx']['cagr_at'])} | {y71}~2014 {_pp(b['cons']['cagr_at'])}{g71} | {npart} | "
-            f"Sharpe {a['sharpe']:.2f} (G1 1.1 {'통과' if a['g1_pass'] else '미달'})" + cz)
+            f"Sharpe {sh(a['sharpe'])} (G1 1.1 {'통과' if a['g1_pass'] else '미달'})" + cz)

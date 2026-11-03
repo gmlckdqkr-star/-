@@ -10,6 +10,7 @@
        A single-stock spec (`universe: sp500`, lab/stocks.py) prints its own dev line (S&P 500 point-in-time members,
        delisted included, stress rows, random-basket null, G1 Sharpe) + 'MS1(수익 흐름 재표본)' (its return stream on
        the MS1 bases) + G1 on its exposure gate if it has one; every bar mode answers '판정 불가 (개별주)'.
+       A spec that fails the dev causality test gets 'MS1: 계산 안 함 (개발 인과성 위반)' and ranks last in the table.
        --all-versions (full only): keep running the remaining versions after a REJECT (default: stop, REJECT is final).
        --std auto (default): MS1 headline + G1 gate for MS1-eligible specs (lab/ms1.py, one out-of-process worker per
                    batch; account us, sleeves QQQ / QLD / TQQQ / CASH, reads the NDX level and macro(k) only),
@@ -30,7 +31,11 @@ MAX_LINE = 400
 MAX_SUMMARY = 1500
 
 
-def _cut(s, n=MAX_LINE):
+def _cut(s, n=MAX_LINE, lines=False):
+    """<= n bytes; one line (newlines -> ' / ', e.g. a YAML scanner error) unless lines=True (the summary table)."""
+    s = str(s)
+    if not lines and ('\n' in s or '\r' in s):
+        s = ' / '.join(x.strip() for x in s.splitlines() if x.strip())
     b = s.encode('utf-8')
     if len(b) <= n:
         return s
@@ -40,13 +45,17 @@ def _cut(s, n=MAX_LINE):
 def _dev_part(s, short=False):
     d, b = s['dev'], s['boot']
     acct = '' if s.get('account', 'us') == 'us' else f"[{s['account']} 13bp·건별15.4%(KR200·KRSEMI 0)] "
+    sf = s.get('sig_from') or ''
+    sf = sf if sf > s['dev_start'] else ''      # some signal input is still undefined (warm-up) after the start
     if short:                     # same numbers, fewer words (a line with bar + MS1 + G1 parts); 2 = no baseline
         base = '' if short == 2 else f"({s['baseline']} {d['base_cagr_at']:.1%}/{d['base_mdd']:.0%})"
-        return (acct + f"개발{s['dev_start'][2:4]}~14 {d['cagr_at']:.1%}/{d['mdd']:.0%}{base} 12y "
+        return (acct + f"개발{s['dev_start'][2:4]}~14{f'(신호{sf[2:7]}~)' if sf else ''} "
+                f"{d['cagr_at']:.1%}/{d['mdd']:.0%}{base} 12y "
                 f"x{b['s_med_y12']:.1f}/x{b['b_med_y12']:.1f} P80 {b['s_p_dd80']:.1%} "
                 f"선별{'통과' if s['screen_pass'] else '탈락'}"
                 + ('' if (s.get('dev_causality') or {}).get('ok', True) else ' 인과성위반'))
-    return (acct + f"개발({s['dev_start'][:4]}~2014) 세후 {d['cagr_at']:.1%} 낙폭 {d['mdd']:.0%} "
+    return (acct + f"개발({s['dev_start'][:4]}~2014{f', 신호 {sf[:7]}~' if sf else ''}) 세후 {d['cagr_at']:.1%} "
+            f"낙폭 {d['mdd']:.0%} "
             f"({s['baseline']} {d['base_cagr_at']:.1%}/{d['base_mdd']:.0%}) 12년x{b['s_med_y12']:.1f}"
             f"({s['baseline']} x{b['b_med_y12']:.1f}) P80 {b['s_p_dd80']:.1%} "
             f"개발선별 {'통과' if s['screen_pass'] else '탈락'}"
@@ -119,28 +128,42 @@ def run_one(path, bar='quick', workers=4, early_stop=True):
     return run_spec(spec, bar, workers, early_stop)[0]
 
 
-def _line(head, devs, bars, stds, tail):
-    """Join the parts, switching to the compact forms (dev, then bar, then MS1 / G1) while the line is > MAX_LINE.
+def _line(head, devs, bars, stds, tail, head_short=None):
+    """Join the parts, switching to the compact forms (dev, then bar, then MS1 / G1) while the line is > MAX_LINE;
+    then the head with the spec name / family cut short (head_short), then without the run time, so the verdict
+    parts stay; only then the end is cut.
     stds = (full, short[, shortest]) (the shortest form exists for stock specs)."""
     stds = tuple(stds) + tuple(stds[-1:]) * (3 - len(stds))
-    for i, j, k in ((0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 1, 1), (2, 1, 1), (2, 1, 2)):
-        s = ' | '.join(x for x in (head, devs[i], bars[j], stds[k], tail) if x)
-        if len(s.encode('utf-8')) <= MAX_LINE:
-            return s
+    for hd, tl in ((head, tail), (head_short, tail), (head_short, '')) if head_short else ((head, tail),):
+        for i, j, k in ((0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 1, 1), (2, 1, 1), (2, 1, 2)):
+            s = ' | '.join(x for x in (hd, devs[i], bars[j], stds[k], tl) if x)
+            if len(s.encode('utf-8')) <= MAX_LINE and '\n' not in s:
+                return s
     return _cut(s)
+
+
+def _head(name, fam, n, known, spec_fam, spec, cut=None):
+    c = (lambda x: _cut(x, cut)) if cut else str
+    dup = ''
+    if known:
+        dup = ' (중복)' if fam == spec_fam else f' (중복: 원장 계열 {c(fam)}, 명세 {c(spec_fam)})'
+    miss = [k for k in ('family', 'known') if k not in spec]
+    return f"[{c(name)}] 계열={c(fam)} N={n}{dup}" + (f" ({'·'.join(miss)} 없음)" if miss else '')
 
 
 def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
     """One expanded spec -> (line, record for the batch summary). ses: an ms1.Session (MS1 / G1 parts) or None."""
     t0 = time.time()
     spec = dsl.check_spec(spec)                          # refuse delay < 2 / non-numeric cost before anything runs
-    h = dsl.spec_hash(spec); fam = str(spec.get('family', 'unset'))
+    h = dsl.spec_hash(spec); fam = spec_fam = str(spec.get('family', 'unset'))
     name = str(spec.get('name', h))
     stock = dsl.is_universe(spec)                        # single-stock spec (lab/stocks.py): own dev summary
     if stock:
         from . import stocks
     s = ledger.get(h)
     cached = s is not None
+    if cached:                    # a trial stays in the family it was first counted in (N, G1 deflation): not relabelled
+        fam = ledger.family_of(h) or fam
     stale = cached and (s.get('stock_version') != stocks.STOCK_VERSION if stock
                         else s.get('dev_version') != gates.DEV_VERSION)
     if stale:                                            # dev summary logic changed: recompute, same row (N same)
@@ -157,6 +180,8 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
         F = F[F.index <= gates.DEV_END]; R = R[R.index <= gates.DEV_END]      # nothing after 2014 enters
         W = dsl.compile_weights(spec, F, sleeves, R)
         s = gates.evaluate(W, R, spec, baseline=spec.get('baseline', 'QQQ'))
+        sf, never = dsl.spec_valid_from(spec, F, sleeves, R)   # signal warm-up (marked on the line if after start)
+        s['sig_from'] = None if sf is None else str(sf.date()); s['sig_never'] = never[:3]
         # dev-side causality (truncation at random cuts, the same test the bar runs on its paths)
         tc = dsl.truncation_check(spec, F, sleeves, R)
         s['dev_causality'] = dict(tc, violations=tc['violations'][:3])
@@ -164,7 +189,10 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
             s['screen_pass'] = False
         ledger.put(h, spec, s)
     detail = dict(spec=spec, hash=h, dev_summary=s)
-    head = f"[{name}] 계열={fam} N={ledger.family_n(fam)}{' (중복)' if known else ''}"
+    nf = ledger.family_n(fam)
+    head = _head(name, fam, nf, known, spec_fam, spec)
+    head_short = _head(name, fam, nf, known, spec_fam, spec, cut=20)
+    causal = ((s.get('causality') if stock else s.get('dev_causality')) or {}).get('ok', True)
     if stock:
         devs = (stocks.dev_part(s), stocks.dev_part(s, compact=True), stocks.dev_part(s, compact=2))
     else:
@@ -172,11 +200,17 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
     bars, stds = ('', ''), ('', '')
     bcached = False
     rec = dict(name=name, hash=h, family=fam, dev_y12=None if stock else s['boot']['s_med_y12'],
-               dev_screen=s['screen_pass'])
+               dev_screen=s['screen_pass'], causal=causal)
     if stock:
-        rec['stock_cagr'] = s['windows']['w86']['cons']['cagr_at']
+        a = s['windows']['w86']
+        rec['stock_cagr'] = a['cons']['cagr_at']
+        rec['stock_start'] = a['start'] if a['start'] > str(stocks.WINDOWS['w86'].date()) else None
+        rec['stock_empty'] = bool(a.get('empty'))
     st = None
-    if ses is not None:               # the MS1 worker computes while the bar runs
+    if ses is not None and not causal:   # a spec that reads the future gets no MS1 / G1 numbers (they would leak too)
+        stds = ('MS1: 계산 안 함 (개발 인과성 위반)', 'MS1 계산 안 함 (인과성 위반)')
+        rec.update(ms1=None, g1=None)
+    elif ses is not None:             # the MS1 worker computes while the bar runs
         st = (ms1.begin_stock(spec, h, fam, ses, lambda: stocks.ms1_stream(spec)) if stock
               else ms1.begin(spec, h, fam, ses))
     if bar != 'none':
@@ -206,22 +240,30 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
         os.makedirs(os.path.join(ledger.HOME, 'out'), exist_ok=True)
         with open(os.path.join(ledger.HOME, 'out', f'{h}_{bar}.json'), 'w') as fh:
             json.dump(detail, fh, ensure_ascii=False, indent=1, default=str)
-    return _line(head, devs, bars, stds, f'{time.time() - t0:.0f}s'), rec
+    return _line(head, devs, bars, stds, f'{time.time() - t0:.0f}s', head_short), rec
 
 
-def collect(args):
+def collect(args, empty=None):
     """Files and directories -> spec file list (a directory gives its *.yaml / *.yml / *.json, sorted, not
-    recursive)."""
+    recursive). Directories that give no spec are appended to `empty` (a list) when given."""
     out = []
     for a in args:
         if os.path.isdir(a):
-            out += sorted(f for e in ('*.yaml', '*.yml', '*.json') for f in glob.glob(os.path.join(a, e)))
+            got = sorted(f for e in ('*.yaml', '*.yml', '*.json') for f in glob.glob(os.path.join(a, e)))
+            out += got
+            if not got and empty is not None:
+                empty.append(a)
         else:
             out.append(a)
     return out
 
 
 def _verdict_short(rec):
+    cz = '' if rec.get('causal', True) else ' 인과성위반'
+    return _verdict_core(rec) + cz
+
+
+def _verdict_core(rec):
     v = rec.get('verdict')
     if v is None:
         return '개발선별 ' + ('통과' if rec.get('dev_screen') else '탈락')
@@ -248,16 +290,17 @@ def summary(recs, bar):
     full: own_KRWX); when no bar ran, by the MS1 headline (specs without one after, by the dev 12y bootstrap
     multiple). Single-stock specs get their own block (conservative headline order). Errors are counted, not listed."""
     ok = [r for r in recs if 'error' not in r]
-    stk = sorted((r for r in ok if r.get('stock_cagr') is not None), key=lambda r: r['stock_cagr'], reverse=True)
+    stk = sorted((r for r in ok if r.get('stock_cagr') is not None),
+                 key=lambda r: (r.get('causal', True), not r.get('stock_empty'), r['stock_cagr']), reverse=True)
     ok = [r for r in ok if r.get('stock_cagr') is None]
     by_lg = any(r.get('lg') is not None for r in ok)
     by_ms1 = not by_lg and any(r.get('ms1') is not None for r in ok)    # no bar ran: the MS1 headline ranks first
-    if by_lg:
-        key = lambda r: (r.get('lg') is not None, r.get('lg') or 0.0)
+    if by_lg:                    # a spec that failed the dev causality test ranks last whatever its numbers
+        key = lambda r: (r.get('causal', True), r.get('lg') is not None, r.get('lg') or 0.0)
     elif by_ms1:
-        key = lambda r: (r.get('ms1') is not None, r.get('ms1') or 0.0, r.get('dev_y12') or 0.0)
+        key = lambda r: (r.get('causal', True), r.get('ms1') is not None, r.get('ms1') or 0.0, r.get('dev_y12') or 0.0)
     else:
-        key = lambda r: r.get('dev_y12') or 0.0
+        key = lambda r: (r.get('causal', True), r.get('dev_y12') or 0.0)
     rows = sorted(ok, key=key, reverse=True)[:10]
     what = ('lg 중앙값(10y b63 1000만' + (', own_KRWX' if bar == 'full' else '') + ')') if by_lg else \
         'MS1 경로(없으면 개발 12년 배수)' if by_ms1 else '개발 12년 배수'
@@ -277,14 +320,17 @@ def summary(recs, bar):
         lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} {lg} x{r.get('dev_y12') or 0:.1f}{_ms_col(r, std)} "
                           f"{_verdict_short(r)}", 140))
     if stk:                  # single-stock specs (universe: sp500): own block, ranked by the conservative headline
-        lines.append(f"-- 개별주 {min(len(stk), 5)}/{len(stk)}: 1986~2014 세후 보수 순"
+        lines.append(f"-- 개별주 {min(len(stk), 5)}/{len(stk)}: 86~14 세후 보수 순(늦게 시작하면 (시작~))"
                      + (' · MS1 = 수익 흐름 재표본 경로' if std else '') + ' (기준 판정 불가, 개발 요약만)')
         for i, r in enumerate(stk[:5], 1):
             nm = _cut(str(r['name']), 34)
-            lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} 세후보수 {r['stock_cagr']:.1%}"
+            since = f"({r['stock_start'][2:7]}~)" if r.get('stock_start') else ''
+            lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} 세후보수 {r['stock_cagr']:.1%}{since}"
+                              + (' 종목0' if r.get('stock_empty') else '')
                               + (f" MS1{_ms_col(r, True)}" if std else '')
-                              + f" Sharpe G1 {'통과' if r.get('dev_screen') else '미달'}", 140))
-    return _cut('\n'.join(lines), MAX_SUMMARY)
+                              + f" Sharpe G1 {'통과' if r.get('dev_screen') else '미달'}"
+                              + ('' if r.get('causal', True) else ' 인과성위반'), 140))
+    return _cut('\n'.join(lines), MAX_SUMMARY, lines=True)
 
 
 def _std_parts(std):
@@ -323,18 +369,24 @@ def main(argv=None):
     bar, workers, specs, early_stop, std = 'quick', 4, [], True, 'auto'
     it = iter(a[1:])
     for x in it:
-        if x == '--bar':
-            bar = next(it)
-        elif x.startswith('--bar='):
+        if x in ('--bar', '--workers', '--std'):
+            v = next(it, None)
+            if v is None or v.startswith('--'):
+                print(f'{x} needs a value (--bar none|quick|full, --workers N, --std auto|none|ms1|g1|ms1,g1)'); return 2
+            x = f'{x}={v}'
+        if x.startswith('--bar='):
             bar = x.split('=', 1)[1]
         elif x == '--all-versions':
             early_stop = False
-        elif x == '--workers':
-            workers = int(next(it))
-        elif x == '--std':
-            std = next(it)
+        elif x.startswith('--workers='):
+            v = x.split('=', 1)[1]
+            if not (v.isdigit() and int(v) >= 1):
+                print(f'--workers must be an integer >= 1, not {v!r}'); return 2
+            workers = int(v)
         elif x.startswith('--std='):
             std = x.split('=', 1)[1]
+        elif x.startswith('--'):
+            print(f'unknown option {x!r} (--bar, --std, --workers, --all-versions)'); return 2
         else:
             specs.append(x)
     if bar not in ('none', 'quick', 'full'):
@@ -342,7 +394,14 @@ def main(argv=None):
     parts = _std_parts(std)
     if parts is None:
         print(f'--std must be auto|none|ms1|g1|ms1,g1, not {std!r}'); return 2
-    rc, recs, files = 0, [], collect(specs)
+    empty = []
+    rc, recs, files = 0, [], collect(specs, empty)
+    for d in empty:
+        print(_cut(f'[{d}] 명세 없음 (폴더 안의 *.yaml/*.yml/*.json만 읽음, 하위 폴더는 안 읽음)'), flush=True); rc = 1
+    if not files:
+        if not empty:
+            print('명세 없음: lab run <명세.yaml 또는 폴더 ...> [--bar none|quick|full]')
+        return 2
     loaded = []
     for p in files:                       # load + expand first: start the MS1 worker early only if it has work
         try:
@@ -358,7 +417,7 @@ def main(argv=None):
             if err is not None:
                 e = err
                 print(_cut(f'[{os.path.basename(p)}] 오류: {type(e).__name__}: {e}'), flush=True); rc = 1
-                recs.append(dict(name=os.path.basename(p), error=f'{type(e).__name__}: {e}'))
+                recs.append(dict(name=os.path.basename(p), error=_cut(f'{type(e).__name__}: {e}', 2000)))
                 done += 1
                 continue
             for sp in members:
@@ -368,7 +427,7 @@ def main(argv=None):
                 except Exception as e:
                     nm = str(sp.get('name', os.path.basename(p)))
                     print(_cut(f'[{nm}] 오류: {type(e).__name__}: {e}'), flush=True); rc = 1
-                    recs.append(dict(name=nm, error=f'{type(e).__name__}: {e}'))
+                    recs.append(dict(name=nm, error=_cut(f'{type(e).__name__}: {e}', 2000)))
             done += 1
     finally:                 # the table and the batch JSON are written even if the batch is interrupted
         if ses is not None:

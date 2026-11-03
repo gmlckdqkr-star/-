@@ -1,6 +1,7 @@
 # 12-1 momentum top 20 (as stk_mom12_1_top20), invested only while the NDX closes above its 200-day average,
-# else T-bill cash (checked every close). _NDX starts 1985-10: before that the gate is off (cash), so the 1971~ row is
-# mostly cash and is marked (게이트 1985~).
+# else T-bill cash (checked every close). _NDX starts 1985-10 and its SMA200 exists from 1986-07-16: before that the
+# gate is off (cash), so the 1986 window starts there, marked (게이트 1986-07~), and the 1971~ row is mostly cash,
+# marked (게이트 1986~).
 name: stk_mom_trend_gate
 family: stk_mom
 known: 3

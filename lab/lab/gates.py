@@ -5,11 +5,14 @@ blackbox2 paths. The old ad-hoc holdout look (2015+ PASS/REJECT with a per-famil
 pass flag or look over dates after 2014-12-31 is computed here. The caller passes data cut at DEV_END.
 """
 import numpy as np, pandas as pd
-from . import dsl, engine
+from . import data, dsl, engine
 
 DEV_END = pd.Timestamp('2014-12-31')
-DEV_VERSION = 2          # bump when the dev summary changes for an unchanged spec hash (cli recomputes stale rows)
+assert data.SEAL == DEV_END                  # data.series() drops later rows with the same date
+DEV_VERSION = 3          # bump when the dev summary changes for an unchanged spec hash (cli recomputes stale rows)
                          # 2: periodic rebalance trades drift back on sampled rows; rp solver; invvol warm-up
+                         # 3: panel rows dated in the quoting session's calendar (KRW_X summer bars were one day
+                         #    early) and cut at 2014-12-31 before any derivation; signal warm-up date (sig_from)
 SCREEN_LABEL = '개발 선별 (기준 아님)'
 
 

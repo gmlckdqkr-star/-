@@ -48,7 +48,10 @@ except ImportError:  # JSON specs still work
 def load_spec(path):
     txt = open(path, encoding='utf-8').read()
     spec = json.loads(txt) if (path.endswith('.json') or yaml is None) else yaml.safe_load(txt)
-    if isinstance(spec, dict) and isinstance(spec.get('plugin'), str):
+    if not isinstance(spec, dict):
+        raise ValueError(f'a spec file must hold one mapping (name: .., family: .., rules: ..), not '
+                         f'{"an empty file" if spec is None else type(spec).__name__}')
+    if isinstance(spec.get('plugin'), str):
         f, _, fn = spec['plugin'].rpartition(':')
         if f and not os.path.isabs(f):          # plugin path is relative to the spec file
             spec['plugin'] = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(path)), f)) + ':' + fn
@@ -142,6 +145,10 @@ def check_spec(spec):
         raise ValueError('spec needs `rules: [..]` (or `plugin:`)')
     _cadence(spec.get('rebalance', 'daily'), 'rebalance')
     from . import data as _data
+    unk = sorted({str(x) for x in held_sleeves(spec) + [spec.get('baseline', 'QQQ')]} - set(_data.SLEEVES))
+    if unk:
+        raise ValueError(f'{unk} not a lab sleeve (ETF specs hold {", ".join(sorted(_data.SLEEVES))} or CASH; '
+                         'single stocks: `universe: sp500` + `stock:`)')
     kr = sorted(set(held_sleeves(spec) + [spec.get('baseline', 'QQQ')]) & set(_data.KR_SLEEVES))
     if kr and acct != 'kr_etf':
         raise ValueError(f'{kr} are KR-listed ETFs: set `account: kr_etf` (KR costs and tax)')
@@ -546,10 +553,18 @@ def _eval(expr, env, assets):
     for a in assets:
         scope.setdefault(a, a)
     unknown = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and n.id not in scope}
-    if unknown:  # bare panel keys (_IRX, KRW_X, ..) read like quoted names; anything else stays a NameError (typos)
+    if unknown:  # bare panel keys (_IRX, KRW_X, ..) read like quoted names; anything else is a typo -> readable error
         keys = set(data.keys())
         for u in unknown & keys:
             scope[u] = u
+        left = sorted(unknown - keys)
+        if left:
+            calls = {n.func.id for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+            fn = [u for u in left if u in calls]
+            if fn:
+                raise ValueError(f'unknown function {fn[0]!r} in {expr!r} (DSL functions: {", ".join(FUNCS)})')
+            raise ValueError(f'unknown name {left[0]!r} in {expr!r} (signal names, sleeves or panel keys such as '
+                             f'_NDX, _IRX, XLK)')
     return eval(compile(tree, '<spec>', 'eval'), {'__builtins__': {}}, scope)
 
 
@@ -570,6 +585,50 @@ def spec_exprs(spec):
     if isinstance(br, dict) and isinstance(br.get('floor_when'), dict) and 'when' in br['floor_when']:
         out.append(br['floor_when']['when'])
     return out
+
+
+_NO_WARM = {'month', 'weekday', 'macro', 'latch', 'since', 'hold_min'}    # defined from the first row on
+
+
+def valid_from(exprs, env, assets):
+    """Warm-up of a set of expressions: the latest first-valid date over every indicator call inside them (each call
+    evaluated on its own in env, e.g. sma(_NDX, 200) -> its 200th row; a comparison of NaN reads False, so before
+    this date a condition is just 'off', not informed). -> (Timestamp or None, [calls that are never valid]).
+    Calls that return 0 instead of NaN before their window fills (invvol, rp) are not seen."""
+    first, never = None, []
+    for e in exprs:
+        if not isinstance(e, str) or not _parses(e):
+            continue
+        for n in ast.walk(_parse(e)):
+            if not (isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id in FUNCS) \
+                    or n.func.id in _NO_WARM:
+                continue
+            try:
+                v = _eval(ast.unparse(n), env, assets)
+            except Exception:
+                continue
+            if not isinstance(v, pd.Series) or v.dtype == bool:
+                continue
+            fv = v.first_valid_index()
+            if fv is None:
+                never.append(ast.unparse(n))
+            elif first is None or fv > first:
+                first = fv
+    return first, never
+
+
+def spec_valid_from(spec, F, sleeves, R=None):
+    """valid_from over every expression of an ETF spec (signals, when, hold weights, rotate score / filter per
+    asset, floor_when, plugin inputs) on the dev frame, signals evaluated in order as compile_weights does."""
+    cols = sorted(set(held_sleeves(spec)) | {'CASH'})
+    env = dict(_mk(F, R))
+    assets = set(F.columns) | set(sleeves) | set(data.SLEEVES) | set(cols)
+    for name, expr in (spec.get('signals') or {}).items():
+        try:
+            env[name] = _eval(expr, env, assets)
+        except Exception:
+            return None, []
+    return valid_from(spec_exprs(spec), env, assets)
 
 
 def _parses(x):

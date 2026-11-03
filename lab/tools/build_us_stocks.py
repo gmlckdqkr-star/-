@@ -3,7 +3,11 @@
 Source: github.com/Johnbrick123/sp500-data release 'data' (no licence file;
 personal research only, never republish).  Run with a python that has
 pyarrow.  Nothing dated after 2014-12-31 is written; membership ends after
-2014 are cleared (set to 'open'), so the panel holds no post-2014 facts.
+2014 are cleared (set to 'open'), and a delisting suffix dated after 2014
+(the source writes AET-201811) is dropped from the ticker (AET; a bare
+symbol already taken gets AET_2, which encodes no date), so the panel holds
+no post-2014 dates.  Limit: symbols are the source's last-known ones (a
+rename after 2014 shows the new symbol); lab never selects by symbol.
 
 usage: python -I build_us_stocks.py <raw_dir> <out_dir>
 """
@@ -37,6 +41,28 @@ eg = eg[eg.removed <= SEAL]
 eg = eg[eg.next_trade <= SEAL]                  # a gap that closes after 2014 is not used
 
 tick = sorted(set(mi.ticker))                    # every name that was ever a member <=2014
+
+
+def neutral(names):
+    """Output symbol per source ticker: a delisting suffix after 2014 (-YYYYMM > 201412) is a post-2014 fact and is
+    dropped; a bare symbol that is already taken gets _2, _3 ... (no date)."""
+    out, used = {}, set(t for t in names if not (len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] > '201412'))
+    for t in names:
+        if t in used and t not in out.values():
+            out[t] = t
+    for t in names:
+        if t in out:
+            continue
+        b, k = t[:-7], 2
+        o = b
+        while o in used:
+            o = f'{b}_{k}'; k += 1
+        out[t] = o; used.add(o)
+    return out
+
+
+ren = neutral(tick)
+assert len(set(ren.values())) == len(tick)
 px = px[px.ticker.isin(tick)]
 dates = pd.DatetimeIndex(sorted(px.date.unique()))
 ti = {t: i for i, t in enumerate(tick)}
@@ -57,11 +83,11 @@ rr = dates.get_indexer(k.date); ok = rr >= 0
 stale[rr[ok], k.ticker[ok].map(ti).values] = True
 # exit gaps: prices missing between last_trade and next_trade while the
 # position cannot be sold; the builder keeps them NaN and records the gap.
-gaps = [dict(ticker=g.ticker, last_trade=str(g.last_trade.date()), next_trade=str(g.next_trade.date()),
+gaps = [dict(ticker=ren[g.ticker], last_trade=str(g.last_trade.date()), next_trade=str(g.next_trade.date()),
              change=float(g.change)) for g in eg.itertuples() if g.ticker in ti]
 d0 = np.int64(dates.values.astype('datetime64[D]').astype(np.int64))
 buf = io.BytesIO()
-np.savez(buf, dates=d0, tickers=np.array(tick), adj=adj, dvol=dv,
+np.savez(buf, dates=d0, tickers=np.array([ren[t] for t in tick]), adj=adj, dvol=dv,
          member=np.packbits(mem, axis=0), stale=np.packbits(stale, axis=0),
          shape=np.array([T, N]))
 p = os.path.join(out, 'sp500_le2014.npz.xz')
@@ -71,7 +97,7 @@ meta = dict(
     source='https://github.com/Johnbrick123/sp500-data releases/download/data (repo HEAD 981c7d25, files Last-Modified 2026-11-03 04:10 GMT)',
     licence='none published; personal research only, do not republish',
     raw_sha256={f: sha(os.path.join(raw, f)) for f in sorted(os.listdir(raw)) if not f.endswith('.hdr')},
-    seal='2014-12-31 (no later rows; membership ends after 2014 cleared)',
+    seal='2014-12-31 (no later rows; membership ends after 2014 cleared; delisting suffixes after 2014 dropped)',
     survivorship='delisted and removed S&P 500 members included (point-in-time membership intervals)',
     label='ACTUAL (CRSP/Yahoo/Tiingo/WIKI splice by the source; 1996-2000 crsp-patch rows disputed ~0.9% of rows)',
     T=T, N=N, first=str(dates[0].date()), last=str(dates[-1].date()),
