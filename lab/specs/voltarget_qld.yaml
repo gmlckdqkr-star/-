@@ -1,0 +1,13 @@
+name: voltarget_qld
+family: vol_timing
+known: 2
+idea: 추세 위일 때 QLD를 변동성 25% 목표로 보유, 주간 조정, 비중 변화 10% 이상일 때만 매매
+rebalance: weekly
+band: 0.10
+signals:
+  up: price(QQQ) > sma(QQQ, 200) and ret(QQQ, 126) > 0
+  w: min(1, 0.25 / vol(QLD, 20) * 2)
+rules:
+  - when: up
+    hold: {QLD: w}
+  - else: {SHY: 1.0}

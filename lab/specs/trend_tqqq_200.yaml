@@ -1,0 +1,11 @@
+name: trend_tqqq_200
+family: price_trend
+known: 3
+idea: 나스닥100이 200일 평균 위면 TQQQ, 아니면 현금
+rebalance: daily
+signals:
+  up: price(TQQQ) > sma(TQQQ, 200)
+rules:
+  - when: up
+    hold: {TQQQ: 1.0}
+  - else: {CASH: 1.0}
