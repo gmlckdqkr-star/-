@@ -1,0 +1,14 @@
+# Low volatility: the 50 members with the lowest 1-year daily return stdev, inverse-vol weights, quarterly.
+# Textbook low-vol anomaly constants (252-day vol, 63-day vol for the weights), not searched.
+name: stk_lowvol_top50
+family: stk_lowvol
+known: 3
+idea: low-volatility anomaly among point-in-time S&P 500 members
+universe: sp500
+stock:
+  rebalance: quarter
+  score: "-vol(252)"
+  filter: "age() >= 252"
+  top: 50
+  weight: invvol(63)
+  max_weight: 0.05
