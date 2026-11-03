@@ -110,7 +110,7 @@ def check_spec(spec):
     c = spec.get('cost', MIN_COST)
     if isinstance(c, bool) or not isinstance(c, (int, float)) or not np.isfinite(c):
         raise ValueError(f'cost must be a finite number, not {c!r}')
-    account_of(spec)
+    acct, _ = account_of(spec)
     if spec.get('grid') is not None:
         raise ValueError('spec has a grid: expand it first (dsl.expand_grid; `lab run` does this)')
     if spec.get('plugin'):
@@ -124,6 +124,10 @@ def check_spec(spec):
     elif not isinstance(spec.get('rules'), list):
         raise ValueError('spec needs `rules: [..]` (or `plugin:`)')
     _cadence(spec.get('rebalance', 'daily'), 'rebalance')
+    from . import data as _data
+    kr = sorted(set(held_sleeves(spec) + [spec.get('baseline', 'QQQ')]) & set(_data.KR_SLEEVES))
+    if kr and acct != 'kr_etf':
+        raise ValueError(f'{kr} are KR-listed ETFs: set `account: kr_etf` (KR costs and tax)')
     if spec.get('brake') is not None:
         _brake_levels(spec['brake'])
     sig = spec.get('signals') or {}

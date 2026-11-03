@@ -8,12 +8,13 @@ Cash earns T-bill.
 import numpy as np, pandas as pd
 
 
-def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='yearly'):
+def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='yearly', tax_by_col=None):
     """rebal (lab addition, default None = the original rule): a boolean Series on W's index; on a flagged decision row the
     book is traded back to the target even if the target row did not change (periodic rebalancing of drifted weights).
     It is shifted by `delay` exactly like the weights.
     tax_mode (lab addition): 'yearly' = the original rule; 'per_sale' = `tax` withheld on each sold lot's positive gain
-    at the trade (no loss offset, no yearly netting), final liquidation taxed per position on positive gains only."""
+    at the trade (no loss offset, no yearly netting), final liquidation taxed per position on positive gains only.
+    tax_by_col (per_sale only): {column: rate} overrides `tax` for those columns (e.g. KR domestic-equity ETFs 0)."""
     assert tax_mode in ('yearly', 'per_sale')
     ps = tax_mode == 'per_sale'
     idx = R.index[(R.index >= start) & (R.index <= end)]
@@ -30,6 +31,8 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
     val = Wv[0] * 1.0
     basis = val.copy()
     cashi = cols.index('CASH')
+    trate = np.array([(tax_by_col or {}).get(c, tax) for c in cols], float)
+    assert tax_by_col is None or ps, 'tax_by_col needs tax_mode per_sale'
     eq = np.empty(n)
     realized = 0.0; yr = idx[0].year; turnover = 0.0; taxpaid = 0.0; trades = 0
     for i in range(n):
@@ -50,7 +53,7 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
                     continue
                 f = min(1.0, -d[j] / val[j]); g = f * (val[j] - basis[j]); basis[j] *= (1 - f)
                 if ps:
-                    tps = tax * max(0.0, g); c += tps; taxpaid += tps
+                    tps = trate[j] * max(0.0, g); c += tps; taxpaid += tps
                 else:
                     realized += g
             for j in np.where(d > 0)[0]:
@@ -60,7 +63,7 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
             val = tgt * (V - c) / V
         eq[i] = val.sum()
     if ps:
-        t = tax * sum(max(0.0, val[j] - basis[j]) for j in range(k) if j != cashi)
+        t = sum(trate[j] * max(0.0, val[j] - basis[j]) for j in range(k) if j != cashi)
     else:
         unreal = sum(val[j] - basis[j] for j in range(k) if j != cashi)
         t = tax * max(0.0, realized + unreal)

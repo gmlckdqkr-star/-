@@ -1,0 +1,13 @@
+# 국내 KODEX 레버리지(122630) 추세 예시: KOSPI200(KR200) 200일선 위면 KRLEV 0.88, 아래면 현금. 비교 기준은 KR200 보유.
+# account: kr_etf 필수. 국내주식형 ETF는 매매차익 비과세로 계산(lab 가정), 편도 13bp. 개발 요약만(판정 불가).
+name: kr_lev_trend
+family: kr_etf_examples
+known: 3
+account: kr_etf
+baseline: KR200
+signals:
+  up: price(KR200) > sma(KR200, 200)
+rules:
+  - when: up
+    hold: {KRLEV: 0.88}
+  - else: {CASH: 1.0}

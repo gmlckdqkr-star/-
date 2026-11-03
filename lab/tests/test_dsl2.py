@@ -722,6 +722,24 @@ def test_kr_account():
     W = dsl.compile_weights(sp, F, ['QLD', 'QQQ'], R2)
     if True:
         sk = gates.evaluate(W, R2, sp); su = gates.evaluate(W, R2, us)
+        kr = {'name': 'kr2', 'account': 'kr_etf', 'baseline': 'KR200', 'signals': {'up': 'price(KR200) > sma(KR200, 200)'},
+              'rules': [{'when': 'up', 'hold': {'KRLEV': 0.88}}, {'else': {'CASH': 1.0}}]}
+        check('KR domestic ETF in a us account is refused', raises(lambda: dsl.check_spec(dict(kr, account='us'))))
+        check('KR domestic ETF spec: bar answers 판정 불가', bb.judge(kr, 'quick')['verdict'].startswith('판정 불가'))
+        F3, R3, _, _ = data.build(['KR200', 'KRLEV'])
+        R3 = R3[R3.index <= gates.DEV_END]
+        ok = True
+        for n in ('KR200', 'KRLEV', 'KRINV', 'KRSEMI'):
+            _, Rn, _, _ = data.build([n]); Rn = Rn[Rn.index <= gates.DEV_END]; r = Rn[n]
+            fv = r.first_valid_index(); ok &= fv is not None and not r[r.index >= fv].isna().any()
+            raw = data.kr_clean(data.series(data.KR_SLEEVES[n])); lv = (1 + r.fillna(0)).cumprod()
+            c = raw.index.intersection(lv.index); c = c[(c > fv) & (c <= gates.DEV_END)]
+            q = lv[c] / raw[c]; ok &= float(q.max() / q.min() - 1) < 1e-9
+        check('KR sleeves: no missing returns after start, traded level = raw KR close on shared dates (<= 2014)', bool(ok))
+        Wk = pd.DataFrame({'KR200': 1.0, 'CASH': 0.0}, index=R3.index)
+        fv = R3['KR200'].first_valid_index()
+        e = engine.run(Wk, R3, fv, gates.DEV_END, cost=0.0013, tax=0.154, tax_mode='per_sale', tax_by_col=dict(data.KR_TAX))
+        check('KR domestic-equity ETF: gains not taxed (final = equity)', abs(e['final_at'] - e['E'].iloc[-1]) < 1e-12 and e['taxpaid'] == 0)
         check('kr account dev summary runs, labelled, and dev end <= 2014', sk['account'] == 'kr_etf'
               and sk['dev_end'] <= '2014-12-31' and su['account'] == 'us')
 

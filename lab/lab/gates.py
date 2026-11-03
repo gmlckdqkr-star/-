@@ -38,6 +38,9 @@ def evaluate(W, R, spec, baseline='QQQ'):
     acct, A = dsl.account_of(spec)
     cost = max(A['min_cost'], float(spec.get('cost', A['min_cost']))); delay = int(spec.get('delay', dsl.MIN_DELAY))
     kw = dict(cost=cost, delay=delay, tax=A['tax'], tax_mode=A['tax_mode'])
+    if acct == 'kr_etf':
+        from . import data
+        kw['tax_by_col'] = dict(data.KR_TAX)
     start = pd.Timestamp(spec.get('dev_start', '1986-10-01'))
     Wb = pd.DataFrame({baseline: 1.0, 'CASH': 0.0}, index=R.index)
     # start only when every held sleeve and the baseline have return data (no silent zero returns)

@@ -22,7 +22,25 @@ SLEEVES = {
     'QQQ': ('QQQ', '_NDX', 1), 'SPY': ('SPY', 'SPY', 1), 'TLT': ('TLT', 'TLT', 1),
     'GLD': ('GLD', 'GLD', 1), 'IEF': ('IEF', 'IEF', 1), 'SHY': ('SHY', 'SHY', 1),
 }
+# KR-listed domestic-index ETFs (account: kr_etf only). Own price series, no synthetic history before listing; the
+# panel has a long gap in 069500 / 091160 (2007-01 .. 2009-04), so each starts after its last gap > KR_MAX_GAP days (a holiday is at most ~11).
+# Prices are put on the _NDX calendar by forward fill (a KR close on a US holiday is carried into the next US day's
+# return; nothing is lost). 229200.KS (KOSDAQ150) has no data <= 2014 and is left out.
+KR_SLEEVES = {'KR200': '069500.KS', 'KRLEV': '122630.KS', 'KRINV': '114800.KS', 'KRSEMI': '091160.KS'}
+KR_MAX_GAP = 20          # > the longest KR holiday (2017 Chuseok, 11 days)
+for _n, _k in KR_SLEEVES.items():
+    SLEEVES[_n] = (_k, _k, 1)
+# KR tax rule (assumption, lab interpretation): domestic-equity ETFs (KOSPI200 / its 2x and inverse, KR semis) =
+# 매매차익 비과세 -> 0; every other sleeve in a kr_etf account stands for a KR-listed overseas-index ETF -> 15.4% per sale.
+KR_TAX = {n: 0.0 for n in KR_SLEEVES}
 _cache = {}
+
+
+def kr_clean(s):
+    """Drop everything up to and including the last calendar gap > KR_MAX_GAP days (a gap return is not a return)."""
+    g = s.index.to_series().diff().dt.days
+    bad = g[g > KR_MAX_GAP]
+    return s[s.index >= bad.index[-1]] if len(bad) else s
 
 
 def _z():
@@ -55,9 +73,14 @@ def build(sleeves=None):
         return _cache[('build', key)]
     S = {n: SLEEVES[n] for n in (sleeves or SLEEVES)}
     need = sorted({v[0] for v in S.values()} | {v[1] for v in S.values()} | {'_NDX'})
-    F = pd.concat({k: series(k) for k in need}, axis=1)
+    kr = set(KR_SLEEVES.values())
+    F = pd.concat({k: (kr_clean(series(k)) if k in kr else series(k)) for k in need}, axis=1)
     F = F[F.index >= F['_NDX'].first_valid_index()]
     F = F[F['_NDX'].notna()]
+    for k in kr & set(F.columns):            # KR prices on the US calendar: carry the last KR close (after its start)
+        fv = F[k].first_valid_index()
+        if fv is not None:
+            F.loc[F.index >= fv, k] = F.loc[F.index >= fv, k].ffill()
     rf = rf_daily(F.index)
     R, SRC = {}, {}
     for n, (etf, u, L) in S.items():
@@ -83,7 +106,10 @@ def price_for_signal(F, name):
     the research engines); any other panel key (e.g. _NDX, XLK, KRW_X) is used as is."""
     if name in SLEEVES:
         u = SLEEVES[name][1]
-        return F[u] if u in F.columns else series(u).reindex(F.index).ffill()
+        if u in F.columns:
+            return F[u]
+        su = kr_clean(series(u)) if u in KR_SLEEVES.values() else series(u)
+        return su.reindex(F.index).ffill()
     if name in F.columns:
         return F[name]
     s = series(name)

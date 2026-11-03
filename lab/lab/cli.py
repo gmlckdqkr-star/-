@@ -30,7 +30,7 @@ def _cut(s, n=MAX_LINE):
 
 def _dev_part(s):
     d, b = s['dev'], s['boot']
-    acct = '' if s.get('account', 'us') == 'us' else f"[{s['account']} 13bp·건별15.4%] "
+    acct = '' if s.get('account', 'us') == 'us' else f"[{s['account']} 13bp·해외지수 건별15.4%·국내주식형 0] "
     return (acct + f"개발({s['dev_start'][:4]}~2014) 세후 {d['cagr_at']:.1%} 낙폭 {d['mdd']:.0%} "
             f"({s['baseline']} {d['base_cagr_at']:.1%}/{d['base_mdd']:.0%}) 12년x{b['s_med_y12']:.1f}"
             f"({s['baseline']} x{b['b_med_y12']:.1f}) P80 {b['s_p_dd80']:.1%} "
