@@ -1,6 +1,7 @@
-# 12-1 momentum (12-month return skipping the last month), top 20 S&P 500 members, equal weight, monthly.
-# Textbook constants (Jegadeesh-Titman 12-1), not searched. No dvol filter: dollar volume is mostly missing before
-# 1996, so a dvol condition would leave the book empty (cash) before then; every member is large and liquid anyway.
+# 12-1 momentum (return from 12 months ago to 1 month ago: ret(231, 21) = P[t-21] / P[t-252] - 1, 252 rows; lab
+# caps windows at 260 rows), top 20 S&P 500 members, equal weight, monthly. Textbook constants (Jegadeesh-Titman
+# 12-1), not searched. No dvol filter: dvol is refused (its 1996-2006 presence encodes later delisting); every member
+# is large and liquid anyway.
 name: stk_mom12_1_top20
 family: stk_mom
 known: 3
@@ -8,7 +9,7 @@ idea: cross-sectional 12-1 momentum among point-in-time S&P 500 members
 universe: sp500
 stock:
   rebalance: month
-  score: "ret(252, 21)"
+  score: "ret(231, 21)"
   top: 20
   weight: equal
   max_weight: 0.10

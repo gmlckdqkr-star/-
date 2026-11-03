@@ -1,5 +1,6 @@
 # Price-only "quality" proxy (no fundamentals in the panel): steady winners = rank of the 12-1 return plus rank of
-# low 1-year volatility plus rank of closeness to the 1-year high, among seasoned members (>= 3 years of prices).
+# low 1-year volatility plus rank of closeness to the 1-year high, among seasoned members (>= 3 years since the first
+# index membership: age() counts from membership, not from the first price).
 # Equal-weight top 30, monthly. Equal rank weights, not searched.
 name: stk_quality_proxy
 family: stk_quality
@@ -8,7 +9,7 @@ idea: price-only quality proxy (trend + low vol + near high), equal-weight top 3
 universe: sp500
 stock:
   rebalance: month
-  score: "rank(ret(252, 21)) + rank(-vol(252)) + rank(high_dist(252))"
+  score: "rank(ret(231, 21)) + rank(-vol(252)) + rank(high_dist(252))"
   filter: "age() >= 756"
   top: 30
   weight: equal

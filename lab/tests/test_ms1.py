@@ -270,7 +270,7 @@ def test_stocks(W):
     tg = stocks.compile_targets(sp, P)
     o = stocks.fast_run(P, tg, stocks.H_CONS, pd.Timestamp(st['start']), 0.003, 0.0, 2, want_E=True)
     gr = float(np.prod(1 + np.asarray(st['ret'])))
-    check('stream = the CONSERVATIVE (h=0.30) book after cost, before tax (compounds to its pre-tax equity)',
+    check('stream = the CONSERVATIVE (classified delisting rule) book after cost, before tax (compounds to its pre-tax equity)',
           abs(gr - o['E'][0][-1] / o['E'][0][0]) < 1e-9 and abs(o['cagr_pre'][0] - stocks.run1(
               P, tg, stocks.H_CONS, pd.Timestamp(st['start']), 0.003, 0.0, 2)['cagr_pre']) < 1e-12, f'x{gr:.2f}')
     sg = stocks.ms1_stream(dict(STK_GATE), P)

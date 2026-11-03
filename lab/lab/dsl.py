@@ -95,7 +95,8 @@ def is_universe(spec):
     return isinstance(spec, dict) and spec.get('universe') is not None
 
 
-MIN_DELAY = 2          # engine delay 2 = decide at close t, trade at close t+1 (delay < 2 would fill at or before the decision close)
+MIN_DELAY = 2          # engine delay 2 = decide at close t, trade at close t+2, earn from day t+3's return (engine.py
+                       # loop); delay 1 would trade at the next close t+1, delay 0 at the decision close (look-ahead)
 MIN_COST = 0.003       # 0.25% fee + 0.05% spread; a spec may only raise it
 # account: which broker/tax the dev engine models. 'us' = Kiwoom US-listed ETFs (0.30%/side, 22% yearly net CGT).
 # 'kr_etf' = KR-listed ETFs tracking overseas/leveraged indices: 13bp/side, 15.4% withheld on each sale's gain, no

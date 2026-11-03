@@ -4,19 +4,23 @@ Source: github.com/Johnbrick123/sp500-data release 'data' (no licence file;
 personal research only, never republish).  Run with a python that has
 pyarrow.  Nothing dated after 2014-12-31 is written; membership ends after
 2014 are cleared (set to 'open'), and a delisting suffix dated after 2014
-(the source writes AET-201811) is dropped from the ticker (AET; a bare
-symbol already taken gets AET_2, which encodes no date), so the panel holds
-no post-2014 dates.  Limit: symbols are the source's last-known ones (a
-rename after 2014 shows the new symbol); lab never selects by symbol.
+(the source writes AET-201811) is dropped from the ticker (AET), so the
+panel holds no post-2014 dates.  When names then share a bare symbol, the
+one with the earliest first membership start (a <= 2014 fact) keeps it and
+the others get _2, _3 in that order: the suffix does not mark the name that
+was delisted after 2014.  Limit: symbols are the source's last-known ones
+(a rename after 2014 shows the new symbol); lab never selects by symbol.
 
-usage: python -I build_us_stocks.py <raw_dir> <out_dir>
+usage: python -I build_us_stocks.py <raw_dir> <out_dir> [tag]
+  writes <out_dir>/sp500_le2014[_tag].npz.xz and META[_tag].json (lab: v2 = tag v2)
 """
-import sys, os, json, hashlib, lzma, io
+import sys, os, re, json, hashlib, lzma, io
 import numpy as np, pandas as pd
 import pyarrow.parquet as pq
 
 SEAL = pd.Timestamp('2014-12-31')
 raw, out = sys.argv[1], sys.argv[2]
+tag = f'_{sys.argv[3]}' if len(sys.argv) > 3 else ''
 os.makedirs(out, exist_ok=True)
 
 def sha(p):
@@ -43,26 +47,30 @@ eg = eg[eg.next_trade <= SEAL]                  # a gap that closes after 2014 i
 tick = sorted(set(mi.ticker))                    # every name that was ever a member <=2014
 
 
-def neutral(names):
+def neutral(names, first_member):
     """Output symbol per source ticker: a delisting suffix after 2014 (-YYYYMM > 201412) is a post-2014 fact and is
-    dropped; a bare symbol that is already taken gets _2, _3 ... (no date)."""
-    out, used = {}, set(t for t in names if not (len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] > '201412'))
+    dropped. Names that then share one bare symbol are ordered by first membership start (<= 2014): the first keeps
+    the bare symbol, the others get _2, _3 ... (the order encodes nothing after 2014; ties are refused)."""
+    post = lambda t: len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] > '201412'
+    groups = {}
     for t in names:
-        if t in used and t not in out.values():
-            out[t] = t
-    for t in names:
-        if t in out:
-            continue
-        b, k = t[:-7], 2
-        o = b
-        while o in used:
-            o = f'{b}_{k}'; k += 1
-        out[t] = o; used.add(o)
+        groups.setdefault(t[:-7] if post(t) else t, []).append(t)
+    out, used = {}, set(groups)
+    for b, ts in groups.items():
+        ts = sorted(ts, key=lambda t: first_member[t])
+        assert len({first_member[t] for t in ts}) == len(ts), f'tie in first membership for {ts}'
+        out[ts[0]] = b
+        for t in ts[1:]:
+            k = 2
+            while f'{b}_{k}' in used:
+                k += 1
+            out[t] = f'{b}_{k}'; used.add(out[t])
     return out
 
 
-ren = neutral(tick)
+ren = neutral(tick, mi.groupby('ticker').start.min().to_dict())
 assert len(set(ren.values())) == len(tick)
+assert not [o for o in ren.values() if any(int(y) > 2014 for y in re.findall(r'(?:19|20)\d\d', o))]
 px = px[px.ticker.isin(tick)]
 dates = pd.DatetimeIndex(sorted(px.date.unique()))
 ti = {t: i for i, t in enumerate(tick)}
@@ -90,18 +98,19 @@ buf = io.BytesIO()
 np.savez(buf, dates=d0, tickers=np.array([ren[t] for t in tick]), adj=adj, dvol=dv,
          member=np.packbits(mem, axis=0), stale=np.packbits(stale, axis=0),
          shape=np.array([T, N]))
-p = os.path.join(out, 'sp500_le2014.npz.xz')
+p = os.path.join(out, f'sp500_le2014{tag}.npz.xz')
 with lzma.open(p, 'wb', preset=6) as f:
     f.write(buf.getvalue())
 meta = dict(
     source='https://github.com/Johnbrick123/sp500-data releases/download/data (repo HEAD 981c7d25, files Last-Modified 2026-11-03 04:10 GMT)',
     licence='none published; personal research only, do not republish',
     raw_sha256={f: sha(os.path.join(raw, f)) for f in sorted(os.listdir(raw)) if not f.endswith('.hdr')},
-    seal='2014-12-31 (no later rows; membership ends after 2014 cleared; delisting suffixes after 2014 dropped)',
+    seal='2014-12-31 (no later rows; membership ends after 2014 cleared; delisting suffixes after 2014 dropped, '
+         'shared bare symbols ordered by first membership start)',
     survivorship='delisted and removed S&P 500 members included (point-in-time membership intervals)',
     label='ACTUAL (CRSP/Yahoo/Tiingo/WIKI splice by the source; 1996-2000 crsp-patch rows disputed ~0.9% of rows)',
     T=T, N=N, first=str(dates[0].date()), last=str(dates[-1].date()),
     member_days=int(mem.sum()), member_days_with_price=int((mem & np.isfinite(adj)).sum()),
     exit_gaps=gaps, out_sha256=sha(p))
-json.dump(meta, open(os.path.join(out, 'META.json'), 'w'), indent=1)
+json.dump(meta, open(os.path.join(out, f'META{tag}.json'), 'w'), indent=1)
 print(json.dumps({k: v for k, v in meta.items() if k not in ('exit_gaps', 'raw_sha256')}, indent=1))

@@ -1,9 +1,9 @@
 """Tests for the single-stock universe (spec `universe: sp500`, lab/stocks.py). Run as a script, in its own process:
     LAB_HOME=<fresh dir> python3 -B tests/test_stocks.py
 Prints PASS/FAIL lines and identity / timing results only (no strategy performance numbers), ends with 'FAILS: ...'.
-Needs the sealed stock panel (LAB_STOCKS, default research/data/us_stocks/sp500_le2014.npz.xz) and the ETF panel.
+Needs the sealed stock panel (LAB_STOCKS, default research/data/us_stocks/sp500_le2014_v2.npz.xz) and the ETF panel.
 """
-import io, json, lzma, math, os, subprocess, sys, tempfile, textwrap, time
+import io, json, lzma, math, os, re, subprocess, sys, tempfile, textwrap, time
 LAB = __file__.rsplit('/tests/', 1)[0]
 sys.path.insert(0, LAB)
 import numpy as np, pandas as pd  # noqa: E402
@@ -58,13 +58,13 @@ def mk_targets(P, dec, picks, wts, e=None, els=None):
 
 
 SPECS = {   # every per-stock function, filter, weights, top_pct, cap, cadences
-    'mom': spec({'score': 'ret(252, 21)', 'top': 20}),
+    'mom': spec({'score': 'ret(231, 21)', 'top': 20}),
     'lowvol_iv': spec({'rebalance': 'quarter', 'score': '-vol(252)', 'filter': 'age() >= 252', 'top': 30,
                        'weight': 'invvol(63)', 'max_weight': 0.05}),
     'mix_pct': spec({'rebalance': 'week', 'score': 'rank(ret(126)) + csz(-beta(126)) + abs(min(sma_ratio(50), 1.2))',
-                     'filter': 'high_dist(252) > -0.3 and not (log(age() + 1) < 5) or dvol(63) > 1e9',
+                     'filter': 'high_dist(252) > -0.3 and not (log(age() + 1) < 5) or sma_ratio(20) > 1.3',
                      'top_pct': 0.05, 'weight': 'score', 'max_weight': 0.08}),
-    'gate': spec({'score': 'ret(252, 21)', 'top': 10, 'exposure': 'up', 'else': {'CASH': 1.0}},
+    'gate': spec({'score': 'ret(231, 21)', 'top': 10, 'exposure': 'up', 'else': {'CASH': 1.0}},
                  signals={'up': 'price(_NDX) > sma(_NDX, 200)'}),
     'gate_frac': spec({'score': 'max(ret(63), ret(21, 5))', 'top': 15, 'exposure': 'min(1, 0.2 / vol(_GSPC, 20))',
                        'exposure_every': 'rebalance', 'else': {'CASH': 1.0}}),
@@ -103,6 +103,35 @@ def test_errors():
     for k, s in SPECS.items():
         dsl.check_spec(s)
     check('(j) every test spec passes the checks', True)
+    # refused inputs (source-dependent leaks L1, L3, L4)
+    dv = 'dvol 사용 불가: 출처 의존 누출 — 1996~2006 거래대금 유무가 미래 상폐를 드러냄'
+    check('(L1) dvol refused with the one-line Korean reason in score, filter, exposure and signals; not a function',
+          raises(bad({'score': 'dvol(63)', 'top': 5}), ValueError, dv)
+          and raises(bad({'score': 'rank(dvol(10)) + ret(5)', 'top': 5}), ValueError, dv)
+          and raises(bad({'score': 'ret(20)', 'filter': 'dvol(20) > 1e7', 'top': 5}), ValueError, dv)
+          and raises(bad({'score': 'ret(20)', 'top': 5, 'exposure': 'dvol(_NDX, 20) > 1'}), ValueError, dv)
+          and raises(bad({'score': 'ret(20)', 'top': 5, 'exposure': 'up'}, signals={'up': 'dvol > 1'}), ValueError, dv)
+          and 'dvol' not in stocks.SFUNCS and '\n' not in stocks.MSG_DVOL)
+    check('(L4) price-level names refused (price, close, adj, sma, level), the reason names ratios',
+          all(raises(bad({'score': e, 'top': 5}), ValueError, '수정주가 수준') for e in
+              ('price()', 'close', 'adj(1)', 'sma(50)', 'level', 'log(price())', 'ret(20) / close')))
+    check('(L3) first-price age refused (age() is the membership age)',
+          all(raises(bad({'score': 'ret(20)', 'filter': e, 'top': 5}), ValueError, '첫 가격 날짜') for e in
+              ('first_price() > 100', 'listing_age() > 1')))
+    over = ('ret(261)', 'ret(240, 21)', 'ret(252, 21)', 'vol(261)', 'sma_ratio(261)', 'high_dist(261)', 'beta(261)',
+            'rank(ret(300))', 'csz(-vol(500))', 'ret(20) + high_dist(1000)')
+    w = '창 261행 > 260 사용 불가'
+    check('(L3) a window above 260 rows refused for every function (ret n+skip, vol, sma_ratio, high_dist, beta, '
+          'nested, filter, invvol weight) with the Korean reason',
+          all(raises(bad({'score': e, 'top': 5}), ValueError, '> 260 사용 불가') for e in over)
+          and raises(bad({'score': 'ret(261)', 'top': 5}), ValueError, w)
+          and raises(bad({'score': 'ret(20)', 'filter': 'high_dist(300) > -0.2', 'top': 5}), ValueError, '> 260 사용 불가')
+          and raises(bad({'score': 'ret(20)', 'top': 5, 'weight': 'invvol(261)'}), ValueError, w)
+          and raises(bad({'score': 'ret(240, 21)', 'top': 5}), ValueError, '창 261행'))
+    ok260 = ('ret(260)', 'ret(239, 21)', 'ret(1, 259)', 'vol(260)', 'sma_ratio(260)', 'high_dist(260)', 'beta(260)')
+    check('(L3) exactly 260 rows accepted (ret(239, 21), vol(260), ..., invvol(260))',
+          all(dsl.check_spec(spec({'score': e, 'top': 5})) for e in ok260)
+          and dsl.check_spec(spec({'score': 'ret(20)', 'top': 5, 'weight': 'invvol(260)'})))
 
 
 # ---------------------------------------------------------------- per-stock functions vs direct formulas
@@ -113,8 +142,10 @@ def test_functions(P):
     cx = stocks._Ctx(P, D)
     j = col(P, 'AAPL'); q = len(D) // 2; d = D[q]
     Pf, rr = P.P, P.rr
-    r1 = cx.value('ret(252, 21)')[q, j]
-    check('ret(252, 21) = P[t-21] / P[t-273] - 1', abs(r1 - (Pf[d - 21, j] / Pf[d - 273, j] - 1)) < 1e-12)
+    r1 = cx.value('ret(231, 21)')[q, j]
+    check('ret(231, 21) = P[t-21] / P[t-252] - 1 (12-1 momentum)', abs(r1 - (Pf[d - 21, j] / Pf[d - 252, j] - 1)) < 1e-12)
+    r2 = cx.value('ret(239, 21)')[q, j]
+    check('ret(239, 21) (260 rows, the cap) = P[t-21] / P[t-260] - 1', abs(r2 - (Pf[d - 21, j] / Pf[d - 260, j] - 1)) < 1e-12)
     v = cx.value('vol(63)')[q, j]
     check('vol(63) = stdev of the 63 daily returns ending t (ddof 1)', abs(v - np.std(rr[d - 62:d + 1, j], ddof=1)) < 1e-12)
     s = cx.value('sma_ratio(50)')[q, j]
@@ -125,12 +156,14 @@ def test_functions(P):
     b = cx.value('beta(126)')[q, j]
     x, y = rr[d - 125:d + 1, j], m[d - 125:d + 1]
     check('beta(126) = cov(r, m) / var(m) over 126 days', abs(b - np.cov(x, y)[0, 1] / np.var(y, ddof=1)) < 1e-9)
-    dv = cx.value('dvol(63)')[q, j]
-    w = P.dvol[d - 62:d + 1, j].astype(float)
-    check('dvol(63) = mean of the present dollar volumes', abs(dv - np.nanmean(w)) < 1e-6 * abs(dv) if np.isfinite(w).sum() >= 32
-          else not np.isfinite(dv))
-    ag = cx.value('age()')[q, j]
-    check('age() = trading days since the first price', ag == d - P.first[j])
+    ag = cx.value('age()')
+    fm = np.array([np.flatnonzero(P.member[:, k])[0] if P.member[:, k].any() else P.T for k in range(P.N)])
+    want = np.where(D[:, None] >= fm[None, :], (D[:, None] - fm[None, :]).astype(float), np.nan)
+    gap = np.flatnonzero((fm - P.first > 500) & (fm < P.T))          # names priced long before they joined
+    k = gap[0]; dk = np.flatnonzero(D >= fm[k])[0]
+    check('age() = trading days since the FIRST MEMBERSHIP start (NaN before it), not since the first price (L3)',
+          np.array_equal(ag, want, equal_nan=True) and ag[dk, k] == D[dk] - fm[k] and ag[dk, k] < D[dk] - P.first[k]
+          and np.isnan(ag[D < fm[k], k]).all() and len(gap) > 10, f'{len(gap)} names priced > 500 rows before joining')
     rk = cx.value('rank(ret(126))')
     e0 = P.member[D[q]] & P.real[D[q]]
     raw = cx.value('ret(126)')[q]
@@ -144,6 +177,60 @@ def test_functions(P):
     jj = col(P, 'GOOGL') if 'GOOGL' in P.tickers else col(P, 'AABA')
     dd = np.flatnonzero(D - 252 < P.first[jj])
     check('a window with no price at its start is NaN (history must exist)', len(dd) and np.isnan(early[dd, jj]).all())
+
+
+
+# ---------------------------------------------------------------- leaks L1-L3: inputs the decisions may not read
+def test_leaks(P):
+    print('== leaks: dvol / stale / exit-gap pauses not read by any decision; availability checks ==')
+    rng = np.random.default_rng(8)
+    dv = (rng.random(P.dvol.shape) * 1e9).astype(np.float32); dv[rng.random(dv.shape) < 0.5] = np.nan
+    st = rng.random(P.stale.shape) < 0.05
+    st[np.flatnonzero(P.member.any(1))[::7]] = True                  # and every name stale on many whole rows
+    Pd = stocks.Panel(P.idx, P.tickers, P.adj, dv, P.member, st, P.pause)                       # dvol, stale scrambled
+    Pz = stocks.Panel(P.idx, P.tickers, P.adj, P.dvol, P.member, P.stale, np.zeros_like(P.pause))  # no exit gaps
+    for k, s in SPECS.items():
+        F = stocks.gate_frame(s, P.idx) if s['stock'].get('exposure') else None
+        a = stocks.compile_targets(s, P, F)
+        same = lambda b: (np.array_equal(a.dec, b.dec) and np.array_equal(a.elig, b.elig) and np.array_equal(a.e, b.e)
+                          and all(np.array_equal(x, y) and np.array_equal(u, v)
+                                  for x, y, u, v in zip(a.picks, b.picks, a.wts, b.wts)))
+        check(f'(L) {k}: decisions identical with dvol + stale scrambled, and with every exit-gap pause removed',
+              same(stocks.compile_targets(s, Pd, F)) and same(stocks.compile_targets(s, Pz, F)))
+    e1, e2, e3 = stocks.ew_targets(P), stocks.ew_targets(Pd), stocks.ew_targets(Pz)
+    check('(L) equal-weight benchmark and the beta market do not read stale / pause / dvol',
+          all(np.array_equal(x, y) and np.array_equal(x, z) for x, y, z in zip(e1.picks, e2.picks, e3.picks))
+          and np.array_equal(P.mkt(), Pd.mkt()) and np.array_equal(P.mkt(), Pz.mkt()))
+    tg = stocks.compile_targets(SPECS['mom'], P); w = stocks.WINDOWS['w86']
+    a = stocks.fast_run(P, tg, stocks.H_CONS, w, COST, TAX, DELAY)
+    b = stocks.fast_run(Pd, stocks.compile_targets(SPECS['mom'], Pd), stocks.H_CONS, w, COST, TAX, DELAY)
+    check('(L2) a stale day is a normal day at the carried price: frozen / no_buy never read stale, results identical '
+          'with stale scrambled', np.array_equal(P.frozen, Pd.frozen) and np.array_equal(P.no_buy, Pd.no_buy)
+          and a['cagr_at'][0] == b['cagr_at'][0] and a['trades'][0] == b['trades'][0])
+    # availability: stale flags concentrate on names that end soon (why they are not read)
+    end2 = np.zeros(P.stale.shape, bool)
+    for j in np.flatnonzero(P.ended):
+        end2[max(0, P.last[j] - 504):P.last[j] + 1, j] = True
+    r1, r0 = P.stale[P.member & end2].mean(), P.stale[P.member & ~end2].mean()
+    check(f'(L2) availability: member-day stale rate {r1:.3%} for names ending within 2 years vs {r0:.3%} for the rest '
+          '(flag tied to the future, so unread)', r1 > 5 * r0)
+    # exit gaps: documented halts; they overlap membership, so only the execution side reads them
+    meta = json.load(open(stocks.meta_path()))
+    inside, pz = [], np.zeros_like(P.pause)
+    for g in meta['exit_gaps']:
+        j = col(P, g['ticker']); a_, b_ = row(P, g['last_trade']), row(P, g['next_trade'])
+        inside.append(int(P.member[a_ + 1:b_, j].sum())); pz[a_ + 1:b_, j] = True
+    other = P.frozen & ~P.pause
+    check(f'(L) exit-gap pauses = the META gaps only; member rows inside them {inside} (the gaps start before removal: '
+          'decisions do not read them, above); every other frozen day is a non-member day with no price',
+          np.array_equal(pz, P.pause) and not (other & P.member).any() and not (other & P.has).any() and sum(inside) > 0)
+    hit = 0
+    for k, s in SPECS.items():
+        F = stocks.gate_frame(s, P.idx) if s['stock'].get('exposure') else None
+        t2 = stocks.compile_targets(s, P, F)
+        hit += sum(int(P.pause[np.minimum(d + DELAY, P.T - 1), p].sum()) for d, p in zip(t2.dec, t2.picks))
+    print(f'   info: picks of the {len(SPECS)} test specs whose execution day falls inside an exit gap: {hit} '
+          '(bought only when it trades again)')
 
 
 # ---------------------------------------------------------------- (a) PIT
@@ -190,11 +277,11 @@ def test_membership(P):
         B = o['book'][:, :len(o['names'])] > 0
         starts = np.argwhere(B[1:] & ~B[:-1]) + [1, 0]
         rows_abs = starts[:, 0] + i0; names = o['names'][starts[:, 1]]
-        ok_mem = P.member[rows_abs - DELAY, names].all() and P.real[rows_abs - DELAY, names].all()
+        ok_mem = P.member[rows_abs - DELAY, names].all() and P.has[rows_abs - DELAY, names].all()
         first_mem = np.array([np.flatnonzero(P.member[:, j])[0] for j in names])
         ok_first = (rows_abs >= first_mem + DELAY).all()
         # a name bought while not yet a member would also show in the decisions: none outside membership
-        dec_ok = all(P.member[tg.dec[j], p].all() and P.real[tg.dec[j], p].all() for j, p in enumerate(tg.picks))
+        dec_ok = all(P.member[tg.dec[j], p].all() and P.has[tg.dec[j], p].all() for j, p in enumerate(tg.picks))
         check(f'(b) {k}: {len(starts)} holding spells start >= membership start + delay, bought on member rows',
               len(starts) > 50 and ok_mem and ok_first and dec_ok)
     # a name removed from the index is sold at the next decision: no pick outside membership
@@ -206,7 +293,7 @@ def test_membership(P):
 # ---------------------------------------------------------------- (c) exit gaps
 def test_exit_gap(P):
     print('== (c) exit gaps: the price is carried through the pause, the held name books the whole change ==')
-    meta = json.load(open(os.path.join(os.path.dirname(stocks.STOCKS), 'META.json')))
+    meta = json.load(open(stocks.meta_path()))
     R0 = P.R(0.0)
     ok = True
     for g in meta['exit_gaps']:
@@ -239,24 +326,10 @@ def test_exit_gap(P):
 
 
 # ---------------------------------------------------------------- (d) series end
-def test_series_end(P):
-    print('== (d) series end: the day after the last price returns -h exactly once, then 0 ==')
-    h = 0.3
-    R = P.R(h); R0 = P.R(0.0)
-    ended = np.flatnonzero((P.last >= 0) & (P.last < P.T - 1))
-    L = P.last[ended]
-    once = np.all(R[L + 1, ended] == -h)
-    after = all(np.all(R[l + 2:, j] == 0) for j, l in zip(ended, L))
-    inside = np.array_equal(np.delete(R, [], 0)[:, ended][np.arange(P.T)[:, None] <= L], R0[:, ended][np.arange(P.T)[:, None] <= L])
-    n_h = int(np.sum(R == -h))
-    check(f'(d) {len(ended)} ended series: one -h each on last+1, 0 after, unchanged before', once and after and inside
-          and n_h == len(ended))
-    check('(d) a series ending on the last panel row (2014-12-31) gets no haircut',
-          not np.any(R[:, P.last == P.T - 1] == -h))
-    # a held name through its end: the position drops by exactly (1 - h) once, is sold at the next decision
-    cand = [j for j in ended if P.idx[P.last[j]].year in (2005, 2006) and P.member[P.last[j], j]
-            and P.member[P.last[j] - 60, j] and P.real[P.last[j] - 60, j]]
-    j = cand[0]; l = P.last[j]; x = col(P, 'JNJ')
+def _held_through(P, j, h):
+    """Hold name j and JNJ half / half from 60 rows before j's last price, sell j at the first decision after it.
+    -> (value ratio of j's position the day after its last price, flat after and sold at the next decision)."""
+    l = P.last[j]; x = col(P, 'JNJ')
     d0 = l - 60
     nxt = np.flatnonzero(dsl.reb_rows(P.idx, 'monthly'))
     d1 = int(nxt[nxt > l + 1][0])
@@ -264,13 +337,120 @@ def test_series_end(P):
     st = P.idx[d0 - 20]
     f = stocks.fast_run(P, tg, h, st, COST, TAX, DELAY, keep_book=True)
     i0, _ = stocks._rows(P, st)
-    cj = list(f['cols']).index(j); v = f['book'][:, cj]
-    r1 = v[l + 1 - i0] / v[l - i0]
-    flat = np.allclose(v[l + 1 - i0:d1 + DELAY - i0], v[l + 1 - i0])
-    check(f'(d) held {P.label(j)}: value x{r1:.4f} (= 1 - h) the day after its last price, flat after, sold at the '
-          'next decision', abs(r1 - (1 - h)) < 1e-12 and flat and v[d1 + DELAY - i0] == 0)
+    v = f['book'][:, list(f['cols']).index(j)]
+    return v[l + 1 - i0] / v[l - i0], bool(np.allclose(v[l + 1 - i0:d1 + DELAY - i0], v[l + 1 - i0])
+                                           and v[d1 + DELAY - i0] == 0)
+
+
+def test_series_end(P):
+    print('== (d) series end: one delisting return the day after the last price, then 0 (classified headline: '
+          'fail-type -50%, merger-type 0; stress: every end -30%) ==')
+    R0 = P.R(0.0)
+    ended = np.flatnonzero(P.ended)
+    L = P.last[ended]
+    below = np.arange(P.T)[:, None] <= L
+    for nm, h in (('all-30', stocks.H_ALL), ('classified', stocks.H_CONS)):
+        R = P.R(h)
+        want = (np.where(P.fail[ended], -h[0], -h[1]) if isinstance(h, tuple) else np.full(len(ended), -h)) + 0.0
+        on = np.array_equal(R[L + 1, ended], want)
+        after = all(np.all(R[l + 2:, j] == 0) for j, l in zip(ended, L))
+        inside = np.array_equal(R[:, ended][below], R0[:, ended][below])
+        exact = {tuple(x) for x in np.argwhere(R != R0)} == {(l + 1, j) for j, l, w in zip(ended, L, want) if w != 0}
+        check(f'(d) {nm}: {len(ended)} ended series, one delisting return each on last+1 ({int((want != 0).sum())} '
+              'non-zero), 0 after, unchanged before, nothing else differs from h=0', on and after and inside and exact)
+    nf = int(P.fail.sum()); er = P.end_ret[ended]
+    check(f'(d) classification: {nf} fail-type (return over the 250 rows to the last price < -30%), '
+          f'{len(ended) - nf} merger-type; every ended series has >= 20 rows to classify',
+          np.isfinite(er).all() and np.array_equal(P.fail[ended], er < -0.30) and not P.fail[~P.ended].any()
+          and np.isnan(P.end_ret[~P.ended]).all())
+    j = ended[np.flatnonzero(P.fail[ended])[0]]; l = P.last[j]; w = min(250, l - P.first[j])
+    check('(d) end_ret = P[last] / P[last - min(250, last - first)] - 1 (prices <= the last price only)',
+          abs(P.end_ret[j] - (P.adj[l, j] / P.P[l - w, j] - 1)) < 1e-9)
+    check('(d) a series ending on the last panel row (2014-12-31) gets no delisting return',
+          all(np.array_equal(P.R(h)[:, P.last == P.T - 1], R0[:, P.last == P.T - 1]) for h in (stocks.H_ALL, stocks.H_CONS)))
+    # the classification is causal at the end: the panel cut right after a series end classifies it the same
+    rng = np.random.default_rng(4)
+    samp = list(rng.choice(ended[P.fail[ended]], 5, replace=False)) + list(rng.choice(ended[~P.fail[ended]], 5, replace=False))
+    ok = True
+    for j in samp:
+        Ps = P.subset([j, col(P, 'JNJ')]); c = int(P.last[j]) + 2
+        Pc = Ps.cut(c)
+        ok &= bool(Pc.ended[0] and Pc.fail[0] == P.fail[j] and Pc.end_ret[0] == P.end_ret[j]
+                   and Pc.R(stocks.H_CONS)[c - 1, 0] == P.R(stocks.H_CONS)[c - 1, j])
+    check('(d) causal: 10 ended series (5 fail, 5 merger) classified the same on the panel cut the day after their '
+          'last price', ok)
+    # held names through their end: the position changes by the delisting return exactly once, sold next decision
+    okj = lambda j: (P.idx[P.last[j]].year >= 1975 and P.member[P.last[j] - 60, j] and P.real[P.last[j] - 58, j]
+                     and P.has[P.last[j] - 60, j])
+    jf = [j for j in ended if P.fail[j] and okj(j)][0]
+    jm = [j for j in ended if not P.fail[j] and okj(j) and P.idx[P.last[j]].year in (2005, 2006)][0]
+    rf, sf = _held_through(P, jf, stocks.H_CONS)
+    rm, sm = _held_through(P, jm, stocks.H_CONS)
+    r30, s30 = _held_through(P, jm, stocks.H_ALL)
+    r0, s0 = _held_through(P, jf, 0.0)
+    check(f'(d) held fail-type {P.label(jf)}: x{rf:.4f} (= 0.5) the day after its last price (x{r0:.0f} at h=0); held '
+          f'merger-type {P.label(jm)}: x{rm:.4f} (= 1; all-30 stress x{r30:.2f}); flat after, sold at the next decision',
+          abs(rf - 0.5) < 1e-12 and abs(rm - 1.0) < 1e-12 and abs(r30 - 0.7) < 1e-12 and abs(r0 - 1.0) < 1e-12
+          and sf and sm and s30 and s0)
+    l = P.last[jf]
     check('(d) after the series end the name is not frozen (sellable) but cannot be bought',
-          not P.frozen[l + 1:, j].any() and P.no_buy[l + 1:, j].all())
+          not P.frozen[l + 1:, jf].any() and P.no_buy[l + 1:, jf].all())
+
+
+def test_classified_synthetic():
+    print('== (d) classified delisting rule on a constructed panel ==')
+    T = 700
+    idx = pd.bdate_range('1990-01-01', periods=T)
+    nm = ['FAIL', 'MERGE', 'SHORT', 'YOUNG', 'ALIVE', 'EDGE_IN', 'EDGE_OUT']
+    t = np.arange(T, dtype=float)
+    adj = np.full((T, len(nm)), np.nan)
+    adj[:401, 0] = 100 * np.where(t[:401] < 150, 1.0, 0.5 ** ((t[:401] - 150) / 250))   # -50% over its last 250 rows
+    adj[:401, 1] = 100 * (1 + 0.001 * t[:401])            # rising into its end (an acquisition)
+    adj[390:401, 2] = np.linspace(50, 20, 11)             # -60% but only 10 rows of prices: not classified -> 0
+    adj[300:451, 3] = np.linspace(80, 48, 151)            # 150 rows of prices, -40%: fail-type on the shorter window
+    adj[:, 4] = 10.0                                      # alive to the panel end: no delisting return
+    adj[:501, 5] = np.where(t[:501] <= 250, 100.0, 70.5)  # -29.5% over the window: merger-type
+    adj[:501, 6] = np.where(t[:501] <= 250, 100.0, 69.5)  # -30.5%: fail-type
+    adj = adj.astype(np.float32)
+    mem = np.ones((T, len(nm)), bool)
+    Q = stocks.Panel(idx, np.array(nm), adj, np.full(adj.shape, np.nan, np.float32), mem, np.zeros_like(mem))
+    want = np.array([True, False, False, True, False, False, True])
+    check('(d) synthetic: fail-type = return over 250 rows (or what exists, >= 20) to the last price < -30%',
+          np.array_equal(Q.fail, want) and np.isnan(Q.end_ret[2]) and abs(Q.end_ret[3] + 0.4) < 1e-6
+          and abs(Q.end_ret[0] + 0.5) < 1e-6, ' '.join(f'{a}:{b:.3f}' for a, b in zip(nm, Q.end_ret)))
+    lastrow = np.array([400, 400, 400, 450, -1, 500, 500])
+    ok = np.array_equal(Q.last, np.where(lastrow < 0, T - 1, lastrow))
+    for h, vals in ((stocks.H_CONS, [-0.5, 0, 0, -0.5, None, 0, -0.5]), (stocks.H_ALL, [-0.3] * 4 + [None, -0.3, -0.3]),
+                    (0.0, [0, 0, 0, 0, None, 0, 0])):
+        R = Q.R(h)
+        for k, v in enumerate(vals):
+            if v is None:
+                ok &= bool(np.all(R[1:, k] == 0))
+            else:
+                l = lastrow[k]
+                ok &= bool(R[l + 1, k] == v and np.all(R[l + 2:, k] == 0) and np.array_equal(R[:l + 1, k], Q.rr[:l + 1, k]))
+    check('(d) synthetic: R(classified) -50% on last+1 for fail-type, 0 for merger-type / unclassified; all-30 -30% '
+          'for every end; once each, 0 after, nothing before changes', ok)
+    adj2 = adj.copy(); adj2[401:, [4]] = 1e6                     # rewrite everything after FAIL's end
+    adj2[:150, 0] = 1.0                                           # and FAIL's prices before its 250-row window
+    Q2 = stocks.Panel(idx, np.array(nm), adj2, np.full(adj.shape, np.nan, np.float32), mem, np.zeros_like(mem))
+    Qc = Q.cut(402)
+    check('(d) synthetic: the class reads only the own prices of the name in the window up to its last price (cut after '
+          'the end and rewritten other rows give the same class and return)',
+          Q2.fail[0] and Q2.end_ret[0] == Q.end_ret[0] and np.array_equal(Qc.fail[:3], Q.fail[:3])
+          and np.array_equal(Qc.R(stocks.H_CONS)[401, :3], Q.R(stocks.H_CONS)[401, :3]))
+    tg = mk_targets(Q, [100], [[0, 1]], [[0.5, 0.5]])
+    st = idx[50]
+    i0, _ = stocks._rows(Q, st)
+    res = {}
+    for k, h in (('cls', stocks.H_CONS), ('all30', stocks.H_ALL)):
+        f = stocks.fast_run(Q, tg, h, st, COST, TAX, DELAY, keep_book=True)
+        e = stocks.run_engine(Q, tg, h, st, COST, TAX, DELAY)
+        v = f['book'][:, :2]
+        res[k] = (v[401 - i0] / v[400 - i0], abs(f['final_at'][0] - e['final_at']))
+    check('(d) synthetic book holding FAIL and MERGE through their end: classified x0.5 / x1.0, all-30 x0.7 / x0.7 '
+          '(fast path == engine.run)', np.allclose(res['cls'][0], [0.5, 1.0], rtol=0, atol=1e-12)
+          and np.allclose(res['all30'][0], [0.7, 0.7], rtol=0, atol=1e-12) and max(res['cls'][1], res['all30'][1]) < 1e-12)
 
 
 # ---------------------------------------------------------------- (e) costs and tax
@@ -308,36 +488,37 @@ def test_parity(P):
     Ps = P.subset(cols)
     st = pd.Timestamp('1986-01-02')
     worst = 0.0
-    for k, s in (('mom', spec({'score': 'ret(252, 21)', 'top': 5})),
+    for k, s in (('mom', spec({'score': 'ret(231, 21)', 'top': 5})),
                  ('week_iv', spec({'rebalance': 'week', 'score': '-vol(63)', 'top': 8, 'weight': 'invvol(63)'})),
                  ('gate', spec({'score': 'ret(126)', 'top': 6, 'exposure': 'up', 'else': {'QQQ': 0.5}},
                                signals={'up': 'price(_NDX) > sma(_NDX, 100)'})),
                  ('frac', spec({'score': 'ret(63)', 'top_pct': 0.3, 'weight': 'score', 'max_weight': 0.15,
                                 'exposure': 'min(1, 0.15 / vol(_GSPC, 20))', 'else': {'CASH': 1.0}}))):
         tg = stocks.compile_targets(s, Ps)
-        for h in (0.0, 0.3):
+        for h in (0.0, stocks.H_ALL, stocks.H_CONS):
             for tax in (0.0, TAX):
                 f = stocks.fast_run(Ps, tg, h, st, COST, tax, DELAY, want_E=True)
                 e = stocks.run_engine(Ps, tg, h, st, COST, tax, DELAY)
                 worst = max(worst, _cmp(f, e))
     blocked = int(Ps.frozen[row(P, '1986-01-02'):].sum())
-    check(f'(f) 30-name subset, 4 specs x h x tax: fast path == engine.run (max abs diff {worst:.1e} < 1e-9)',
+    check(f'(f) 30-name subset, 4 specs x (base, all-30, classified) x tax: fast path == engine.run (max abs diff '
+          f'{worst:.1e} < 1e-9)',
           worst < 1e-9, f'{blocked} frozen name-days in the subset')
     # full universe, the strategy itself
     tg = stocks.compile_targets(SPECS['mom'], P)
-    t0 = time.time(); e = stocks.run_engine(P, tg, 0.3, stocks.WINDOWS['w86'], COST, TAX, DELAY); te = time.time() - t0
-    t0 = time.time(); f = stocks.fast_run(P, tg, 0.3, stocks.WINDOWS['w86'], COST, TAX, DELAY, want_E=True); tf = time.time() - t0
+    t0 = time.time(); e = stocks.run_engine(P, tg, stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY); te = time.time() - t0
+    t0 = time.time(); f = stocks.fast_run(P, tg, stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY, want_E=True); tf = time.time() - t0
     check(f'(f) full universe momentum: fast path == engine.run ({_cmp(f, e):.1e})', _cmp(f, e) < 1e-9,
           f'engine {te:.1f}s fast {tf:.2f}s')
     # null draws and the hazard draws vs engine.run, one book at a time
     st = stocks.WINDOWS['w86']
     nb = stocks.null_baskets(P, tg, st, DELAY, D=200)
-    fn = stocks.fast_run(P, tg, 0.3, st, COST, TAX, DELAY, baskets=nb, D=200, want_E=True)
+    fn = stocks.fast_run(P, tg, stocks.H_CONS, st, COST, TAX, DELAY, baskets=nb, D=200, want_E=True)
     dmax = 0.0
     for b in (0, 77, 199):
         tb = stocks.Targets(tg.dec, [c[b][c[b] >= 0] for c, _ in nb], [w[b][c[b] >= 0] for c, w in nb], tg.K, tg.elig,
                             tg.e, tg.els, tg.cap)
-        e = stocks.run_engine(P, tb, 0.3, st, COST, TAX, DELAY)
+        e = stocks.run_engine(P, tb, stocks.H_CONS, st, COST, TAX, DELAY)
         dmax = max(dmax, _cmp(fn, e, b))
     check(f'(f) null draws 0, 77, 199: fast (200 books at once) == engine.run ({dmax:.1e}; bar 0.05pp CAGR)', dmax < 1e-9)
     hz = stocks.hazard_hits(P, tg, st, D=3)
@@ -399,9 +580,9 @@ def test_seal(P):
                       big(Ps.pause, lambda s: rng.random(s) < 0.5))
     check('(h) a panel with post-2014 rows is cut at load (same rows, same arrays)',
           P2.T == Ps.T and P2.idx.max() <= stocks.DEV_END and np.array_equal(P2.adj, Ps.adj, equal_nan=True))
-    s = spec({'score': 'ret(252, 21)', 'top': 3})
-    a = stocks.fast_run(Ps, stocks.compile_targets(s, Ps), 0.3, stocks.WINDOWS['w86'], COST, TAX, DELAY)
-    b = stocks.fast_run(P2, stocks.compile_targets(s, P2), 0.3, stocks.WINDOWS['w86'], COST, TAX, DELAY)
+    s = spec({'score': 'ret(231, 21)', 'top': 3})
+    a = stocks.fast_run(Ps, stocks.compile_targets(s, Ps), stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY)
+    b = stocks.fast_run(P2, stocks.compile_targets(s, P2), stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY)
     check('(h) results identical with or without the post-2014 rows', a['cagr_at'][0] == b['cagr_at'][0])
     # the file loader too
     buf = io.BytesIO()
@@ -443,7 +624,7 @@ def test_cli(P):
         universe: sp500
         grid: {K: [10, 20]}
         stock:
-          score: "ret(252, 21)"
+          score: "ret(231, 21)"
           top: "{K}"
         """)
     write('grid/z_etf.yaml', """
@@ -471,6 +652,13 @@ def test_cli(P):
     sd = [x for x in det if x['spec'].get('universe')]
     check('(k) two distinct hashes, detail JSON in LAB_HOME/out with the stock summary',
           len(sd) == 2 and sd[0]['hash'] != sd[1]['hash'] and all(x['dev_summary']['kind'] == 'stock' for x in sd))
+    num = lambda x, pat: (lambda m: m and next(g for g in m.groups() if g is not None))(re.search(pat, x))
+    got = sorted((num(x, r'세후 ?보수 (-?\d+\.\d)%'), num(x, r'일괄-30% (-?\d+\.\d)%|일괄30 (-?\d+\.\d)')) for x in one)
+    js = sorted((f"{100 * x['dev_summary']['windows']['w86']['cons']['cagr_at']:.1f}",
+                 f"{100 * x['dev_summary']['windows']['w86']['all30']['cagr_at']:.1f}") for x in sd)
+    check("(k) the line's headline (세후 보수) = the classified row in the detail JSON, 일괄-30% = its all-30 row",
+          got == js and all(x['dev_summary']['h_cons']['rule'] == 'classified' and x['dev_summary']['h_cons']['fail'] == -0.5
+                            and x['dev_summary']['h_cons']['merger'] == 0 for x in sd), f'{got} vs {js}')
     p2 = run(os.path.join(d, 'g.yaml'), '--bar', 'none')
     one2 = [x for x in p2.stdout.splitlines() if x.startswith('[')]
     check('(k) rerun: same hashes -> (중복), family N stays 2', len(one2) == 2 and all('(중복)' in x and 'N=2' in x
@@ -486,7 +674,7 @@ def test_cli(P):
         family: stk_grid2
         universe: sp500
         stock:
-          score: "ret(252, 21)"
+          score: "ret(231, 21)"
           top: 20
         """)
     p3 = run(os.path.join(TMP, 'long', 'l.yaml'), '--bar', 'quick')
@@ -502,8 +690,9 @@ def test_report(P):
     s = stocks.evaluate(SPECS['gate'], P)
     dt = time.time() - t0
     a = s['windows']['w86']
-    keys = ('cons', 'base', 'extreme', 'ew_cons', 'ew_base', 'ndx', 'sharpe', 'g1_pass', 'null')
-    check('report: every row present (cons, base, extreme, ew, ndx, sharpe, null), w71 too',
+    keys = ('cons', 'base', 'all30', 'extreme', 'ew_cons', 'ew_base', 'ndx', 'sharpe', 'g1_pass', 'null', 'held_ends')
+    check('report: every row present (cons = classified, base, all30, extreme, ew, ndx, sharpe, null, held ends), '
+          'w71 too',
           all(k in a for k in keys) and 'cons' in s['windows']['w71'] and len(a['null']['cagrs']) == 200
           and len(a['extreme']['draws']) == 20, f'{dt:.1f}s for one spec (panel loaded)')
     check('report: one spec <= 60 s after the panel load', dt <= 60)
@@ -511,7 +700,7 @@ def test_report(P):
     check('report: post-2014 delisting suffixes are masked in names', all(not (n.rsplit('-', 1)[-1].isdigit()
           and n.rsplit('-', 1)[-1] > '201412') for n in s['last_decision']['names']))
     line = stocks.dev_part(s)
-    check('report: dev line has the headline parts', all(x in line for x in ('세후 보수', '기본', '극단', '동일가중',
+    check('report: dev line has the headline parts', all(x in line for x in ('세후 보수', '기본', '일괄-30%', '극단', '동일가중',
                                                                           'NDX보유', '무작위 바구니', 'Sharpe', 'G1 1.1'))
           and len(line.encode()) < 360, f'{len(line.encode())} bytes')
 
@@ -523,9 +712,26 @@ def test_review(P):
     # ticker labels: a post-2014 delisting suffix is dropped with no marker; one dated <= 2014 stays
     post = [j for j, t in enumerate(P.tickers) if len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] > '201412']
     pre = [j for j, t in enumerate(P.tickers) if len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] <= '201412']
-    check('labels: AET-201811 -> AET (no *), every post-2014 suffix dropped, <= 2014 suffixes kept',
-          P.label(col(P, 'AET-201811')) == 'AET' and all(P.label(j) == P.tickers[j][:-7] for j in post)
-          and all(P.label(j) == P.tickers[j] for j in pre) and len(post) > 0 and len(pre) > 0)
+    late = [t for t in P.tickers if any(int(y) > 2014 for y in re.findall(r'(?:19|20)\d\d', t))]
+    if 'AET-201811' in P.tickers:          # v1 panel (LAB_STOCKS override): the label drops the suffix
+        check('labels (v1 panel): AET-201811 -> AET (no *), every post-2014 suffix dropped, <= 2014 suffixes kept',
+              P.label(col(P, 'AET-201811')) == 'AET' and all(P.label(j) == P.tickers[j][:-7] for j in post)
+              and all(P.label(j) == P.tickers[j] for j in pre) and len(post) > 0 and len(pre) > 0)
+    else:
+        check('tickers (v2 panel): no ticker string holds a year after 2014 (AET-201811 is AET), labels = tickers, '
+              '<= 2014 suffixes kept', not late and not post and 'AET' in P.tickers and len(pre) > 0
+              and all(P.label(j) == P.tickers[j] for j in range(P.N)))
+    v1 = os.path.join(os.path.dirname(stocks.STOCKS), 'sp500_le2014.npz.xz')
+    if stocks.STOCKS.endswith('_v2.npz.xz') and os.path.isfile(v1):
+        P1 = stocks.load(v1)
+        same = (np.array_equal(P.idx, P1.idx) and np.array_equal(P.adj, P1.adj, equal_nan=True)
+                and np.array_equal(P.dvol, P1.dvol, equal_nan=True) and np.array_equal(P.member, P1.member)
+                and np.array_equal(P.stale, P1.stale) and np.array_equal(P.pause, P1.pause))
+        ch = [(x, y) for x, y in zip(P1.tickers, P.tickers) if x != y]
+        okt = all(y == x[:-7] or (re.fullmatch(r'.+_\d', y) and (y[:-2] == x or y[:-2] == x[:-7])) for x, y in ch)
+        check(f'panel v2 == v1 except {len(ch)} ticker strings (adj, dvol, member, stale, dates, exit gaps identical); '
+              'changed ones only lose a post-2014 suffix or take _2 by first membership start', same and okt and ch)
+        stocks._cache.pop(('panel', v1), None); del P1
     # gate warm-up: the 1986 window and the MS1 stream start at the first decision with sma(_NDX, 200) defined (+ delay)
     g = SPECS['gate']
     nd = data.series('_NDX').reindex(P.idx).ffill()
@@ -540,6 +746,15 @@ def test_review(P):
           and '(게이트86-07~)' in stocks.dev_part(s, compact=2), f"{s['gate_from']} -> {a['start']}")
     m = stocks.ms1_stream(g, P)
     check('gate warm-up: MS1 stream starts with the 1986 window (no forced-cash months in it)', m['start'] == a['start'])
+    sm = dsl.check_spec(dict(SPECS['mom']))
+    ms = stocks.ms1_stream(sm, P); tgm = stocks.compile_targets(sm, P); stm = pd.Timestamp(ms['start'])
+    gr = float(np.prod(1 + np.asarray(ms['ret'])))
+    eq = {k: stocks.fast_run(P, tgm, h, stm, COST, 0.0, DELAY, want_E=True)['E'][0] for k, h in
+          (('cls', stocks.H_CONS), ('all30', stocks.H_ALL))}
+    ends = stocks.run1(P, tgm, stocks.H_CONS, stm, COST, 0.0, DELAY, ends=True)['ends']
+    check(f"MS1 stream = the classified (headline) book after cost before tax, not the all-30 book (the book holds "
+          f"{ends['merger']} merger-type / {ends['fail']} fail-type ends)", abs(gr - eq['cls'][-1] / eq['cls'][0]) < 1e-9
+          and abs(gr - eq['all30'][-1] / eq['all30'][0]) > 1e-6 and '상폐 분류' in ms['label'] and ends['merger'] > 0)
     gr = dict(g, stock=dict(g['stock'], exposure_every='rebalance'))
     r, _ = stocks.gate_valid(gr, P, stocks.gate_frame(gr, P.idx))
     rows = np.flatnonzero(dsl.reb_rows(P.idx, 'monthly'))
@@ -581,6 +796,8 @@ if __name__ == '__main__':
     test_membership(P)
     test_exit_gap(P)
     test_series_end(P)
+    test_classified_synthetic()
+    test_leaks(P)
     test_cost_tax(P)
     test_parity(P)
     test_null(P)

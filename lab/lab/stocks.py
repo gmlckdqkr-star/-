@@ -2,11 +2,27 @@
 members, delisted names included, after costs and Korean overseas-stock tax, with delisting stress rows and a random
 basket null.
 
-Panel: research/data/us_stocks/sp500_le2014.npz.xz (env LAB_STOCKS), sealed <= 2014-12-31. Source
-github.com/Johnbrick123/sp500-data (no licence published: personal research only, never republish the data).
-1503 names = every name that was an S&P 500 member at some point 1968..2014, with point-in-time membership
-(start inclusive, end exclusive), split + dividend adjusted closes, dollar volume (mostly missing before 1996) and
-no-trade days (`stale`, the source carried the prior close).
+Panel: research/data/us_stocks/sp500_le2014_v2.npz.xz (env LAB_STOCKS; its exit gaps in META_v2.json next to it),
+sealed <= 2014-12-31. Source github.com/Johnbrick123/sp500-data (no licence published: personal research only, never
+republish the data). 1503 names = every name that was an S&P 500 member at some point 1968..2014, with point-in-time
+membership (start inclusive, end exclusive), split + dividend adjusted closes, dollar volume (mostly missing before
+1996) and no-trade days (`stale`, the source carried the prior close). v2 = v1 with no post-2014 fact in a ticker
+string (tools/build_us_stocks.py); every array is identical.
+
+Source-dependent leaks (research/indiv_stock/is6 L1-L3, data NOTE_KO.md), closed here:
+  L1 dollar volume: 1996-2006 dvol is present 0-4% of days for members that end within 2 years vs 49-86% for the
+     rest (the dead-name source has no volume) -> dvol is refused in every expression and read by nothing.
+  L2 stale: ~49% of the no-trade flags sit within 20 days before a delisted name's last price (member-day rate 0.55%
+     for names ending within 2 years vs 0.02%) -> the flag is read by nothing; a stale day is a normal day at the
+     carried price.
+  L3 history length: pre-membership price history is shorter for later-delisted names (median 476 vs 1382 days) ->
+     age() counts days since the first MEMBERSHIP start (point in time), no function reads the first price date
+     except a window's "price at its start" check, and every window is capped at MAX_WIN = 260 rows (n, n + skip for
+     ret, n of invvol(n)); a >= 260-day history condition passes ~1.0 for both groups (IS6 check).
+  L4 price level: adjusted levels differ by source (retroactive adjustment) -> only ratios exist (ret, sma_ratio,
+     high_dist); price-level names are refused.
+  Exit gaps (META exit_gaps: documented halts around removal) overlap membership by 2..695 rows in all six gaps, so
+  the decision side (eligibility, rank universe, beta market) does not read them; they only freeze trading.
 
 Spec (YAML):
     name: stk_mom12_1_top20
@@ -14,7 +30,7 @@ Spec (YAML):
     universe: sp500
     stock:
       rebalance: month          # month | quarter | week: decide at the close of the period's first trading day
-      score: "ret(252, 21)"     # per-stock expression (higher = better)
+      score: "ret(231, 21)"     # per-stock expression (higher = better); 12-1 momentum = P[t-21] / P[t-252] - 1
       filter: "age() > 252"     # optional boolean per-stock expression
       top: 20                   # or top_pct: 0.1
       weight: equal             # equal | invvol(63) | score
@@ -24,31 +40,38 @@ Spec (YAML):
       exposure_every: daily     # daily (default) | rebalance (sample the exposure on decision rows only)
     signals: {up: "price(_NDX) > sma(_NDX, 200)"}   # optional, the ETF DSL on the ETF panel (cut at 2014-12-31)
 
-Per-stock functions (evaluated on decision rows only, every window ends at the decision close):
+Per-stock functions (evaluated on decision rows only, every window ends at the decision close, n (n + skip) <= 260):
   ret(n[, skip])  total return over n days ending `skip` days ago     vol(n)        daily return stdev (n returns)
   sma_ratio(n)    price / n-day mean price                            high_dist(n)  price / n-day max - 1
-  dvol(n)         mean dollar volume (>= half the window present)     age()         trading days since the first price
-  beta(n)         n-day beta vs the equal-weight member return       rank(x)       cross-sectional percentile 0..1
-  csz(x)          cross-sectional z-score                              abs min max log, + - * /, comparisons, and or not
-rank / csz rank among the names that are members with a real price on that row. Prices are the adjusted closes carried
+  age()           trading days since the first membership start      beta(n)       n-day beta vs the EW member return
+  rank(x)         cross-sectional percentile 0..1                      csz(x)        cross-sectional z-score
+  abs min max log, + - * /, comparisons, and or not. Refused: dvol (L1), price-level names (L4), first-price age (L3).
+rank / csz rank among the names that are members with a price on that row. Prices are the adjusted closes carried
 forward through days without a price (return 0), from each name's first price on; a window needs a price at its start.
+age() is censored at the first point-in-time membership day (1970-01-02: names already members then count from it).
 
-Eligibility at decision close t: member at t, a real (finite, not stale) price at t, filter true, score finite (and
-vol(n) finite > 0 for weight invvol(n)). A held name that leaves the index is sold at the next rebalance (target 0).
+Eligibility at decision close t: member at t, a price at t (stale flags and exit-gap pauses are not read), filter
+true, score finite (and vol(n) finite > 0 for weight invvol(n)). A held name that leaves the index is sold at the
+next rebalance (target 0).
 
 Returns: adjusted close to close, carried through a pause (an exit gap books its whole change on the next trade day).
-After a series' last price (before 2014-12-31) the next day returns -h (delisting haircut), then 0. Execution: lab's
-ETF engine (engine.run: delay 2, 0.30% per side, 22% yearly net realized gain tax, final liquidation taxed, cash earns
-the T-bill) with one addition for single stocks: on a day without a real price a name cannot be traded (frozen: a pause
-or no-trade day, the trade is retried when it trades again) and a name with no price cannot be bought.
+After a series' last price (before 2014-12-31) the next day returns the delisting return, then 0. Headline rule
+(CLASSIFIED, H_CONS): the return over the DL_WIN = 250 rows up to the last price (fewer when the series is shorter,
+>= DL_MIN = 20; prices <= the last price only) < -30% -> fail-type, delisting return -50% (between Shumway's NYSE
+-30% and Nasdaq -55%); else merger-type, 0 (an acquisition is paid at about the last price). Execution: lab's ETF
+engine (engine.run: delay 2 = decided at close t, traded at close t+2, earning from day t+3's return; 0.30% per side,
+22% yearly net realized gain tax, final liquidation taxed, cash earns the T-bill) with one addition for single stocks:
+inside a recorded exit gap or on a day without a price inside the series a name cannot be traded (frozen, the trade is
+retried when it trades again) and a name with no price cannot be bought.
 
-Rows: base h=0, CONSERVATIVE h=0.30 (the headline), EXTREME = base + a 6%/year -100% hazard on each held name
-(20 seeded draws, median; reference only). Benchmarks on the same engine / costs / tax: equal-weight members (monthly)
-and NDX 1x hold (QQQ sleeve of the ETF panel). Annualised after-cost pre-tax Sharpe over the T-bill (G1 non-timing
-test, pass >= 1.1). Random-basket null: 200 seeded baskets with the same rebalance dates, eligibility, name count and
-name retention (see null_baskets), equal weight, same exposure, engine, costs and tax.
-MS1 / G1 (lab/ms1.py, `--std auto`): ms1_stream = the CONSERVATIVE book's daily return after trading cost, before
-tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve starts later or
+Rows: base h=0, CONSERVATIVE = the classified rule (the headline), ALL30 = every series end -30% (stress; the headline
+up to STOCK_VERSION 2), EXTREME = base + a 6%/year -100% hazard on each held name (20 seeded draws, median; reference
+only). Benchmarks on the same engine / costs / tax: equal-weight members (monthly) and NDX 1x hold (QQQ sleeve of the
+ETF panel). Annualised after-cost pre-tax Sharpe over the T-bill (G1 non-timing test, pass >= 1.1). Random-basket
+null: 200 seeded baskets with the same rebalance dates, eligibility, name count and name retention (see null_baskets),
+equal weight, same exposure, engine, costs, tax and delisting rule.
+MS1 / G1 (lab/ms1.py, `--std auto`): ms1_stream = the CONSERVATIVE (classified) book's daily return after trading
+cost, before tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve starts later or
 the exposure gate is warmed up later: gate_valid), measured on the MS1 bases by ms1.measure_series (re-sampled stream,
 no path recomputation). The 1986 headline window also starts at the warmed-up gate (marked). G1 = the
 Sharpe line above; a spec with an exposure gate also gets gate.test on it (gate_spec: the gate as a QQQ / cash spec on
@@ -59,15 +82,21 @@ import ast, io, json, lzma, math, os, re, time
 import numpy as np, pandas as pd
 from . import data, dsl, engine, gates
 
-STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014.npz.xz')
+STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014_v2.npz.xz')
 DEV_END = gates.DEV_END
-STOCK_VERSION = 2           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+STOCK_VERSION = 3           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
                             # 2: the 1986 window and the MS1 stream start once the exposure gate is warmed up
                             #    (gate_from = first decision with every gate indicator defined); empty books say so;
                             #    tickers delisted after 2014 print bare
+                            # 3: leaks L1-L4 closed (no dvol / stale / pause on the decision side, membership age,
+                            #    windows <= 260 rows); classified delisting rule is the headline (+ ALL30 stress row)
 BAR_VERDICT = '판정 불가 (개별주)'
 WINDOWS = {'w86': pd.Timestamp('1986-01-02'), 'w71': pd.Timestamp('1971-01-04')}   # both end DEV_END
-H_CONS = 0.30               # conservative delisting haircut (headline)
+DL_WIN, DL_MIN, DL_FAIL = 250, 20, -0.30   # series-end class: return over DL_WIN rows (>= DL_MIN) to the last price
+H_FAIL = 0.50               # fail-type delisting return -50% (between Shumway's NYSE -30% and Nasdaq -55%)
+H_CONS = (H_FAIL, 0.0)      # headline rule (h_fail, h_merger): classified, fail-type -50%, merger-type 0
+H_ALL = 0.30                # stress row: every series end -30% (the headline rule up to STOCK_VERSION 2)
+MAX_WIN = 260               # longest per-stock window in rows (L3: longer history requirements tie to delisting)
 HAZARD, N_HAZ, HAZ_SEED = 0.06, 20, 2014
 N_NULL, NULL_SEED = 200, 1986
 G1_SHARPE = 1.1
@@ -96,9 +125,11 @@ def _sealed(idx):
 class Panel:
     """Point-in-time stock panel, rows <= DEV_END only (later rows are dropped before anything is derived).
     Derived arrays ([T, N], built lazily): P = adjusted close carried forward from each name's first price, rr = its
-    close-to-close return (0 before the first price and through gaps), real = finite price, not stale and not inside
-    a recorded exit gap (`pause`, from META.json: the days between last_trade and next_trade, where the source may
-    carry the old price without a no-trade flag), frozen = no real price inside the series, no_buy = no real price."""
+    close-to-close return (0 before the first price and through gaps), has = a finite price (the DECISION side:
+    eligibility, the rank universe, the beta market), real = has and not inside a recorded exit gap (`pause`, from
+    the panel's META: the days between last_trade and next_trade, where the source may carry the old price), the
+    EXECUTION side: frozen = no real price inside the series, no_buy = no real price. fm = first membership row
+    (age()). `dvol` and `stale` are kept as loaded and read by nothing (leaks L1 / L2, module docstring)."""
 
     def __init__(self, dates, tickers, adj, dvol, member, stale, pause=None):
         dates = pd.DatetimeIndex(dates)
@@ -117,11 +148,15 @@ class Panel:
         T, N = self.adj.shape
         assert self.member.shape == self.stale.shape == self.dvol.shape == (T, N) == (len(dates), len(self.tickers))
         fin = np.isfinite(self.adj) & (self.adj > 0)
-        self.has = fin
-        self.real = fin & ~self.stale & ~self.pause
+        self.has = fin                           # decision side: never reads stale (L2) or pause
+        self.real = fin & ~self.pause            # execution side: a name inside an exit gap cannot trade
         anyp = fin.any(0)
-        self.first = np.where(anyp, fin.argmax(0), T)
+        self.first = np.where(anyp, fin.argmax(0), T)     # read by: a window's "price at its start" check, the
+                                                          # series-end class (end_ret), frozen; never a signal (L3)
         self.last = np.where(anyp, T - 1 - fin[::-1].argmax(0), -1)
+        anym = self.member.any(0)
+        self.fm = np.where(anym, self.member.argmax(0), T)   # first membership row (point in time; age())
+        self.ended = (self.last >= 0) & (self.last < T - 1)  # the series ends before the panel's last row
         self.T, self.N = T, N
         self._m = {}
 
@@ -167,21 +202,49 @@ class Panel:
     def no_buy(self):
         return ~self.real
 
+    @property
+    def end_ret(self):
+        """[N] return over the DL_WIN rows up to each ended series' last price (fewer when the series is shorter, NaN
+        below DL_MIN rows or for a series that does not end). Reads the name's own prices first..last only, i.e. what
+        is known when the series ends (causal at the end)."""
+        def f():
+            out = np.full(self.N, np.nan)
+            j = np.flatnonzero(self.ended)
+            w = np.minimum(DL_WIN, self.last[j] - self.first[j])
+            ok = w >= DL_MIN
+            j, w = j[ok], w[ok]
+            L = self.last[j]
+            with np.errstate(invalid='ignore', divide='ignore'):
+                out[j] = self.adj[L, j].astype(np.float64) / self.P[L - w, j] - 1.0
+            return out
+        return self._get('end_ret', f)
+
+    @property
+    def fail(self):
+        """[N] fail-type series end: end_ret < DL_FAIL (-30%). Every other ended series is merger-type."""
+        return self._get('fail', lambda: self.ended & (np.nan_to_num(self.end_ret, nan=0.0) < DL_FAIL))
+
     def R(self, h):
-        """Engine returns: rr inside each series, -h on the day after a last price that is before the panel end
-        (delisting haircut), 0 after. Exactly one -h per ended series."""
+        """Engine returns: rr inside each series; on the day after a last price that is before the panel end (a series
+        end) the delisting return, then 0. h = a number: every end returns -h (0 = base, sold at the last price;
+        H_ALL = 0.30 = the all-ends stress); h = (h_fail, h_merger): fail-type ends (self.fail) return -h_fail, the
+        others -h_merger (H_CONS = the classified headline). Exactly one delisting return per ended series."""
+        cls = isinstance(h, (tuple, list))
+        hk = tuple(float(x) for x in h) if cls else float(h)
+
         def f():
             R = self.rr.copy()
-            j = np.flatnonzero((self.last >= 0) & (self.last < self.T - 1))
-            R[self.last[j] + 1, j] = -float(h)
+            j = np.flatnonzero(self.ended)
+            R[self.last[j] + 1, j] = (np.where(self.fail[j], -hk[0], -hk[1]) if cls else -hk) + 0.0
             return R
-        return self._get(('R', float(h)), f)
+        return self._get(('R', hk), f)
 
     def mkt(self):
-        """Equal-weight return of the names that were members the day before and trade that day (for beta)."""
+        """Equal-weight return of the names that were members the day before and have a price that day (for beta;
+        decision side: no stale / pause)."""
         def f():
             M = np.zeros((self.T, self.N), bool)
-            M[1:] = self.member[:-1] & self.real[1:] & (np.arange(1, self.T)[:, None] > self.first)
+            M[1:] = self.member[:-1] & self.has[1:] & (np.arange(1, self.T)[:, None] > self.first)
             c = M.sum(1)
             return np.where(c > 0, np.where(M, self.rr, 0.0).sum(1) / np.maximum(c, 1), 0.0)
         return self._get('mkt', f)
@@ -195,10 +258,6 @@ class Panel:
                 X = self.rr ** 2
             elif k == 'P':
                 X = np.nan_to_num(self.P, nan=0.0)
-            elif k == 'dv':
-                X = np.nan_to_num(self.dvol.astype(np.float64), nan=0.0)
-            elif k == 'dvn':
-                X = np.isfinite(self.dvol).astype(np.float64)
             elif k == 'rm':
                 X = self.rr * self.mkt()[:, None]
             elif k == 'm':
@@ -220,9 +279,16 @@ class Panel:
         return m.group(1) if m and m.group(2) > '201412' else t
 
 
+def meta_path(path=None):
+    """The META file next to a panel: sp500_le2014_v2.npz.xz -> META_v2.json, sp500_le2014.npz.xz -> META.json."""
+    path = path or STOCKS
+    m = re.search(r'(_v\d+)?\.npz(?:\.xz)?$', os.path.basename(path))
+    return os.path.join(os.path.dirname(path), f"META{(m.group(1) or '') if m else ''}.json")
+
+
 def load(path=None):
     """The sealed stock panel (cached per process). Nothing is dropped except rows after DEV_END. The exit gaps listed
-    in META.json next to the panel (if present) become `pause` rows (no trade possible inside)."""
+    in the META file next to the panel (meta_path, if present) become `pause` rows (no trade possible inside)."""
     path = path or STOCKS
     if ('panel', path) not in _cache:
         z = np.load(io.BytesIO(lzma.open(path).read()))
@@ -231,7 +297,7 @@ def load(path=None):
         unpack = lambda a: np.unpackbits(a, axis=0)[:T].astype(bool)
         tick = np.asarray(z['tickers']).astype(str)
         pause = np.zeros((T, len(tick)), bool)
-        mp = os.path.join(os.path.dirname(path), 'META.json')
+        mp = meta_path(path)
         if os.path.isfile(mp):
             col = {t: i for i, t in enumerate(tick)}
             for g in json.load(open(mp)).get('exit_gaps', []):
@@ -244,12 +310,25 @@ def load(path=None):
 
 
 # ---------------------------------------------------------------- per-stock expressions
-SFUNCS = {'ret': (1, 2), 'vol': (1, 1), 'sma_ratio': (1, 1), 'high_dist': (1, 1), 'dvol': (1, 1), 'age': (0, 0),
+SFUNCS = {'ret': (1, 2), 'vol': (1, 1), 'sma_ratio': (1, 1), 'high_dist': (1, 1), 'age': (0, 0),
           'beta': (1, 1), 'rank': (1, 1), 'csz': (1, 1), 'abs': (1, 1), 'min': (2, 2), 'max': (2, 2), 'log': (1, 1)}
-_WINF = {'ret', 'vol', 'sma_ratio', 'high_dist', 'dvol', 'beta'}
+_WINF = {'ret', 'vol', 'sma_ratio', 'high_dist', 'beta'}
 _SOK = (ast.Expression, ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Compare, ast.Call, ast.Name, ast.Load, ast.Constant,
         ast.And, ast.Or, ast.Not, ast.Add, ast.Sub, ast.Mult, ast.Div, ast.USub, ast.UAdd, ast.Gt, ast.GtE, ast.Lt,
         ast.LtE, ast.Eq, ast.NotEq)
+# refused inputs (source-dependent leaks, module docstring): one-line Korean reasons
+MSG_DVOL = 'dvol 사용 불가: 출처 의존 누출 — 1996~2006 거래대금 유무가 미래 상폐를 드러냄'
+MSG_LEVEL = ('{nm} 사용 불가: 수정주가 수준은 출처(상폐 여부와 엮임)마다 소급 조정이 달라 미래와 엮임 — '
+             '비율(ret·sma_ratio·high_dist)만 씀')
+MSG_FIRST = ('{nm} 사용 불가: 첫 가격 날짜(가격 이력 길이)는 미래 상폐와 엮임(나중 상폐 종목은 편입 전 이력이 짧음) — '
+             '나이는 age()(첫 편입일부터 거래일 수)')
+MSG_WIN = ('{what}: {call} 창 {w}행 > ' + str(MAX_WIN) + ' 사용 불가 — 가격 이력 길이가 미래 상폐와 엮임(나중 상폐 '
+           '종목은 편입 전 이력이 짧아 긴 창 값의 유무가 미래를 드러냄); 창(ret는 n+skip)은 ' + str(MAX_WIN) + '행 이하')
+FORBID = dict({k: MSG_DVOL for k in ('dvol', 'volume', 'dollar_volume')},
+              **{k: MSG_LEVEL.format(nm=k) for k in ('price', 'close', 'adj', 'adj_close', 'level', 'sma', 'ema',
+                                                    'high', 'low', 'open', 'mcap')},
+              **{k: MSG_FIRST.format(nm=k) for k in ('first_price', 'listed', 'listing_age', 'history', 'price_age',
+                                                    'age_price')})
 
 
 def _int_arg(node, f, lo):
@@ -260,14 +339,28 @@ def _int_arg(node, f, lo):
     return int(node.value)
 
 
+def window_rows(f, args):
+    """Rows a window function reaches back (the cap MAX_WIN applies to it): n, n + skip for ret."""
+    return int(args[0]) + (int(args[1]) if f == 'ret' and len(args) > 1 else 0)
+
+
+def _forbid(nm, what, expr):
+    if nm in FORBID:
+        raise ValueError(f'{FORBID[nm]} (stock {what}: {expr!r})')
+
+
 def parse_stock(expr, what='score'):
-    """Parse and check a per-stock expression (whitelisted AST; unknown names / functions raise)."""
+    """Parse and check a per-stock expression (whitelisted AST; unknown names / functions raise; refused inputs
+    (FORBID) and windows above MAX_WIN raise a one-line Korean reason)."""
     if isinstance(expr, bool) or not isinstance(expr, (str, int, float)):
         raise ValueError(f'stock {what} must be an expression string, not {expr!r}')
     try:
         tree = ast.parse(str(expr), mode='eval')
     except SyntaxError as e:
         raise ValueError(f'stock {what}: syntax error in {expr!r}: {e.msg}')
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Name):
+            _forbid(n.id, what, expr)
     for n in ast.walk(tree):
         if not isinstance(n, _SOK):
             raise ValueError(f'stock {what}: {type(n).__name__} not allowed in {expr!r}')
@@ -284,9 +377,12 @@ def parse_stock(expr, what='score'):
             if not lo <= len(n.args) <= hi:
                 raise ValueError(f'stock {what}: {n.func.id}() takes {lo}..{hi} arguments in {expr!r}')
             if n.func.id in _WINF:
-                _int_arg(n.args[0], n.func.id, 2 if n.func.id in ('vol', 'beta') else 1)
+                a = [_int_arg(n.args[0], n.func.id, 2 if n.func.id in ('vol', 'beta') else 1)]
                 if len(n.args) > 1:
-                    _int_arg(n.args[1], n.func.id, 0)
+                    a.append(_int_arg(n.args[1], n.func.id, 0))
+                w = window_rows(n.func.id, a)
+                if w > MAX_WIN:
+                    raise ValueError(MSG_WIN.format(what=f'stock {what}', call=ast.unparse(n), w=w))
     for n in ast.walk(tree):
         if isinstance(n, ast.Name) and not any(isinstance(c, ast.Call) and c.func is n for c in ast.walk(tree)):
             raise ValueError(f'stock {what}: unknown name {n.id!r} in {expr!r} (per-stock expressions use only '
@@ -299,11 +395,14 @@ class _Ctx:
 
     def __init__(self, P, D):
         self.P, self.D = P, np.asarray(D, np.int64)
-        self.E0 = P.member[self.D] & P.real[self.D]          # members with a real price at the decision close
+        self.E0 = P.member[self.D] & P.has[self.D]           # members with a price at the decision close (no stale)
         self.memo = {}
 
     def _valid(self, start):
-        """A window starting at row `start` (per decision) needs a price there: start >= first price, start >= 0."""
+        """A window starting at row `start` (per decision) needs a price there: start >= first price, start >= 0.
+        The decision side's only read of the first price date; windows are <= MAX_WIN rows (L3: a >= 260-row history
+        condition passes ~1.0 for later-delisted names and the rest alike)."""
+        assert (self.D - np.asarray(start)).max(initial=0) <= MAX_WIN, 'window above MAX_WIN reached _Ctx'
         s = np.asarray(start)[:, None]
         return (s >= 0) & (s >= self.P.first[None, :])
 
@@ -334,12 +433,8 @@ class _Ctx:
                 Pf = P.P
                 mx = np.stack([Pf[max(0, d - n + 1): d + 1].max(0) for d in D]) if len(D) else np.zeros((0, P.N))
                 return np.where(self._valid(D - n + 1), Pf[D] / mx - 1.0, np.nan)
-            if f == 'dvol':
-                n = a[0]
-                s, c = self._win_sum('dv', n), self._win_sum('dvn', n)
-                return np.where(c >= math.ceil(n / 2), s / np.maximum(c, 1), np.nan)
-            if f == 'age':
-                ag = (D[:, None] - P.first[None, :]).astype(float)
+            if f == 'age':                                     # days since the first membership start (PIT, L3)
+                ag = (D[:, None] - P.fm[None, :]).astype(float)
                 return np.where(ag >= 0, ag, np.nan)
             if f == 'beta':
                 n = a[0]
@@ -442,6 +537,8 @@ def _weight_cfg(w):
     if w == 'score':
         return ('score', None)
     m = re.fullmatch(r'\s*invvol\s*\(\s*(\d+)\s*\)\s*', str(w))
+    if m and int(m.group(1)) > MAX_WIN:
+        raise ValueError(MSG_WIN.format(what='stock weight', call=str(w).strip(), w=int(m.group(1))))
     if m and int(m.group(1)) >= 2:
         return ('invvol', int(m.group(1)))
     raise ValueError(f"stock weight must be equal | score | invvol(n) (n >= 2), not {w!r}")
@@ -516,6 +613,7 @@ def check_spec(spec):
                              'are booleans) and does not start with _')
     c = cfg_of(spec)
     for e in list(sig.values()) + ([c['exposure']] if isinstance(c['exposure'], str) else []):
+        _gate_forbid(e)
         names = _gate_names(e, set(sig))
         if 'level' in names['funcs']:
             raise ValueError('universe spec: level(x) is not available (no ETF book is traded by the gate)')
@@ -529,6 +627,18 @@ def _known_series():
     if 'keys' not in _cache:
         _cache['keys'] = set(data.keys()) | set(data.SLEEVES)
     return _cache['keys']
+
+
+def _gate_forbid(expr):
+    """Gate expressions (signals / exposure, the ETF DSL) may not name dollar volume either (L1)."""
+    try:
+        tree = ast.parse(str(expr), mode='eval')
+    except SyntaxError:
+        return                                        # dsl._parse reports the syntax error
+    for n in ast.walk(tree):
+        nm = n.id if isinstance(n, ast.Name) else n.value if isinstance(n, ast.Constant) else None
+        if isinstance(nm, str) and nm in ('dvol', 'volume', 'dollar_volume'):
+            raise ValueError(f'{MSG_DVOL} (gate: {expr!r})')
 
 
 def _gate_names(expr, own):
@@ -672,9 +782,9 @@ def compile_targets(spec, P, F=None):
 
 
 def ew_targets(P, cad='monthly'):
-    """Equal-weight members benchmark: every member with a real price at the decision close, 1/m each."""
+    """Equal-weight members benchmark: every member with a price at the decision close, 1/m each."""
     D = np.flatnonzero(dsl.reb_rows(P.idx, cad))
-    E = P.member[D] & P.real[D]
+    E = P.member[D] & P.has[D]
     picks = [np.flatnonzero(E[j]) for j in range(len(D))]
     wts = [np.full(len(p), 1.0 / max(len(p), 1)) for p in picks]
     return Targets(D, picks, wts, np.array([max(len(p), 1) for p in picks]), E, np.ones(P.T), {}, None)
@@ -892,13 +1002,22 @@ def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, wa
     return out
 
 
-def run1(P, tg, h, start, cost, tax, delay):
-    """One book on the fast path (same numbers as run_engine, parity-tested) -> engine.run-like dict."""
-    o = fast_run(P, tg, h, start, cost, tax, delay, want_E=True)
+def run1(P, tg, h, start, cost, tax, delay, ends=False):
+    """One book on the fast path (same numbers as run_engine, parity-tested) -> engine.run-like dict. ends: also
+    count the series ends the book holds into (a position > 0 after the last price's row), {'fail': n, 'merger': m}."""
+    o = fast_run(P, tg, h, start, cost, tax, delay, want_E=True, keep_book=ends)
     _sealed(o['idx'])
-    return dict(E=pd.Series(o['E'][0], index=o['idx']), cagr_at=float(o['cagr_at'][0]), cagr_pre=float(o['cagr_pre'][0]),
-                final_at=float(o['final_at'][0]), mdd=float(o['mdd'][0]), turn=float(o['turn'][0]),
-                trades=int(o['trades'][0]), taxpaid=float(o['taxpaid'][0]), yrs=o['yrs'])
+    out = dict(E=pd.Series(o['E'][0], index=o['idx']), cagr_at=float(o['cagr_at'][0]), cagr_pre=float(o['cagr_pre'][0]),
+               final_at=float(o['final_at'][0]), mdd=float(o['mdd'][0]), turn=float(o['turn'][0]),
+               trades=int(o['trades'][0]), taxpaid=float(o['taxpaid'][0]), yrs=o['yrs'])
+    if ends:
+        i0, i1 = _rows(P, start)
+        nm = o['names']; L = P.last[nm]
+        q = np.flatnonzero(P.ended[nm] & (L >= i0) & (L < i1))
+        held = np.zeros(len(nm), bool)
+        held[q] = o['book'][L[q] - i0, q] > 0
+        out['ends'] = dict(fail=int((held & P.fail[nm]).sum()), merger=int((held & ~P.fail[nm]).sum()))
+    return out
 
 
 # ---------------------------------------------------------------- stress rows and the null
@@ -1049,8 +1168,8 @@ def gate_spec(spec):
 
 
 def ms1_stream(spec, P=None):
-    """MS1 input of a stock spec (ms1.measure_series): the CONSERVATIVE book's (h = 0.30) daily return after trading
-    cost and BEFORE tax (MS1 applies its own tax), on the real stock calendar, from MS1_FROM (1970-01-02, the first
+    """MS1 input of a stock spec (ms1.measure_series): the CONSERVATIVE book's (H_CONS: the classified delisting rule,
+    the headline) daily return after trading cost and BEFORE tax (MS1 applies its own tax), on the real stock calendar, from MS1_FROM (1970-01-02, the first
     point-in-time member day) or the later start of an else sleeve or of the warmed-up gate (gate_start: before it
     the gate is forced to the else share), to 2014-12-31. turnover = min(1, one-way yearly turnover) = measure_series' realized share.
     -> dict(dates, ret, label, turnover, start, min_cover)."""
@@ -1079,7 +1198,8 @@ def ms1_stream(spec, P=None):
     r = E[1:] / E[:-1] - 1.0
     one_way = float(o['turn'][0]) / 2.0
     return dict(dates=[d.strftime('%Y-%m-%d') for d in o['idx'][1:]], ret=[float(x) for x in r],
-                label=f"{spec.get('name', h)} 보수 h={H_CONS:.2f} 비용후 세전 {o['idx'][0].year}~2014",
+                label=f"{spec.get('name', h)} 보수(상폐 분류: 실패형 -{H_FAIL:.0%}·인수형 0) 비용후 세전 "
+                      f"{o['idx'][0].year}~2014",
                 turnover=min(1.0, one_way), start=str(o['idx'][0].date()), min_cover=0.95)
 
 
@@ -1110,18 +1230,21 @@ def evaluate(spec, P=None, null=True, pit=True):
     gst = gate_start(P, grow, delay)
     out = dict(kind='stock', universe='sp500', stock_version=STOCK_VERSION, dev_end=str(DEV_END.date()),
                label='개별주 S&P500 시점편입·상폐포함 (개발 요약, 기준 아님)', cost=cost, delay=delay, tax=tax,
-               h_cons=H_CONS, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3], windows={})
+               h_cons=dict(rule='classified', fail_if=f'return over {DL_WIN} rows (>= {DL_MIN}) to the last price < '
+                           f'{DL_FAIL:.0%}', fail=-H_CONS[0], merger=-H_CONS[1]), h_all=H_ALL, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3], windows={})
     for w, st0 in WINDOWS.items():
         st = max([st0] + [pd.Timestamp(v) for v in efirst.values()])
         by = 'else' if st > st0 else None
         if w == 'w86' and gst is not None and gst > st:   # headline window: no forced-cash warm-up years inside
             st, by = gst, 'gate'
         nm = avg_names(P, tg, st, delay)
-        cons = run1(P, tg, H_CONS, st, cost, tax, delay)
+        cons = run1(P, tg, H_CONS, st, cost, tax, delay, ends=w == 'w86')
         base = run1(P, tg, 0.0, st, cost, tax, delay)
         row = dict(start=str(st.date()), start_by=by, cons=_row(cons, nm), base=_row(base, nm),
                    ew_cons=ew_row(P, H_CONS, st, cost, tax, delay))
         if w == 'w86':
+            row['all30'] = _row(run1(P, tg, H_ALL, st, cost, tax, delay), nm)     # stress: every end -30%
+            row['held_ends'] = cons['ends']                    # series ends held into, by class
             row['empty'] = empty = not nm > 0                  # never holds a stock (filter / gate / units typo)
             row['ew_base'] = ew_row(P, 0.0, st, cost, tax, delay)
             row['ndx'] = ndx_hold(st, cost, tax, delay)
@@ -1140,7 +1263,7 @@ def evaluate(spec, P=None, null=True, pit=True):
                 nr = fast_run(P, tg, H_CONS, st, cost, tax, delay, baskets=nb, D=N_NULL)
                 x = np.sort(nr['cagr_at']); s = row['cons']['cagr_at']
                 below = float(np.mean(x < s) + 0.5 * np.mean(x == s))
-                row['null'] = dict(kind='matched_retention', n=N_NULL, seed=NULL_SEED, h=H_CONS, pct=below,
+                row['null'] = dict(kind='matched_retention', n=N_NULL, seed=NULL_SEED, h='classified', pct=below,
                                    top=1.0 - below, median=float(np.median(x)), p95=float(np.percentile(x, 95)),
                                    p99=float(np.percentile(x, 99)), beat95=bool(s > np.percentile(x, 95)),
                                    beat99=bool(s > np.percentile(x, 99)), turn_med=float(np.median(nr['turn'])),
@@ -1164,10 +1287,13 @@ def _pp(x):
 
 
 def dev_part(s, compact=False):
-    """The one-line dev part (Korean, every number <= 2014). compact drops names / turnover and the 95% line;
+    """The one-line dev part (Korean, every number <= 2014). 세후 보수 = the CONSERVATIVE row (classified delisting
+    rule: fail-type -50%, merger-type 0), in parentheses 기본 = h 0, 일괄-30% = every end -30%, 극단 = the hazard row.
+    compact drops names / turnover and the 95% line;
     compact=2 = the same numbers in the shortest wording (the CLI steps down while the whole line, with the MS1 / G1
     parts, would pass 400 bytes)."""
     a, b = s['windows']['w86'], s['windows']['w71']
+    a30 = (a.get('all30') or {}).get('cagr_at')          # stress row: every series end -30%
     nl = a.get('null')
     yn = lambda x: '통과' if x else '미달'
     sh = lambda x: f'{x:.2f}' if x is not None and np.isfinite(x) else '-'
@@ -1190,7 +1316,8 @@ def dev_part(s, compact=False):
         g71 = f"(게이트{gf[2:4]}~)" if gf and gf > b['start'] and not g86 else ''   # g86 already dates the gate
         return (f"개별주PIT·상폐포함 {a['start'][2:4]}~14{f'(게이트{gf[2:7]}~)' if g86 else ''} "
                 f"세후보수 {_pp(a['cons']['cagr_at'])}"
-                f"(기본 {q(a['base']['cagr_at'])}·극단 {q(a['extreme']['cagr_at'])}) 낙폭{a['cons']['mdd']:.0%} | "
+                f"(기본 {q(a['base']['cagr_at'])}·일괄30 {q(a30)}·극단 {q(a['extreme']['cagr_at'])}) "
+                f"낙폭{a['cons']['mdd']:.0%} | "
                 f"EW {q(a['ew_cons']['cagr_at'])}·NDX {q(a['ndx']['cagr_at'])} | {b['start'][2:4]}~14 "
                 f"{_pp(b['cons']['cagr_at'])}{g71} | {npart} | 샤프 {sh(a['sharpe'])} G1 1.1 {yn(a['g1_pass'])}" + cz)
     if nl:
@@ -1204,7 +1331,8 @@ def dev_part(s, compact=False):
     g71 = f"(게이트 {gf[:4]}~)" if gf and gf > b['start'] else ''
     return (f"개별주 S&P500(시점편입·상폐포함) {y86}~2014{f'(게이트 {gf[:7]}~)' if g86 else ''} "
             f"세후 보수 {_pp(a['cons']['cagr_at'])} "
-            f"(기본 {_pp(a['base']['cagr_at'])}·극단 {_pp(a['extreme']['cagr_at'])}) 낙폭 {a['cons']['mdd']:.0%} "
+            f"(기본 {_pp(a['base']['cagr_at'])}·일괄-30% {_pp(a30)}·극단 {_pp(a['extreme']['cagr_at'])}) "
+            f"낙폭 {a['cons']['mdd']:.0%} "
             + ('' if compact else f"평균 {a['cons']['names']:.0f}종목 회전 {a['cons']['turn']:.1f}x ")
             + f"| 동일가중 {_pp(a['ew_cons']['cagr_at'])} · "
             f"NDX보유 {_pp(a['ndx']['cagr_at'])} | {y71}~2014 {_pp(b['cons']['cagr_at'])}{g71} | {npart} | "

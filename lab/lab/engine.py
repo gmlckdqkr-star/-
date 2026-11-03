@@ -1,6 +1,9 @@
 """Backtest engine. Logic copied from research/beat_qld/code/engine.py run() (parity test in tests/).
 
-Weights decided at close t (info <= t) earn returns from t+2 on (delay=2 means 1-bar execution delay).
+Timing (the loop below): W is shifted by `delay` rows, and on row i the book first earns row i's close-to-close
+return, then trades to its target at close i. So with delay=2 weights decided at close t (info <= t) are traded at
+close t+2 and earn from day t+3's return (close t+2 -> close t+3) on; delay=1 would trade at the next close t+1, delay=0
+at the decision close itself.
 Cost per side (default 0.30% = 0.25% fee + 0.05% spread) on traded notional. Korean overseas CGT 22% on
 yearly net realized gain (average cost, no deduction, no carry-forward); final liquidation taxed.
 Cash earns T-bill.

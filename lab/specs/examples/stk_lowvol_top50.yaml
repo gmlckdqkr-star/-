@@ -1,5 +1,6 @@
 # Low volatility: the 50 members with the lowest 1-year daily return stdev, inverse-vol weights, quarterly.
-# Textbook low-vol anomaly constants (252-day vol, 63-day vol for the weights), not searched.
+# Textbook low-vol anomaly constants (252-day vol, 63-day vol for the weights), not searched. age() = trading days
+# since the first index membership (the first-price date encodes later delisting).
 name: stk_lowvol_top50
 family: stk_lowvol
 known: 3

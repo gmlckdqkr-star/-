@@ -11,7 +11,7 @@ signals:
   up: "price(_NDX) > sma(_NDX, 200)"
 stock:
   rebalance: month
-  score: "ret(252, 21)"
+  score: "ret(231, 21)"
   top: 20
   weight: equal
   max_weight: 0.10
