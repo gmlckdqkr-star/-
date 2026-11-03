@@ -1,16 +1,14 @@
-"""Evaluation: dev-window metrics, paired block bootstrap, sealed holdout verdict.
+"""Dev summary: dev-window (<= 2014-12-31) metrics on real data + paired block bootstrap of the dev returns.
 
-MVP gates. They are placeholders for the locked project bars (G0-G3 lock + A17/A41/A49 addenda), which the
-next phase ports from the existing judge code. Labels in every output say "MVP 관문".
-
-Holdout rule: rows after DEV_END are never printed. The holdout only returns PASS / REJECT / BUDGET
-(BUDGET = this family already used its holdout looks), and each look is written to the ledger.
+This is a SCREEN, not a bar verdict: the project bar (A17 Q + A50 G60-W + A49 G-MKT) is applied by lab/bb.py on the
+blackbox2 paths. The old ad-hoc holdout look (2015+ PASS/REJECT with a per-family look budget) is removed: no number,
+pass flag or look over dates after 2014-12-31 is computed here. The caller passes data cut at DEV_END.
 """
 import numpy as np, pandas as pd
-from . import engine
+from . import dsl, engine
 
 DEV_END = pd.Timestamp('2014-12-31')
-HOLDOUT_START = pd.Timestamp('2015-01-01')
+SCREEN_LABEL = '개발 선별 (기준 아님)'
 
 
 def paired_bootstrap(rs, rb, years=(7, 12), n_paths=2000, block=63, seed=7):
@@ -31,7 +29,11 @@ def paired_bootstrap(rs, rb, years=(7, 12), n_paths=2000, block=63, seed=7):
 
 
 def evaluate(W, R, spec, baseline='QQQ'):
-    cost = float(spec.get('cost', 0.003)); delay = int(spec.get('delay', 2))
+    """W, R: weights and sleeve returns. Only rows <= DEV_END are used (refuses anything later)."""
+    R = R[R.index <= DEV_END]
+    W = W[W.index <= DEV_END]
+    dsl.check_spec(spec)                                  # delay >= 2 (no same-bar / future fills)
+    cost = max(dsl.MIN_COST, float(spec.get('cost', dsl.MIN_COST))); delay = int(spec.get('delay', dsl.MIN_DELAY))
     start = pd.Timestamp(spec.get('dev_start', '1986-10-01'))
     Wb = pd.DataFrame({baseline: 1.0, 'CASH': 0.0}, index=R.index)
     # start only when every held sleeve and the baseline have return data (no silent zero returns)
@@ -39,16 +41,12 @@ def evaluate(W, R, spec, baseline='QQQ'):
     start = max([start] + [R[c].first_valid_index() for c in held])
     dev = engine.run(W, R, start, DEV_END, cost=cost, delay=delay)
     devb = engine.run(Wb, R, start, DEV_END, cost=cost, delay=delay)
+    assert dev['E'].index[-1] <= DEV_END
     rs = dev['E'].pct_change().dropna(); rb = devb['E'].pct_change().reindex(rs.index).fillna(0.0)
     bs = paired_bootstrap(rs.values, rb.values)
-    # sealed holdout
-    end = R.index[-1]
-    ho = engine.run(W, R, HOLDOUT_START, end, cost=cost, delay=delay)
-    hob = engine.run(Wb, R, HOLDOUT_START, end, cost=cost, delay=delay)
-    ho_pass = (ho['cagr_at'] >= hob['cagr_at']) and (ho['mdd'] >= hob['mdd'] - 0.10)
-    dev_pass = (bs['s_med_y12'] >= bs['b_med_y12']) and (bs['s_p_dd80'] < 0.01)
+    screen = (bs['s_med_y12'] >= bs['b_med_y12']) and (bs['s_p_dd80'] < 0.01)
     return dict(
-        baseline=baseline, dev_start=str(start.date()),
+        baseline=baseline, dev_start=str(start.date()), dev_end=str(DEV_END.date()),
         dev=dict(cagr_at=dev['cagr_at'], mdd=dev['mdd'], turn=dev['turn'], trades=dev['trades'],
                  yrs=dev['yrs'], base_cagr_at=devb['cagr_at'], base_mdd=devb['mdd']),
-        boot=bs, dev_pass=bool(dev_pass), holdout_pass=bool(ho_pass))
+        boot=bs, screen=SCREEN_LABEL, screen_pass=bool(screen))

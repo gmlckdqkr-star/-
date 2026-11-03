@@ -1,0 +1,7 @@
+name: qld_088_hold
+family: buy_hold
+known: 3
+idea: QLD 0.88 보유 (기준 고정 시험 F7, 항상 보유)
+rebalance: daily
+rules:
+  - else: {QLD: 0.88}
