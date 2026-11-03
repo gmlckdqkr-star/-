@@ -740,6 +740,12 @@ def test_kr_account():
         fv = R3['KR200'].first_valid_index()
         e = engine.run(Wk, R3, fv, gates.DEV_END, cost=0.0013, tax=0.154, tax_mode='per_sale', tax_by_col=dict(data.KR_TAX))
         check('KR domestic-equity ETF: gains not taxed (final = equity)', abs(e['final_at'] - e['E'].iloc[-1]) < 1e-12 and e['taxpaid'] == 0)
+        Wl = pd.DataFrame({'KRLEV': 1.0, 'CASH': 0.0}, index=R3.index)
+        fl = R3['KRLEV'].first_valid_index()
+        el = engine.run(Wl, R3, fl, gates.DEV_END, cost=0.0013, tax=0.154, tax_mode='per_sale', tax_by_col=dict(data.KR_TAX))
+        check('KR leverage ETF (기타 ETF): conservative 15.4% on the gain at liquidation',
+              data.KR_TAX['KRLEV'] == 0.154 and data.KR_TAX['KRINV'] == 0.154 and
+              (el['E'].iloc[-1] <= 1 or el['final_at'] < el['E'].iloc[-1]))
         check('kr account dev summary runs, labelled, and dev end <= 2014', sk['account'] == 'kr_etf'
               and sk['dev_end'] <= '2014-12-31' and su['account'] == 'us')
 

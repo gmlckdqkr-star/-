@@ -30,9 +30,11 @@ KR_SLEEVES = {'KR200': '069500.KS', 'KRLEV': '122630.KS', 'KRINV': '114800.KS', 
 KR_MAX_GAP = 20          # > the longest KR holiday (2017 Chuseok, 11 days)
 for _n, _k in KR_SLEEVES.items():
     SLEEVES[_n] = (_k, _k, 1)
-# KR tax rule (assumption, lab interpretation): domestic-equity ETFs (KOSPI200 / its 2x and inverse, KR semis) =
-# 매매차익 비과세 -> 0; every other sleeve in a kr_etf account stands for a KR-listed overseas-index ETF -> 15.4% per sale.
-KR_TAX = {n: 0.0 for n in KR_SLEEVES}
+# KR tax rule (checked 11-03 from 국세청 rulings quoted by kcie/KB/Toss/iM증권; primary 국세청/KRX pages blocked):
+# 국내주식형 ETF (KODEX 200, KODEX 반도체) = 매매차익 비과세 -> 0.  KODEX 레버리지/인버스 are legally 기타 ETF
+# (보유기간과세 15.4%); their real tax base (과표기준가) is small, but lab books the conservative upper bound
+# 15.4% of every sale gain.  Every other sleeve in a kr_etf account stands for a KR-listed overseas-index ETF -> 15.4%.
+KR_TAX = {'KR200': 0.0, 'KRSEMI': 0.0, 'KRLEV': 0.154, 'KRINV': 0.154}
 _cache = {}
 
 
