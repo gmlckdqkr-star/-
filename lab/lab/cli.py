@@ -268,7 +268,7 @@ def _verdict_core(rec):
     if v is None:
         return '개발선별 ' + ('통과' if rec.get('dev_screen') else '탈락')
     if v.startswith('REJECT (version'):
-        return '판 불가'
+        return 'REJECT(재표본 불가)'
     if v.startswith('판정 불가'):
         return v
     if str(rec.get('mode', '')).startswith('quick'):
