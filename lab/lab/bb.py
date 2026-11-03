@@ -144,6 +144,8 @@ class LabCandidate:
     lane = 'LONG'
 
     def __init__(self, spec, trade_override=None):
+        if dsl.is_universe(spec):
+            raise NotJudgeable('single-stock universe spec: the bar paths hold ETF sleeves only (판정 불가 (개별주))')
         self.spec = dsl.check_spec(spec)
         self.hash = dsl.spec_hash(spec)
         self.name = spec.get('name', self.hash)
@@ -620,8 +622,14 @@ def full(cand, workers=4, early_stop=True, log=None):
 
 def judge(spec, mode='quick', **kw):
     """mode 'quick' | 'full'. A spec that cannot be put on the blackbox paths -> REJECT (version impossible).
-    A non-US account (dsl.ACCOUNTS, e.g. kr_etf) -> '판정 불가': the bar broker models only US-listed ETFs."""
+    A non-US account (dsl.ACCOUNTS, e.g. kr_etf) -> '판정 불가': the bar broker models only US-listed ETFs.
+    A single-stock spec (universe: sp500) -> '판정 불가 (개별주)': the blackbox paths hold ETF sleeves only (dev only)."""
     from . import dsl as _dsl
+    if _dsl.is_universe(spec):
+        from . import stocks
+        return {'mode': mode, 'verdict': stocks.BAR_VERDICT, 'failed': ['universe_not_on_bar'],
+                'reason': 'single-stock universe: the bar paths (blackbox2) model ETF sleeves only; dev summary only',
+                'screen': 'fail'}
     acct, _ = _dsl.account_of(spec)
     if acct != 'us':
         return {'mode': mode, 'verdict': '판정 불가 (KR 계좌)', 'failed': ['account_not_on_bar'],

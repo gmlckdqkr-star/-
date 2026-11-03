@@ -8,13 +8,39 @@ Cash earns T-bill.
 import numpy as np, pandas as pd
 
 
-def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='yearly', tax_by_col=None):
+def limit_target(tgt, val, frozen, no_buy, cashi, V):
+    """Clip a target book to what can be traded on the row (lab addition, single stocks). A `frozen` column (no real
+    price that day: a pause inside the price series or a no-trade day) keeps its value; a `no_buy` column may only
+    shrink (no price: before the first or after the last price). If the clipped holdings leave too little value, the
+    free columns' targets are scaled down; CASH takes the rest (an unbuyable share goes to CASH). Works on one row
+    (1-d) or on D books at once (2-d, rows = books). Returns (target, blocked) with blocked = frozen columns held off
+    their target (the trade is retried once the column trades again)."""
+    t = np.where(frozen, val, tgt)
+    t = np.where(no_buy, np.minimum(t, val), t)
+    t[..., cashi] = 0.0
+    free = ~(frozen | no_buy)
+    free[..., cashi] = False
+    over = t.sum(-1) - V
+    fs = np.where(free, t, 0.0).sum(-1)
+    sc = np.where((over > 0) & (fs > 0), np.maximum(0.0, 1.0 - over / np.where(fs > 0, fs, 1.0)), 1.0)
+    t = np.where(free, t * np.expand_dims(sc, -1), t)
+    t[..., cashi] = V - t.sum(-1)
+    blocked = frozen & (np.abs(t - tgt) > 1e-12 * np.expand_dims(V, -1))
+    blocked[..., cashi] = False
+    return t, blocked
+
+
+def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='yearly', tax_by_col=None,
+        frozen=None, no_buy=None):
     """rebal (lab addition, default None = the original rule): a boolean Series on W's index; on a flagged decision row the
     book is traded back to the target even if the target row did not change (periodic rebalancing of drifted weights).
     It is shifted by `delay` exactly like the weights.
     tax_mode (lab addition): 'yearly' = the original rule; 'per_sale' = `tax` withheld on each sold lot's positive gain
     at the trade (no loss offset, no yearly netting), final liquidation taxed per position on positive gains only.
-    tax_by_col (per_sale only): {column: rate} overrides `tax` for those columns (e.g. KR domestic-equity ETFs 0)."""
+    tax_by_col (per_sale only): {column: rate} overrides `tax` for those columns (e.g. KR domestic-equity ETFs 0).
+    frozen / no_buy (lab addition for single stocks, default None = the original rule): boolean DataFrames on R's index
+    (execution-day facts, NOT shifted): see limit_target. A trade held off its target by `frozen` is retried on the
+    first row that column trades again."""
     assert tax_mode in ('yearly', 'per_sale')
     ps = tax_mode == 'per_sale'
     idx = R.index[(R.index >= start) & (R.index <= end)]
@@ -31,6 +57,13 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
     val = Wv[0] * 1.0
     basis = val.copy()
     cashi = cols.index('CASH')
+    lim = frozen is not None or no_buy is not None
+    if lim:
+        msk = lambda M: np.zeros((n, k), bool) if M is None else \
+            M.reindex(index=idx, columns=cols).fillna(False).values.astype(bool)
+        FZ, NB = msk(frozen), msk(no_buy)
+        FZ[:, cashi] = NB[:, cashi] = False
+        pend = np.zeros(k, bool)
     trate = np.array([(tax_by_col or {}).get(c, tax) for c in cols], float)
     assert tax_by_col is None or ps, 'tax_by_col needs tax_mode per_sale'
     eq = np.empty(n)
@@ -46,7 +79,14 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
         if i > 0:
             val *= 1.0 + Rr[i]
         V = val.sum(); tgt = Wv[i] * V
-        if np.abs(tgt - val).sum() > 1e-9 * V and (i == 0 or force[i] or np.any(Wv[i] != Wv[i - 1])):
+        go = i == 0 or force[i] or np.any(Wv[i] != Wv[i - 1])
+        if lim:
+            go = go or bool(pend.any() and np.any(pend & ~FZ[i]))
+            if go:
+                tgt, blk = limit_target(tgt, val, FZ[i], NB[i], cashi, V)
+        if np.abs(tgt - val).sum() > 1e-9 * V and go:
+            if lim:
+                pend = blk
             d = tgt - val; c = cost * np.abs(np.delete(d, cashi)).sum()
             for j in np.where(d < 0)[0]:
                 if j == cashi or val[j] <= 0:

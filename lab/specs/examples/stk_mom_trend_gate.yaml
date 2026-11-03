@@ -1,0 +1,18 @@
+# 12-1 momentum top 20 (as stk_mom12_1_top20), invested only while the NDX closes above its 200-day average,
+# else T-bill cash (checked every close). _NDX starts 1985-10: before that the gate is off (cash), so the 1971~ row is
+# mostly cash and is marked (게이트 1985~).
+name: stk_mom_trend_gate
+family: stk_mom
+known: 3
+idea: 12-1 momentum top 20 with an NDX > SMA200 exposure gate
+universe: sp500
+signals:
+  up: "price(_NDX) > sma(_NDX, 200)"
+stock:
+  rebalance: month
+  score: "ret(252, 21)"
+  top: 20
+  weight: equal
+  max_weight: 0.10
+  exposure: up
+  else: {CASH: 1.0}
