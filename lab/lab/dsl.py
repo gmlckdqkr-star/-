@@ -78,7 +78,15 @@ def spec_hash(spec):
     if spec.get('plugin'):
         f, fn = _plugin_ref(spec['plugin'])
         core['plugin'] = {'file': os.path.basename(f), 'func': fn, 'sha': _file_sha(f)}
+    if spec.get('universe') is not None:      # single-stock spec (lab/stocks.py); added only when set
+        core['universe'] = spec.get('universe')
+        core['stock'] = spec.get('stock')
     return hashlib.sha256(json.dumps(core, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:12]
+
+
+def is_universe(spec):
+    """A single-stock spec (`universe: sp500`, lab/stocks.py) rather than an ETF-sleeve spec."""
+    return isinstance(spec, dict) and spec.get('universe') is not None
 
 
 MIN_DELAY = 2          # engine delay 2 = decide at close t, trade at close t+1 (delay < 2 would fill at or before the decision close)
@@ -113,6 +121,9 @@ def check_spec(spec):
     acct, _ = account_of(spec)
     if spec.get('grid') is not None:
         raise ValueError('spec has a grid: expand it first (dsl.expand_grid; `lab run` does this)')
+    if is_universe(spec):                     # single stocks: own checks (stock block, gate signals)
+        from . import stocks
+        return stocks.check_spec(spec)
     if spec.get('plugin'):
         if spec.get('rules') or spec.get('signals'):
             raise ValueError('plugin spec: give either plugin (+ sleeves, inputs, params) or signals/rules, not both')

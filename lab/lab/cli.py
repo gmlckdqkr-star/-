@@ -7,6 +7,8 @@
                    REJECT | 'REJECT (lab 판정, 미확정)' | 'Q60 미달 (Q 미판정)' (failed gates) or 'PENDING (통합 담당 대기)'.
                    Lab never prints APPLY-Q / APPLY-Q60.
        --bar none: dev summary only.
+       A single-stock spec (`universe: sp500`, lab/stocks.py) prints its own dev line (S&P 500 point-in-time members,
+       delisted included, stress rows, random-basket null, G1 Sharpe); every bar mode answers '판정 불가 (개별주)'.
        --all-versions (full only): keep running the remaining versions after a REJECT (default: stop, REJECT is final).
    python -m lab ledger
        family counts and stored bar results.
@@ -107,14 +109,22 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True):
     spec = dsl.check_spec(spec)                          # refuse delay < 2 / non-numeric cost before anything runs
     h = dsl.spec_hash(spec); fam = str(spec.get('family', 'unset'))
     name = str(spec.get('name', h))
+    stock = dsl.is_universe(spec)                        # single-stock spec (lab/stocks.py): own dev summary
+    if stock:
+        from . import stocks
     s = ledger.get(h)
     cached = s is not None
-    if cached and s.get('dev_version') != gates.DEV_VERSION:   # dev summary logic changed: recompute, same row (N same)
+    stale = cached and (s.get('stock_version') != stocks.STOCK_VERSION if stock
+                        else s.get('dev_version') != gates.DEV_VERSION)
+    if stale:                                            # dev summary logic changed: recompute, same row (N same)
         s, cached = None, False
         known = True
     else:
         known = cached
-    if not cached:
+    if not cached and stock:
+        s = stocks.evaluate(spec)
+        ledger.put(h, spec, s)
+    elif not cached:
         sleeves = sorted(set(dsl.held_sleeves(spec)) | {spec.get('baseline', 'QQQ')})
         F, R, rf, SRC = data.build(sleeves)
         F = F[F.index <= gates.DEV_END]; R = R[R.index <= gates.DEV_END]      # nothing after 2014 enters
@@ -127,9 +137,13 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True):
             s['screen_pass'] = False
         ledger.put(h, spec, s)
     detail = dict(spec=spec, hash=h, dev_summary=s)
-    parts = [f"[{name}] 계열={fam} N={ledger.family_n(fam)}{' (중복)' if known else ''}", _dev_part(s)]
+    parts = [f"[{name}] 계열={fam} N={ledger.family_n(fam)}{' (중복)' if known else ''}",
+             stocks.dev_part(s) if stock else _dev_part(s)]
     bcached = False
-    rec = dict(name=name, hash=h, family=fam, dev_y12=s['boot']['s_med_y12'], dev_screen=s['screen_pass'])
+    rec = dict(name=name, hash=h, family=fam, dev_y12=None if stock else s['boot']['s_med_y12'],
+               dev_screen=s['screen_pass'])
+    if stock:
+        rec['stock_cagr'] = s['windows']['w86']['cons']['cagr_at']
     if bar != 'none':
         key, r, res, bcached = _bar(spec, h, bar, workers, early_stop)
         detail['bar'] = res if res is not None else dict(r, cached=True)
@@ -144,6 +158,8 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True):
         with open(os.path.join(ledger.HOME, 'out', f'{h}_{bar}.json'), 'w') as fh:
             json.dump(detail, fh, ensure_ascii=False, indent=1, default=str)
     parts.append(f'{time.time() - t0:.0f}s')
+    if stock and len(' | '.join(parts).encode()) > MAX_LINE:     # long name: drop the optional stock fields first
+        parts[1] = stocks.dev_part(s, compact=True)
     return _cut(' | '.join(parts)), rec
 
 
@@ -178,18 +194,31 @@ def summary(recs, bar):
     """Compact ranked table (<= MAX_SUMMARY bytes): top 10 by the quick screen's median log growth (10y b63 10M,
     full: own_KRWX), or by the dev 12y bootstrap multiple when no bar ran. Errors are counted, not listed."""
     ok = [r for r in recs if 'error' not in r]
+    stk = sorted((r for r in ok if r.get('stock_cagr') is not None), key=lambda r: r['stock_cagr'], reverse=True)
+    ok = [r for r in ok if r.get('stock_cagr') is None]
     by_lg = any(r.get('lg') is not None for r in ok)
     key = (lambda r: (r.get('lg') is not None, r.get('lg') or 0.0)) if by_lg else (lambda r: r.get('dev_y12') or 0.0)
     rows = sorted(ok, key=key, reverse=True)[:10]
     what = ('lg 중앙값(10y b63 1000만' + (', own_KRWX' if bar == 'full' else '') + ')') if by_lg else '개발 12년 배수'
-    lines = [f"== 요약: {what} 순 상위 {len(rows)}/{len(recs)}"
-             + (f", 오류 {len(recs) - len(ok)}" if len(ok) < len(recs) else '')
-             + (' — 빠른 선별 (기준 아님)' if bar == 'quick' else '') + ' ==']
-    lines.append(' # 이름 hash  lg/QLD/QQQM  개발12y  판정')
+    nerr = len(recs) - len(ok) - len(stk)
+    if ok or not stk:
+        lines = [f"== 요약: {what} 순 상위 {len(rows)}/{len(recs) - len(stk)}"
+                 + (f", 오류 {nerr}" if nerr else '')
+                 + (' — 빠른 선별 (기준 아님)' if bar == 'quick' and ok else '') + ' ==']
+    else:
+        lines = ['== 요약' + (f': 오류 {nerr}' if nerr else '') + ' ==']
+    if rows:
+        lines.append(' # 이름 hash  lg/QLD/QQQM  개발12y  판정')
     for i, r in enumerate(rows, 1):
         lg = '-' if r.get('lg') is None else f"{r['lg']:.3f}/{r.get('qld') or 0:.3f}/{r.get('qqqm') or 0:.3f}"
         nm = _cut(str(r['name']), 34)
         lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} {lg} x{r.get('dev_y12') or 0:.1f} {_verdict_short(r)}", 140))
+    if stk:                  # single-stock specs (universe: sp500): own block, ranked by the conservative headline
+        lines.append(f"-- 개별주 {min(len(stk), 5)}/{len(stk)}: 1986~2014 세후 보수 순 (기준 판정 불가, 개발 요약만)")
+        for i, r in enumerate(stk[:5], 1):
+            nm = _cut(str(r['name']), 34)
+            lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} 세후보수 {r['stock_cagr']:.1%} G1 "
+                              f"{'통과' if r.get('dev_screen') else '미달'}", 140))
     return _cut('\n'.join(lines), MAX_SUMMARY)
 
 
