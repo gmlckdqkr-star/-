@@ -28,6 +28,15 @@ def raises(fn, exc=Exception, text=None):
     return False
 
 
+def err(fn):
+    """The message fn raises ('' if it does not raise)."""
+    try:
+        fn()
+    except Exception as e:
+        return str(e)
+    return ''
+
+
 def spec(stock, **kw):
     return dict({'name': 't', 'family': 'tst', 'universe': 'sp500', 'stock': stock}, **kw)
 
@@ -112,6 +121,15 @@ def test_errors():
           and raises(bad({'score': 'ret(20)', 'top': 5, 'exposure': 'dvol(_NDX, 20) > 1'}), ValueError, dv)
           and raises(bad({'score': 'ret(20)', 'top': 5, 'exposure': 'up'}, signals={'up': 'dvol > 1'}), ValueError, dv)
           and 'dvol' not in stocks.SFUNCS and '\n' not in stocks.MSG_DVOL)
+    vm = {e: err(bad(st, **kw)) for e, (st, kw) in {
+        'volume': ({'score': 'ret(20)', 'filter': 'volume(20) > 0', 'top': 5}, {}),
+        'dollar_volume': ({'score': 'rank(dollar_volume(5))', 'top': 5}, {}),
+        'volume ': ({'score': 'ret(20)', 'top': 5, 'exposure': 'volume(_NDX) > 0'}, {}),
+        'dollar_volume ': ({'score': 'ret(20)', 'top': 5, 'exposure': 'up'}, {'signals': {'up': 'dollar_volume > 1'}}),
+    }.items()}
+    check('(L1) volume / dollar_volume refused with a message that names what the spec wrote (stock and gate), '
+          'not dvol', all(m.startswith(f'{e.strip()} 사용 불가: 출처 의존 누출') and 'dvol' not in m and '\n' not in m
+                          for e, m in vm.items()), ' | '.join(m[:40] for m in vm.values()))
     check('(L4) price-level names refused (price, close, adj, sma, level), the reason names ratios',
           all(raises(bad({'score': e, 'top': 5}), ValueError, '수정주가 수준') for e in
               ('price()', 'close', 'adj(1)', 'sma(50)', 'level', 'log(price())', 'ret(20) / close')))
@@ -177,6 +195,22 @@ def test_functions(P):
     jj = col(P, 'GOOGL') if 'GOOGL' in P.tickers else col(P, 'AABA')
     dd = np.flatnonzero(D - 252 < P.first[jj])
     check('a window with no price at its start is NaN (history must exist)', len(dd) and np.isnan(early[dd, jj]).all())
+    # (L3) window floor: a window may not start before the first membership start (names joined after 1970-01-02)
+    E0 = cx.E0
+    late = E0 & (P.fm > P.f0)[None, :]
+    want = {'ret(260)': 260, 'ret(239, 21)': 260, 'ret(21)': 21, 'ret(1, 125)': 126, 'vol(252)': 252, 'vol(2)': 2,
+            'beta(126)': 126, 'sma_ratio(200)': 199, 'high_dist(252)': 251}
+    av = {e: np.array_equal(np.isfinite(cx.value(e))[late], ag[late] >= n) for e, n in want.items()}
+    k = gap[np.argmax(fm[gap] > P.f0)]; dk = np.flatnonzero((D >= fm[k]) & (D - fm[k] < 252) & (D - P.first[k] > 252))
+    check('(L3) window floor: for every member that joined after 1970-01-02, a window value exists iff age() covers it '
+          '(ret / vol / beta n: age() >= n; sma_ratio / high_dist n: age() >= n - 1), however long its price history',
+          all(av.values()) and len(dk) > 0 and np.isnan(early[dk, k]).all() and late.sum() > 100000,
+          f'{late.sum()} member cells; {P.label(k)}: {len(dk)} decisions with > 252 rows of prices but < 252 of membership')
+    coh = E0 & (P.fm <= P.f0)[None, :]
+    a252 = np.isfinite(cx.value('ret(252)'))
+    check('(L3) names already members on 1970-01-02 (membership before it unknown) read from their first price',
+          np.array_equal(a252[coh], (D[:, None] - 252 >= P.first[None, :])[coh]) and P.f0 == row(P, '1970-01-02')
+          and int((P.fm <= P.f0).sum()) == 500)
 
 
 
@@ -197,6 +231,31 @@ def test_leaks(P):
                                   for x, y, u, v in zip(a.picks, b.picks, a.wts, b.wts)))
         check(f'(L) {k}: decisions identical with dvol + stale scrambled, and with every exit-gap pause removed',
               same(stocks.compile_targets(s, Pd, F)) and same(stocks.compile_targets(s, Pz, F)))
+    # (L3) pre-membership history: delete it, or give every later joiner a full one; no decision may change
+    pre = (np.arange(P.T)[:, None] < P.fm[None, :]) & (P.fm > P.f0)[None, :]
+    base = {}
+    for k, s in SPECS.items():
+        F = stocks.gate_frame(s, P.idx) if s['stock'].get('exposure') else None
+        base[k] = (F, stocks.compile_targets(s, P, F))
+    res, mk = {}, []
+    for v in ('deleted', 'full random'):
+        adj = P.adj.copy()
+        lvl = np.broadcast_to(P.adj[np.minimum(P.fm, P.T - 1), np.arange(P.N)][None, :], pre.shape)[pre]
+        adj[pre] = np.nan if v == 'deleted' else (lvl * np.exp(rng.normal(0, 0.03, lvl.shape))).astype(np.float32)
+        Pv = stocks.Panel(P.idx, P.tickers, adj, P.dvol, P.member, P.stale, P.pause)
+        for k, s in SPECS.items():
+            F, a = base[k]
+            b = stocks.compile_targets(s, Pv, F)
+            res[k] = res.get(k, True) and (
+                np.array_equal(a.dec, b.dec) and np.array_equal(a.elig, b.elig) and np.array_equal(a.e, b.e)
+                and all(np.array_equal(x, y) and np.allclose(u, w, rtol=0, atol=1e-12)
+                        for x, y, u, w in zip(a.picks, b.picks, a.wts, b.wts)))
+        mk.append(np.array_equal(P.mkt(), Pv.mkt()))
+        del Pv, adj
+    for k, ok in res.items():
+        check(f'(L3) {k}: decisions identical with every later joiner\'s pre-membership prices deleted, and with a full '
+              'random pre-membership history for each (window floor)', ok)
+    check('(L3) the beta market does not read pre-membership prices either', all(mk) and pre.sum() > 10 ** 6)
     e1, e2, e3 = stocks.ew_targets(P), stocks.ew_targets(Pd), stocks.ew_targets(Pz)
     check('(L) equal-weight benchmark and the beta market do not read stale / pause / dvol',
           all(np.array_equal(x, y) and np.array_equal(x, z) for x, y, z in zip(e1.picks, e2.picks, e3.picks))
@@ -697,8 +756,13 @@ def test_report(P):
           and len(a['extreme']['draws']) == 20, f'{dt:.1f}s for one spec (panel loaded)')
     check('report: one spec <= 60 s after the panel load', dt <= 60)
     check('report: gate data start recorded (NDX from 1985)', s['gate_from'] is not None and s['gate_from'] >= '1985')
-    check('report: post-2014 delisting suffixes are masked in names', all(not (n.rsplit('-', 1)[-1].isdigit()
-          and n.rsplit('-', 1)[-1] > '201412') for n in s['last_decision']['names']))
+    nm = s['last_decision']['names']
+    check('report: last-decision names are point-in-time ids (S####), never source symbols',
+          len(nm) > 0 and all(re.fullmatch(r'S\d{4}', n) for n in nm) and not set(nm) & set(P.tickers)
+          and 'point-in-time ids' in s['last_decision']['names_are'])
+    check('report: h_cons stores the merger-type return as 0.0, not -0.0',
+          s['h_cons']['merger'] == 0 and math.copysign(1.0, s['h_cons']['merger']) == 1.0
+          and s['h_cons']['fail'] == -stocks.H_FAIL and '-0.0' not in json.dumps(s['h_cons']))
     line = stocks.dev_part(s)
     check('report: dev line has the headline parts', all(x in line for x in ('세후 보수', '기본', '일괄-30%', '극단', '동일가중',
                                                                           'NDX보유', '무작위 바구니', 'Sharpe', 'G1 1.1'))
@@ -709,18 +773,19 @@ def test_review(P):
     print('== review fixes: gate warm-up window, empty book, ticker labels ==')
     from lab import data
     import warnings
-    # ticker labels: a post-2014 delisting suffix is dropped with no marker; one dated <= 2014 stays
-    post = [j for j, t in enumerate(P.tickers) if len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] > '201412']
-    pre = [j for j, t in enumerate(P.tickers) if len(t) > 7 and t[-7] == '-' and t[-6:].isdigit() and t[-6:] <= '201412']
+    # output names: point-in-time ids. The source symbols are last-known ones (not point in time): some were adopted
+    # after 2014, and an X / X_2 pair exists because one of the two was delisted after 2014 (in v2 three pairs are
+    # members at the same time), so no output prints them
+    ids = [P.label(j) for j in range(P.N)]
+    rk = np.array([int(x[1:]) for x in ids])
     late = [t for t in P.tickers if any(int(y) > 2014 for y in re.findall(r'(?:19|20)\d\d', t))]
-    if 'AET-201811' in P.tickers:          # v1 panel (LAB_STOCKS override): the label drops the suffix
-        check('labels (v1 panel): AET-201811 -> AET (no *), every post-2014 suffix dropped, <= 2014 suffixes kept',
-              P.label(col(P, 'AET-201811')) == 'AET' and all(P.label(j) == P.tickers[j][:-7] for j in post)
-              and all(P.label(j) == P.tickers[j] for j in pre) and len(post) > 0 and len(pre) > 0)
-    else:
-        check('tickers (v2 panel): no ticker string holds a year after 2014 (AET-201811 is AET), labels = tickers, '
-              '<= 2014 suffixes kept', not late and not post and 'AET' in P.tickers and len(pre) > 0
-              and all(P.label(j) == P.tickers[j] for j in range(P.N)))
+    check('labels: point-in-time ids S0001..S1503, unique, in the order of the first membership start, none is a '
+          'source symbol; the panel cut and subset keep them',
+          all(re.fullmatch(r'S\d{4}', x) for x in ids) and sorted(rk) == list(range(1, P.N + 1))
+          and bool(np.all(np.diff(P.fm[np.argsort(rk)]) >= 0)) and not set(ids) & set(P.tickers)
+          and np.array_equal(P.cut(row(P, '1990-01-02')).ids, P.ids) and np.array_equal(P.subset([5, 9]).ids, P.ids[[5, 9]]))
+    if 'AET-201811' not in P.tickers:      # v2: no post-2014 delisting date in a string (but see above)
+        check('tickers (v2 panel): no ticker string holds a year after 2014 (AET-201811 is AET)', not late and 'AET' in P.tickers)
     v1 = os.path.join(os.path.dirname(stocks.STOCKS), 'sp500_le2014.npz.xz')
     if stocks.STOCKS.endswith('_v2.npz.xz') and os.path.isfile(v1):
         P1 = stocks.load(v1)
@@ -730,7 +795,8 @@ def test_review(P):
         ch = [(x, y) for x, y in zip(P1.tickers, P.tickers) if x != y]
         okt = all(y == x[:-7] or (re.fullmatch(r'.+_\d', y) and (y[:-2] == x or y[:-2] == x[:-7])) for x, y in ch)
         check(f'panel v2 == v1 except {len(ch)} ticker strings (adj, dvol, member, stale, dates, exit gaps identical); '
-              'changed ones only lose a post-2014 suffix or take _2 by first membership start', same and okt and ch)
+              'changed ones only lose a post-2014 suffix or take _2 by first membership start; output ids identical '
+              '(they never read a string)', same and okt and ch and np.array_equal(P1.ids, P.ids))
         stocks._cache.pop(('panel', v1), None); del P1
     # gate warm-up: the 1986 window and the MS1 stream start at the first decision with sma(_NDX, 200) defined (+ delay)
     g = SPECS['gate']
@@ -787,6 +853,18 @@ def test_review(P):
     check('Sharpe of an all-T-bill book (excess stdev ~1e-15) is nan, not float noise', math.isnan(stocks.sharpe(o, P)))
 
 
+def test_docs():
+    print('== docs: refused inputs are not listed as usable data; no claim that ticker strings are point in time ==')
+    use = open(os.path.join(LAB, 'USAGE_FOR_THREADS_KO.md')).read().splitlines()
+    dl = [x for x in use if '거래대금' in x]
+    check('usage brief: every line naming 거래대금 (dollar volume) says it is refused / not to be used',
+          dl and all(any(m in x for m in ('거부', '쓰지 않', '안 됨', '못 씀')) for x in dl), f'{len(dl)} lines')
+    src = open(stocks.__file__).read() + open(os.path.join(LAB, 'README.md')).read() \
+        + open(os.path.join(LAB, 'tools', 'build_us_stocks.py')).read()
+    check('docs: no claim that the ticker strings hold no post-2014 fact; the last-known-symbol limit is stated',
+          'no post-2014 fact in a ticker' not in src and 'NOT point in time' in src and '시점 사실이 아님' in src)
+
+
 if __name__ == '__main__':
     t0 = time.time()
     test_errors()
@@ -805,6 +883,7 @@ if __name__ == '__main__':
     test_report(P)
     test_review(P)
     test_cli(P)
+    test_docs()
     print(f'{time.time() - t0:.0f}s')
     print('FAILS:', ', '.join(FAILS) if FAILS else 'none')
     sys.exit(1 if FAILS else 0)

@@ -6,19 +6,31 @@ Panel: research/data/us_stocks/sp500_le2014_v2.npz.xz (env LAB_STOCKS; its exit 
 sealed <= 2014-12-31. Source github.com/Johnbrick123/sp500-data (no licence published: personal research only, never
 republish the data). 1503 names = every name that was an S&P 500 member at some point 1968..2014, with point-in-time
 membership (start inclusive, end exclusive), split + dividend adjusted closes, dollar volume (mostly missing before
-1996) and no-trade days (`stale`, the source carried the prior close). v2 = v1 with no post-2014 fact in a ticker
-string (tools/build_us_stocks.py); every array is identical.
+1996; refused, L1) and no-trade days (`stale`, the source carried the prior close; unread, L2). v2 = v1 without the
+post-2014 delisting dates in the ticker strings (tools/build_us_stocks.py: AET-201811 -> AET); every array is identical.
+The strings are still NOT point in time: they are the source's last-known symbols, so some names print under a
+symbol adopted after 2014, and 8 bare symbols shared because one of two names was delisted after 2014 show as X / X_2
+(in three pairs both names are members at the same time; names are not listed here). No decision reads a symbol
+(only the META exit-gap mapping does), and output never prints one: names print as point-in-time ids (Panel.label:
+S0001.. = order of the first membership start, ties by a seeded draw).
 
 Source-dependent leaks (research/indiv_stock/is6 L1-L3, data NOTE_KO.md), closed here:
   L1 dollar volume: 1996-2006 dvol is present 0-4% of days for members that end within 2 years vs 49-86% for the
-     rest (the dead-name source has no volume) -> dvol is refused in every expression and read by nothing.
+     rest (the dead-name source has no volume) -> dvol (and volume, dollar_volume) is refused in every expression
+     and read by nothing.
   L2 stale: ~49% of the no-trade flags sit within 20 days before a delisted name's last price (member-day rate 0.55%
      for names ending within 2 years vs 0.02%) -> the flag is read by nothing; a stale day is a normal day at the
      carried price.
-  L3 history length: pre-membership price history is shorter for later-delisted names (median 476 vs 1382 days) ->
-     age() counts days since the first MEMBERSHIP start (point in time), no function reads the first price date
-     except a window's "price at its start" check, and every window is capped at MAX_WIN = 260 rows (n, n + skip for
-     ret, n of invvol(n)); a >= 260-day history condition passes ~1.0 for both groups (IS6 check).
+  L3 history length: pre-membership price history is shorter for later-delisted names (median 476 vs 1382 days; no
+     pre-membership price at all for 12.6% of the names first joining in 1990-99 that ended by 2014 vs 5.8% of those
+     that did not, 12.5% vs 3.8% for 2000-07) -> age() counts days since the first MEMBERSHIP start (point in time),
+     and every per-stock window reads prices from the first membership start on only (WINDOW FLOOR, Panel.wfloor):
+     whether a window value exists for a member depends on age() only, never on the pre-membership history. Before
+     the floor, a 260-row window existed for 0.77 of recent additions (age() < 260) that later ended within 2 years
+     vs 0.89 of the rest (2000-07). Names already members on the first point-in-time day (PIT_FROM = 1970-01-02,
+     membership before it unknown) read from their first price (98% of that cohort from the panel's first row
+     1968-01-02 in every group). Windows are capped at MAX_WIN = 260 rows (n, n + skip for ret, n of invvol(n)): the
+     lab rule since the L3 fix (with the floor the cap is no longer what closes L3).
   L4 price level: adjusted levels differ by source (retroactive adjustment) -> only ratios exist (ret, sma_ratio,
      high_dist); price-level names are refused.
   Exit gaps (META exit_gaps: documented halts around removal) overlap membership by 2..695 rows in all six gaps, so
@@ -40,15 +52,20 @@ Spec (YAML):
       exposure_every: daily     # daily (default) | rebalance (sample the exposure on decision rows only)
     signals: {up: "price(_NDX) > sma(_NDX, 200)"}   # optional, the ETF DSL on the ETF panel (cut at 2014-12-31)
 
-Per-stock functions (evaluated on decision rows only, every window ends at the decision close, n (n + skip) <= 260):
+Per-stock functions (evaluated on decision rows only, every window ends at the decision close and starts on or after
+the first membership start (the window floor, L3), n (n + skip) <= 260):
   ret(n[, skip])  total return over n days ending `skip` days ago     vol(n)        daily return stdev (n returns)
   sma_ratio(n)    price / n-day mean price                            high_dist(n)  price / n-day max - 1
   age()           trading days since the first membership start      beta(n)       n-day beta vs the EW member return
   rank(x)         cross-sectional percentile 0..1                      csz(x)        cross-sectional z-score
-  abs min max log, + - * /, comparisons, and or not. Refused: dvol (L1), price-level names (L4), first-price age (L3).
+  abs min max log, + - * /, comparisons, and or not. Refused: dvol / volume (L1), price-level names (L4), first-price
+  age (L3), windows above 260 rows.
 rank / csz rank among the names that are members with a price on that row. Prices are the adjusted closes carried
-forward through days without a price (return 0), from each name's first price on; a window needs a price at its start.
-age() is censored at the first point-in-time membership day (1970-01-02: names already members then count from it).
+forward through days without a price (return 0), from each name's first price on; a window starting before the
+name's window floor (first membership start; first price for the 1970-01-02 cohort) is NaN, so for a name that
+joined later, whether a value exists depends on age() only (ret(n) / vol(n) / beta(n): age() >= n; sma_ratio(n) /
+high_dist(n): age() >= n - 1). age() is censored at the first point-in-time membership day (1970-01-02:
+names already members then count from it).
 
 Eligibility at decision close t: member at t, a price at t (stale flags and exit-gap pauses are not read), filter
 true, score finite (and vol(n) finite > 0 for weight invvol(n)). A held name that leaves the index is sold at the
@@ -84,24 +101,29 @@ from . import data, dsl, engine, gates
 
 STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014_v2.npz.xz')
 DEV_END = gates.DEV_END
-STOCK_VERSION = 3           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+STOCK_VERSION = 4           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
                             # 2: the 1986 window and the MS1 stream start once the exposure gate is warmed up
                             #    (gate_from = first decision with every gate indicator defined); empty books say so;
                             #    tickers delisted after 2014 print bare
                             # 3: leaks L1-L4 closed (no dvol / stale / pause on the decision side, membership age,
                             #    windows <= 260 rows); classified delisting rule is the headline (+ ALL30 stress row)
+                            # 4: window floor at the first membership start (L3 among recent additions); names print
+                            #    as point-in-time ids (source symbols are last-known ones); h_cons merger 0.0 (not -0.0)
 BAR_VERDICT = '판정 불가 (개별주)'
 WINDOWS = {'w86': pd.Timestamp('1986-01-02'), 'w71': pd.Timestamp('1971-01-04')}   # both end DEV_END
 DL_WIN, DL_MIN, DL_FAIL = 250, 20, -0.30   # series-end class: return over DL_WIN rows (>= DL_MIN) to the last price
 H_FAIL = 0.50               # fail-type delisting return -50% (between Shumway's NYSE -30% and Nasdaq -55%)
 H_CONS = (H_FAIL, 0.0)      # headline rule (h_fail, h_merger): classified, fail-type -50%, merger-type 0
 H_ALL = 0.30                # stress row: every series end -30% (the headline rule up to STOCK_VERSION 2)
-MAX_WIN = 260               # longest per-stock window in rows (L3: longer history requirements tie to delisting)
+MAX_WIN = 260               # longest per-stock window in rows (lab rule since the L3 fix; the window floor closes L3)
+PIT_FROM = pd.Timestamp('1970-01-02')   # first day with point-in-time members (names members then: membership unknown
+                                        # before it; their window floor is the first price, age() counts from it)
+ID_SEED = 1970              # output ids: ties in the first membership start are ordered by this seeded draw
 HAZARD, N_HAZ, HAZ_SEED = 0.06, 20, 2014
 N_NULL, NULL_SEED = 200, 1986
 G1_SHARPE = 1.1
 N_PIT_CUTS = 3              # runtime causality cuts per spec (the test suite checks PIT in depth)
-MS1_FROM = pd.Timestamp('1970-01-02')   # first day with point-in-time members: start of the MS1 return stream
+MS1_FROM = PIT_FROM         # start of the MS1 return stream
 CAD = {'month': 'monthly', 'monthly': 'monthly', 'quarter': 'quarterly', 'quarterly': 'quarterly',
        'week': 'weekly', 'weekly': 'weekly'}
 STOCK_KEYS = {'rebalance', 'score', 'filter', 'top', 'top_pct', 'weight', 'max_weight', 'exposure', 'else',
@@ -129,9 +151,12 @@ class Panel:
     eligibility, the rank universe, the beta market), real = has and not inside a recorded exit gap (`pause`, from
     the panel's META: the days between last_trade and next_trade, where the source may carry the old price), the
     EXECUTION side: frozen = no real price inside the series, no_buy = no real price. fm = first membership row
-    (age()). `dvol` and `stale` are kept as loaded and read by nothing (leaks L1 / L2, module docstring)."""
+    (age()), wfloor = the first row a per-stock window may start on (L3: fm, or the first price for names already
+    members on PIT_FROM). `dvol` and `stale` are kept as loaded and read by nothing (leaks L1 / L2, module
+    docstring). `tickers` are the source's last-known symbols (not point in time, module docstring): read only to map
+    the META exit gaps; output prints `ids` (label)."""
 
-    def __init__(self, dates, tickers, adj, dvol, member, stale, pause=None):
+    def __init__(self, dates, tickers, adj, dvol, member, stale, pause=None, ids=None):
         dates = pd.DatetimeIndex(dates)
         keep = np.asarray(dates <= DEV_END)
         pause = np.zeros(np.shape(adj), bool) if pause is None else np.asarray(pause, bool)
@@ -156,6 +181,10 @@ class Panel:
         self.last = np.where(anyp, T - 1 - fin[::-1].argmax(0), -1)
         anym = self.member.any(0)
         self.fm = np.where(anym, self.member.argmax(0), T)   # first membership row (point in time; age())
+        self.f0 = int(self.idx.searchsorted(PIT_FROM))        # row of the first point-in-time day (T if after the end)
+        self.wfloor = np.where(self.fm <= self.f0, self.first, np.maximum(self.fm, self.first))   # window floor (L3)
+        self.ids = pit_ids(self.fm) if ids is None else np.asarray(ids).astype(str)
+        assert len(self.ids) == len(self.tickers)
         self.ended = (self.last >= 0) & (self.last < T - 1)  # the series ends before the panel's last row
         self.T, self.N = T, N
         self._m = {}
@@ -163,12 +192,12 @@ class Panel:
     def cut(self, c):
         """The panel as it was known at the close of row c - 1 (rows [0, c))."""
         return Panel(self.idx[:c], self.tickers, self.adj[:c], self.dvol[:c], self.member[:c], self.stale[:c],
-                     self.pause[:c])
+                     self.pause[:c], self.ids)
 
     def subset(self, cols):
         cols = np.asarray(cols)
         return Panel(self.idx, self.tickers[cols], self.adj[:, cols], self.dvol[:, cols], self.member[:, cols],
-                     self.stale[:, cols], self.pause[:, cols])
+                     self.stale[:, cols], self.pause[:, cols], self.ids[cols])
 
     def _get(self, k, f):
         if k not in self._m:
@@ -272,11 +301,21 @@ class Panel:
         return self._get(('cs', k), f)
 
     def label(self, j):
-        """Ticker for output. A delisting suffix after 2014 (e.g. AET-201811) is a post-2014 fact: dropped with no
-        marker (AET), so a name delisted after 2014 prints exactly like one still listed. Suffixes <= 201412 stay."""
-        t = str(self.tickers[j])
-        m = re.match(r'^(.*)-(\d{6})$', t)
-        return m.group(1) if m and m.group(2) > '201412' else t
+        """Name for output: the point-in-time id (pit_ids), never the source symbol. The symbols are the source's
+        last-known ones: a symbol adopted after 2014 or an X / X_2 pair (a name delisted after 2014 freed the symbol)
+        tells the reader what happened after 2014."""
+        return str(self.ids[j])
+
+
+def pit_ids(fm):
+    """Output ids S0001.. from <= 2014 point-in-time facts only: the order of the first membership start (fm), ties
+    (e.g. the 500 names already members on 1970-01-02) by a seeded draw (ID_SEED). Never a source symbol or its
+    alphabetical order: an id says when the name first joined, relative to the others, and nothing else."""
+    fm = np.asarray(fm)
+    order = np.lexsort((np.random.default_rng(ID_SEED).random(len(fm)), fm))
+    rank = np.empty(len(fm), np.int64)
+    rank[order] = np.arange(1, len(fm) + 1)
+    return np.array([f'S{r:04d}' for r in rank])
 
 
 def meta_path(path=None):
@@ -317,14 +356,16 @@ _SOK = (ast.Expression, ast.BoolOp, ast.BinOp, ast.UnaryOp, ast.Compare, ast.Cal
         ast.And, ast.Or, ast.Not, ast.Add, ast.Sub, ast.Mult, ast.Div, ast.USub, ast.UAdd, ast.Gt, ast.GtE, ast.Lt,
         ast.LtE, ast.Eq, ast.NotEq)
 # refused inputs (source-dependent leaks, module docstring): one-line Korean reasons
-MSG_DVOL = 'dvol 사용 불가: 출처 의존 누출 — 1996~2006 거래대금 유무가 미래 상폐를 드러냄'
+MSG_DVOL = '{nm} 사용 불가: 출처 의존 누출 — 1996~2006 거래대금 유무가 미래 상폐를 드러냄'
+VOL_NAMES = ('dvol', 'volume', 'dollar_volume')
 MSG_LEVEL = ('{nm} 사용 불가: 수정주가 수준은 출처(상폐 여부와 엮임)마다 소급 조정이 달라 미래와 엮임 — '
              '비율(ret·sma_ratio·high_dist)만 씀')
 MSG_FIRST = ('{nm} 사용 불가: 첫 가격 날짜(가격 이력 길이)는 미래 상폐와 엮임(나중 상폐 종목은 편입 전 이력이 짧음) — '
              '나이는 age()(첫 편입일부터 거래일 수)')
-MSG_WIN = ('{what}: {call} 창 {w}행 > ' + str(MAX_WIN) + ' 사용 불가 — 가격 이력 길이가 미래 상폐와 엮임(나중 상폐 '
-           '종목은 편입 전 이력이 짧아 긴 창 값의 유무가 미래를 드러냄); 창(ret는 n+skip)은 ' + str(MAX_WIN) + '행 이하')
-FORBID = dict({k: MSG_DVOL for k in ('dvol', 'volume', 'dollar_volume')},
+MSG_WIN = ('{what}: {call} 창 {w}행 > ' + str(MAX_WIN) + ' 사용 불가 — lab 창 상한 ' + str(MAX_WIN) + '행(ret는 n+skip, '
+           'invvol(n)도; 12-1 모멘텀은 ret(231, 21)). 창은 첫 편입일부터의 가격만 읽음(편입 전 이력은 미래 상폐와 엮임; '
+           '1970-01-02에 이미 편입된 종목은 첫 가격부터)')
+FORBID = dict({k: MSG_DVOL.format(nm=k) for k in VOL_NAMES},
               **{k: MSG_LEVEL.format(nm=k) for k in ('price', 'close', 'adj', 'adj_close', 'level', 'sma', 'ema',
                                                     'high', 'low', 'open', 'mcap')},
               **{k: MSG_FIRST.format(nm=k) for k in ('first_price', 'listed', 'listing_age', 'history', 'price_age',
@@ -399,12 +440,13 @@ class _Ctx:
         self.memo = {}
 
     def _valid(self, start):
-        """A window starting at row `start` (per decision) needs a price there: start >= first price, start >= 0.
-        The decision side's only read of the first price date; windows are <= MAX_WIN rows (L3: a >= 260-row history
-        condition passes ~1.0 for later-delisted names and the rest alike)."""
+        """A window starting at row `start` (per decision) must start on or after the name's window floor (wfloor: the
+        first membership start; the first price for names already members on PIT_FROM) and at a row >= 0. L3: the
+        pre-membership price history (its length, its existence) is tied to later delisting, so no window reads it
+        and whether a member's window value exists depends on age() only. Windows are <= MAX_WIN rows."""
         assert (self.D - np.asarray(start)).max(initial=0) <= MAX_WIN, 'window above MAX_WIN reached _Ctx'
         s = np.asarray(start)[:, None]
-        return (s >= 0) & (s >= self.P.first[None, :])
+        return (s >= 0) & (s >= self.P.wfloor[None, :])
 
     def _win_sum(self, k, n):
         cs = self.P.cs(k)
@@ -637,8 +679,8 @@ def _gate_forbid(expr):
         return                                        # dsl._parse reports the syntax error
     for n in ast.walk(tree):
         nm = n.id if isinstance(n, ast.Name) else n.value if isinstance(n, ast.Constant) else None
-        if isinstance(nm, str) and nm in ('dvol', 'volume', 'dollar_volume'):
-            raise ValueError(f'{MSG_DVOL} (gate: {expr!r})')
+        if isinstance(nm, str) and nm in VOL_NAMES:
+            raise ValueError(f'{MSG_DVOL.format(nm=nm)} (gate: {expr!r})')
 
 
 def _gate_names(expr, own):
@@ -1231,7 +1273,7 @@ def evaluate(spec, P=None, null=True, pit=True):
     out = dict(kind='stock', universe='sp500', stock_version=STOCK_VERSION, dev_end=str(DEV_END.date()),
                label='개별주 S&P500 시점편입·상폐포함 (개발 요약, 기준 아님)', cost=cost, delay=delay, tax=tax,
                h_cons=dict(rule='classified', fail_if=f'return over {DL_WIN} rows (>= {DL_MIN}) to the last price < '
-                           f'{DL_FAIL:.0%}', fail=-H_CONS[0], merger=-H_CONS[1]), h_all=H_ALL, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3], windows={})
+                           f'{DL_FAIL:.0%}', fail=0.0 - H_CONS[0], merger=0.0 - H_CONS[1]), h_all=H_ALL, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3], windows={})
     for w, st0 in WINDOWS.items():
         st = max([st0] + [pd.Timestamp(v) for v in efirst.values()])
         by = 'else' if st > st0 else None
@@ -1275,6 +1317,8 @@ def evaluate(spec, P=None, null=True, pit=True):
     j = int(np.searchsorted(tg.dec, P.T - 1, side='right')) - 1
     out['last_decision'] = dict(date=str(P.idx[tg.dec[j]].date()) if j >= 0 else None,
                                 names=[P.label(x) for x in tg.picks[j][:30]] if j >= 0 else [],
+                                names_are='point-in-time ids (S0001.. = order of the first membership start, ties '
+                                          'by a seeded draw); source symbols are last-known ones and are not printed',
                                 exposure=float(tg.e[-1]))
     out['n_decisions'] = int(len(tg.dec))
     out['screen_pass'] = bool(out['windows']['w86'].get('g1_pass')) and (out.get('causality') or {}).get('ok', True)

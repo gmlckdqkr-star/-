@@ -7,9 +7,13 @@ pyarrow.  Nothing dated after 2014-12-31 is written; membership ends after
 (the source writes AET-201811) is dropped from the ticker (AET), so the
 panel holds no post-2014 dates.  When names then share a bare symbol, the
 one with the earliest first membership start (a <= 2014 fact) keeps it and
-the others get _2, _3 in that order: the suffix does not mark the name that
-was delisted after 2014.  Limit: symbols are the source's last-known ones
-(a rename after 2014 shows the new symbol); lab never selects by symbol.
+the others get _2, _3 in that order: the suffix does not mark WHICH name was
+delisted after 2014.  Limit (the strings are not point in time): symbols are
+the source's last-known ones, so a rename after 2014 shows the new symbol,
+and an X / X_2 pair (8 in v2) exists only because one of the two was
+delisted after 2014 (in three pairs both names are members at the same
+time).  lab never selects by symbol and prints
+point-in-time ids instead (stocks.Panel.label).
 
 usage: python -I build_us_stocks.py <raw_dir> <out_dir> [tag]
   writes <out_dir>/sp500_le2014[_tag].npz.xz and META[_tag].json (lab: v2 = tag v2)
