@@ -7,16 +7,20 @@
 ```
 python3 -B -m lab run specs/trend_tqqq_200.yaml specs/qld_088_hold.yaml            # --bar quick (기본)
 python3 -B -m lab run specs/x.yaml --bar full [--workers 4] [--all-versions]
-python3 -B -m lab run specs/x.yaml --bar none                                       # 개발 요약만
+python3 -B -m lab run specs/x.yaml --bar none                                       # 개발 요약만 (+ MS1·G1)
 python3 -B -m lab run specs/ --bar quick        # 폴더 = 안의 *.yaml/*.yml/*.json 전부, 끝에 순위 요약표(≤1.5KB)
+python3 -B -m lab run specs/x.yaml --std none   # MS1·G1 생략 (기본 --std auto, --std ms1 | g1 | ms1,g1)
+python3 -B -m lab setup                          # MS1 계산 환경 (한 번, 아래 'MS1·G1 자동 보고')
 python3 -B -m lab ledger
 python3 -B tests/test_parity.py      # 기존 beat_qld 엔진과 결과 일치 (따로 실행)
 python3 -B tests/test_bb.py          # 기준 어댑터 시험 (따로 실행: 두 시험이 서로 다른 engine 모듈을 씀)
 python3 -B tests/test_dsl2.py        # v2 문법 시험 (따로 실행)
 python3 -B tests/test_stocks.py      # 개별 종목(universe: sp500) 시험 (따로 실행, 약 3분)
+python3 -B tests/test_ms1.py         # MS1·G1 시험 (따로 실행, MS1 환경 필요)
 ```
 - 명세가 2개 이상이면 한 줄 결과 뒤에 **요약표**: 빠른 선별 lg 중앙값(10y b63 1000만) 순 상위 10개
-  (`이름 hash lg/QLD/QQQM 개발12y 판정·미달관문`; 판정 단계 없으면 개발 12년 배수 순). 전체는 `LAB_HOME/out/batch_<UTC>.json`.
+  (`이름 hash lg/QLD/QQQM 개발12y MS1경로·G1 판정·미달관문`; 판정 단계 없으면 개발 12년 배수 순).
+- 한 줄이 400바이트를 넘으면 개발·판정·MS1 부분을 같은 숫자의 짧은 꼴로 바꿈(그래도 넘으면 끝을 자름). 전체는 `LAB_HOME/out/batch_<UTC>.json`.
 - 개발 요약에도 **인과성 시험**(실제 ≤2014 자료를 무작위 12곳 + 주·월·분기 경계 24곳에서 잘라 비중 비교, plugin은 무작위 300곳)이 붙음.
   위반이면 `개발 인과성 위반`, 개발선별 탈락. 자른 자료는 짧은 것부터, 전체 자료는 마지막에 계산.
 - 개발 요약 엔진: `rebalance`가 daily가 아니면 표본일(기간 첫 거래일)마다 목표 비중으로 **되돌려 거래**(고정 비중도 표류하지 않음).
@@ -143,6 +147,7 @@ signals: {up: "price(_NDX) > sma(_NDX, 200)"}   # 선택, 기존 ETF DSL (ETF �
 | `invvol(x, [a,b,..], n)` | 목록 안 역변동성 비중 중 x의 몫 (변동성 = 배율 × 기초지수, 합 1) |
 | `rp(x, [a,b,..], n)` | 위험균형(위험기여 같게) 비중 중 x의 몫 (n일 공분산, 음의 상관도 정확히 풂: 두 상품이면 invvol과 같음) |
 | `level(x)` | 보유 상품 x의 **거래 가격 수준**(개발 = 상장 전 합성 포함 누적 수익, 판정 = 경로의 x 가격). 비율로만 쓸 것, 예 `level(TQQQ) / high(level(TQQQ), 252)` |
+| `macro(k)` | MS1 거시 경보 8개 중 하나(참/거짓): `inv` `inv2`(장단기 역전 378/504일 안) `shock` `shock10`(10년물 1년 +1.5/+1.0%p) `shock6m` `shock6m75` `shock3m`(6개월 +1.0/+0.75, 3개월 +0.75%p) `csj`(신용 스프레드 급등). 개발 = 실제 경보(`lab/macro_flags_le2014.csv.gz`, ≤2014, `tools/build_macro_flags.py`), MS1 경로 = 그 기준의 경보, 판정 경로엔 없음 → `REJECT (version impossible)`. `macro(inv)` = `macro('inv')` |
 
 invvol·rp는 목록의 **모든** 상품에 n일 변동성이 생긴 날부터 값이 있음(그 전엔 0). 지표 함수(`sma` `high` `dd` `vol` …)의 첫 인자는
 이름 또는 식(예 `sma(level(TQQQ), 50)`). 상수 계산은 실수로 해서 `10**10**9` 같은 식은 바로 오류. 신호 이름은 식별자만:
@@ -188,7 +193,7 @@ YAML은 `on` `off` `yes` `no`를 참/거짓으로 읽으므로 신호 이름으�
   전체를 마지막에 보내므로 저장해 둔 전체 답을 잘린 호출에 되돌려 주는 수법이 안 통함. plugin은 경로당 무작위 300곳 + 경계 절단.
 - 비용: 판정 경로 1개 계산마다 fork 1번(~10ms). quick은 몇 초 늘고, full(판당 경로 수만 개)은 4 작업자 기준 판당 수 분 늘 수 있음.
 
-**판정 경로가 재표본하지 않는 입력**(`_IRX` 등 거시, `*.KS`, `KRW_X`, GLD·SHY 같은 대용 없는 상품)은 식·rotate·목록·
+**판정 경로가 재표본하지 않는 입력**(`_IRX` 등 거시, `macro(k)`, `*.KS`, `KRW_X`, GLD·SHY 같은 대용 없는 상품)은 식·rotate·목록·
 floor_when·plugin inputs 어디에 있든 개발 요약은 계산, 판정은 `REJECT (version impossible)`(NotJudgeable). (`_TNX`는 패널에 없음.)
 
 ### 예시 1 — rotation (`specs/rotate_dualmom.yaml`)
@@ -227,6 +232,61 @@ plugin 예시: `specs/plugin_reentry.yaml` + `specs/plugins/reentry_wait.py`.
   계좌 여러 개를 섞는 combo는 lab으로 못 씀.
 - `f10_monthly_trend_mom`, `f13_static_mix_quarterly`(고정 혼합, 분기 재조정), `ivol_tqqq_tmf`·`ivol_tqqq_tmf_rotate`(같은 비중을
   식과 rotate 두 가지로), `rp_tqqq_tmf`(두 상품 위험균형 = 역변동성) — 상수는 탐색 안 한 교과서 값.
+- `macro_trend_tqqq` — `macro(k)` 예시(200일 평균 아래 + 역전/금리 급등 경보면 현금, 아니면 TQQQ).
+
+## MS1·G1 자동 보고 (`--std auto`, 기본)
+프로젝트 고정 측정 기준 **MS1**(`research/measure_std/MEASURE_STD_KO.md`, `std.py`)과 정보량 관문 **G1**
+(`research/breakthrough/INFO_GATE_KO.md`, `code/gate.py`)을 lab이 자동으로 재서 한 줄에 붙임. 모두 개발 구간(≤2014) 숫자.
+```
+MS1 경로 5.7% (하한 5.7%, s0.85 16.2·1x 11.6) dd80 98% s0.85대비 -10.3%p 승 6% §5엔진 | G1 NDX 52.9(상시55.5) SPX 53.0(55.7) 보정 47.5 N=1 닫음 CLOSE
+```
+- **MS1**: 경로 = dev250_path 30년 세후(청산세 포함) 연복리 중앙값(MS1 대표값). 하한 = std.measure의 `FLOOR_MS1`
+  = min(dev250_path, 실제 NDX 86~14). 괄호 안 = 같은 기준의 s0.85·1배 보유. dd80 = 경로 중 MDD ≤ −80% 비율.
+  s0.85대비 = 같은 경로끼리 짝지은 차이의 중앙값(%p), 승 = s0.85를 이긴 경로 비율. 다섯 기준 전체(glued, 실제 NDX,
+  S&P 55~85·70~85, 1·2·3배 보유, 연 거래 수)는 `LAB_HOME/out/<hash>_<bar>.json`의 `std`.
+- **G1**: 실제 나스닥100 1986~2014 / S&P500 1955~1985 21일 블록 적중률(괄호 = 늘 들고 있기 적중), 보정 = 낮은 시대의
+  적중 − 2·SE·√(1+ln N)(N = 원장의 계열 시도 수), 판정 `닫음 CLOSE` / `보류 HOLD` / `설계 BUILD` / `60%후보 60%-CANDIDATE`.
+  시장 안 = 종가 t의 위험 비중 합 > 0. 명세를 실제 전체 틀(NDX 1984~2014, SPX 1928~1985: SPX 수준을 `_NDX` 자리에, 상품은
+  SPX 수익으로)에서 계산하고 1986-01-01 전은 SPX 신호, 뒤는 NDX 신호. 한 시대라도 늘 안(또는 늘 밖)이면
+  `G1 해당 없음 (상시 보유)` + 비용 후·세전 연 샤프(실제 NDX 86~14·S&P 55~85 중 낮은 쪽) vs 1.1 — INFO_GATE의 MS1 기준 샤프
+  (0.55 등)와 정의가 달라 섞지 않음.
+- **자격**: `account: us`, 보유 ⊂ {QQQ, QLD, TQQQ, CASH}, 읽는 계열 ⊂ {QQQ, QLD, TQQQ, _NDX} + `macro(k)`. 그 밖은
+  `MS1: 해당 없음 (이유)`(예 `보유 SSO,TLT: QQQ·QLD·TQQQ·CASH만`). plugin 명세도 됨(경로마다 격리 실행이라 느림).
+- **엔진 = MS1-조건 sleeve 엔진** (`lab/ms1eng.py`, 줄 끝 `§5엔진`): std.measure의 엔진은 수준 L을 TQQQ L/3 + 현금으로 들어서
+  QQQ·QLD 명세엔 틀린 값을 냄(B=1 → 2.9%, 1배 보유 11.6%가 아님). 그래서 명세의 QQQ·QLD·TQQQ·현금 비중을 그대로 거래하는
+  엔진을 따로 두고 beng(= std.engine)의 1장 조건을 그대로 씀: 편도 0.3%, 해마다(252일) 실현 순이익 − 250만(시작 1천만 → 0.25)의
+  22%를 비례 매도로 납부, 이월결손 없음, 해 끝에 공제만큼 이익(또는 초과 실현이면 손실) 실현(beng harvest), 마지막 날 청산세,
+  2·3배 = L·r − (L−1)·rf − 2.45%/년, 1배 0.2%/년, 현금 (rf − 2%p)·(1 − 15.4%), 체결 지연 2, 나스닥100 가격지수, 다섯 기준
+  (std.contexts() 그대로). MEASURE_STD_KO.md 5장이 허용하는 '1장 조건·2장 기준이 같은 별도 엔진'.
+  명세는 경로마다 lab DSL 그대로 계산: `_NDX` = 경로 지수, 보유 상품 수준 = MS1 비용 수익(level(x)·brake), `macro(k)` =
+  그 기준의 경보(dev250_path = 경로 위 재계산, glued = 원래 날짜, 실제 기준 = 실제), month()/weekday() = 경로 행의 원래 날짜.
+  명세의 cost·delay는 안 씀(MS1 0.3%·지연 2), `rebalance:` 표본일엔 목표로 되돌려 거래, 수준 반올림 없음(비중이 바뀌면 거래).
+- **일치 시험** (`tests/test_ms1.py`):
+  - TQQQ 상수 = MS1 3배 보유 행, 다섯 기준 모두 정확히(4.23 / 4.23 / 3.87 / 9.84 / 4.35).
+  - TQQQ+현금 명세 = 같은 명세의 std.measure와 정확히 일치: trend_tqqq_200(경로 5.73, 실제 NDX 6.08, S&P55 11.56),
+    macro 경보 명세(경로 10.77, glued 22.57), TQQQ 0.5. **연속 비중**(변동성 비례 TQQQ)은 경로 11.15 vs 13.46: beng은 수준을
+    0.1/0.5 단위로 반올림하고 한 단위 넘게 움직일 때만 거래, sleeve 엔진은 비중이 바뀔 때마다 0.3%로 거래(연 250회) —
+    순서 단위 규칙 차이. 연속 비중 명세는 `band:`로 거래를 줄일 것.
+  - QQQ·QLD 상수 vs std.hold 1·2배 행: 세전 곡선은 정확히 비례(수익 공식 일치). 세후 차이(경로 / glued / 실제 NDX / S&P55 / S&P70):
+    1배 +0.07 / +0.07 / +0.13 / +0.01 / +0.58%p, 2배 +0.12 / +0.12 / +0.24 / +0.06 / +0.43%p. 이유: std.hold의 1·2배는 공제 없이
+    마지막에 한 번 과세하는 별도 식이고, sleeve 엔진은 s0.85·3배 행과 같은 beng 규칙(해마다 250만 공제만큼 이익 실현)을 씀.
+    그래서 이 두 행은 0.05%p 안으로 안 맞음(숨기지 않음). 공제 효과는 수익이 낮은 시대(S&P 70~85)에서 큼.
+  - `measure_series`에 나스닥100 1배 흐름(0.2%/년, 회전 0) → 1배 보유 행과 경로 −0.007, 실제 NDX −0.006%p.
+  - G1 자체 점검: 늘 안 55.46 / 55.68 닫음, 미래 오라클 1.0, SMA200(trend_tqqq_200) 52.87 / 52.97 닫음.
+- **`ms1.measure_series(dates, daily_ret_after_cost, label, turnover=1.0)`** (다른 명세 종류용 API): 임의의 일간 수익 흐름을
+  같은 경로 색인 행렬로 다시 표본(IS1 방법, research/indiv_stock/code/bases.py + eng.py), s0.85와 경로별 짝. 세금 = 252일마다
+  22% × max(min(1, 회전) × 미실현 이익 − 0.25, 0), 이월 없음, 진입·청산 비용 0.3%, 청산세. 흐름이 덮지 못하는 기준(사용 날의
+  95% 미만, 예 1986년 이후 흐름의 S&P 시대)은 None. 2014-12-31 뒤 행은 버림. 표시 `MS1 (수익 흐름 재표본, 경로 재계산 없음)`.
+- **준비**: `python3 -B -m lab setup` → `LAB_CACHE/ms1-venv`(기본 `~/.cache/lab/ms1-venv`, PyPI에서 numba scipy xlrd numpy
+  pandas pyyaml, 1~2분, 약 500MB). 없으면 `lab run`이 한 번 알아서 설치(`MS1 계산 환경 설치 중 ...` 한 줄), 실패하면
+  `MS1: 설치 실패 (python3 -m lab setup)`을 찍고 개발 요약은 계속(자동 재시도는 setup 성공 전까지 안 함). 다른 인터프리터는
+  `LAB_MS1_PY`. NUMBA_CACHE_DIR = `LAB_CACHE/numba`. MS1 코드(std·numba)는 lab·판정 프로세스에 import하지 않고 배치마다
+  작업자 프로세스 1개(`lab/ms1.py serve`)에서만 돎(모듈 이름 충돌 방지).
+- **버전 고정**: std.py sha256 앞 12자리 `ee4de887037c`, gate.py `8bf8531428cb`가 아니면 `MS1 기준 변경됨`(숫자 없음).
+- **속도**: 작업자 시작 처음 한 번 ~30 s(numba 컴파일·s0.85 기준값 저장), 그 뒤 ~10 s(개발 요약과 겹쳐 돎). 명세당 1~12 s
+  (경로 500개 DSL 계산; macro 명세는 path·glued 따로 1000개; plugin은 경로마다 fork라 ~10~20 s). 판정(quick/full)과 동시에
+  계산. 결과는 원장에 (해시, 엔진 버전 + std/gate sha)로 저장 → 다시 돌리면 즉시(G1 보정은 그때의 N으로 다시 계산).
+- **봉인**: 기준 경로·G1 틀·라벨의 원래 날짜는 모두 ≤2014-12-31(시험), macro 파일도 ≤2014, measure_series는 그 뒤 행을 버림.
 
 판정 BAR_VERSION 3 / 개발 요약 DEV_VERSION 2: rp 풀이, invvol 시작, plugin 격리, 절단 위치, 개발 엔진 재조정이 바뀌어서
 예전에 저장된 판정·개발 결과는 다시 계산함(해시·계열 N은 그대로).

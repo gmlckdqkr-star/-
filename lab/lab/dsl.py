@@ -30,6 +30,9 @@ v2 additions (see README for the cheat-sheet):
   `plugin:`        path.py:func, func(F, sleeves, params) -> weights, for shapes the DSL cannot express. Runs out of
                    process (lab/sandbox.py: fresh forked child per session, no files, no panel, no lab state).
   level(x)         traded level of a held sleeve (dev: cumprod(1 + R[x]); bar: the path's sleeve price).
+  macro(k)         one of the 8 MS1 macro warning flags (inv inv2 shock shock10 shock6m shock6m75 shock3m csj), bool.
+                   dev: historical daily flags (data.macro_flags, <= 2014); MS1 path: F['macro:k'] (lab/ms1.py puts
+                   the path-recomputed / glued / historical ctx.F flag there). Not on the bar paths (NotJudgeable).
 Post-processing order: rules (or plugin) -> sum <= 1 -> `rebalance` sampling -> brake -> band.
 """
 import ast, copy, hashlib, io, itertools, json, math, os, re, tokenize
@@ -119,6 +122,9 @@ def check_spec(spec):
     if isinstance(c, bool) or not isinstance(c, (int, float)) or not np.isfinite(c):
         raise ValueError(f'cost must be a finite number, not {c!r}')
     acct, _ = account_of(spec)
+    badm = sorted(k for k in macro_keys(spec) if k not in data.MACRO_KEYS)
+    if badm:
+        raise ValueError(f'macro(k): k must be one of {", ".join(data.MACRO_KEYS)}, not {badm}')
     if spec.get('grid') is not None:
         raise ValueError('spec has a grid: expand it first (dsl.expand_grid; `lab run` does this)')
     if is_universe(spec):                     # single stocks: own checks (stock block, gate signals)
@@ -342,6 +348,21 @@ def _mk(F, R=None):
             memo[k] = _erc(C, np.all(np.isfinite(C.reshape(len(C), -1)), 1)[:, None] & np.ones(len(A), bool))
         return pd.Series(memo[k][:, A.index(x)], index=idx)
 
+    def macro(k):
+        k = str(k)
+        if k not in data.MACRO_KEYS:
+            raise ValueError(f'macro(k): k must be one of {", ".join(data.MACRO_KEYS)}, not {k!r}')
+        col = 'macro:' + k                       # an MS1 path frame carries its own (path-recomputed) flag
+        if col in F.columns:
+            return F[col].astype(bool)
+        return data.macro_flags(idx)[k]
+
+    def cal(part):                               # an MS1 bootstrap frame carries each row's source date parts
+        col = 'cal:' + part
+        if col in F.columns:
+            return F[col].astype(int)
+        return pd.Series(getattr(F.index, part), index=F.index)
+
     fn = {
         'price': lambda x: P(x),
         'sma': lambda x, n: P(x).rolling(_win(n, 'sma'), min_periods=_win(n, 'sma')).mean(),
@@ -352,21 +373,21 @@ def _mk(F, R=None):
         'low': lambda x, n: P(x).rolling(_win(n, 'low'), min_periods=1).min(),
         'dd': lambda x, n: P(x) / P(x).rolling(_win(n, 'dd'), min_periods=1).max() - 1,
         'rsi': rsi,
-        'month': lambda: pd.Series(F.index.month, index=F.index),
-        'weekday': lambda: pd.Series(F.index.weekday, index=F.index),
+        'month': lambda: cal('month'),
+        'weekday': lambda: cal('weekday'),
         'min': lambda a, b: np.minimum(a, b),
         'max': lambda a, b: np.maximum(a, b),
         'abs': lambda a: np.abs(a),
         'lag': lambda s, n=1: s.shift(_win(n, 'lag')),
         'latch': lambda on, off: _latch(on, off, F.index),
         'corr': corr, 'zscore': zscore, 'ewvol': ewvol, 'since': since, 'hold_min': hold_min,
-        'invvol': invvol, 'rp': rp, 'level': level,
+        'invvol': invvol, 'rp': rp, 'level': level, 'macro': macro,
     }
     return fn
 
 
 FUNCS = ('price', 'sma', 'ema', 'ret', 'vol', 'high', 'low', 'dd', 'rsi', 'month', 'weekday', 'min', 'max', 'abs',
-         'lag', 'latch', 'corr', 'zscore', 'ewvol', 'since', 'hold_min', 'invvol', 'rp', 'level')
+         'lag', 'latch', 'corr', 'zscore', 'ewvol', 'since', 'hold_min', 'invvol', 'rp', 'level', 'macro')
 
 
 def _hold_min(b, n):
@@ -466,6 +487,13 @@ class _Bool(ast.NodeTransformer):
         for v in node.values[1:]:
             out = ast.BinOp(left=out, op=op, right=v)
         return out
+
+    def visit_Call(self, node):
+        self.generic_visit(node)               # macro(inv) == macro('inv'): the bare flag key is not a series name
+        if isinstance(node.func, ast.Name) and node.func.id == 'macro' and node.args \
+                and isinstance(node.args[0], ast.Name):
+            node.args[0] = ast.copy_location(ast.Constant(value=node.args[0].id), node.args[0])
+        return node
 
     def visit_UnaryOp(self, node):
         self.generic_visit(node)
@@ -571,18 +599,32 @@ def level_names(spec):
 def spec_names(spec):
     """Series names a spec reads: bare names in expressions (minus DSL functions and the spec's own signal names),
     every string constant (price('XLK') reads a series just like price(XLK)), rotate / invvol / rp assets and the
-    plugin's `inputs` (an input that is not an expression counts as a name)."""
+    plugin's `inputs` (an input that is not an expression counts as a name). macro(k) adds 'macro:k' (the flag is
+    not a panel series; the bar refuses it as a name it cannot put on a path)."""
     own = set(spec.get('signals') or {})
     out = {str(x) for x in (spec.get('inputs') or []) if not _parses(x)}
     for e in spec_exprs(spec):
         if isinstance(e, (int, float)):
             continue
-        for n in ast.walk(ast.parse(str(e), mode='eval')):
+        skip = set()
+        for n in ast.walk(ast.parse(str(e), mode='eval')):         # breadth first: a call before its arguments
+            if id(n) in skip:
+                continue
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == 'macro':
+                for a in n.args:
+                    skip.add(id(a))
+                    k = a.id if isinstance(a, ast.Name) else a.value if isinstance(a, ast.Constant) else '?'
+                    out.add(f'macro:{k}')
             if isinstance(n, ast.Name) and n.id not in FUNCS and n.id not in own:
                 out.add(n.id)
             elif isinstance(n, ast.Constant) and isinstance(n.value, str):
                 out.add(n.value)
     return out
+
+
+def macro_keys(spec):
+    """Flag keys read through macro(k) anywhere in the spec."""
+    return {n.split(':', 1)[1] for n in spec_names(spec) if n.startswith('macro:')}
 
 
 # ---------------- cadence ----------------
