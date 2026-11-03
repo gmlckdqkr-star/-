@@ -8,7 +8,8 @@
                    Lab never prints APPLY-Q / APPLY-Q60.
        --bar none: dev summary only.
        A single-stock spec (`universe: sp500`, lab/stocks.py) prints its own dev line (S&P 500 point-in-time members,
-       delisted included, stress rows, random-basket null, G1 Sharpe); every bar mode answers '판정 불가 (개별주)'.
+       delisted included, stress rows, random-basket null, G1 Sharpe) + 'MS1(수익 흐름 재표본)' (its return stream on
+       the MS1 bases) + G1 on its exposure gate if it has one; every bar mode answers '판정 불가 (개별주)'.
        --all-versions (full only): keep running the remaining versions after a REJECT (default: stop, REJECT is final).
        --std auto (default): MS1 headline + G1 gate for MS1-eligible specs (lab/ms1.py, one out-of-process worker per
                    batch; account us, sleeves QQQ / QLD / TQQQ / CASH, reads the NDX level and macro(k) only),
@@ -119,8 +120,10 @@ def run_one(path, bar='quick', workers=4, early_stop=True):
 
 
 def _line(head, devs, bars, stds, tail):
-    """Join the parts, switching to the compact forms (dev, then bar, then MS1 / G1) while the line is > MAX_LINE."""
-    for i, j, k in ((0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 1, 1), (2, 1, 1)):
+    """Join the parts, switching to the compact forms (dev, then bar, then MS1 / G1) while the line is > MAX_LINE.
+    stds = (full, short[, shortest]) (the shortest form exists for stock specs)."""
+    stds = tuple(stds) + tuple(stds[-1:]) * (3 - len(stds))
+    for i, j, k in ((0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 1, 1), (2, 1, 1), (2, 1, 2)):
         s = ' | '.join(x for x in (head, devs[i], bars[j], stds[k], tail) if x)
         if len(s.encode('utf-8')) <= MAX_LINE:
             return s
@@ -163,7 +166,7 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
     detail = dict(spec=spec, hash=h, dev_summary=s)
     head = f"[{name}] 계열={fam} N={ledger.family_n(fam)}{' (중복)' if known else ''}"
     if stock:
-        devs = (stocks.dev_part(s), stocks.dev_part(s, compact=True), stocks.dev_part(s, compact=True))
+        devs = (stocks.dev_part(s), stocks.dev_part(s, compact=True), stocks.dev_part(s, compact=2))
     else:
         devs = (_dev_part(s), _dev_part(s, short=True), _dev_part(s, short=2))
     bars, stds = ('', ''), ('', '')
@@ -172,8 +175,10 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
                dev_screen=s['screen_pass'])
     if stock:
         rec['stock_cagr'] = s['windows']['w86']['cons']['cagr_at']
-    # the MS1 worker computes while the bar runs (single-stock specs: dev line only, MS1 / G1 not wired yet)
-    st = ms1.begin(spec, h, fam, ses) if (ses is not None and not stock) else None
+    st = None
+    if ses is not None:               # the MS1 worker computes while the bar runs
+        st = (ms1.begin_stock(spec, h, fam, ses, lambda: stocks.ms1_stream(spec)) if stock
+              else ms1.begin(spec, h, fam, ses))
     if bar != 'none':
         try:
             key, r, res, bcached = _bar(spec, h, bar, workers, early_stop)
@@ -192,10 +197,11 @@ def run_spec(spec, bar='quick', workers=4, early_stop=True, ses=None):
     if st is not None:
         m = ms1.finish(st)
         scached = m['cached']
-        stds = (m['text'], m.get('short') or m['text'])
+        stds = (m['text'], m.get('short') or m['text'], m.get('shortest') or m.get('short') or m['text'])
         rec.update(ms1=m['ms1'], g1=m['g1'])
         if m['detail'] is not None:
-            detail['std'] = dict(m['detail'], key=ms1.cache_key(), label=ms1.LABEL, cached=m['cached'])
+            detail['std'] = dict(m['detail'], key=m.get('key') or ms1.cache_key(), label=m.get('label') or ms1.LABEL,
+                                 cached=m['cached'])
     if not (cached and (bar == 'none' or bcached) and scached):   # keep the full detail of the first computation
         os.makedirs(os.path.join(ledger.HOME, 'out'), exist_ok=True)
         with open(os.path.join(ledger.HOME, 'out', f'{h}_{bar}.json'), 'w') as fh:
@@ -239,16 +245,24 @@ def _ms_col(r, std):
 
 def summary(recs, bar):
     """Compact ranked table (<= MAX_SUMMARY bytes): top 10 by the quick screen's median log growth (10y b63 10M,
-    full: own_KRWX), or by the dev 12y bootstrap multiple when no bar ran. Errors are counted, not listed."""
+    full: own_KRWX); when no bar ran, by the MS1 headline (specs without one after, by the dev 12y bootstrap
+    multiple). Single-stock specs get their own block (conservative headline order). Errors are counted, not listed."""
     ok = [r for r in recs if 'error' not in r]
     stk = sorted((r for r in ok if r.get('stock_cagr') is not None), key=lambda r: r['stock_cagr'], reverse=True)
     ok = [r for r in ok if r.get('stock_cagr') is None]
     by_lg = any(r.get('lg') is not None for r in ok)
-    key = (lambda r: (r.get('lg') is not None, r.get('lg') or 0.0)) if by_lg else (lambda r: r.get('dev_y12') or 0.0)
+    by_ms1 = not by_lg and any(r.get('ms1') is not None for r in ok)    # no bar ran: the MS1 headline ranks first
+    if by_lg:
+        key = lambda r: (r.get('lg') is not None, r.get('lg') or 0.0)
+    elif by_ms1:
+        key = lambda r: (r.get('ms1') is not None, r.get('ms1') or 0.0, r.get('dev_y12') or 0.0)
+    else:
+        key = lambda r: r.get('dev_y12') or 0.0
     rows = sorted(ok, key=key, reverse=True)[:10]
-    what = ('lg 중앙값(10y b63 1000만' + (', own_KRWX' if bar == 'full' else '') + ')') if by_lg else '개발 12년 배수'
+    what = ('lg 중앙값(10y b63 1000만' + (', own_KRWX' if bar == 'full' else '') + ')') if by_lg else \
+        'MS1 경로(없으면 개발 12년 배수)' if by_ms1 else '개발 12년 배수'
     nerr = len(recs) - len(ok) - len(stk)
-    std = any('ms1' in r for r in ok)
+    std = any('ms1' in r for r in ok + stk)
     if ok or not stk:
         lines = [f"== 요약: {what} 순 상위 {len(rows)}/{len(recs) - len(stk)}"
                  + (f", 오류 {nerr}" if nerr else '')
@@ -263,11 +277,13 @@ def summary(recs, bar):
         lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} {lg} x{r.get('dev_y12') or 0:.1f}{_ms_col(r, std)} "
                           f"{_verdict_short(r)}", 140))
     if stk:                  # single-stock specs (universe: sp500): own block, ranked by the conservative headline
-        lines.append(f"-- 개별주 {min(len(stk), 5)}/{len(stk)}: 1986~2014 세후 보수 순 (기준 판정 불가, 개발 요약만)")
+        lines.append(f"-- 개별주 {min(len(stk), 5)}/{len(stk)}: 1986~2014 세후 보수 순"
+                     + (' · MS1 = 수익 흐름 재표본 경로' if std else '') + ' (기준 판정 불가, 개발 요약만)')
         for i, r in enumerate(stk[:5], 1):
             nm = _cut(str(r['name']), 34)
-            lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} 세후보수 {r['stock_cagr']:.1%} G1 "
-                              f"{'통과' if r.get('dev_screen') else '미달'}", 140))
+            lines.append(_cut(f"{i:>2} {nm} {r['hash'][:6]} 세후보수 {r['stock_cagr']:.1%}"
+                              + (f" MS1{_ms_col(r, True)}" if std else '')
+                              + f" Sharpe G1 {'통과' if r.get('dev_screen') else '미달'}", 140))
     return _cut('\n'.join(lines), MAX_SUMMARY)
 
 

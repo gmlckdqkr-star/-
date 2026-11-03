@@ -250,6 +250,88 @@ def test_cli(W):
           f'max {max(dates)}')
 
 
+STK_GATE = dict(name='t_stk_gate', family='t_ms1_stk', universe='sp500',
+                signals={'up': 'price(_NDX) > sma(_NDX, 200)'},
+                stock={'rebalance': 'quarter', 'score': 'ret(126)', 'top': 20, 'exposure': 'up'})
+STK_PLAIN = dict(name='t_stk_plain', family='t_ms1_stk', universe='sp500',
+                 stock={'rebalance': 'quarter', 'score': '-vol(63)', 'top': 30})
+
+
+def test_stocks(W):
+    print('== (8) single-stock specs: MS1 return stream + G1 (Sharpe branch, exposure gate) ==')
+    from lab import stocks
+    P = stocks.load()
+    st = stocks.ms1_stream(dict(STK_PLAIN), P)
+    d = pd.DatetimeIndex(st['dates'])
+    check('stream: real stock dates, starts 1970 (first PIT member day), ends <= 2014-12-31, turnover share in [0, 1]',
+          st['start'] == '1970-01-02' and d.max() <= SEAL and d.is_monotonic_increasing and 0 <= st['turnover'] <= 1,
+          f"{st['start']}..{d.max().date()} n={len(d)} share {st['turnover']:.2f}")
+    sp = dsl.check_spec(dict(STK_PLAIN))
+    tg = stocks.compile_targets(sp, P)
+    o = stocks.fast_run(P, tg, stocks.H_CONS, pd.Timestamp(st['start']), 0.003, 0.0, 2, want_E=True)
+    gr = float(np.prod(1 + np.asarray(st['ret'])))
+    check('stream = the CONSERVATIVE (h=0.30) book after cost, before tax (compounds to its pre-tax equity)',
+          abs(gr - o['E'][0][-1] / o['E'][0][0]) < 1e-9 and abs(o['cagr_pre'][0] - stocks.run1(
+              P, tg, stocks.H_CONS, pd.Timestamp(st['start']), 0.003, 0.0, 2)['cagr_pre']) < 1e-12, f'x{gr:.2f}')
+    sg = stocks.ms1_stream(dict(STK_GATE), P)
+    check('gated spec: stream starts when the gate data starts (lab _NDX, 1985)', sg['start'] >= '1985', sg['start'])
+    gs = stocks.gate_spec(dict(STK_GATE))
+    check('gate_spec: QQQ weighted by the exposure, else cash, same family', gs['rules'] == [{'else': {'QQQ': 'up'}}]
+          and gs['family'] == 't_ms1_stk' and stocks.gate_spec(dict(STK_PLAIN)) is None)
+    g = W.call(dict(op='stock', parts=['g1'], gate=gs))['g1']
+    check('G1 on the gate _NDX > SMA200 = the SMA200 signal (52.87 / 52.97, CLOSE)', g['binary'] and abs(
+        g['ndx_86_14']['hit'] - .5287) < 5e-5 and abs(g['spx_55_85']['hit'] - .5297) < 5e-5 and 'sharpe' not in g,
+          ms1.fmt_gate(g, 1)[0])
+    ok, why = ms1._stock_gate(dict(STK_GATE, signals={'up': 'price(SPY) > sma(SPY, 200)'}))
+    check("gate reading SPY -> not on the G1 frames ('읽는 계열 SPY')", not ok and why.startswith('읽는 계열 SPY'), why)
+    mg = dict(STK_GATE, name='t_stk_macro', signals={'up': 'not macro(inv)'})
+    check('stock gate may read macro(k) (dev: historical flags on the stock calendar)',
+          dsl.check_spec(dict(mg)) is not None and 0 < stocks.exposure(dsl.check_spec(dict(mg)), P).mean() < 1)
+    ses = ms1.Session(('ms1', 'g1')); ses.w = W; ses.tried = True
+    lines = {}
+    for spec in (STK_PLAIN, STK_GATE):
+        t0 = time.time()
+        line, rec = cli.run_spec(dict(spec), 'quick', ses=ses)
+        lines[spec['name']] = (line, rec, time.time() - t0)
+        print('   ' + line)
+    lp, rp, tp = lines['t_stk_plain']
+    lg, rg, tg_ = lines['t_stk_gate']
+    check("stock line: 'MS1(수익 흐름 재표본) 경로 x% (s0.85 16.2·1x 11.6)' (or its short form), Sharpe G1 kept, "
+          "bar 판정 불가, <= 400 bytes", all(('MS1(수익 흐름 재표본) 경로 ' in x or 'MS1흐름 경로 ' in x) and
+                                          '(s0.85 16.2·1x 11.6)' in x and 'G1 1.1' in x and '판정 불가 (개별주)' in x
+                                          and len(x.encode()) <= 400 for x in (lp, lg)),
+          f'{len(lp.encode())} / {len(lg.encode())} bytes, {tp:.0f}s / {tg_:.0f}s')
+    check('stock line: G1 gate part only with an exposure gate', 'G1게이트' in lg or 'G1 게이트' in lg)
+    check('stock line: no G1 gate part without a gate', 'G1게이트' not in lp and 'G1 게이트' not in lp)
+    h = dsl.spec_hash(dsl.check_spec(dict(STK_PLAIN)))
+    row = ledger.get_std(h, ms1.stock_key())
+    ref = W.call(dict(op='series', dates=st['dates'], ret=st['ret'], label='x', turnover=st['turnover']))['series']
+    check('stock MS1 = measure_series of the stream (ledger row, headline, SPX70-85 covered, SPX55-85 None)',
+          row is not None and abs(rp['ms1'] - ref['HEADLINE_MS1']) < 1e-12 and row['ms1']['real_spx_70_85'] is not None
+          and row['ms1']['real_spx_55_85'] is None,
+          ' '.join(f"{short(bn)} {'-' if row['ms1'][bn] is None else round(100 * row['ms1'][bn]['cagr'], 2)}"
+                   for bn in ms1.BASES))
+
+    class NoWorker(ms1.Session):
+        def worker(self):
+            raise AssertionError('worker asked for on a cached spec')
+    check('needs_compute: stock spec cached -> False, uncached -> True',
+          not ms1.needs_compute(dsl.check_spec(dict(STK_PLAIN)), h, ('ms1', 'g1'))
+          and ms1.needs_compute(dsl.check_spec(dict(STK_PLAIN, name='t_new', stock=dict(STK_PLAIN['stock'], top=31))),
+                                'nohash', ('ms1', 'g1')))
+    line2, rec2 = cli.run_spec(dict(STK_PLAIN), 'quick', ses=NoWorker(('ms1', 'g1')))
+    check('stock rerun: MS1 from the ledger (no worker), same headline', rec2['ms1'] == rp['ms1'] and '(중복)' in line2)
+    t = cli.summary([rp, rg, dict(rec2, name='x')], 'quick')
+    check('summary: the stock block shows the MS1 headline', '-- 개별주' in t and f"MS1 {rp['ms1']:.1%}" in t, t.split(
+        '\n')[-1])
+    recs = [dict(name=f'e{i}', hash=f'{i:012d}', family='f', dev_y12=float(9 - i), dev_screen=False, ms1=m, g1=None)
+            for i, m in enumerate([None, 0.05, 0.11, None, 0.08])] + [rp]
+    t = cli.summary(recs, 'none')
+    body = [x.split()[1] for x in t.splitlines()[2:7]]
+    check('summary without a bar: ranked by the MS1 headline, specs without one after (by dev 12y)',
+          body == ['e2', 'e4', 'e1', 'e0', 'e3'] and 'MS1 경로' in t.splitlines()[0], ' '.join(body))
+
+
 def test_bar():
     print('== (7) bar refuses macro() ==')
     from lab import bb
@@ -273,6 +355,7 @@ def main():
             test_macro(W)
             test_g1(W)
             test_cli(W)
+            test_stocks(W)
         finally:
             W.close()
     test_bar()

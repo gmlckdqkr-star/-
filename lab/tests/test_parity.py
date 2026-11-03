@@ -28,4 +28,11 @@ def test_parity():
     print('parity ok (windows <= 2014-12-31): max |E_new - E_old| =', dmax)
 
 if __name__ == '__main__':
-    test_parity()
+    fails = []
+    try:
+        test_parity()
+    except AssertionError as e:          # same summary line as the other test files
+        print('FAIL  parity:', e)
+        fails.append('parity')
+    print(f'FAILS: {", ".join(fails) or "none"}')
+    sys.exit(1 if fails else 0)

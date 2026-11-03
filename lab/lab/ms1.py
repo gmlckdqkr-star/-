@@ -319,6 +319,11 @@ class Session:
 
 def needs_compute(spec, h, parts):
     from . import ledger
+    if dsl.is_universe(spec):                 # stock spec: the MS1 stream always needs the worker, G1 only with a gate
+        if guard():
+            return False
+        hit = ledger.get_std(h, stock_key()) or {}
+        return ('ms1' in parts and 'ms1' not in hit) or ('g1' in parts and 'g1' not in hit and _stock_gate(spec)[0])
     ok, _ = eligibility(spec)
     if not ok or guard():
         return False
@@ -363,6 +368,8 @@ def finish(st):
     from . import ledger
     if 'final' in st:
         return st['final']
+    if st.get('kind') == 'stock':
+        return _finish_stock(st)
     ses, hit, todo = st['ses'], st['hit'], st['todo']
     cached = not todo
     if todo:
@@ -382,11 +389,142 @@ def finish(st):
         ev = g1_eval(hit['g1'], N)
         parts.append(fmt_g1(hit['g1'], ev, N))
         out['g1'] = ev.get('verdict') if hit['g1'].get('binary') else 'n/a'
-    return dict(out, text=' | '.join(parts), detail=hit, cached=cached, short=_short_text(hit, ses.parts, N))
+    return dict(out, text=' | '.join(parts), detail=hit, cached=cached, short=_short_text(hit, ses.parts, N),
+                key=st['key'], label=LABEL)
 
 
 def report(spec, h, family, ses):
     return finish(begin(spec, h, family, ses))
+
+
+# ---------------- single-stock specs (universe: sp500, lab/stocks.py) ----------------
+STOCK_MS1_VERSION = 1             # bump when the stock stream / gate adapter changes (ledger cache key)
+
+
+def stock_key():
+    """Ledger key of a stock spec's MS1 / G1 report: engine + std / gate sha, the stock summary version (the stream
+    is that summary's conservative book) and this adapter's version."""
+    from . import stocks
+    return f'{cache_key()}:stk{stocks.STOCK_VERSION}.{STOCK_MS1_VERSION}'
+
+
+def _stock_gate(spec):
+    """-> (True, gate spec) when the stock spec's exposure gate can go on the G1 frames, (False, None) without a gate,
+    (False, reason) when the gate reads series the G1 frames do not have."""
+    from . import stocks
+    gs = stocks.gate_spec(spec)
+    if gs is None:
+        return False, None
+    ok, info = eligibility(dsl.check_spec(gs))
+    return (True, gs) if ok else (False, info)
+
+
+def begin_stock(spec, h, family, ses, stream_fn):
+    """begin() for a stock spec. MS1 = measure_series on the strategy's own daily return stream (stream_fn():
+    stocks.ms1_stream, the CONSERVATIVE book after trading cost and before tax, real dates; the IS1 method: re-sampled
+    with std.contexts()' path index matrices, no path recomputation). G1 = the Sharpe branch of the dev summary
+    (after-cost pre-tax Sharpe 1986-2014 vs 1.1, in stocks.evaluate) and, when the spec has an exposure gate,
+    gate.test on that gate (stocks.gate_spec: the gate as a QQQ / cash spec, compiled on the G1 real frames exactly
+    like an ETF spec's signal). Same worker and ledger table as the ETF specs, own key (stock_key)."""
+    from . import ledger
+    g = guard()
+    if g:
+        return dict(final=_final(g))
+    key = stock_key()
+    hit = ledger.get_std(h, key) or {}
+    todo = [p for p in ses.parts if p not in hit]
+    st = dict(h=h, key=key, hit=hit, todo=todo, family=family, ses=ses, w=None, kind='stock', sent=[])
+    req = dict(op='stock', parts=[])
+    if 'g1' in todo:
+        ok, gs = _stock_gate(spec)
+        if ok:
+            req['gate'] = gs; req['parts'].append('g1')
+        else:
+            hit['g1'] = dict(gate=gs is not None, na=gs)
+    if 'ms1' in todo:
+        try:
+            req.update(stream_fn())
+        except Exception as e:                       # a stream that cannot be built: say so, keep the dev line
+            return dict(final=_final(f'MS1: 오류 ({type(e).__name__}: {e})'[:160]))
+        req['parts'].append('ms1')
+    if req['parts']:
+        w = ses.worker()
+        if w is None:
+            return dict(final=_final(ses.msg or 'MS1: 설치 실패 (python3 -m lab setup)'))
+        try:
+            w.send(req)
+        except WorkerError as e:
+            ses.close(); ses.tried = False
+            return dict(final=_final(f'MS1: 오류 ({e})'[:160]))
+        st['w'] = w; st['sent'] = list(req['parts'])
+    return st
+
+
+def _finish_stock(st):
+    from . import ledger
+    ses, hit, todo = st['ses'], st['hit'], st['todo']
+    if st['sent']:
+        try:
+            res = st['w'].recv()
+        except WorkerError as e:
+            ses.close(); ses.tried = False
+            return _final(f'MS1: 오류 ({e})'[:160])
+        hit.update({p: res[p] for p in st['sent']})
+    if todo:
+        ledger.put_std(st['h'], st['key'], hit)
+    N = ledger.family_n(st['family'])
+    full, short, least, out = [], [], [], dict(ms1=None, g1=None)
+    if 'ms1' in ses.parts:
+        a, b, c = fmt_stream(hit['ms1'])
+        full.append(a); short.append(b); least.append(c)
+        out['ms1'] = hit['ms1'].get('HEADLINE_MS1')
+    if 'g1' in ses.parts:
+        g = hit['g1']
+        a, b, c = fmt_gate(g, N)
+        if a:
+            full.append(a); short.append(b); least.append(c)
+        if g.get('binary'):
+            out['g1'] = g1_eval(g, N)['verdict']
+        elif g.get('gate'):
+            out['g1'] = 'n/a'
+    return dict(out, text=' | '.join(full), short=' | '.join(short), shortest=' | '.join(least), detail=hit,
+                cached=not todo, key=st['key'], label=SERIES_LABEL)
+
+
+def fmt_stream(m):
+    """(full, short, shortest) MS1 text of a return stream (measure_series result), same numbers."""
+    p = m.get('dev250_path')
+    if not p:
+        cv = (m.get('cover') or {}).get('dev250_path', 0.0)
+        t = f"MS1(수익 흐름 재표본) 경로 없음 (흐름 {str(m.get('start', '?'))[:4]}~, 덮음 {cv:.0%}<95%)"
+        return t, t, f"MS1흐름 경로 없음 (덮음 {cv:.0%})"
+    ref = f"(s0.85 {100 * p['ref_s085']:.1f}·1x {100 * p['hold1x']:.1f})"
+    lo = m.get('FLOOR_MS1')
+    full = (f"MS1(수익 흐름 재표본) 경로 {p['cagr']:.1%} "
+            + (f"(하한 {lo:.1%}, " + ref[1:] if lo is not None else ref)
+            + f" dd80 {p['dd80']:.0%} s0.85대비 {100 * p['d_vs_s085']:+.1f}%p")
+    return full, f"MS1(수익 흐름 재표본) 경로 {p['cagr']:.1%} {ref}", f"MS1흐름 경로 {p['cagr']:.1%}{ref}"
+
+
+def fmt_gate(g, N):
+    """(full, short, shortest) G1 text of a stock spec's exposure gate ('' when the spec has no gate: the Sharpe
+    branch of the dev part is the G1 answer)."""
+    if not g.get('gate'):
+        return '', '', ''
+    if g.get('na'):
+        t = f"G1 게이트 해당 없음 ({g['na']})"
+        return t, t, 'G1게이트 해당 없음'
+    if not g.get('binary'):
+        t = f"G1 게이트 해당 없음 ({'상시 현금' if g.get('all_out') else '상시 보유'})"
+        return t, t, t.replace('G1 게이트 ', 'G1게이트 ')
+    ev = g1_eval(g, N)
+    a, b = g['ndx_86_14'], g['spx_55_85']
+    v = ev['verdict']
+    return (f"G1 게이트 NDX {100 * a['hit']:.1f}(상시{100 * a['always_up']:.1f}) SPX {100 * b['hit']:.1f}"
+            f"({100 * b['always_up']:.1f}) 보정 {100 * ev['low']:.1f} N={N} {G1_WORDS[v]} {v}",
+            f"G1게이트 {100 * a['hit']:.1f}/{100 * a['always_up']:.1f}·{100 * b['hit']:.1f}/{100 * b['always_up']:.1f}"
+            f" 보정{100 * ev['low']:.1f} N{N} {v}",
+            f"G1게이트 {100 * a['hit']:.1f}·{100 * b['hit']:.1f} 보정{100 * ev['low']:.1f} N{N} {v}")
 
 
 def abandon(st):
@@ -607,6 +745,17 @@ class _Server:
             return self.spec(req['spec'], req.get('parts') or ['ms1', 'g1'])
         if op == 'series':
             return dict(series=self.series(req))
+        if op == 'stock':                         # a stock spec: its return stream + (optional) exposure gate
+            out = {}
+            if 'ms1' in req['parts']:
+                out['ms1'] = dict(self.series(req), start=req.get('start'), stream_label=req.get('label'))
+            if 'g1' in req['parts']:
+                gs = dsl.check_spec(req['gate'])
+                ok, el = eligibility(gs)
+                if not ok:
+                    raise NotMS1(el)
+                out['g1'] = dict(self.g1(gs, el, None, sharpe=False), gate=True)
+            return out
         if op == 'ping':
             return dict(pong=True)
         if op == 'hold_stream':                   # tests: the NDX 1x hold stream of a basis' source calendar
@@ -763,7 +912,7 @@ class _Server:
                                       F={k: Fh[k].values.astype(bool) for k in Fh.columns})
         return self._g1f
 
-    def g1(self, spec, el, w_of):
+    def g1(self, spec, el, w_of, sharpe=True):
         np, pd, gate = self.np, self.pd, self.gate
         held, mac = el['held'], el['macro']
         sigs = {}
@@ -794,7 +943,7 @@ class _Server:
             e = t.get(era)
             out[era] = None if e is None else dict(hit=e['hit'], n=e['n'], se=e['se'], always_up=e['always_up'],
                                                    frac=frac[era])
-        if not out['binary']:
+        if not out['binary'] and sharpe:
             out['sharpe'] = {}
             for bn in ('real_ndx_86_14', 'real_spx_55_85'):
                 W, force = w_of(bn)

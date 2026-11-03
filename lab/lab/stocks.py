@@ -47,6 +47,11 @@ Rows: base h=0, CONSERVATIVE h=0.30 (the headline), EXTREME = base + a 6%/year -
 and NDX 1x hold (QQQ sleeve of the ETF panel). Annualised after-cost pre-tax Sharpe over the T-bill (G1 non-timing
 test, pass >= 1.1). Random-basket null: 200 seeded baskets with the same rebalance dates, eligibility, name count and
 name retention (see null_baskets), equal weight, same exposure, engine, costs and tax.
+MS1 / G1 (lab/ms1.py, `--std auto`): ms1_stream = the CONSERVATIVE book's daily return after trading cost, before
+tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve or the gate data
+starts later), measured on the MS1 bases by ms1.measure_series (re-sampled stream, no path recomputation). G1 = the
+Sharpe line above; a spec with an exposure gate also gets gate.test on it (gate_spec: the gate as a QQQ / cash spec on
+the G1 real frames).
 HOLDOUT SEAL: the panel and every ETF series are cut at 2014-12-31 before anything is computed; asserted below.
 """
 import ast, io, json, lzma, math, os, re, time
@@ -63,6 +68,7 @@ HAZARD, N_HAZ, HAZ_SEED = 0.06, 20, 2014
 N_NULL, NULL_SEED = 200, 1986
 G1_SHARPE = 1.1
 N_PIT_CUTS = 3              # runtime causality cuts per spec (the test suite checks PIT in depth)
+MS1_FROM = pd.Timestamp('1970-01-02')   # first day with point-in-time members: start of the MS1 return stream
 CAD = {'month': 'monthly', 'monthly': 'monthly', 'quarter': 'quarterly', 'quarterly': 'quarterly',
        'week': 'weekly', 'weekly': 'weekly'}
 STOCK_KEYS = {'rebalance', 'score', 'filter', 'top', 'top_pct', 'weight', 'max_weight', 'exposure', 'else',
@@ -523,11 +529,21 @@ def _known_series():
 def _gate_names(expr, own):
     tree = dsl._parse(expr)
     funcs = {n.func.id for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
-    names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)} - funcs - set(own) - set(dsl.FUNCS)
-    names |= {n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, str)}
+    flag = {id(a) for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+            and n.func.id == 'macro' for a in n.args}      # macro(k): k is a flag key (dsl.check_spec checks it)
+    names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and id(n) not in flag} - funcs - set(own) \
+        - set(dsl.FUNCS)
+    names |= {n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, str)
+              and id(n) not in flag}
     bad = funcs - set(dsl.FUNCS)
     if bad:
         raise ValueError(f'gate expression {expr!r}: unknown function(s) {sorted(bad)}')
+    keys = {n.id if isinstance(n, ast.Name) else n.value if isinstance(n, ast.Constant) else '?'
+            for n in ast.walk(tree) if id(n) in flag}
+    badm = sorted(str(k) for k in keys if k not in data.MACRO_KEYS)
+    if badm:
+        raise ValueError(f'gate expression {expr!r}: macro(k): k must be one of {", ".join(data.MACRO_KEYS)}, '
+                         f'not {badm}')
     return dict(funcs=funcs, series=names)
 
 
@@ -977,6 +993,56 @@ def pit_check(spec, P, tg, F=None, n_cuts=N_PIT_CUTS, seed=None):
     return dict(ok=not bad, cuts=len(cuts), violations=bad[:3], seed=seed)
 
 
+# ---------------------------------------------------------------- MS1 / G1 inputs (lab/ms1.py)
+def gate_spec(spec):
+    """The exposure gate as an ETF spec for G1 (gate.test): hold QQQ with the exposure as its weight, else cash
+    (in market = exposure > 0, the stock book's own rule), `rebalance:` = the stock cadence when the exposure is
+    sampled on decision rows only. None when the spec has no exposure gate. Same family (G1 deflation uses its N)."""
+    c = cfg_of(spec)
+    if c['exposure'] is None:
+        return None
+    g = dict(name=f"{spec.get('name', 'stock')}:gate", family=str(spec.get('family', 'unset')),
+             rules=[{'else': {'QQQ': c['exposure']}}])
+    if spec.get('signals'):
+        g['signals'] = dict(spec['signals'])
+    if c['exposure_every'] == 'rebalance':
+        g['rebalance'] = c['rebalance']
+    return g
+
+
+def ms1_stream(spec, P=None):
+    """MS1 input of a stock spec (ms1.measure_series): the CONSERVATIVE book's (h = 0.30) daily return after trading
+    cost and BEFORE tax (MS1 applies its own tax), on the real stock calendar, from MS1_FROM (1970-01-02, the first
+    point-in-time member day) or the later start of an else sleeve or of the gate data (before it the gate is all
+    cash), to 2014-12-31. turnover = min(1, one-way yearly turnover) = measure_series' realized share.
+    -> dict(dates, ret, label, turnover, start, min_cover)."""
+    spec = dsl.check_spec(spec)
+    P = load() if P is None else P
+    c = cfg_of(spec)
+    cost = max(dsl.MIN_COST, float(spec.get('cost', dsl.MIN_COST)))
+    delay = int(spec.get('delay', dsl.MIN_DELAY))
+    h = dsl.spec_hash(spec)
+    hit = _cache.get('last_tg')
+    if hit is not None and hit[0] == h and hit[1] == id(P):
+        tg, F = hit[2], hit[3]
+    else:
+        F = gate_frame(spec, P.idx) if c['exposure'] is not None else None
+        tg = compile_targets(spec, P, F)
+    st = [MS1_FROM] + [pd.Timestamp(v) for v in else_returns(tg.els, P.idx)[1].values()]
+    if F is not None and F.shape[1]:
+        fv = [F[k].first_valid_index() for k in F.columns]
+        st += [pd.Timestamp(v) for v in fv if v is not None]
+    st = max(st)
+    o = fast_run(P, tg, H_CONS, st, cost, 0.0, delay, want_E=True)
+    _sealed(o['idx'])
+    E = o['E'][0]
+    r = E[1:] / E[:-1] - 1.0
+    one_way = float(o['turn'][0]) / 2.0
+    return dict(dates=[d.strftime('%Y-%m-%d') for d in o['idx'][1:]], ret=[float(x) for x in r],
+                label=f"{spec.get('name', h)} 보수 h={H_CONS:.2f} 비용후 세전 {o['idx'][0].year}~2014",
+                turnover=min(1.0, one_way), start=str(o['idx'][0].date()), min_cover=0.95)
+
+
 # ---------------------------------------------------------------- report
 def _row(o, names):
     return dict(cagr_at=float(o['cagr_at']), cagr_pre=float(o['cagr_pre']), mdd=float(o['mdd']), turn=float(o['turn']),
@@ -993,6 +1059,7 @@ def evaluate(spec, P=None, null=True, pit=True):
     delay = int(spec.get('delay', dsl.MIN_DELAY)); tax = dsl.ACCOUNTS['us']['tax']
     F = gate_frame(spec, P.idx) if c['exposure'] is not None else None
     tg = compile_targets(spec, P, F)
+    _cache['last_tg'] = (dsl.spec_hash(spec), id(P), tg, F)    # ms1_stream reuses it (one spec at a time)
     _, efirst = else_returns(tg.els, P.idx)
     gate_from = None
     if F is not None and F.shape[1]:
@@ -1047,11 +1114,25 @@ def _pp(x):
 
 
 def dev_part(s, compact=False):
-    """The one-line dev part (Korean, every number <= 2014). compact drops names / turnover and the 95% line (the CLI
-    uses it when the whole line would pass 400 bytes, e.g. a long spec name)."""
+    """The one-line dev part (Korean, every number <= 2014). compact drops names / turnover and the 95% line;
+    compact=2 = the same numbers in the shortest wording (the CLI steps down while the whole line, with the MS1 / G1
+    parts, would pass 400 bytes)."""
     a, b = s['windows']['w86'], s['windows']['w71']
     nl = a.get('null')
     yn = lambda x: '통과' if x else '미달'
+    if compact == 2:
+        q = lambda x: f'{100 * x:.1f}' if x is not None and np.isfinite(x) else '-'
+        if nl:
+            top = nl['top'] * 100
+            npart = f"무작위 상위{'<0.5' if top < 0.5 else f'{top:.0f}'}%(99%선 {yn(nl['beat99'])})"
+        else:
+            npart = '무작위 미계산'
+        g71 = f"(게이트{s['gate_from'][2:4]}~)" if s.get('gate_from') and s['gate_from'] > b['start'] else ''
+        cz = '' if (s.get('causality') or {}).get('ok', True) else ' 인과성위반'
+        return (f"개별주PIT·상폐포함 {a['start'][2:4]}~14 세후보수 {_pp(a['cons']['cagr_at'])}"
+                f"(기본 {q(a['base']['cagr_at'])}·극단 {q(a['extreme']['cagr_at'])}) 낙폭{a['cons']['mdd']:.0%} | "
+                f"EW {q(a['ew_cons']['cagr_at'])}·NDX {q(a['ndx']['cagr_at'])} | {b['start'][2:4]}~14 "
+                f"{_pp(b['cons']['cagr_at'])}{g71} | {npart} | 샤프 {a['sharpe']:.2f} G1 1.1 {yn(a['g1_pass'])}" + cz)
     if nl:
         top = nl['top'] * 100
         tp = '<0.5' if top < 0.5 else f'{top:.0f}'
