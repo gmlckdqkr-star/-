@@ -103,6 +103,32 @@ def build(sleeves=None):
     return out
 
 
+MACRO_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'macro_flags_le2014.csv.gz')
+MACRO_KEYS = ('inv', 'inv2', 'shock', 'shock10', 'shock6m', 'shock6m75', 'shock3m', 'csj')   # MS1 ctx.F keys
+MACRO_SPLICE = pd.Timestamp('1986-01-02')     # spx-calendar flags before, ndx-calendar flags from (= MS1 real_ndx)
+MACRO_SEAL = pd.Timestamp('2014-12-31')
+
+
+def macro_table():
+    """The 8 MS1 macro warning flags (research/crash_overlay ov.flags_hist) on their historical dates, <= 2014-12-31
+    only (file built by tools/build_macro_flags.py). Rows before 1986-01-02 come from the SPX calendar (1928-1985), the
+    rest from the NDX calendar (1984-2014, the one MS1's real_ndx_86_14 uses). bool DataFrame indexed by date."""
+    if 'macro' not in _cache:
+        T = pd.read_csv(MACRO_FILE, parse_dates=['date'])
+        if T['date'].max() > MACRO_SEAL:
+            raise RuntimeError(f'{MACRO_FILE} has rows after {MACRO_SEAL.date()} (holdout seal)')
+        T = T[((T['cal'] == 'spx') & (T['date'] < MACRO_SPLICE)) | ((T['cal'] == 'ndx') & (T['date'] >= MACRO_SPLICE))]
+        _cache['macro'] = T.set_index('date')[list(MACRO_KEYS)].astype(bool).sort_index()
+    return _cache['macro']
+
+
+def macro_flags(idx):
+    """Flags carried forward onto the dates idx (a lab date takes the latest flag dated on or before it: causal);
+    dates before 1928-01-03 -> False. Dates after 2014-12-31 keep the 2014-12-31 value (lab cuts its data there)."""
+    T = macro_table()
+    return T.reindex(pd.DatetimeIndex(idx), method='ffill').fillna(False).astype(bool)
+
+
 def price_for_signal(F, name):
     """Signal price. A sleeve name (TQQQ, QLD, QQQ...) means its UNDERLYING index (long history, same as
     the research engines); any other panel key (e.g. _NDX, XLK, KRW_X) is used as is."""

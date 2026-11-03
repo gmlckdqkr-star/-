@@ -1,0 +1,12 @@
+name: macro_trend_tqqq
+family: macro_examples
+known: 3
+idea: 'macro(k) 예시: 나스닥100이 200일 평균 아래이고 (장단기 금리 역전 또는 10년물 6개월 1%p 급등) 경보면 현금, 아니면 TQQQ.
+  개발 요약 = 실제 경보(≤2014), MS1 경로 = 경로 위에서 다시 계산한 경보, 판정 경로에는 경보가 없어 REJECT (version impossible)'
+signals:
+  down: price(TQQQ) < sma(TQQQ, 200)
+  warn: macro(inv) or macro(shock6m)
+rules:
+  - when: down and warn
+    hold: {CASH: 1.0}
+  - else: {TQQQ: 1.0}

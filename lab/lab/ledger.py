@@ -1,5 +1,6 @@
 """Trial ledger (sqlite). Every spec is a row: dedupe by spec hash, count N per family.
 Bar results are stored per (spec hash, mode): verdict name, failed gate names and the dev-pool (<= 2014) numbers.
+MS1 / G1 reports (lab/ms1.py) per (spec hash, engine version + std / gate sha): the <= 2014 MS1 rows and raw G1 hits.
 No holdout looks: the old per-family holdout budget is gone (lab never opens 2015+)."""
 import json, os, sqlite3, time
 
@@ -18,6 +19,8 @@ def _db():
                  ts text, summary text)''')
     c.execute('''create table if not exists bar(hash text, mode text, ts text, verdict text, failed text,
                  numbers text, primary key(hash, mode))''')
+    c.execute('''create table if not exists std(hash text, key text, ts text, result text,
+                 primary key(hash, key))''')     # MS1 / G1 reports (lab/ms1.py), key = engine version + std / gate sha
     return c
 
 
@@ -54,6 +57,22 @@ def put_bar(h, mode, verdict, failed, numbers):
         c.execute('insert or replace into bar values(?,?,?,?,?,?)',
                   (h, mode, _now(), verdict, json.dumps(failed, ensure_ascii=False),
                    json.dumps(numbers, ensure_ascii=False)))
+
+
+def get_std(h, key):
+    with _db() as c:
+        r = c.execute('select result from std where hash=? and key=?', (h, key)).fetchone()
+    return json.loads(r[0]) if r else None
+
+
+def put_std(h, key, result):
+    with _db() as c:
+        c.execute('insert or replace into std values(?,?,?,?)', (h, key, _now(), json.dumps(result, ensure_ascii=False)))
+
+
+def std_rows():
+    with _db() as c:
+        return c.execute('select key, count(*) from std group by key').fetchall()
 
 
 def rows():

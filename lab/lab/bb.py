@@ -36,8 +36,8 @@ Notes for spec writers
     prices, from row 0 (the 300-day warm-up included), no costs, cash return 0; a plugin is called on every path
     in a fresh forked child of lab/sandbox.py (no panel, no files, no state across builds), and its `inputs` must be
     judgeable series (SIG_BASE). level(x) reads the path's own price of held sleeve x.
-  - Inputs the blackbox paths do not resample (_IRX, KRW_X, *.KS, GLD, ...) anywhere in a spec (expressions,
-    rotate score / filter, invvol / rp lists, brake floor_when, plugin inputs) -> NotJudgeable ->
+  - Inputs the blackbox paths do not resample (_IRX, KRW_X, *.KS, GLD, macro(k) flags, ...) anywhere in a spec
+    (expressions, rotate score / filter, invvol / rp lists, brake floor_when, plugin inputs) -> NotJudgeable ->
     'REJECT (version impossible)'; the dev summary still computes on them.
 """
 import inspect, math, os, sys, time
@@ -187,12 +187,12 @@ class LabCandidate:
 
     def build(self, pm):
         F = self.frame(pm)
-        orig = LD.series
-        LD.series = _no_series          # no real panel history on a synthetic path
+        orig = (LD.series, LD.macro_flags)
+        LD.series = LD.macro_flags = _no_series     # no real panel history / historical macro flags on a synthetic path
         try:
             W = dsl.compile_weights(self.spec, F, self.sleeves)
         finally:
-            LD.series = orig
+            LD.series, LD.macro_flags = orig
         X = np.zeros((len(F), len(self.trade_syms)))
         for j, ts in enumerate(self.trade_syms):
             s = self._cols.get(ts)
