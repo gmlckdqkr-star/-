@@ -1,0 +1,48 @@
+== PRIMARY top-20 (pre-registered ranking) ==
+1 (c_sb252.Z252>@q0.7 OR ener_rs.S100<=@q0.5 OR skew.Z756<=@q0.8) -> 3x / -1x, hold 21 | ndx86-99 adv 0.283 -> 00-14 adv -0.480 | d85 disc -0.003 conf -0.651 | G1 CLOSE 0.293
+2 (vrp.Z756<=@q0.3 OR f_strev.Z63>@q0.1 OR gwz_tail.C21>@q0.7) -> 3x / -1x, hold 5 | ndx86-99 adv 0.278 -> 00-14 adv -0.336 | d85 disc -0.005 conf -0.508 | G1 CLOSE 0.308
+3 IF c_sg36.L>@q0.9 THEN vix.Z756>@q0.8 ELSE msi21.C252<=@q0.7 -> 3x / -1x, hold 21 | ndx86-99 adv 0.273 -> 00-14 adv -0.399 | d85 disc -0.006 conf -0.570 | G1 CLOSE 0.293
+4 ((skew.Z756>@q0.8 AND small_rs.C5>@q0.9) OR sur_PAYEMS.C63<=@q0.7) -> 3x / -1x, hold 1 | ndx86-99 adv 0.273 -> 00-14 adv -0.082 | d85 disc -0.006 conf -0.253 | G1 CLOSE 0.317
+5 VOTELADDER [gwz_ntis.C63<=@q0.8; macro.shock6moff; rev63.S200>@q0.1; c_sc252.C63<=@q0.5; skew.Z756<=@q0.7] >=3 | ndx86-99 adv 0.272 -> 00-14 adv -0.317 | d85 disc -0.007 conf -0.489 | G1 CLOSE 0.302
+6 VOTE >=1 of [gwz_ltr.L<=@q0.3; own_rv21.Z63<=@q0.7; gp_ratio.C252<=@q0.5; own_px.C252<=@q0.7; vix.Z756>@q0.9]  | ndx86-99 adv 0.271 -> 00-14 adv -0.343 | d85 disc -0.007 conf -0.515 | G1 CLOSE 0.317
+7 VOTELADDER [agg_ivar63.S200>@q0.3; ener_rs.C5>@q0.5; gwz_ntis.Z756>@q0.5; own_dd252.Z252<=@q0.3; realrate.S200 | ndx86-99 adv 0.270 -> 00-14 adv -0.235 | d85 disc -0.007 conf -0.407 | G1 CLOSE 0.266
+8 (vix.Z756>@q0.9 OR sur_PAYEMS.C21<=@q0.7) -> 3x / cash, hold 21 | ndx86-99 adv 0.269 -> 00-14 adv -0.209 | d85 disc -0.007 conf -0.380 | G1 CLOSE 0.290
+9 VOTE >=3 of [sur_PAYEMS.C63<=@q0.7; tech_rs.Z63<=@q0.7; macro.shock3moff; vrp.Z756>@q0.8; gwz_dtoat.C21>@q0.3] | ndx86-99 adv 0.267 -> 00-14 adv -0.204 | d85 disc -0.008 conf -0.376 | G1 CLOSE 0.293
+10 IF vrp.Z756<=@q0.9 THEN e_acc.L>@q0.3 ELSE own_rv21.S21<=@q0.9 -> 3x / cash, hold 5 | ndx86-99 adv 0.266 -> 00-14 adv -0.083 | d85 disc -0.008 conf -0.254 | G1 CLOSE 0.329
+11 VOTE >=1 of [f_bab.C21>@q0.9; skew.Z756<=@q0.5; agg_crash21.S100<=@q0.8] -> 3x / cash, hold 5 | ndx86-99 adv 0.265 -> 00-14 adv -0.315 | d85 disc -0.009 conf -0.487 | G1 CLOSE 0.302
+12 (macro.shock3mon OR c_sc252.S100<=@q0.7 OR vrp.Z756<=@q0.9) -> 3x / -1x, hold 21 | ndx86-99 adv 0.265 -> 00-14 adv -0.289 | d85 disc -0.009 conf -0.460 | G1 CLOSE 0.317
+13 VOTE >=2 of [sur_PAYEMS.C21<=@q0.7; vix.Z756<=@q0.5; rev_HOUST.L<=@q0.9] -> 3x / -1x, hold 5 | ndx86-99 adv 0.264 -> 00-14 adv -0.449 | d85 disc -0.009 conf -0.620 | G1 CLOSE 0.311
+14 VOTELADDER [agg_crash21.C63<=@q0.8; wb_copper.C21<=@q0.1; own_px.C21<=@q0.8; small_rs.C5>@q0.3; gwz_dtoy.C21>@ | ndx86-99 adv 0.263 -> 00-14 adv -0.321 | d85 disc -0.009 conf -0.492 | G1 CLOSE 0.335
+15 VOTELADDER [kf_breadth.C21>@q0.5; macro.shock10on; skew.Z756<=@q0.8; gwz_svar.C63>@q0.2; fin_rs.S50>@q0.1; mac | ndx86-99 adv 0.263 -> 00-14 adv -0.294 | d85 disc -0.009 conf -0.466 | G1 CLOSE 0.308
+16 VOTE >=2 of [f_bab.C252<=@q0.3; macro.shock6m75on; rev_INDPRO.L>@q0.2; own_dd252.L>@q0.5; vix.Z756<=@q0.2; mac | ndx86-99 adv 0.263 -> 00-14 adv -0.369 | d85 disc -0.009 conf -0.540 | G1 CLOSE 0.326
+17 (skew.Z756>@q0.1 OR e_acc.L<=@q0.1 OR msi21.C5<=@q0.5) -> 3x / -1x, hold 5 | ndx86-99 adv 0.262 -> 00-14 adv -0.475 | d85 disc -0.010 conf -0.647 | G1 CLOSE 0.314
+18 VOTE >=2 of [rev_CPIAUCNS.C252>@q0.3; vix.Z756<=@q0.3; e_g12.C252>@q0.1; c_sg36.L>@q0.3; msi21.Z63<=@q0.7] ->  | ndx86-99 adv 0.262 -> 00-14 adv -0.184 | d85 disc -0.010 conf -0.356 | G1 CLOSE 0.299
+19 ((sur_PAYEMS.C63<=@q0.7 OR vix.Z756<=@q0.2) AND c_sg36.L<=@q0.9) -> 3x / cash, hold 1 | ndx86-99 adv 0.260 -> 00-14 adv -0.190 | d85 disc -0.010 conf -0.361 | G1 CLOSE 0.323
+20 VOTE >=1 of [gwz_disag.Z252<=@q0.9; fin_rs.S50<=@q0.1; vix.Z756<=@q0.3; agg_max21.L>@q0.7; macro.inv2on] -> 3x | ndx86-99 adv 0.259 -> 00-14 adv -0.304 | d85 disc -0.011 conf -0.475 | G1 CLOSE 0.326
+== SECONDARY top-20 by t ==
+1 IF philly_no.C63>@q0.8 THEN ipo_n12.SL200<= ELSE gwz_dfr.C21<=@q0.8 -> 3x / cash, hold 21 | ndx86-99 adv 0.411 -> 00-14 adv -0.195 | d85 disc 0.066 conf -0.366 | G1 CLOSE 0.314
+2 (cpi_yoy.Z756>@q0.3 AND rev63.Z756<=@q0.5) -> 3x / 1x, hold 21 | ndx86-99 adv 0.176 -> 00-14 adv -0.294 | d85 disc 0.015 conf -0.465 | G1 CLOSE 0.235
+3 IF rev63.L>@q0.7 THEN y10.C252<=@q0.7 ELSE macro.shock6moff -> 2x / cash, hold 5 | ndx86-99 adv 0.155 -> 00-14 adv -0.160 | d85 disc 0.018 conf -0.331 | G1 CLOSE 0.305
+4 IF macro.shock6moff THEN rev63.L<=@q0.8 ELSE d_g12.C63<=@q0.3 -> 3x / cash, hold 5 | ndx86-99 adv 0.268 -> 00-14 adv -0.198 | d85 disc 0.071 conf -0.369 | G1 CLOSE 0.284
+5 VOTELADDER [own_px.L<=@q0.8; e_g3.C252>@q0.7; cpi_yoy.C252>@q0.1; c3sig.c3onon; y3m.Z756<=@q0.3] >=3 3x / >=2  | ndx86-99 adv 0.271 -> 00-14 adv 0.008 | d85 disc 0.057 conf -0.163 | G1 CLOSE 0.308
+6 VOTE >=2 of [ipo_n12.SL200<=; c3sig.c3onon; agg_nearhi.S21<=@q0.8] -> 3x / cash, hold 21 | ndx86-99 adv 0.421 -> 00-14 adv -0.171 | d85 disc 0.062 conf -0.343 | G1 CLOSE 0.302
+7 LADDER [rev63.L<=@q0.8; macro.shock3moff] both 3x / one cash / none -1x, hold 5 | ndx86-99 adv 0.224 -> 00-14 adv -0.216 | d85 disc 0.060 conf -0.388 | G1 CLOSE 0.287
+8 VOTELADDER [gwz_bm.SL200<=; agg_ivar63.Z756>@q0.5; c_sb252.S100>@q0.3; e_acc.C252>@q0.3; ipo_n12.C252<=@q0.3;  | ndx86-99 adv 0.410 -> 00-14 adv -0.183 | d85 disc 0.061 conf -0.354 | G1 CLOSE 0.332
+9 (e_g3.C252<=@q0.5 AND y10.C252<=@q0.9 AND c_sb252.C252>@q0.3) -> 3x / 1x, hold 1 | ndx86-99 adv 0.084 -> 00-14 adv -0.093 | d85 disc -0.018 conf -0.265 | G1 CLOSE 0.255
+10 (rev_CPIAUCNS.L<=@q0.1 AND macro.shock6moff AND rev63.L<=@q0.8) -> 3x / cash, hold 5 | ndx86-99 adv 0.244 -> 00-14 adv -0.195 | d85 disc 0.061 conf -0.367 | G1 CLOSE 0.275
+11 IF c3sig.c3onon THEN pay_yoy.C252<=@q0.7 ELSE rev_PAYEMS.Z252<=@q0.5 -> 3x / cash, hold 21 | ndx86-99 adv 0.300 -> 00-14 adv -0.307 | d85 disc 0.076 conf -0.478 | G1 CLOSE 0.281
+12 VOTELADDER [tcu.Z252>@q0.2; c3sig.c3onon; y5.Z252<=@q0.3; ipo_n12.S200<=@q0.8; gwz_dp.S200>@q0.2] >=4 3x / >=2 | ndx86-99 adv 0.360 -> 00-14 adv -0.118 | d85 disc 0.042 conf -0.289 | G1 CLOSE 0.293
+13 VOTE >=2 of [micro_rs.Z756<=@q0.5; e_acc.Z756>@q0.7; c_sc252.Z756<=@q0.2] -> 3x / 1x, hold 21 | ndx86-99 adv 0.232 -> 00-14 adv 0.016 | d85 disc 0.024 conf -0.155 | G1 CLOSE 0.287
+14 IF aqr_mom.S200>@q0.7 THEN small_rs.SL200<= ELSE c3sig.c3onon -> 2x / cash, hold 1 | ndx86-99 adv 0.176 -> 00-14 adv 0.129 | d85 disc 0.006 conf -0.042 | G1 CLOSE 0.323
+15 LADDER [sur_CPIAUCNS.S200<=@q0.8; rev63.L<=@q0.8] both 3x / one cash / none -1x, hold 5 | ndx86-99 adv 0.195 -> 00-14 adv -0.217 | d85 disc 0.054 conf -0.389 | G1 CLOSE 0.264
+16 VOTELADDER [gwz_svar.Z756>@q0.9; micro_rs.C63<=@q0.7; rev63.L<=@q0.8; macro.shockoff; y10.C63<=@q0.1] >=3 3x / | ndx86-99 adv 0.229 -> 00-14 adv -0.155 | d85 disc 0.051 conf -0.326 | G1 CLOSE 0.287
+17 IF gp_ratio.L<=@q0.7 THEN gwz_ep.S200>@q0.5 ELSE y5.Z252<=@q0.2 -> 3x / 1x, hold 21 | ndx86-99 adv 0.224 -> 00-14 adv -0.167 | d85 disc 0.016 conf -0.339 | G1 CLOSE 0.261
+18 VOTELADDER [sur_INDPRO.C63>@q0.2; own_rv21.Z63<=@q0.5; gwz_ndrbl.C21>@q0.7; small_rs.S100<=@q0.5; ener_rs.C63< | ndx86-99 adv 0.201 -> 00-14 adv 0.030 | d85 disc -0.022 conf -0.142 | G1 CLOSE 0.235
+19 VOTELADDER [gwz_dtoy.Z756<=@q0.5; rev63.Z756<=@q0.7; c3sig.c3onon; pay_yoy.C252<=@q0.7; macro.shock6moff] >=4  | ndx86-99 adv 0.353 -> 00-14 adv -0.289 | d85 disc 0.075 conf -0.460 | G1 CLOSE 0.278
+20 IF fedfunds.C63<=@q0.8 THEN c3sig.c3onon ELSE gwz_dtoy.C21<=@q0.1 -> 3x / -1x, hold 21 | ndx86-99 adv 0.200 -> 00-14 adv 0.076 | d85 disc 0.086 conf -0.095 | G1 CLOSE 0.302
+BAG50 conf adv_vs_1x -0.3211 d_vs_s085 -0.4925 | G1 CLOSE | MS1 -0.0863
+BAGT20 conf adv_vs_1x -0.0920 d_vs_s085 -0.2634 | G1 CLOSE | MS1 0.0906
+disc1 MS1 representative -0.1233 {'real_ndx_86_14': -0.0077, 'real_spx_55_85': 0.09, 'real_spx_70_85': 0.09} discovery #1: (c_sb252.Z252>@q0.7 OR ener_rs.S100<=@q0.5 OR skew.Z756<=@q0.8) -> 3x / -1x, hold 21
+best_conf_primary MS1 representative 0.0544 {'real_ndx_86_14': 0.1881, 'real_spx_55_85': 0.09, 'real_spx_70_85': 0.09} best confirmation (primary): ((skew.Z756>@q0.8 AND small_rs.C5>@q0.9) OR sur_PAYEMS.C63<=@q0.7) -> 3x / -1x, hold 1
+best_conf_t MS1 representative 0.1278 {'real_ndx_86_14': 0.2561, 'real_spx_55_85': 0.1395, 'real_spx_70_85': 0.1535} best confirmation (t list): IF aqr_mom.S200>@q0.7 THEN small_rs.SL200<= ELSE c3sig.c3onon -> 2x / cash, hold 1
+bt1 exit 0

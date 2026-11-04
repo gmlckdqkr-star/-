@@ -1,0 +1,45 @@
+{
+ "N_generated": 156000000,
+ "shards": 78,
+ "forms": {
+  "BOOL": 41056322,
+  "SWITCH": 25974713,
+  "VOTE": 31812543,
+  "LADDER": 25346929,
+  "VOTELADDER": 31809493
+ },
+ "N_unique": 105347224,
+ "N_never_diff_or_flat": 37515977,
+ "N_good": 118484023,
+ "months": 540,
+ "spa": {
+  "T": 540,
+  "N": 156000000,
+  "Tspa": 4.288312882393399,
+  "p_c": 0.977,
+  "p_l": 0.959,
+  "p_u": 0.989,
+  "maxnull_q50": 5.176669912532228,
+  "maxnull_q95": 6.369017437961029,
+  "rw_capped": false,
+  "rw_n": 0,
+  "rw_crit": [
+   6.369017624855041
+  ]
+ },
+ "neff_lij": 806.8065602388133,
+ "neff_lij_note": "Li-Ji from a T x T Gram is bounded by 2T (= 1080) when N >> T; not a usable N for DSR at this scale",
+ "sr_var": 0.013250708739510012,
+ "sqrt2lnN": 6.142534748003272,
+ "secs": 234.9664454460144
+}
+1 0.791 t2.55 q50 -0.091 DSR 0.016 (c_sb252.Z252>@q0.7 OR ener_rs.S100<=@q0.5 OR skew.Z756<=@q0.8) -> 3x / -1x, hold 21
+2 0.776 t2.73 q50 -0.078 DSR 0.050 (vrp.Z756<=@q0.3 OR f_strev.Z63>@q0.1 OR gwz_tail.C21>@q0.7) -> 3x / -1x, hold 5
+3 0.762 t2.51 q50 -0.091 DSR 0.023 IF c_sg36.L>@q0.9 THEN vix.Z756>@q0.8 ELSE msi21.C252<=@q0.7 -> 3x / -1x, hold 21
+4 0.762 t2.63 q50 -0.082 DSR 0.047 ((skew.Z756>@q0.8 AND small_rs.C5>@q0.9) OR sur_PAYEMS.C63<=@q0.7) -> 3x / -1x, hold 1
+5 0.760 t2.75 q50 -0.075 DSR 0.072 VOTELADDER [gwz_ntis.C63<=@q0.8; macro.shock6moff; rev63.S200>@q0.1; c_sc252.C63<=@q0.5; skew.Z756<=@q0.7] >=3 3x / >=1 cash / else -1x, hold 5
+6 0.757 t2.73 q50 -0.076 DSR 0.104 VOTE >=1 of [gwz_ltr.L<=@q0.3; own_rv21.Z63<=@q0.7; gp_ratio.C252<=@q0.5; own_px.C252<=@q0.7; vix.Z756>@q0.9] -> 3x / -1x, hold 21
+7 0.754 t2.59 q50 -0.084 DSR 0.068 VOTELADDER [agg_ivar63.S200>@q0.3; ener_rs.C5>@q0.5; gwz_ntis.Z756>@q0.5; own_dd252.Z252<=@q0.3; realrate.S200>@q0.5; y3m.S21<=@q0.2; vix.Z756<=@q0.1]
+8 0.753 t3.04 q50 -0.059 DSR 0.120 (vix.Z756>@q0.9 OR sur_PAYEMS.C21<=@q0.7) -> 3x / cash, hold 21
+9 0.746 t2.29 q50 -0.105 DSR 0.017 VOTE >=3 of [sur_PAYEMS.C63<=@q0.7; tech_rs.Z63<=@q0.7; macro.shock3moff; vrp.Z756>@q0.8; gwz_dtoat.C21>@q0.3] -> 3x / -1x, hold 5
+10 0.744 t2.56 q50 -0.085 DSR 0.052 IF vrp.Z756<=@q0.9 THEN e_acc.L>@q0.3 ELSE own_rv21.S21<=@q0.9 -> 3x / cash, hold 5

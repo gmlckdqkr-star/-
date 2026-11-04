@@ -1,0 +1,12 @@
+# SL1 sleeve cross-check (not a candidate): 12-1 momentum top 30, equal weight, monthly
+name: sl1chk_mom12_k30
+family: sl1_check
+known: 3
+idea: cross-check of the SL1 sleeve builder against lab (MOM12_K30)
+universe: sp500
+stock:
+  rebalance: month
+  score: "ret(231, 21)"
+  top: 30
+  weight: equal
+  max_weight: 0.10

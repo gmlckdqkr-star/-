@@ -1,0 +1,9 @@
+# KL1 data check: lab kr_etf hold of KRINV (actual ETF series) vs KL1 synthetic KR products. Not a candidate.
+name: kl1_hold_KRINV
+family: kl1_kr_ref
+known: 3
+idea: hold KRINV (synthetic-product cross-check for KL1)
+account: kr_etf
+baseline: KR200
+rules:
+  - else: {KRINV: 1.0}

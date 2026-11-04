@@ -1,0 +1,115 @@
+{
+ "panel": "US",
+ "child": 7,
+ "n_pairs": 1200000,
+ "n_triples": 800000,
+ "N_add": 2000000,
+ "N_total": 12557468,
+ "screen_secs": 281.05340218544006,
+ "addendum_only": {
+  "label": "add_US",
+  "N_stacked": 2000000,
+  "N_unique": 1970767,
+  "N_kept": 1970766,
+  "months": 348,
+  "spa": {
+   "T": 348,
+   "N": 1970766,
+   "Tspa": 3.0782309193894655,
+   "p_c": 0.999,
+   "p_l": 0.992,
+   "p_u": 1.0,
+   "maxnull_q50": 4.3182180219545705,
+   "maxnull_q95": 5.3676331840757925,
+   "rw_n": 0
+  },
+  "top_by_mean": {
+   "row": [
+    163,
+    1617,
+    0,
+    2,
+    0,
+    3,
+    21
+   ],
+   "raw_adv_ann": 0.17836078628897667,
+   "tstat": 2.7448731554509727,
+   "rw_reject": false,
+   "defl_adv_q50": -0.10223533533271822,
+   "dsr_Ntotal": 6.429430509963537e-11,
+   "sr_m": 0.1566036006239212,
+   "sr0": 0.4992852560111997
+  },
+  "best_t": {
+   "row": [
+    50,
+    751,
+    1059,
+    6,
+    0,
+    3,
+    21
+   ],
+   "tstat": 3.0782309193894655,
+   "raw_adv_ann": 0.16364123672246933
+  },
+  "sr_var_subsample": 0.008721504502878391,
+  "N_total_for_dsr": 12557468,
+  "secs": 175.67314982414246
+ },
+ "combined_with_main": {
+  "label": "comb_US",
+  "N_stacked": 2235280,
+  "N_unique": 2192436,
+  "N_kept": 2192435,
+  "months": 348,
+  "spa": {
+   "T": 348,
+   "N": 2192435,
+   "Tspa": 3.0782309193894655,
+   "p_c": 1.0,
+   "p_l": 0.994,
+   "p_u": 1.0,
+   "maxnull_q50": 4.32940190422557,
+   "maxnull_q95": 5.37985124613371,
+   "rw_n": 0
+  },
+  "top_by_mean": {
+   "row": [
+    163,
+    1617,
+    0,
+    2,
+    0,
+    3,
+    21
+   ],
+   "raw_adv_ann": 0.17836078628897667,
+   "tstat": 2.7448731554509727,
+   "rw_reject": false,
+   "defl_adv_q50": -0.10296205963750348,
+   "dsr_Ntotal": 7.218868545865192e-11,
+   "sr_m": 0.1566036006239212,
+   "sr0": 0.49834550266190847
+  },
+  "best_t": {
+   "row": [
+    50,
+    751,
+    1059,
+    6,
+    0,
+    3,
+    21
+   ],
+   "tstat": 3.0782309193894655,
+   "raw_adv_ann": 0.16364123672246933
+  },
+  "sr_var_subsample": 0.008688704216208355,
+  "N_total_for_dsr": 12557468,
+  "secs": 211.2126796245575
+ },
+ "gen_sha256": "c53bcaacc9487c06447a291bac55ea1fe39788e6fe67eaff8904bfff5b31e9ef",
+ "note": "selection period only; no confirmation computed (confirmation era already used once); cannot pass by design"
+}

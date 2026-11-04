@@ -1,0 +1,12 @@
+# SL1 sleeve cross-check (not a candidate): lowest 252-day volatility top 30, equal weight, monthly
+name: sl1chk_lowvol252_k30
+family: sl1_check
+known: 3
+idea: cross-check of the SL1 sleeve builder against lab (LOWVOL252_K30)
+universe: sp500
+stock:
+  rebalance: month
+  score: "-vol(252)"
+  top: 30
+  weight: equal
+  max_weight: 0.10

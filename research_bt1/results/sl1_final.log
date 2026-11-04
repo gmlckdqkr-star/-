@@ -1,0 +1,44 @@
+1 VOTELADDER [sur_HOUST.S200>@q0.7; sur_PAYEMS.Z252<=@q0.3; ew_spx.C63>@q0.5; skew.Z756<=@q0.1; c3sig.c3onon; core_yoy.C63 | ndx86-99 adv 0.262 -> 00-14 adv -0.317 | d85 disc 0.006 conf -0.488 | G1 CLOSE
+2 VOTE >=1 of [own_px.S21>@q0.5; c3sig.c3onoff; skew.Z756<=@q0.9] -> 3x / STK:TREND200_K10, hold 21 | ndx86-99 adv 0.251 -> 00-14 adv -0.325 | d85 disc 0.000 conf -0.497 | G1 CLOSE
+3 VOTE >=1 of [c3sig.c3anyoff; f_wml.Z756<=@q0.2; vix.Z756<=@q0.8; sur_CPIAUCNS.S200<=@q0.2; own_px.S200<=@q0.9; macro.csj | ndx86-99 adv 0.245 -> 00-14 adv -0.321 | d85 disc -0.002 conf -0.493 | G1 CLOSE
+4 (ew_spx.C63<=@q0.1 AND vix.Z756>@q0.7) -> STK:REV1_K10 / 3x, hold 5 | ndx86-99 adv 0.245 -> 00-14 adv -0.309 | d85 disc -0.002 conf -0.480 | G1 CLOSE
+5 VOTELADDER [gwz_ndrbl.L<=@q0.1; inf63.SL50<=; vrp.Z756>@q0.9; gwz_svar.Z756>@q0.2; ipo_ret6.S200<=@q0.8] >=5 STK:LOSER12 | ndx86-99 adv 0.243 -> 00-14 adv -0.149 | d85 disc -0.003 conf -0.320 | G1 CLOSE
+6 (ener_rs.S100>@q0.1 OR vix.Z756<=@q0.8) -> 3x / STK:MOM12_K30, hold 21 | ndx86-99 adv 0.236 -> 00-14 adv -0.290 | d85 disc -0.007 conf -0.461 | G1 CLOSE
+7 IF skew.Z756>@q0.1 THEN gp_ratio.C63<=@q0.1 ELSE small_rs.S200<=@q0.1 -> STK:EW / 3x, hold 5 | ndx86-99 adv 0.235 -> 00-14 adv -0.321 | d85 disc -0.007 conf -0.492 | G1 CLOSE
+8 ((rev_HOUST.Z756<=@q0.2 OR rev_INDPRO.C63<=@q0.2) AND skew.Z756>@q0.8) -> STK:LOWVOL252_K30 / 3x, hold 5 | ndx86-99 adv 0.234 -> 00-14 adv -0.349 | d85 disc -0.008 conf -0.520 | G1 CLOSE
+9 VOTELADDER [skew.Z756>@q0.2; philly_no.L>@q0.1; c3sig.c3onoff; ew_spx.C63>@q0.5; c_sb63.S200<=@q0.7; gwz_dtoat.C252>@q0. | ndx86-99 adv 0.233 -> 00-14 adv -0.356 | d85 disc -0.008 conf -0.527 | G1 CLOSE
+10 VOTELADDER [sur_INDPRO.S200<=@q0.8; msi21.S50>@q0.8; agg_max21.S21<=@q0.8; agg_ivar63.S100<=@q0.5; cpi_yoy.C21<=@q0.1; v | ndx86-99 adv 0.233 -> 00-14 adv -0.263 | d85 disc -0.008 conf -0.434 | G1 CLOSE
+11 VOTE >=2 of [gwz_bm.L<=@q0.3; macro.inv2on; msi21.S21<=@q0.3; sur_INDPRO.C252>@q0.8; macro.shock6m75on; skew.Z756<=@q0.9 | ndx86-99 adv 0.231 -> 00-14 adv -0.335 | d85 disc -0.009 conf -0.507 | G1 CLOSE
+12 VOTE >=1 of [sur_CPIAUCNS.C252>@q0.7; fin_rs.Z756>@q0.7; c_sc63.Z756>@q0.8; sur_PAYEMS.Z252<=@q0.8; skew.Z756<=@q0.2] -> | ndx86-99 adv 0.231 -> 00-14 adv -0.431 | d85 disc -0.009 conf -0.602 | G1 CLOSE
+13 (rev_INDPRO.Z252<=@q0.1 OR skew.Z756<=@q0.1) -> STK:LOWBETA_K30 / 3x, hold 21 | ndx86-99 adv 0.230 -> 00-14 adv -0.235 | d85 disc -0.010 conf -0.406 | G1 CLOSE
+14 VOTELADDER [skew.Z756<=@q0.5; own_dd252.C63>@q0.8; c3sig.c3onoff; c3sig.c3anyon; d_g12.C252>@q0.7] >=4 STK:LOWVOL63_K10  | ndx86-99 adv 0.230 -> 00-14 adv -0.397 | d85 disc -0.010 conf -0.569 | G1 CLOSE
+15 VOTE >=3 of [curve.S100<=@q0.9; macro.shock6m75on; gp_ratio.Z252>@q0.9; e_g3.C63<=@q0.5; tcu.Z756>@q0.2; realrate.Z252>@ | ndx86-99 adv 0.230 -> 00-14 adv -0.235 | d85 disc -0.010 conf -0.407 | G1 CLOSE
+16 VOTE >=5 of [y30.Z756<=@q0.2; cape.C252>@q0.5; agg_crash21.L>@q0.7; own_dd252.S50>@q0.1; skew.Z756>@q0.5] -> STK:TREND20 | ndx86-99 adv 0.228 -> 00-14 adv -0.319 | d85 disc -0.011 conf -0.490 | G1 CLOSE
+17 VOTE >=5 of [macro.inv2off; agg_nearhi.C21>@q0.3; rev63.C21<=@q0.3; own_dd252.C21>@q0.2; skew.Z756<=@q0.1] -> STK:REV1_K | ndx86-99 adv 0.228 -> 00-14 adv -0.320 | d85 disc -0.011 conf -0.491 | G1 CLOSE
+18 VOTE >=2 of [tech_rs.S50<=@q0.9; vix.Z756>@q0.7; c3sig.c3anyoff; realrate.L>@q0.7; gwz_ik.Z252<=@q0.1; inf63.L>@q0.5; wb | ndx86-99 adv 0.227 -> 00-14 adv -0.260 | d85 disc -0.011 conf -0.432 | G1 CLOSE
+19 VOTELADDER [skew.Z756<=@q0.9; c3sig.c3onon; c3sig.c3anyoff] >=2 3x / >=1 STK:LOWMAX21_K30 / else 2x, hold 21 | ndx86-99 adv 0.227 -> 00-14 adv -0.330 | d85 disc -0.011 conf -0.502 | G1 CLOSE
+20 VOTE >=3 of [skew.Z756<=@q0.1; own_dd252.SL50>; permit.S200>@q0.3] -> STK:LOWBETA_K10 / 3x, hold 21 | ndx86-99 adv 0.227 -> 00-14 adv -0.361 | d85 disc -0.011 conf -0.532 | G1 CLOSE
+1 VOTELADDER [ew_spx.S200<=@q0.2; agg_max21.S21<=@q0.5; wb_gold.C21>@q0.5; gwz_dtoy.C63<=@q0.8; msi63.SL50>] >=5 STK:LOSER | ndx86-99 adv 0.216 -> 00-14 adv -0.107 | d85 disc 0.045 conf -0.279 | G1 CLOSE
+2 LADDER [c3sig.c3onoff; micro_rs.Z756>@q0.5] both cash / one STK:MOM12_K10 / none 2x, hold 21 | ndx86-99 adv 0.162 -> 00-14 adv 0.019 | d85 disc 0.011 conf -0.152 | G1 CLOSE
+3 LADDER [micro_rs.Z756<=@q0.5; c3sig.c3onon] both 3x / one STK:MOM12_K10 / none STK:LOWVOL252_K30, hold 21 | ndx86-99 adv 0.279 -> 00-14 adv 0.040 | d85 disc 0.087 conf -0.132 | G1 CLOSE
+4 IF permit.Z756<=@q0.3 THEN c3sig.c3onoff ELSE sur_CPIAUCNS.S200>@q0.8 -> STK:LOWBETA_K10 / 2x, hold 21 | ndx86-99 adv 0.145 -> 00-14 adv -0.081 | d85 disc 0.001 conf -0.253 | G1 CLOSE
+5 VOTE >=2 of [gp_ratio.Z252<=@q0.9; macro.inv2on; philly_no.C63>@q0.9] -> STK:LOWVOL252_K30 / 2x, hold 21 | ndx86-99 adv 0.215 -> 00-14 adv 0.147 | d85 disc -0.007 conf -0.024 | G1 CLOSE
+6 (y5.Z756>@q0.7 OR gwz_disag.C63>@q0.2) -> 2x / STK:LOWVOL63_K10, hold 1 | ndx86-99 adv 0.219 -> 00-14 adv -0.048 | d85 disc -0.009 conf -0.219 | G1 CLOSE
+7 LADDER [wb_gold.L<=@q0.9; gwz_dtoy.L<=@q0.1] both cash / one 2x / none STK:MOM12_K10, hold 21 | ndx86-99 adv 0.153 -> 00-14 adv -0.216 | d85 disc 0.014 conf -0.387 | G1 CLOSE
+8 LADDER [f_strev.L<=@q0.7; gwz_disag.C63>@q0.2] both STK:TREND200_K10 / one 2x / none STK:LOWVOL252_K10, hold 21 | ndx86-99 adv 0.218 -> 00-14 adv -0.062 | d85 disc -0.005 conf -0.234 | G1 CLOSE
+9 LADDER [umich.S200>@q0.9; gwz_disag.C63<=@q0.2] both STK:LOWVOL63_K10 / one cash / none 2x, hold 5 | ndx86-99 adv 0.229 -> 00-14 adv -0.060 | d85 disc -0.005 conf -0.231 | G1 CLOSE
+10 LADDER [gwz_ltr.Z252>@q0.8; aqr_mom.Z252<=@q0.3] both STK:HI52_K10 / one 3x / none 1x, hold 21 | ndx86-99 adv 0.349 -> 00-14 adv -0.109 | d85 disc 0.051 conf -0.280 | G1 CLOSE
+11 (gwz_disag.C63>@q0.2 OR e_g3.C252>@q0.2 OR msi21.S50>@q0.9) -> 2x / STK:LOWBETA_K30, hold 1 | ndx86-99 adv 0.197 -> 00-14 adv -0.149 | d85 disc -0.021 conf -0.320 | G1 CLOSE
+12 VOTE >=2 of [kf_breadth.C5<=@q0.7; ipo_n12.C252<=@q0.3; rev63.S21>@q0.8; c3sig.c3onon; d_g12.L<=@q0.7] -> 2x / STK:LOWVO | ndx86-99 adv 0.195 -> 00-14 adv -0.129 | d85 disc -0.016 conf -0.301 | G1 CLOSE
+13 IF small_rs.S200<=@q0.5 THEN kf_disp.Z756<=@q0.8 ELSE gwz_svar.Z756<=@q0.1 -> 3x / STK:MOM12_K10, hold 21 | ndx86-99 adv 0.290 -> 00-14 adv 0.038 | d85 disc 0.064 conf -0.134 | G1 CLOSE
+14 (gwz_disag.C63<=@q0.2 AND curve.S50>@q0.2) -> STK:LOWVOL252_K30 / 2x, hold 5 | ndx86-99 adv 0.205 -> 00-14 adv -0.071 | d85 disc -0.016 conf -0.242 | G1 CLOSE
+15 VOTE >=2 of [y3m.Z252>@q0.3; e_g3.C63<=@q0.7; c3sig.c3onoff] -> STK:MOM12_K10 / 3x, hold 21 | ndx86-99 adv 0.291 -> 00-14 adv -0.081 | d85 disc 0.077 conf -0.252 | G1 CLOSE
+16 LADDER [ip_yoy.C63<=@q0.9; gwz_disag.C63>@q0.2] both 2x / one STK:LOWVOL63_K10 / none STK:TREND200_K10, hold 1 | ndx86-99 adv 0.213 -> 00-14 adv -0.037 | d85 disc -0.012 conf -0.209 | G1 CLOSE
+17 VOTELADDER [elec_ind_g12.Z756>@q0.9; c3sig.c3anyoff; y10.C252<=@q0.9; gwz_disag.C63<=@q0.2; sur_CPIAUCNS.C63<=@q0.3; wb_ | ndx86-99 adv 0.396 -> 00-14 adv -0.078 | d85 disc 0.068 conf -0.249 | G1 CLOSE
+18 VOTE >=1 of [claims_yoy.S21<=@q0.2; ip_yoy.C252>@q0.9; c3sig.c3onoff] -> STK:LOWVOL63_K10 / 3x, hold 21 | ndx86-99 adv 0.386 -> 00-14 adv -0.076 | d85 disc 0.063 conf -0.247 | G1 CLOSE
+19 (gwz_disag.C63>@q0.2 OR kf_disp.SL200<=) -> 2x / STK:LOWVOL252_K30, hold 5 | ndx86-99 adv 0.221 -> 00-14 adv -0.087 | d85 disc -0.010 conf -0.258 | G1 CLOSE
+20 VOTELADDER [macro.invoff; ew_spx.S50>@q0.9; gwz_dp.C63<=@q0.2; umich.L>@q0.3; macro.shock6m75off; macro.inv2off; sur_HOU | ndx86-99 adv 0.303 -> 00-14 adv 0.078 | d85 disc 0.046 conf -0.093 | G1 CLOSE
+disc1 MS1 stream representative -0.0569 SL1 discovery #1: VOTELADDER [sur_HOUST.S200>@q0.7; sur_PAYEMS.Z252<=@q0.3; ew_spx.C63>@q0.5; skew.Z756<=@q0.1; c3sig.c3onon; core_yoy.C63<=
+best_conf_primary MS1 stream representative -0.0007 SL1 best confirmation (primary): VOTELADDER [gwz_ndrbl.L<=@q0.1; inf63.SL50<=; vrp.Z756>@q0.9; gwz_svar.Z756>@q0.2; ipo_ret6.S200<=@q0.8] >=
+best_conf_t MS1 stream representative 0.1523 SL1 best confirmation (t list): VOTE >=2 of [gp_ratio.Z252<=@q0.9; macro.inv2on; philly_no.C63>@q0.9] -> STK:LOWVOL252_K30 / 2x, hold 21
+sl1 exit 0
