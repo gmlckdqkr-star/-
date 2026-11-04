@@ -1,0 +1,18 @@
+from harness import *
+from explore4 import go
+base = dict(th_c=1.3, d_r=0.2, L_r=2.0)
+go('decomp: exit only (L_r=0 -> uses Lb)', dict(base, L_r=0.0))
+go('decomp: recovery only (L_c=Lb approx 1)', dict(base, L_c=1.0))
+go('th_c=1.2', dict(base, th_c=1.2))
+go('th_c=1.4', dict(base, th_c=1.4))
+go('L_c=0.5', dict(base, L_c=0.5))
+go('L_r=2.5', dict(base, L_r=2.5))
+go('L_r=1.5', dict(base, L_r=1.5))
+go('d_r=0.3', dict(base, d_r=0.3))
+go('p0=0.03', dict(base, p0=0.03))
+go('p0=0.0', dict(base, p0=0.0))
+go('hl_m=50', dict(base, hl_m=50))
+go('hl_m=15', dict(base, hl_m=15))
+go('hl_f=10', dict(base, hl_f=10))
+go('hl_tr=50', dict(base, hl_tr=50))
+go('d_exit=0.02', dict(base, d_exit=0.02))

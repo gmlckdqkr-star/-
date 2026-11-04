@@ -1,0 +1,6 @@
+ON delay 3 cost 0.003 cagr_med 0.0532  vs hold1 +0.0003  vs bc +0.0301
+ON delay 5 cost 0.003 cagr_med 0.0492  vs hold1 -0.0037  vs bc +0.0262
+ON delay 2 cost 0.006 cagr_med 0.0503  vs hold1 -0.0027  vs bc +0.0272
+OFF delay 3 cost 0.003 cagr_med 0.0252  vs hold1 -0.0286  vs bc +0.0019
+OFF delay 5 cost 0.003 cagr_med 0.0259  vs hold1 -0.0279  vs bc +0.0026
+OFF delay 2 cost 0.006 cagr_med 0.0199  vs hold1 -0.0339  vs bc -0.0033

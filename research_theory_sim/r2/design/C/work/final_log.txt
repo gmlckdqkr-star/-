@@ -1,0 +1,9 @@
+ON         rule med 0.0539 p10 -0.0054 p90 0.1545 dd80 0.144 lvl 0.56 tpy 1.1 | hold1 0.0544 hold2 0.0197 hold3 -0.0279 | best const 0.0274 @0.5 | d3 0.0537 d5 0.0534 c2x 0.0529
+OFF        rule med 0.0304 p10 -0.0094 p90 0.0975 dd80 0.025 lvl 0.51 tpy 0.9 | hold1 0.0534 hold2 0.0150 hold3 -0.0327 | best const 0.0275 @0.5 | d3 0.0304 d5 0.0304 c2x 0.0299
+NOSCAR     rule med 0.0310 p10 -0.0241 p90 0.1068 dd80 0.176 lvl 0.56 tpy 1.1 | hold1 0.0542 hold2 0.0190 hold3 -0.0282 | best const 0.0275 @0.5
+FLAT       rule med 0.0263 p10 -0.0262 p90 0.0957 dd80 0.176 lvl 0.56 tpy 1.1 | hold1 0.0546 hold2 0.0195 hold3 -0.0275 | best const 0.0275 @0.5
+ON_s0.5    rule med 0.0539 p10 -0.0014 p90 0.1297 dd80 0.116 lvl 0.57 tpy 1.1 | hold1 0.0536 hold2 0.0178 hold3 -0.0257 | best const 0.0241 @0.5
+OFF_s0.5   rule med 0.0302 p10 -0.0086 p90 0.0919 dd80 0.011 lvl 0.52 tpy 0.9 | hold1 0.0535 hold2 0.0203 hold3 -0.0224 | best const 0.0251 @0.5
+ON_s1.5    rule med 0.0536 p10 -0.0077 p90 0.1613 dd80 0.155 lvl 0.54 tpy 1.0 | hold1 0.0545 hold2 0.0160 hold3 -0.0329 | best const 0.0303 @0.5
+OFF_s1.5   rule med 0.0309 p10 -0.0117 p90 0.0989 dd80 0.040 lvl 0.52 tpy 0.9 | hold1 0.0520 hold2 0.0121 hold3 -0.0376 | best const 0.0297 @0.5
+speed P=500 T=10000: 1.1s

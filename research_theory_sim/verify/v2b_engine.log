@@ -1,0 +1,34 @@
+real_spx_29_85 own build: path start 1928-01-03, measured from 1929-01-08 to 1985-12-31, T=15622
+real_ndx_86_14: path 1984-10-23..2014-12-31, measured from 1986-01-02; first nonzero return at path day 237 (1985-10-02); zero-return days before WARM: 237
+L1 real_ndx_86_14 base mine=0.0553925 std_engine=0.0553925 reported=0.0553925 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.115297 hold1x_rep=0.115297 hold2x_mine=0.101067 hold2x_rep=0.101067 hold3x_mine=0.0387128 hold3x_rep=0.0387128
+L1 real_ndx_86_14 delay3 mine=0.06012 std_engine=0.06012 reported=0.06012 max_path_diff_vs_std=0 maxEE_diff=0
+L1 real_ndx_86_14 delay5 mine=0.0574587 std_engine=0.0574587 reported=0.0574587 max_path_diff_vs_std=0 maxEE_diff=0
+L1 real_ndx_86_14 cost2x mine=0.0524327 std_engine=0.0524327 reported=0.0524327 max_path_diff_vs_std=0 maxEE_diff=0
+L1 dev250_path base mine=0.0534062 std_engine=0.0534062 reported=0.0534062 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.116434 hold1x_rep=0.116434 hold2x_mine=0.104759 hold2x_rep=0.104759 hold3x_mine=0.0422992 hold3x_rep=0.0422992
+L1 dev250_path delay3 mine=0.0553801 std_engine=0.0553801 reported=0.0553801 max_path_diff_vs_std=0 maxEE_diff=0
+L1 dev250_path delay5 mine=0.0549331 std_engine=0.0549331 reported=0.0549331 max_path_diff_vs_std=0 maxEE_diff=0
+L1 dev250_path cost2x mine=0.0505956 std_engine=0.0505956 reported=0.0505956 max_path_diff_vs_std=0 maxEE_diff=0
+L1 real_spx_55_85 base mine=0.0816774 std_engine=0.0816774 reported=0.0816774 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.0899607 hold1x_rep=0.0899607 hold2x_mine=0.0904217 hold2x_rep=0.0904217 hold3x_mine=0.0983784 hold3x_rep=0.0983784
+L1 real_spx_70_85 base mine=0.0737391 std_engine=0.0737391 reported=0.0737391 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.08427 hold1x_rep=0.08427 hold2x_mine=0.0595915 hold2x_rep=0.0595915 hold3x_mine=0.0435088 hold3x_rep=0.0435088
+L1 real_spx_29_85 base mine=0.0747944 std_engine=0.0747944 reported=0.0747944 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.0758157 hold1x_rep=0.0758157 hold2x_mine=0.0633369 hold2x_rep=0.0633369 hold3x_mine=0.0390723 hold3x_rep=0.0390723 s085_mine_ctx=0.057648 s085_rep=0.057648 d_mine=0.0171464 d_rep=0.0171464
+L1 warm-up sensitivity {'cagr_r0_warmup': 0.05539247289539384, 'cagr_nan_warmup': 0.05625190820110104, 'B_at_1986_01_02': (0.0, 0.0), 'n_days_B_differs_after_warm': 465, 'last_differing_day': '1992-02-06'}
+L2 real_ndx_86_14 base mine=0.0459261 std_engine=0.0459261 reported=0.0459261 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.115297 hold1x_rep=0.115297 hold2x_mine=0.101067 hold2x_rep=0.101067 hold3x_mine=0.0387128 hold3x_rep=0.0387128
+L2 real_ndx_86_14 delay3 mine=0.0484346 std_engine=0.0484346 reported=0.0484346 max_path_diff_vs_std=0 maxEE_diff=0
+L2 real_ndx_86_14 delay5 mine=0.0503311 std_engine=0.0503311 reported=0.0503311 max_path_diff_vs_std=0 maxEE_diff=0
+L2 real_ndx_86_14 cost2x mine=0.0449518 std_engine=0.0449518 reported=0.0449518 max_path_diff_vs_std=0 maxEE_diff=0
+L2 dev250_path base mine=0.0365793 std_engine=0.0365793 reported=0.0365793 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.116434 hold1x_rep=0.116434 hold2x_mine=0.104759 hold2x_rep=0.104759 hold3x_mine=0.0422992 hold3x_rep=0.0422992
+L2 real_spx_55_85 base mine=-0.0134273 std_engine=-0.0134273 reported=-0.0134273 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.0899607 hold1x_rep=0.0899607 hold2x_mine=0.0904217 hold2x_rep=0.0904217 hold3x_mine=0.0983784 hold3x_rep=0.0983784
+L2 real_spx_70_85 base mine=-0.0537563 std_engine=-0.0537563 reported=-0.0537563 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.08427 hold1x_rep=0.08427 hold2x_mine=0.0595915 hold2x_rep=0.0595915 hold3x_mine=0.0435088 hold3x_rep=0.0435088
+L2 real_spx_29_85 base mine=0.00384115 std_engine=0.00384115 reported=0.00384115 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.0758157 hold1x_rep=0.0758157 hold2x_mine=0.0633369 hold2x_rep=0.0633369 hold3x_mine=0.0390723 hold3x_rep=0.0390723 s085_mine_ctx=0.057648 s085_rep=0.057648 d_mine=-0.0538069 d_rep=-0.0538069
+L2 warm-up sensitivity {'cagr_r0_warmup': 0.04592614120818128, 'cagr_nan_warmup': 0.04127568891850042, 'B_at_1986_01_02': (1.4042970967841657, 0.0), 'n_days_B_differs_after_warm': 2816, 'last_differing_day': '2010-07-06'}
+/mnt/project-files/research/theory_sim/design/L3/rule.py:52: RuntimeWarning: overflow encountered in divide
+  lev = (a + beta * z) / np.maximum(252.0 * v, 1e-300)
+L3 real_ndx_86_14 base mine=0.0275834 std_engine=0.0275834 reported=0.0275834 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.115297 hold1x_rep=0.115297 hold2x_mine=0.101067 hold2x_rep=0.101067 hold3x_mine=0.0387128 hold3x_rep=0.0387128
+L3 real_ndx_86_14 delay3 mine=0.029195 std_engine=0.029195 reported=0.029195 max_path_diff_vs_std=0 maxEE_diff=0
+L3 real_ndx_86_14 delay5 mine=0.0266683 std_engine=0.0266683 reported=0.0266683 max_path_diff_vs_std=0 maxEE_diff=0
+L3 real_ndx_86_14 cost2x mine=0.0261912 std_engine=0.0261912 reported=0.0261912 max_path_diff_vs_std=0 maxEE_diff=0
+L3 dev250_path base mine=0.0344306 std_engine=0.0344306 reported=0.0344306 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.116434 hold1x_rep=0.116434 hold2x_mine=0.104759 hold2x_rep=0.104759 hold3x_mine=0.0422992 hold3x_rep=0.0422992
+L3 real_spx_55_85 base mine=0.0640307 std_engine=0.0640307 reported=0.0640307 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.0899607 hold1x_rep=0.0899607 hold2x_mine=0.0904217 hold2x_rep=0.0904217 hold3x_mine=0.0983784 hold3x_rep=0.0983784
+L3 real_spx_70_85 base mine=0.0489731 std_engine=0.0489731 reported=0.0489731 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.08427 hold1x_rep=0.08427 hold2x_mine=0.0595915 hold2x_rep=0.0595915 hold3x_mine=0.0435088 hold3x_rep=0.0435088
+L3 real_spx_29_85 base mine=0.0726058 std_engine=0.0726058 reported=0.0726058 max_path_diff_vs_std=0 maxEE_diff=0 hold1x_mine=0.0758157 hold1x_rep=0.0758157 hold2x_mine=0.0633369 hold2x_rep=0.0633369 hold3x_mine=0.0390723 hold3x_rep=0.0390723 s085_mine_ctx=0.057648 s085_rep=0.057648 d_mine=0.0149578 d_rep=0.0149578
+L3 warm-up sensitivity {'cagr_r0_warmup': 0.027583439742280502, 'cagr_nan_warmup': 0.024831615480443103, 'B_at_1986_01_02': (2.3512512269509767, 1.5788638308570202), 'n_days_B_differs_after_warm': 708, 'last_differing_day': '1990-01-24'}

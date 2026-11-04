@@ -1,0 +1,4 @@
+partial oracle f=1 sig_t only     0.0495 lev 2.16 tr 2.4
+partial oracle f=1 mu_t only      0.0528 lev 0.89 tr 3.0
+partial oracle f=1 carry only     0.0578 lev 1.10 tr 0.5
+partial oracle f=1 mu_t - carry   0.0500 lev 0.91 tr 2.7

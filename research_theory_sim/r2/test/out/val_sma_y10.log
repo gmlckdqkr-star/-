@@ -1,0 +1,18 @@
+causality {'deterministic': True, 'cuts': 169, 'checks': 507, 'violations': 0, 'first_bad': [], 'future_changed_share': 0.9960552268244576, 'multipath_cuts_bad': [], 'crosspath_leak': []}
+val_sma_y10    dev250_path     cagr=0.072 mdd=-0.936 w7=2.053 w12=2.748 p10=-0.026 dd80=0.954 dd95=0.392 d_vs_s085=-0.094 pw_vs_s085=0.076 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=2.073 share_cash=0.286 share_ge2=0.668 secs=14.700
+val_sma_y10    dev250_glued    cagr=0.075 mdd=-0.921 w7=1.969 w12=2.829 p10=-0.019 dd80=0.924 dd95=0.314 d_vs_s085=-0.196 pw_vs_s085=0.000 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=1.902 share_cash=0.286 share_ge2=0.554 secs=3.500
+val_sma_y10    real_ndx_86_14  cagr=0.087 mdd=-0.946 w7=0.775 w12=4.059 d_vs_s085=-0.224 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=2.135 share_cash=0.267 share_ge2=0.691 secs=0.000
+val_sma_y10    real_spx_55_85  cagr=0.122 mdd=-0.615 w7=4.767 w12=7.028 d_vs_s085=0.003 pw_vs_s085=1.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098 avg_target=2.040 share_cash=0.296 share_ge2=0.656 secs=0.000
+val_sma_y10    real_spx_70_85  cagr=0.106 mdd=-0.601 w7=2.369 w12=1.725 d_vs_s085=-0.021 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044 avg_target=1.863 share_cash=0.333 share_ge2=0.576 secs=0.000
+val_sma_y10    real_spx_29_85  cagr=0.101 mdd=-0.970 w7=0.116 w12=0.416 d_vs_s085=0.043 pw_vs_s085=1.000 ref_s085=0.058 hold1x=0.076 hold2x=0.063 hold3x=0.039 avg_target=1.999 share_cash=0.322 share_ge2=0.654 secs=0.000
+val_sma_y10|delay3 dev250_path     cagr=0.083 mdd=-0.923 w7=2.038 w12=3.133 p10=-0.013 dd80=0.934 dd95=0.336 d_vs_s085=-0.085 pw_vs_s085=0.092 ref_s085=0.163 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=2.073 share_cash=0.286 share_ge2=0.668 secs=2.300
+val_sma_y10|delay3 real_ndx_86_14  cagr=0.111 mdd=-0.920 w7=0.860 w12=4.248 d_vs_s085=-0.197 pw_vs_s085=0.000 ref_s085=0.309 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=2.135 share_cash=0.267 share_ge2=0.691 secs=0.000
+val_sma_y10|delay5 dev250_path     cagr=0.083 mdd=-0.926 w7=2.202 w12=3.035 p10=-0.020 dd80=0.932 dd95=0.348 d_vs_s085=-0.083 pw_vs_s085=0.102 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=2.073 share_cash=0.286 share_ge2=0.668 secs=2.300
+val_sma_y10|delay5 real_ndx_86_14  cagr=0.110 mdd=-0.926 w7=0.699 w12=3.161 d_vs_s085=-0.186 pw_vs_s085=0.000 ref_s085=0.296 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=2.135 share_cash=0.267 share_ge2=0.691 secs=0.000
+val_sma_y10|cost2x dev250_path     cagr=0.046 mdd=-0.951 w7=1.703 w12=2.015 p10=-0.055 dd80=0.976 dd95=0.512 d_vs_s085=-0.109 pw_vs_s085=0.042 ref_s085=0.151 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=2.073 share_cash=0.286 share_ge2=0.668 secs=2.200
+val_sma_y10|cost2x real_ndx_86_14  cagr=0.060 mdd=-0.963 w7=0.669 w12=3.150 d_vs_s085=-0.239 pw_vs_s085=0.000 ref_s085=0.299 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=2.135 share_cash=0.267 share_ge2=0.691 secs=0.000
+nanwarm {'cagr': 0.017228217410589775, 'mdd': 0.0, 'w7': 1.2765994730745767, 'w12': 1.4215472942228222, 'nan_days': 236}
+G1 {"ge1.5": ["CLOSE", 0.4369], "gt0": ["CLOSE", 0.4369]}
+  conf QQQ   2000-05-16..2014-12-31 rule -0.0221 r1 0.0588 s085 0.1685 1x 0.0116 2x -0.0868 3x -0.2307 avg 1.96
+  conf QQQ   2000-05-16..2014-12-31 rule 0.0218 r1 0.0679 s085 0.1388 1x 0.0116 2x -0.0868 3x -0.2307 avg 1.96
+  conf QQQ   2000-05-16..2014-12-31 rule -0.0506 r1 0.0549 s085 0.1517 1x 0.0116 2x -0.0868 3x -0.2307 avg 1.96

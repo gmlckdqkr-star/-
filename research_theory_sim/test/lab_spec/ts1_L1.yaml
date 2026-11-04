@@ -1,0 +1,8 @@
+name: ts1_L1_mrlc
+family: ts1_theory_blind
+known: 1
+idea: TS1 L1 MRLC frozen rule (blind theory, synthetic design), half-Kelly on momentum/reversal/rf; cross-check only, authority = std.py
+plugin: plugins/ts1_L1.py:weights
+sleeves: [TQQQ]
+inputs: [QQQ, '_IRX']
+params: {}

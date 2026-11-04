@@ -1,0 +1,5 @@
+65732b03cc3e698641bc0f47a414fdfdd7ac7385b0a938b9d309ce83969b44d6  DESIGN_BRIEF.md
+ae4a3c601a8fc6c4045f049598be67d661b7764b65dcf41a7a2d98be6f477745  TEST_PROTOCOL.md
+c9298b26f5279d4f748d31db7cbdfae746fcf3d119218e53e26c790cf72fe901  common/exec_engine.py
+3f8321728be0b23125eafc35dce72b54e4bec18087466557efe3f7b37d091fc5  test/parity_engine.py
+written 2026-11-04T07:16Z before any designer started

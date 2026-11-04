@@ -1,0 +1,5 @@
+L1 {'deterministic': True, 'cuts': 176, 'checks': 528, 'violations': 0, 'first_bad': [], 'future_changed_share': 1.0, 'multipath_cuts_bad': [], 'crosspath_leak': []}
+L2 {'deterministic': True, 'cuts': 176, 'checks': 528, 'violations': 0, 'first_bad': [], 'future_changed_share': 1.0, 'multipath_cuts_bad': [], 'crosspath_leak': []}
+/mnt/project-files/research/theory_sim/design/L3/rule.py:52: RuntimeWarning: overflow encountered in divide
+  lev = (a + beta * z) / np.maximum(252.0 * v, 1e-300)
+L3 {'deterministic': True, 'cuts': 176, 'checks': 528, 'violations': 0, 'first_bad': [], 'future_changed_share': 1.0, 'multipath_cuts_bad': [], 'crosspath_leak': []}

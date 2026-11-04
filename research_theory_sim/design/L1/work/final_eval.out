@@ -1,0 +1,7 @@
+on_prior1.0 rule 0.10317 hold1x 0.03867 best_const {'name': 'const0.5', 'level': 0.5, 'cagr_med': 0.02018} 59s
+on_prior0.5 rule 0.15653 hold1x 0.03844 best_const {'name': 'const0.5', 'level': 0.5, 'cagr_med': 0.01648} 98s
+on_prior1.5 rule 0.08304 hold1x 0.04421 best_const {'name': 'const0.5', 'level': 0.5, 'cagr_med': 0.02877} 133s
+off_prior1.0 rule 0.02465 hold1x 0.03927 best_const {'name': 'const0.5', 'level': 0.5, 'cagr_med': 0.02233} 188s
+off_prior0.5 rule 0.02061 hold1x 0.03762 best_const {'name': 'const0.5', 'level': 0.5, 'cagr_med': 0.01854} 232s
+off_prior1.5 rule 0.0337 hold1x 0.04474 best_const {'name': 'const0.5', 'level': 0.5, 'cagr_med': 0.03049} 272s
+done
