@@ -1,0 +1,12 @@
+# WS1 lab cross-check (B, US500 monthly): 1-month reversal (lowest past 21-day return) top 20, monthly.
+name: ws1_rev21_top20
+family: ws1_xcheck
+known: 3
+idea: cross-check of wide_shape B engine, 1-month reversal top 20 among point-in-time S&P 500 members
+universe: sp500
+stock:
+  rebalance: month
+  score: "-ret(21)"
+  top: 20
+  weight: equal
+  max_weight: 0.05
