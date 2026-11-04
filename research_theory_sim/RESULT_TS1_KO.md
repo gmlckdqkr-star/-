@@ -118,3 +118,5 @@
 - 동결: `FREEZE_TS1.txt`, 저장소 브랜치 claude/project-thread-hhwozh `research_theory_sim/`
 - 시험 코드: `test/harness.py` (2014년 이하), `test/post2014.py` (2015년 이후, 결과는 holdout/에만 저장)
 - 결과: `test/out/real_L1.json`, `real_L2.json`, `real_L3.json`
+- 독립 검증: `verify/`
+- 감사·대결 중간 스크립트 묶음: `audit_scratch_20261104.tar.gz` (프로젝트 폴더에만 있음, 2014년 이하만)
