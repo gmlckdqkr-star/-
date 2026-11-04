@@ -1,0 +1,567 @@
+{
+ "real_ndx_86_14": {
+  "validate_D": {
+   "max_abs_cagr_diff": 0.0,
+   "max_abs_EE_diff": 0.0
+  },
+  "validate_track1": {
+   "max_abs_cagr_diff": 0.0,
+   "max_abs_EE_diff": 0.0
+  },
+  "validate_const1": {
+   "max_abs_cagr_diff": 0.0,
+   "max_abs_EE_diff": 0.0
+  },
+  "hold1x": {
+   "cagr": 0.11529749814295998,
+   "mdd": -0.8298333944664916,
+   "dd80": 1.0
+  },
+  "D_E0_1.25": {
+   "steps": [
+    {
+     "step": "MS1 engine",
+     "cagr": 0.09762592107720125,
+     "mean_expo": 1.2767849675531129,
+     "trades_per_yr": 0.9649890590809628,
+     "tax_paid": 3.5811009920877153,
+     "cost_paid": 0.256251388989338,
+     "mdd": -0.9207243708670302,
+     "dd80": 1.0,
+     "mean_target": 1.1482494529540481
+    },
+    {
+     "step": "no trading cost",
+     "cagr": 0.09896951953853339,
+     "mean_expo": 1.277420178212451,
+     "trades_per_yr": 0.9649890590809628,
+     "tax_paid": 3.677764026085783,
+     "cost_paid": 0.0,
+     "mdd": -0.9199251196191394,
+     "dd80": 1.0,
+     "mean_target": 1.1482494529540481
+    },
+    {
+     "step": "+ tax deferred to the end",
+     "cagr": 0.10227104184465174,
+     "mean_expo": 1.277420178212451,
+     "trades_per_yr": 0.9649890590809628,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9138193872851788,
+     "dd80": 1.0,
+     "mean_target": 1.1482494529540481
+    },
+    {
+     "step": "+ product fee 0.6%/yr on the 3x part (=0.2% per unit exposure)",
+     "cagr": 0.11143907121797048,
+     "mean_expo": 1.292158463391899,
+     "trades_per_yr": 0.9649890590809628,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9098951280806405,
+     "dd80": 1.0,
+     "mean_target": 1.1482494529540481
+    },
+    {
+     "step": "+ cash earns rf (no 2pp spread, no 15.4% cash tax)",
+     "cagr": 0.12332931686935011,
+     "mean_expo": 1.2777949306234402,
+     "trades_per_yr": 0.9649890590809628,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9030079066788066,
+     "dd80": 1.0,
+     "mean_target": 1.1482494529540481
+    }
+   ],
+   "ideal_same_expo": {
+    "cagr": 0.12658228744652544,
+    "mdd": -0.9103200090850528,
+    "dd80": 1.0,
+    "x_median": 1.2767849675531129
+   }
+  },
+  "track_level1": {
+   "steps": [
+    {
+     "step": "MS1 engine",
+     "cagr": 0.12477560305936208,
+     "mean_expo": 1.265848091534792,
+     "trades_per_yr": 0.861597374179431,
+     "tax_paid": 4.443971453038937,
+     "cost_paid": 0.26605832163047805,
+     "mdd": -0.7436573930363737,
+     "dd80": 0.0,
+     "mean_target": 0.9991794310722101
+    },
+    {
+     "step": "no trading cost",
+     "cagr": 0.12615151359757748,
+     "mean_expo": 1.267883227462867,
+     "trades_per_yr": 0.861597374179431,
+     "tax_paid": 4.587469316285129,
+     "cost_paid": 0.0,
+     "mdd": -0.7428650901344427,
+     "dd80": 0.0,
+     "mean_target": 0.9991794310722101
+    },
+    {
+     "step": "+ tax deferred to the end",
+     "cagr": 0.134352246418453,
+     "mean_expo": 1.2678832274628675,
+     "trades_per_yr": 0.861597374179431,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.7256566281638954,
+     "dd80": 0.0,
+     "mean_target": 0.9991794310722101
+    },
+    {
+     "step": "+ product fee 0.6%/yr on the 3x part (=0.2% per unit exposure)",
+     "cagr": 0.1460064260558842,
+     "mean_expo": 1.2999358973017376,
+     "trades_per_yr": 0.861597374179431,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.7249036396905176,
+     "dd80": 0.0,
+     "mean_target": 0.9991794310722101
+    },
+    {
+     "step": "+ cash earns rf (no 2pp spread, no 15.4% cash tax)",
+     "cagr": 0.155362580650364,
+     "mean_expo": 1.2636754333296067,
+     "trades_per_yr": 0.861597374179431,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.710403741498318,
+     "dd80": 0.0,
+     "mean_target": 0.9991794310722101
+    }
+   ],
+   "ideal_same_expo": {
+    "cagr": 0.12625527523837676,
+    "mdd": -0.9079255698829146,
+    "dd80": 1.0,
+    "x_median": 1.265848091534792
+   }
+  },
+  "const_level1_no_rebal": {
+   "steps": [
+    {
+     "step": "MS1 engine",
+     "cagr": 0.025649925038341292,
+     "mean_expo": 1.2672344658056764,
+     "trades_per_yr": 0.03446389496717724,
+     "tax_paid": 0.0,
+     "cost_paid": 0.03139721768851346,
+     "mdd": -0.9939486739847779,
+     "dd80": 1.0,
+     "mean_target": 1.0
+    },
+    {
+     "step": "no trading cost",
+     "cagr": 0.026149352869257125,
+     "mean_expo": 1.277360226324919,
+     "trades_per_yr": 0.03446389496717724,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9940985483658146,
+     "dd80": 1.0,
+     "mean_target": 1.0
+    },
+    {
+     "step": "+ tax deferred to the end",
+     "cagr": 0.022820674648033723,
+     "mean_expo": 1.277360226324919,
+     "trades_per_yr": 0.03446389496717724,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9940985483658146,
+     "dd80": 1.0,
+     "mean_target": 1.0
+    },
+    {
+     "step": "+ product fee 0.6%/yr on the 3x part (=0.2% per unit exposure)",
+     "cagr": 0.03195361824227172,
+     "mean_expo": 1.4174783880547748,
+     "trades_per_yr": 0.03446389496717724,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9953794717518255,
+     "dd80": 1.0,
+     "mean_target": 1.0
+    },
+    {
+     "step": "+ cash earns rf (no 2pp spread, no 15.4% cash tax)",
+     "cagr": 0.039563783348206094,
+     "mean_expo": 1.2472496968303675,
+     "trades_per_yr": 0.03446389496717724,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9932004511982918,
+     "dd80": 1.0,
+     "mean_target": 1.0
+    }
+   ],
+   "ideal_same_expo": {
+    "cagr": 0.12629727570705995,
+    "mdd": -0.9082321611016507,
+    "dd80": 1.0,
+    "x_median": 1.2672344658056764
+   }
+  },
+  "ideal_x1.00": {
+   "cagr": 0.1152974981429602,
+   "mdd": -0.829833394466491,
+   "dd80": 1.0
+  },
+  "ideal_x1.10": {
+   "cagr": 0.12009163100290943,
+   "mdd": -0.8641325795038177,
+   "dd80": 1.0
+  },
+  "ideal_x1.20": {
+   "cagr": 0.12407774214957867,
+   "mdd": -0.8922910586740866,
+   "dd80": 1.0
+  },
+  "ideal_x1.25": {
+   "cagr": 0.1257638630763498,
+   "mdd": -0.9043565410919039,
+   "dd80": 1.0
+  }
+ },
+ "dev250_path": {
+  "validate_D": {
+   "max_abs_cagr_diff": 0.0,
+   "max_abs_EE_diff": 0.0
+  },
+  "validate_track1": {
+   "max_abs_cagr_diff": 0.0,
+   "max_abs_EE_diff": 0.0
+  },
+  "validate_const1": {
+   "max_abs_cagr_diff": 0.0,
+   "max_abs_EE_diff": 0.0
+  },
+  "hold1x": {
+   "cagr": 0.11643356682063832,
+   "mdd": -0.6777334675263059,
+   "dd80": 0.176
+  },
+  "D_E0_1.25": {
+   "steps": [
+    {
+     "step": "MS1 engine",
+     "cagr": 0.09602110345991133,
+     "mean_expo": 1.3013610714466197,
+     "trades_per_yr": 0.9333333333333333,
+     "tax_paid": 2.5191108035997454,
+     "cost_paid": 0.1705770329384223,
+     "mdd": -0.8057718392644844,
+     "dd80": 0.52,
+     "mean_target": 1.1937607142857143
+    },
+    {
+     "step": "no trading cost",
+     "cagr": 0.09736071071734842,
+     "mean_expo": 1.3019589847624427,
+     "trades_per_yr": 0.9333333333333333,
+     "tax_paid": 2.601931215022187,
+     "cost_paid": 0.0,
+     "mdd": -0.8047911098908382,
+     "dd80": 0.52,
+     "mean_target": 1.1937607142857143
+    },
+    {
+     "step": "+ tax deferred to the end",
+     "cagr": 0.0974758079106911,
+     "mean_expo": 1.3019589847624427,
+     "trades_per_yr": 0.9333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.8029025959424783,
+     "dd80": 0.508,
+     "mean_target": 1.1937607142857143
+    },
+    {
+     "step": "+ product fee 0.6%/yr on the 3x part (=0.2% per unit exposure)",
+     "cagr": 0.10723440368705339,
+     "mean_expo": 1.3172979295272458,
+     "trades_per_yr": 0.9333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.8006797023918847,
+     "dd80": 0.502,
+     "mean_target": 1.1937607142857143
+    },
+    {
+     "step": "+ cash earns rf (no 2pp spread, no 15.4% cash tax)",
+     "cagr": 0.1184549861313351,
+     "mean_expo": 1.3024740176458838,
+     "trades_per_yr": 0.9333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.7861006806721764,
+     "dd80": 0.444,
+     "mean_target": 1.1937607142857143
+    }
+   ],
+   "ideal_same_expo": {
+    "cagr": 0.1300106537388086,
+    "mdd": -0.796085196565344,
+    "dd80": 0.482,
+    "x_median": 1.3013610714466197
+   }
+  },
+  "track_level1": {
+   "steps": [
+    {
+     "step": "MS1 engine",
+     "cagr": 0.09249313136673853,
+     "mean_expo": 1.017145544417102,
+     "trades_per_yr": 0.6333333333333333,
+     "tax_paid": 2.156075248647616,
+     "cost_paid": 0.1400833261223983,
+     "mdd": -0.6342338617944687,
+     "dd80": 0.088,
+     "mean_target": 0.9993955026455027
+    },
+    {
+     "step": "no trading cost",
+     "cagr": 0.09349736107549489,
+     "mean_expo": 1.0186650513747704,
+     "trades_per_yr": 0.6333333333333333,
+     "tax_paid": 2.224231585318357,
+     "cost_paid": 0.0,
+     "mdd": -0.6349647982097398,
+     "dd80": 0.088,
+     "mean_target": 0.9993955026455027
+    },
+    {
+     "step": "+ tax deferred to the end",
+     "cagr": 0.0951247926776313,
+     "mean_expo": 1.0186650513747704,
+     "trades_per_yr": 0.6333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.6253740414423505,
+     "dd80": 0.084,
+     "mean_target": 0.9993955026455027
+    },
+    {
+     "step": "+ product fee 0.6%/yr on the 3x part (=0.2% per unit exposure)",
+     "cagr": 0.10359572619517066,
+     "mean_expo": 1.045249826440874,
+     "trades_per_yr": 0.6333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.6354594140722888,
+     "dd80": 0.084,
+     "mean_target": 0.9993955026455027
+    },
+    {
+     "step": "+ cash earns rf (no 2pp spread, no 15.4% cash tax)",
+     "cagr": 0.11536153049156483,
+     "mean_expo": 1.0188851643845176,
+     "trades_per_yr": 0.6333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.6034918004199783,
+     "dd80": 0.042,
+     "mean_target": 0.9993955026455027
+    }
+   ],
+   "ideal_same_expo": {
+    "cagr": 0.11559108126441264,
+    "mdd": -0.6850870218893872,
+    "dd80": 0.17,
+    "x_median": 1.017145544417102
+   }
+  },
+  "const_level1_no_rebal": {
+   "steps": [
+    {
+     "step": "MS1 engine",
+     "cagr": 0.028888756769536283,
+     "mean_expo": 1.5287834702512069,
+     "trades_per_yr": 0.03333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.04169535321163836,
+     "mdd": -0.9047177593706288,
+     "dd80": 0.688,
+     "mean_target": 1.0
+    },
+    {
+     "step": "no trading cost",
+     "cagr": 0.02921561080288204,
+     "mean_expo": 1.5346413050942862,
+     "trades_per_yr": 0.03333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9064313562784365,
+     "dd80": 0.688,
+     "mean_target": 1.0
+    },
+    {
+     "step": "+ tax deferred to the end",
+     "cagr": 0.02546688522733742,
+     "mean_expo": 1.5346413050942862,
+     "trades_per_yr": 0.03333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9064313562784365,
+     "dd80": 0.688,
+     "mean_target": 1.0
+    },
+    {
+     "step": "+ product fee 0.6%/yr on the 3x part (=0.2% per unit exposure)",
+     "cagr": 0.03522666289468879,
+     "mean_expo": 1.6524229759605804,
+     "trades_per_yr": 0.03333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9148654642940172,
+     "dd80": 0.726,
+     "mean_target": 1.0
+    },
+    {
+     "step": "+ cash earns rf (no 2pp spread, no 15.4% cash tax)",
+     "cagr": 0.04206218395112704,
+     "mean_expo": 1.5520766578176624,
+     "trades_per_yr": 0.03333333333333333,
+     "tax_paid": 0.0,
+     "cost_paid": 0.0,
+     "mdd": -0.9004987225437675,
+     "dd80": 0.686,
+     "mean_target": 1.0
+    }
+   ],
+   "ideal_same_expo": {
+    "cagr": 0.1171594619161157,
+    "mdd": -0.8381393169271076,
+    "dd80": 0.548,
+    "x_median": 1.5287834702512069
+   }
+  },
+  "ideal_x1.00": {
+   "cagr": 0.11643356682063843,
+   "mdd": -0.6777334675263054,
+   "dd80": 0.176
+  },
+  "ideal_x1.10": {
+   "cagr": 0.12239544402258751,
+   "mdd": -0.7223811574589326,
+   "dd80": 0.27
+  },
+  "ideal_x1.20": {
+   "cagr": 0.12629304439271427,
+   "mdd": -0.7620554073220606,
+   "dd80": 0.366
+  },
+  "ideal_x1.25": {
+   "cagr": 0.12807169959372233,
+   "mdd": -0.7800916459838864,
+   "dd80": 0.416
+  },
+  "dd80_by_crash_blocks": [
+   {
+    "crash_blocks": 0,
+    "paths": 26,
+    "dd80_hold1x": 0.0,
+    "dd80_ideal_same_expo": 0.038461538461538464,
+    "dd80_D": 0.038461538461538464,
+    "mdd_med_hold1x": -0.4963916623290498,
+    "mdd_med_D": -0.6249898075617173
+   },
+   {
+    "crash_blocks": 1,
+    "paths": 87,
+    "dd80_hold1x": 0.011494252873563218,
+    "dd80_ideal_same_expo": 0.1724137931034483,
+    "dd80_D": 0.26436781609195403,
+    "mdd_med_hold1x": -0.5889357720815427,
+    "mdd_med_D": -0.7177803988374988
+   },
+   {
+    "crash_blocks": 2,
+    "paths": 139,
+    "dd80_hold1x": 0.07913669064748201,
+    "dd80_ideal_same_expo": 0.37410071942446044,
+    "dd80_D": 0.381294964028777,
+    "mdd_med_hold1x": -0.6660067584175784,
+    "mdd_med_D": -0.7677976240308184
+   },
+   {
+    "crash_blocks": 3,
+    "paths": 112,
+    "dd80_hold1x": 0.13392857142857142,
+    "dd80_ideal_same_expo": 0.5892857142857143,
+    "dd80_D": 0.625,
+    "mdd_med_hold1x": -0.7036524745382904,
+    "mdd_med_D": -0.8347160612287705
+   },
+   {
+    "crash_blocks": 4,
+    "paths": 76,
+    "dd80_hold1x": 0.3026315789473684,
+    "dd80_ideal_same_expo": 0.7236842105263158,
+    "dd80_D": 0.7763157894736842,
+    "mdd_med_hold1x": -0.7475412440264271,
+    "mdd_med_D": -0.8553721316791651
+   },
+   {
+    "crash_blocks": 5,
+    "paths": 34,
+    "dd80_hold1x": 0.6470588235294118,
+    "dd80_ideal_same_expo": 0.8235294117647058,
+    "dd80_D": 0.8823529411764706,
+    "mdd_med_hold1x": -0.8339814965067287,
+    "mdd_med_D": -0.9160651310364316
+   },
+   {
+    "crash_blocks": 6,
+    "paths": 22,
+    "dd80_hold1x": 0.5454545454545454,
+    "dd80_ideal_same_expo": 0.9090909090909091,
+    "dd80_D": 0.9090909090909091,
+    "mdd_med_hold1x": -0.824468269763927,
+    "mdd_med_D": -0.92992272201846
+   },
+   {
+    "crash_blocks": 7,
+    "paths": 3,
+    "dd80_hold1x": 1.0,
+    "dd80_ideal_same_expo": 1.0,
+    "dd80_D": 1.0,
+    "mdd_med_hold1x": -0.92990730225833,
+    "mdd_med_D": -0.9779278385463129
+   },
+   {
+    "crash_blocks": 8,
+    "paths": 1,
+    "dd80_hold1x": 1.0,
+    "dd80_ideal_same_expo": 1.0,
+    "dd80_D": 1.0,
+    "mdd_med_hold1x": -0.8316813896376798,
+    "mdd_med_D": -0.9360877086003327
+   }
+  ],
+  "dd80": {
+   "hold1x": 0.176,
+   "ideal_same_expo": 0.482,
+   "D": 0.52,
+   "share_paths_with_any_crash_days": 0.98,
+   "mean_crash_days_per_path": 669.764,
+   "crash_days_in_source": 647,
+   "source_days": 7312,
+   "D_dd80_given_hold1x_dd80": 1.0,
+   "D_dd80_given_hold1x_not": 0.4174757281553398
+  },
+  "real_ndx_crash_depth": {
+   "ndx_price_peak_to_trough": -0.8245886371435894
+  }
+ }
+}

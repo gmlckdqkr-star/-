@@ -1,0 +1,84 @@
+{
+ "header": [
+  "TS2 FREEZE 2026-11-04T12:24Z (before any real-data run of the round-2 lane rules)",
+  "primary: D"
+ ],
+ "entries": 211,
+ "match": 211,
+ "mismatch": [],
+ "missing": [],
+ "unlisted_design_files": [],
+ "commit": "4a5750307abaab3364f181ca97b4928b5586cdb0 2026-11-04T12:24:21+00:00 TS2 freeze: round-2 blind lane rules + tournament choice (D) hashed before the real-history test",
+ "commit_on_remote_branch": true,
+ "git_rule_hashes": {
+  "A": {
+   "git": "09bcfa965c852429a4919a1f50c64322f4d82c314099bde72f0bbec31cb7e9b3",
+   "freeze": "09bcfa965c852429a4919a1f50c64322f4d82c314099bde72f0bbec31cb7e9b3",
+   "current": "09bcfa965c852429a4919a1f50c64322f4d82c314099bde72f0bbec31cb7e9b3",
+   "all_equal": true
+  },
+  "B": {
+   "git": "8051732d8fc4d28a211491f73f73978cccb21bd6aec0de265c96e3f25366cabb",
+   "freeze": "8051732d8fc4d28a211491f73f73978cccb21bd6aec0de265c96e3f25366cabb",
+   "current": "8051732d8fc4d28a211491f73f73978cccb21bd6aec0de265c96e3f25366cabb",
+   "all_equal": true
+  },
+  "C": {
+   "git": "861d9b27505b370581a04a71137824e6963279c23c54526f2ba677834fe69d85",
+   "freeze": "861d9b27505b370581a04a71137824e6963279c23c54526f2ba677834fe69d85",
+   "current": "861d9b27505b370581a04a71137824e6963279c23c54526f2ba677834fe69d85",
+   "all_equal": true
+  },
+  "D": {
+   "git": "6246c68a961167f51d7bfe704f8293ea3f7d7a77a98d123cd3dea79bf98fe3ec",
+   "freeze": "6246c68a961167f51d7bfe704f8293ea3f7d7a77a98d123cd3dea79bf98fe3ec",
+   "current": "6246c68a961167f51d7bfe704f8293ea3f7d7a77a98d123cd3dea79bf98fe3ec",
+   "all_equal": true
+  }
+ },
+ "git_freeze_file_equal": true,
+ "git_tree_design_files": 204,
+ "freeze_design_files": 204,
+ "design_files_in_freeze_not_in_git": [],
+ "git_blob_vs_freeze_mismatch": [],
+ "harness_r2_sha_now": "ca54744f4dc6ed88f40416ab9825a89e0cfcc793a8ac905fad7e8f263d004d15",
+ "std_py_sha12": "ee4de887037c",
+ "freeze_time": "2026-11-04T12:24Z",
+ "real_json_times": {
+  "A": {
+   "t0": "2026-11-04T12:28Z",
+   "t1": "2026-11-04T12:32Z",
+   "t0_ge_freeze": true,
+   "t0_gt_freeze_minute": true,
+   "json_mtime": "2026-11-04T12:32:29.455020"
+  },
+  "B": {
+   "t0": "2026-11-04T12:29Z",
+   "t1": "2026-11-04T12:31Z",
+   "t0_ge_freeze": true,
+   "t0_gt_freeze_minute": true,
+   "json_mtime": "2026-11-04T12:32:02.950217"
+  },
+  "C": {
+   "t0": "2026-11-04T12:29Z",
+   "t1": "2026-11-04T12:32Z",
+   "t0_ge_freeze": true,
+   "t0_gt_freeze_minute": true,
+   "json_mtime": "2026-11-04T12:33:04.966576"
+  },
+  "D": {
+   "t0": "2026-11-04T12:24Z",
+   "t1": "2026-11-04T12:28Z",
+   "t0_ge_freeze": true,
+   "t0_gt_freeze_minute": false,
+   "json_mtime": "2026-11-04T12:28:21.323086"
+  }
+ },
+ "val_runs": {
+  "val_R1L1.json": "2026-11-04T10:46:55.799776",
+  "val_R1L1.log": "2026-11-04T10:46:56.205739",
+  "val_sma_y10.json": "2026-11-04T10:47:35.361316",
+  "val_sma_y10.log": "2026-11-04T10:47:35.810502",
+  "val_status.txt": "2026-11-04T10:47:35.684032"
+ }
+}

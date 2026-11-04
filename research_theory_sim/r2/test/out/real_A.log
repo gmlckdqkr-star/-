@@ -1,0 +1,39 @@
+causality {'deterministic': True, 'cuts': 169, 'checks': 507, 'violations': 0, 'first_bad': [], 'future_changed_share': 1.0, 'multipath_cuts_bad': [], 'crosspath_leak': []}
+A              dev250_path     cagr=0.098 mdd=-0.604 w7=2.073 w12=3.534 p10=0.041 dd80=0.042 dd95=0.000 d_vs_s085=-0.065 pw_vs_s085=0.164 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=0.719 share_cash=0.160 share_ge2=0.000 secs=19.200
+A              dev250_glued    cagr=0.098 mdd=-0.604 w7=2.073 w12=3.534 p10=0.041 dd80=0.042 dd95=0.000 d_vs_s085=-0.174 pw_vs_s085=0.000 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=0.719 share_cash=0.160 share_ge2=0.000 secs=5.000
+A              real_ndx_86_14  cagr=0.117 mdd=-0.842 w7=4.180 w12=8.591 d_vs_s085=-0.193 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=0.778 share_cash=0.146 share_ge2=0.000 secs=0.500
+A              real_spx_55_85  cagr=0.069 mdd=-0.629 w7=3.514 w12=4.141 d_vs_s085=-0.050 pw_vs_s085=0.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098 avg_target=1.334 share_cash=0.175 share_ge2=0.000 secs=0.400
+A              real_spx_70_85  cagr=0.071 mdd=-0.535 w7=1.527 w12=1.978 d_vs_s085=-0.055 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044 avg_target=1.172 share_cash=0.164 share_ge2=0.000 secs=0.300
+A              real_spx_29_85  cagr=0.054 mdd=-0.681 w7=0.784 w12=0.856 d_vs_s085=-0.003 pw_vs_s085=0.000 ref_s085=0.058 hold1x=0.076 hold2x=0.063 hold3x=0.039 avg_target=0.727 share_cash=0.168 share_ge2=0.000 secs=0.600
+A|delay3       dev250_path     cagr=0.105 mdd=-0.599 w7=2.176 w12=3.797 p10=0.046 dd80=0.044 dd95=0.000 d_vs_s085=-0.058 pw_vs_s085=0.176 ref_s085=0.163 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=0.719 share_cash=0.160 share_ge2=0.000 secs=3.000
+A|delay3       real_ndx_86_14  cagr=0.130 mdd=-0.804 w7=4.116 w12=8.245 d_vs_s085=-0.179 pw_vs_s085=0.000 ref_s085=0.309 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=0.778 share_cash=0.146 share_ge2=0.000 secs=0.300
+A|delay5       dev250_path     cagr=0.103 mdd=-0.586 w7=2.167 w12=3.848 p10=0.050 dd80=0.026 dd95=0.000 d_vs_s085=-0.059 pw_vs_s085=0.198 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=0.719 share_cash=0.160 share_ge2=0.000 secs=3.000
+A|delay5       real_ndx_86_14  cagr=0.122 mdd=-0.849 w7=3.423 w12=7.037 d_vs_s085=-0.175 pw_vs_s085=0.000 ref_s085=0.296 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=0.778 share_cash=0.146 share_ge2=0.000 secs=0.300
+A|cost2x       dev250_path     cagr=0.094 mdd=-0.609 w7=2.011 w12=3.370 p10=0.036 dd80=0.044 dd95=0.000 d_vs_s085=-0.059 pw_vs_s085=0.188 ref_s085=0.151 hold1x=0.116 hold2x=0.105 hold3x=0.042 avg_target=0.719 share_cash=0.160 share_ge2=0.000 secs=2.900
+A|cost2x       real_ndx_86_14  cagr=0.113 mdd=-0.844 w7=4.047 w12=8.085 d_vs_s085=-0.186 pw_vs_s085=0.000 ref_s085=0.299 hold1x=0.115 hold2x=0.101 hold3x=0.039 avg_target=0.778 share_cash=0.146 share_ge2=0.000 secs=0.400
+nanwarm {'cagr': 0.11745700961878613, 'mdd': -0.8417965711744285, 'w7': 4.1800962107079975, 'w12': 8.590696551469414, 'nan_days': 236}
+G1 {"ge1.5": ["CLOSE", 0.3539], "gt0": ["CLOSE", 0.4352]}
+  conf EWA   1997-05-23..2014-12-31 rule 0.0479 r1 0.0090 s085 0.0194 1x 0.0683 2x 0.0224 3x -0.0761 avg 0.70
+  conf EWC   1997-05-23..2014-12-31 rule 0.0712 r1 0.0306 s085 0.1041 1x 0.0691 2x 0.0444 3x -0.0141 avg 0.77
+  conf EWG   1997-05-23..2014-12-31 rule 0.0082 r1 0.0024 s085 0.0686 1x 0.0444 2x -0.0196 3x -0.1398 avg 0.72
+  conf EWJ   1997-05-23..2014-12-31 rule -0.0270 r1 -0.0017 s085 -0.0638 1x 0.0006 2x -0.1004 3x -0.2271 avg 0.72
+  conf EWU   1997-05-23..2014-12-31 rule -0.0033 r1 -0.0057 s085 0.0432 1x 0.0346 2x -0.0223 3x -0.1182 avg 0.77
+  conf EWT   2001-08-31..2014-12-31 rule 0.0211 r1 0.0256 s085 -0.0171 1x 0.0516 2x -0.0142 3x -0.1571 avg 0.60
+  conf EWY   2001-07-23..2014-12-31 rule 0.0616 r1 0.0011 s085 0.1237 1x 0.1065 2x 0.0607 3x -0.0761 avg 0.59
+  conf EWZ   2001-09-27..2014-12-31 rule 0.0805 r1 -0.0108 s085 0.1184 1x 0.1276 2x 0.0713 3x -0.1207 avg 0.57
+  conf EWA   1997-05-23..2014-12-31 rule 0.0505 r1 0.0154 s085 0.0359 1x 0.0683 2x 0.0224 3x -0.0761 avg 0.70
+  conf EWC   1997-05-23..2014-12-31 rule 0.0653 r1 0.0247 s085 0.1076 1x 0.0691 2x 0.0444 3x -0.0141 avg 0.77
+  conf EWG   1997-05-23..2014-12-31 rule 0.0077 r1 0.0068 s085 0.1174 1x 0.0444 2x -0.0196 3x -0.1398 avg 0.72
+  conf EWJ   1997-05-23..2014-12-31 rule -0.0271 r1 -0.0004 s085 -0.0496 1x 0.0006 2x -0.1004 3x -0.2271 avg 0.72
+  conf EWU   1997-05-23..2014-12-31 rule 0.0155 r1 -0.0021 s085 0.0867 1x 0.0346 2x -0.0223 3x -0.1182 avg 0.77
+  conf EWT   2001-08-31..2014-12-31 rule 0.0325 r1 0.0320 s085 0.0212 1x 0.0516 2x -0.0142 3x -0.1571 avg 0.60
+  conf EWY   2001-07-23..2014-12-31 rule 0.0522 r1 -0.0009 s085 0.1513 1x 0.1065 2x 0.0607 3x -0.0761 avg 0.59
+  conf EWZ   2001-09-27..2014-12-31 rule 0.0769 r1 -0.0147 s085 0.1276 1x 0.1276 2x 0.0713 3x -0.1207 avg 0.57
+  conf EWA   1997-05-23..2014-12-31 rule 0.0434 r1 0.0062 s085 0.0056 1x 0.0683 2x 0.0224 3x -0.0761 avg 0.70
+  conf EWC   1997-05-23..2014-12-31 rule 0.0661 r1 0.0265 s085 0.0984 1x 0.0691 2x 0.0444 3x -0.0141 avg 0.77
+  conf EWG   1997-05-23..2014-12-31 rule 0.0036 r1 -0.0001 s085 0.0651 1x 0.0444 2x -0.0196 3x -0.1398 avg 0.72
+  conf EWJ   1997-05-23..2014-12-31 rule -0.0313 r1 -0.0047 s085 -0.0658 1x 0.0006 2x -0.1004 3x -0.2271 avg 0.72
+  conf EWU   1997-05-23..2014-12-31 rule -0.0078 r1 -0.0099 s085 0.0327 1x 0.0346 2x -0.0223 3x -0.1182 avg 0.77
+  conf EWT   2001-08-31..2014-12-31 rule 0.0184 r1 0.0225 s085 -0.0408 1x 0.0516 2x -0.0142 3x -0.1571 avg 0.60
+  conf EWY   2001-07-23..2014-12-31 rule 0.0588 r1 -0.0013 s085 0.1097 1x 0.1065 2x 0.0607 3x -0.0761 avg 0.59
+  conf EWZ   2001-09-27..2014-12-31 rule 0.0778 r1 -0.0123 s085 0.0985 1x 0.1276 2x 0.0713 3x -0.1207 avg 0.57

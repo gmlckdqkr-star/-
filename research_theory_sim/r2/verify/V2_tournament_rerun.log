@@ -1,0 +1,21 @@
+wrote /tmp/claude-0/-home-user--/3909d02b-a58d-53ad-b2bb-fea9997a6f67/scratchpad/tourn/tournament.json
+primary rule_D tie set ['rule_D']
+rule_A     score 0.0352  ON 0.0392  OFF 0.0312  worst 0.0250 (A_OFF)
+rule_B     score 0.0353  ON 0.0318  OFF 0.0388  worst 0.0052 (C_ON)
+rule_C     score 0.0375  ON 0.0416  OFF 0.0333  worst 0.0260 (A_OFF)
+rule_D     score 0.0435  ON 0.0452  OFF 0.0418  worst 0.0360 (A_OFF)
+hold1      score 0.0585  ON 0.0583  OFF 0.0587  worst 0.0525 (C_ON)
+hold2      score 0.0261  ON 0.0266  OFF 0.0255  worst 0.0121 (C_ON)
+hold3      score -0.0129  ON -0.0112  OFF -0.0146  worst -0.0367 (C_ON)
+const_0.5  score 0.0299  ON 0.0295  OFF 0.0302  worst 0.0221 (A_OFF)
+const_1.0  score 0.0281  ON 0.0284  OFF 0.0279  worst 0.0189 (A_OFF)
+const_1.5  score 0.0249  ON 0.0255  OFF 0.0244  worst 0.0144 (A_OFF)
+const_2.0  score 0.0188  ON 0.0197  OFF 0.0179  worst 0.0071 (A_OFF)
+const_2.5  score 0.0089  ON 0.0101  OFF 0.0078  worst -0.0028 (A_OFF)
+const_3.0  score -0.0129  ON -0.0112  OFF -0.0146  worst -0.0367 (C_ON)
+const_best_per_cell_hindsight score 0.0303  ON 0.0303  OFF 0.0302  worst 0.0221 (A_OFF)
+stress delay3    score 0.0435 ON 0.0453 OFF 0.0417 worst 0.0360; ref best const 0.0299
+stress delay5    score 0.0437 ON 0.0457 OFF 0.0416 worst 0.0361; ref best const 0.0299
+stress cost0.006 score 0.0426 ON 0.0443 OFF 0.0410 worst 0.0351; ref best const 0.0297
+rc=0
+2026-11-04T12:42Z
