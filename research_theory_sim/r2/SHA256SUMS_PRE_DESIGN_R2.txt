@@ -1,0 +1,8 @@
+TS2 PRE-DESIGN 2026-11-04T10:46Z (before any round-2 designer started; no round-2 rule exists yet)
+372a8555289968dee42c901aedc04a31d8318976c9e66948204143f4fb846258  DESIGN_BRIEF_R2.md
+ddf7499c19230d956e14e4b7ee1396ec9d9364e84ba12ac3e81b79f467be5692  TEST_PROTOCOL_R2.md
+ca54744f4dc6ed88f40416ab9825a89e0cfcc793a8ac905fad7e8f263d004d15  test/harness_r2.py
+f0158e169dd4b3207cc7e433966572f0c72d34a89523403020f35e467fdde62d  test/post2014_r2.py
+19b16f78b05a24471d2ad9d32260e11424bae770ae5de3c1b214cab80bdc381f  test/freeze_r2.sh
+c9298b26f5279d4f748d31db7cbdfae746fcf3d119218e53e26c790cf72fe901  common/exec_engine.py
+acc4cf0c32b8459d586aa47e0f14a31101eee8309bdb35d0f2b88e253de937fb  design/L1/rule.py
