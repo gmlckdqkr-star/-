@@ -1,0 +1,4 @@
+mech True scale 1000: traded CAGR bit-identical on all 500 paths: True (max |diff| 0)
+mech True scale 0.001: traded CAGR bit-identical on all 500 paths: True (max |diff| 0)
+mech False scale 1000: traded CAGR bit-identical on all 500 paths: True (max |diff| 0)
+mech False scale 0.001: traded CAGR bit-identical on all 500 paths: True (max |diff| 0)

@@ -1,0 +1,23 @@
+--- seed 1 ON  sim 12s
+  finite r/rf/y10: True True True ; r[:,0]==0: True ; min r -0.3290 max r 0.2387 ; rf/yr range [0.0000, 0.1600]; y10 range [0.10, 20.43]
+  drawn pi_bar   : 0.0306 [p10 0.0058, p90 0.0551]  mean 0.0305 sd 0.0193
+  drawn sigma_bar: 0.1755 [p10 0.1275, p90 0.2413]  log-sd 0.242
+  realised arith excess/yr: 0.0314 [p10 -0.0194, p90 0.0808]  pooled mean 0.0315 (vs mean drawn pi_bar 0.0305)
+  realised vol/yr         : 0.1762 [p10 0.1271, p90 0.2436]  corr(realised vol, sigma_bar) 0.968
+  realised prem - pi_bar  : 0.0010 [p10 -0.0418, p90 0.0429]  realised vol/sigma_bar 0.9961 [p10 0.9351, p90 1.0812]
+  worst drawdown (price): -0.5467 [p10 -0.8552, p90 -0.3075]  P(<=-50%) 0.572
+  |excess| autocorr lags 1/5/20/60: 0.129 0.121 0.099 0.074 ; corr(log var_yr, next-yr excess) 0.338
+--- seed 1 OFF  sim 5s
+  finite r/rf/y10: True True True ; r[:,0]==0: True ; min r -0.3017 max r 0.0821 ; rf/yr range [0.0000, 0.1600]; y10 range [0.10, 20.43]
+  drawn pi_bar   : 0.0306 [p10 0.0058, p90 0.0551]  mean 0.0305 sd 0.0193
+  drawn sigma_bar: 0.1755 [p10 0.1275, p90 0.2413]  log-sd 0.242
+  realised arith excess/yr: 0.0307 [p10 -0.0173, p90 0.0794]  pooled mean 0.0309 (vs mean drawn pi_bar 0.0305)
+  realised vol/yr         : 0.1741 [p10 0.1261, p90 0.2387]  corr(realised vol, sigma_bar) 0.997
+  realised prem - pi_bar  : 0.0015 [p10 -0.0409, p90 0.0418]  realised vol/sigma_bar 0.9899 [p10 0.9665, p90 1.0140]
+  worst drawdown (price): -0.4932 [p10 -0.7658, p90 -0.2815]  P(<=-50%) 0.484
+  |excess| autocorr lags 1/5/20/60: 0.000 -0.000 0.000 -0.000 ; corr(log var_yr, next-yr excess) 0.003
+same drawn params ON/OFF: True | same rf/y10 paths ON/OFF: True True
+rates: share of paths with a 10-yr steady uptrend >= 3pp (fit R2>=0.7): 0.605 ; downtrend: 0.422 ; either: 0.796 ; 10-yr stable band <1.5pp: 0.744
+rates: monthly-step share 0.510 ; rf/yr median 0.0445 p5 0.0000 p95 0.1387
+E1 baseline hold1 seeds 1-2 ON: now 0.05492, implied by variants.csv row of 11:00Z 0.05492
+E1 baseline hold1 seeds 1-2 OFF: now 0.05423, implied by variants.csv row of 11:00Z 0.05423

@@ -1,0 +1,6 @@
+narrow_ON ruleA 0.0555 rule 0.0531 hold1 0.0687 bestc 0.0371 (L=1.0) trk1.25 0.0531 lev 1.16 tr 0.33  (36s)
+narrow_OFF ruleA 0.0485 rule 0.0493 hold1 0.0658 bestc 0.0328 (L=0.5) trk1.25 0.0493 lev 1.22 tr 0.40  (20s)
+wide_ON ruleA 0.0515 rule 0.0494 hold1 0.0642 bestc 0.0434 (L=1.0) trk1.25 0.0494 lev 1.18 tr 0.40  (28s)
+wide_OFF ruleA 0.0464 rule 0.0472 hold1 0.0647 bestc 0.0408 (L=0.5) trk1.25 0.0472 lev 1.23 tr 0.43  (21s)
+block_ON ruleA 0.0543 rule 0.0545 hold1 0.0707 bestc 0.0458 (L=1.0) trk1.25 0.0545 lev 1.19 tr 0.37  (39s)
+block_OFF ruleA 0.0477 rule 0.0499 hold1 0.0680 bestc 0.0400 (L=0.5) trk1.25 0.0499 lev 1.22 tr 0.40  (22s)

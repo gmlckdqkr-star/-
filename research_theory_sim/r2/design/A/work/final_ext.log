@@ -1,0 +1,4 @@
+ON done
+OFF done
+ext_ON     rule 0.0540  hold1 0.0514  best const 0.0227 (L=0.5)  rule-h1 +0.0026  rule-bc +0.0313  frac>h1 0.458
+ext_OFF    rule 0.0230  hold1 0.0518  best const 0.0229 (L=0.5)  rule-h1 -0.0288  rule-bc +0.0001  frac>h1 0.040

@@ -1,0 +1,2 @@
+fresh_ON rule 0.0554 hold1 0.0671 bestc 0.0409 (L=1.0) trk1.25 0.0534 lev 1.22 tr 0.37 delay3 0.0554 delay5 0.0550 cost2x 0.0542 (62s)
+fresh_OFF rule 0.0489 hold1 0.0644 bestc 0.0354 (L=0.5) trk1.25 0.0482 lev 1.26 tr 0.40 delay3 0.0488 delay5 0.0488 cost2x 0.0480 (42s)

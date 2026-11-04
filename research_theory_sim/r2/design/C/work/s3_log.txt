@@ -1,0 +1,28 @@
+BASE {"ON": {"hold1": 0.0546, "hold2": 0.019, "hold3": -0.0342, "const0.5": 0.0262, "const1.0": 0.0236, "const1.5": 0.0194, "const2.0": 0.0137, "const2.5": 0.0022, "const3.0": -0.0342, "best_const": 0.0262, "best_const_level": 0.5}, "OFF": {"hold1": 0.0547, "hold2": 0.02, "hold3": -0.0284, "const0.5": 0.0264, "const1.0": 0.0235, "const1.5": 0.0196, "const2.0": 0.0138, "const2.5": 0.004, "const3.0": -0.0284, "best_const": 0.0264, "best_const_level": 0.5}, "NOSCAR": {"hold1": 0.0546, "hold2": 0.0191, "hold3": -0.0306, "const0.5": 0.0267, "const1.0": 0.0238, "const1.5": 0.0195, "const2.0": 0.0137, "const2.5": 0.0032, "const3.0": -0.0306, "best_const": 0.0267, "best_const_level": 0.5}, "FLAT": {"hold1": 0.0541, "hold2": 0.0193, "hold3": -0.0316, "const0.5": 0.0266, "const1.0": 0.0239, "const1.5": 0.0198, "const2.0": 0.0133, "const2.5": 0.0028, "const3.0": -0.0316, "best_const": 0.0266, "best_const_level": 0.5}}
+{'c': 0.02, 'a': 0.2, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0086 | ON 0.0529 h1 -0.0017 | OFF-best +0.0045 | NOSCAR-best +0.0034 | FLAT-best +0.0000 | dd80 ON 0.11 FLAT 0.13
+{'c': 0.02, 'a': 0.2, 'b': 0.04, 'hf': 40, 'hs': 350} obj +0.0082 | ON 0.0529 h1 -0.0017 | OFF-best +0.0042 | NOSCAR-best +0.0026 | FLAT-best -0.0006 | dd80 ON 0.11 FLAT 0.14
+{'c': 0.02, 'a': 0.2, 'b': 0.08, 'hf': 40, 'hs': 250} obj +0.0086 | ON 0.0530 h1 -0.0015 | OFF-best +0.0046 | NOSCAR-best +0.0038 | FLAT-best -0.0007 | dd80 ON 0.14 FLAT 0.15
+{'c': 0.02, 'a': 0.2, 'b': 0.08, 'hf': 40, 'hs': 350} obj +0.0088 | ON 0.0548 h1 +0.0002 | OFF-best +0.0041 | NOSCAR-best +0.0034 | FLAT-best -0.0009 | dd80 ON 0.13 FLAT 0.16
+{'c': 0.02, 'a': 0.3, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0084 | ON 0.0570 h1 +0.0024 | OFF-best +0.0043 | NOSCAR-best +0.0016 | FLAT-best -0.0031 | dd80 ON 0.20 FLAT 0.28
+{'c': 0.02, 'a': 0.3, 'b': 0.04, 'hf': 40, 'hs': 350} obj +0.0082 | ON 0.0562 h1 +0.0017 | OFF-best +0.0052 | NOSCAR-best +0.0008 | FLAT-best -0.0032 | dd80 ON 0.19 FLAT 0.26
+{'c': 0.02, 'a': 0.3, 'b': 0.08, 'hf': 40, 'hs': 250} obj +0.0079 | ON 0.0578 h1 +0.0032 | OFF-best +0.0035 | NOSCAR-best +0.0007 | FLAT-best -0.0039 | dd80 ON 0.22 FLAT 0.31
+{'c': 0.02, 'a': 0.3, 'b': 0.08, 'hf': 40, 'hs': 350} obj +0.0086 | ON 0.0591 h1 +0.0045 | OFF-best +0.0045 | NOSCAR-best +0.0010 | FLAT-best -0.0039 | dd80 ON 0.20 FLAT 0.29
+{'c': 0.02, 'a': 0.4, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0074 | ON 0.0593 h1 +0.0048 | OFF-best +0.0040 | NOSCAR-best -0.0013 | FLAT-best -0.0062 | dd80 ON 0.28 FLAT 0.40
+{'c': 0.02, 'a': 0.4, 'b': 0.04, 'hf': 40, 'hs': 350} obj +0.0076 | ON 0.0586 h1 +0.0040 | OFF-best +0.0051 | NOSCAR-best -0.0011 | FLAT-best -0.0059 | dd80 ON 0.25 FLAT 0.36
+{'c': 0.02, 'a': 0.4, 'b': 0.08, 'hf': 40, 'hs': 250} obj +0.0068 | ON 0.0601 h1 +0.0055 | OFF-best +0.0029 | NOSCAR-best -0.0021 | FLAT-best -0.0072 | dd80 ON 0.30 FLAT 0.42
+{'c': 0.02, 'a': 0.4, 'b': 0.08, 'hf': 40, 'hs': 350} obj +0.0076 | ON 0.0615 h1 +0.0069 | OFF-best +0.0037 | NOSCAR-best -0.0023 | FLAT-best -0.0061 | dd80 ON 0.27 FLAT 0.40
+{'c': 0.02, 'a': 0.5, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0055 | ON 0.0609 h1 +0.0063 | OFF-best +0.0026 | NOSCAR-best -0.0048 | FLAT-best -0.0103 | dd80 ON 0.36 FLAT 0.50
+{'c': 0.02, 'a': 0.5, 'b': 0.04, 'hf': 40, 'hs': 350} obj +0.0065 | ON 0.0609 h1 +0.0063 | OFF-best +0.0038 | NOSCAR-best -0.0035 | FLAT-best -0.0088 | dd80 ON 0.32 FLAT 0.46
+{'c': 0.02, 'a': 0.5, 'b': 0.08, 'hf': 40, 'hs': 250} obj +0.0052 | ON 0.0616 h1 +0.0070 | OFF-best +0.0017 | NOSCAR-best -0.0045 | FLAT-best -0.0116 | dd80 ON 0.38 FLAT 0.52
+{'c': 0.02, 'a': 0.5, 'b': 0.08, 'hf': 40, 'hs': 350} obj +0.0064 | ON 0.0631 h1 +0.0086 | OFF-best +0.0031 | NOSCAR-best -0.0045 | FLAT-best -0.0098 | dd80 ON 0.33 FLAT 0.48
+{'c': 0.02, 'a': 0.0, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0035 | ON 0.0286 h1 -0.0260 | OFF-best +0.0023 | NOSCAR-best +0.0055 | FLAT-best +0.0040 | dd80 ON 0.07 FLAT 0.02
+{'c': 0.02, 'a': 0.1, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0073 | ON 0.0454 h1 -0.0092 | OFF-best +0.0046 | NOSCAR-best +0.0040 | FLAT-best +0.0015 | dd80 ON 0.05 FLAT 0.04
+TOP (gates met):
+   {'c': 0.02, 'a': 0.2, 'b': 0.08, 'hf': 40, 'hs': 350} obj +0.0088 ON-h1 +0.0002
+   {'c': 0.02, 'a': 0.3, 'b': 0.08, 'hf': 40, 'hs': 350} obj +0.0086 ON-h1 +0.0045
+   {'c': 0.02, 'a': 0.3, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0084 ON-h1 +0.0024
+   {'c': 0.02, 'a': 0.3, 'b': 0.04, 'hf': 40, 'hs': 350} obj +0.0082 ON-h1 +0.0017
+   {'c': 0.02, 'a': 0.3, 'b': 0.08, 'hf': 40, 'hs': 250} obj +0.0079 ON-h1 +0.0032
+   {'c': 0.02, 'a': 0.4, 'b': 0.08, 'hf': 40, 'hs': 350} obj +0.0076 ON-h1 +0.0069
+   {'c': 0.02, 'a': 0.4, 'b': 0.04, 'hf': 40, 'hs': 350} obj +0.0076 ON-h1 +0.0040
+   {'c': 0.02, 'a': 0.4, 'b': 0.04, 'hf': 40, 'hs': 250} obj +0.0074 ON-h1 +0.0048

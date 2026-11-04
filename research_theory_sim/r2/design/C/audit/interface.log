@@ -1,0 +1,30 @@
+imports: ['math', 'numpy'] OK
+suspicious tokens in rule.py: []
+INPUTS ('close', 'rf') | PARAMS {'c': 0.02, 'a': 0.2, 'b': 0.08, 'hf': 40, 'hs': 350} | signature (close, rf, y10=None, params={'c': 0.02, 'a': 0.2, 'b': 0.08, 'hf': 40, 'hs': 350})
+call time P=60 T=7860: 0.33s
+inputs unchanged (bitwise): True
+shape (60, 7860) dtype float64 range ok True any inf False
+  path 0 nan-start first finite col  1050  NaN share 0.134  median L 0.74
+  path 1 flat      first finite col   250  NaN share 0.032  median L 1.13
+  path 2 zeros     first finite col   311  NaN share 0.040  median L 0.00
+  path 3 gaps      first finite col   250  NaN share 0.032  median L 1.71
+  path 4 all-nan   first finite col    -1  NaN share 1.000  median L nan
+  path 5 inf/neg   first finite col   250  NaN share 0.032  median L 0.00
+  path 6 flat-path first finite col    -1  NaN share 1.000  median L nan
+  path 7 to-zero   first finite col   250  NaN share 0.032  median L 1.87
+y10 ignored / None ok: True
+deterministic: True
+scale x1000: bit-identical False, NaN pattern same True, max |diff| 1.14e-13, 0.5-grid flips 0
+scale x0.001: bit-identical False, NaN pattern same True, max |diff| 2.23e-13, 0.5-grid flips 0
+scale x1234.5: bit-identical False, NaN pattern same True, max |diff| 1.5e-13, 0.5-grid flips 0
+scale x1000 on edge-case array: bit-identical False max|diff| 1.14e-13
+float32 input ok: float64
+speed P=500 T=10000: 2.64s, shape (500, 10000)
+/mnt/attach/project-files/research/theory_sim/r2/design/C/audit/a_interface.py:91: RuntimeWarning: overflow encountered in exp
+  c2[:, t + 1:] = cc[:, t:t + 1] * np.exp(np.cumsum(np.abs(g.normal(0, 0.2, (P, n))), axis=1))
+/mnt/attach/project-files/research/theory_sim/r2/design/C/audit/a_interface.py:91: RuntimeWarning: overflow encountered in multiply
+  c2[:, t + 1:] = cc[:, t:t + 1] * np.exp(np.cumsum(np.abs(g.normal(0, 0.2, (P, n))), axis=1))
+/mnt/attach/project-files/research/theory_sim/r2/design/C/audit/a_interface.py:91: RuntimeWarning: invalid value encountered in multiply
+  c2[:, t + 1:] = cc[:, t:t + 1] * np.exp(np.cumsum(np.abs(g.normal(0, 0.2, (P, n))), axis=1))
+causality: 100 cut points (min 0, max 7859, 13 below 300, 3 >= T-3), failures 0 
+AUDIT INTERFACE DONE

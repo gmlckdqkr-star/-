@@ -1,0 +1,4 @@
+cuts tested: 100 min 0 max 7859 n<300: 15 n>=7800: 6
+causality failures: 0 None
+power check: columns > t differ on 50 of 50 paths
+per-path independence (every 7th path alone == batch): True

@@ -1,0 +1,16 @@
+main ON done 27s
+main OFF done 51s
+width 0.5 True 60s
+width 0.5 False 69s
+width 1.5 True 77s
+width 1.5 False 85s
+mech scale 0.5 95s
+mech scale 1.5 104s
+main_ON                rule 0.0543  hold1 0.0531  best const 0.0228 (L=0.5)  rule-h1 +0.0012  rule-bc +0.0315
+main_OFF               rule 0.0246  hold1 0.0535  best const 0.0229 (L=0.5)  rule-h1 -0.0289  rule-bc +0.0017
+prior_width0.5_ON      rule 0.0543  hold1 0.0528  best const 0.0226 (L=0.5)  rule-h1 +0.0014  rule-bc +0.0317
+prior_width0.5_OFF     rule 0.0241  hold1 0.0528  best const 0.0227 (L=0.5)  rule-h1 -0.0287  rule-bc +0.0014
+prior_width1.5_ON      rule 0.0554  hold1 0.0516  best const 0.0246 (L=0.5)  rule-h1 +0.0038  rule-bc +0.0308
+prior_width1.5_OFF     rule 0.0239  hold1 0.0514  best const 0.0247 (L=0.5)  rule-h1 -0.0275  rule-bc -0.0007
+mech_scale0.5_ON       rule 0.0363  hold1 0.0498  best const 0.0224 (L=0.5)  rule-h1 -0.0135  rule-bc +0.0139
+mech_scale1.5_ON       rule 0.0690  hold1 0.0490  best const 0.0226 (L=0.5)  rule-h1 +0.0200  rule-bc +0.0464

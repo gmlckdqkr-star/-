@@ -1,0 +1,2 @@
+fresh_ON ruleA 0.0545 rule 0.0542 hold1 0.0682 bestc 0.0420 (L=1.0) trk1.25 0.0542 lev 1.16 tr 0.37 delay3 0.0542 delay5 0.0542 cost2x 0.0530 (72s)
+fresh_OFF ruleA 0.0495 rule 0.0485 hold1 0.0659 bestc 0.0374 (L=0.5) trk1.25 0.0485 lev 1.23 tr 0.40 delay3 0.0484 delay5 0.0488 cost2x 0.0476 (45s)

@@ -1,0 +1,5 @@
+ON done 48s
+OFF done 91s
+ON rule 0.0540 hold1 0.0514 hold2 0.0154 hold3 -0.0260 bc 0.0227 (L=0.5) rule-h1 +0.0026 (boot sd 0.0008) rule-bc +0.0313 frac>h1 0.458 avgL 0.90 tr/yr 4.3
+OFF rule 0.0230 hold1 0.0518 hold2 0.0168 hold3 -0.0238 bc 0.0229 (L=0.5) rule-h1 -0.0288 (boot sd 0.0006) rule-bc +0.0001 frac>h1 0.040 avgL 0.90 tr/yr 4.4
+G_ON True G_OFF True

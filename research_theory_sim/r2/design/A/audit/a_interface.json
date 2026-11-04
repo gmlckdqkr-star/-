@@ -1,0 +1,85 @@
+{
+ "imports": [
+  "math",
+  "numpy"
+ ],
+ "imports_ok": true,
+ "suspicious_tokens": [],
+ "INPUTS": [
+  "close",
+  "rf"
+ ],
+ "PARAMS": {
+  "p0": 0.02,
+  "th_c": 1.25,
+  "hl_f": 5.0,
+  "hl_m": 40.0,
+  "hl_tr": 20.0,
+  "th_r": 1.0
+ },
+ "n_params": 6,
+ "signature": "(close, rf, y10=None, params={'p0': 0.02, 'th_c': 1.25, 'hl_f': 5.0, 'hl_m': 40.0, 'hl_tr': 20.0, 'th_r': 1.0})",
+ "PARAMS_is_literal": true,
+ "docstring_lines": 6,
+ "inputs_unmodified": true,
+ "shape": [
+  60,
+  7860
+ ],
+ "dtype": "float64",
+ "range": [
+  0.0,
+  1.8665553845323768
+ ],
+ "in_0_3": true,
+ "nan_count": 60,
+ "inf_count": 0,
+ "y10_None_same": true,
+ "deterministic": true,
+ "params_explicit_same": true,
+ "scale_1000_bit_identical": false,
+ "scale_1000_maxabs": 5.10702591327572e-15,
+ "scale_1000_rounded_identical": true,
+ "scale_1000_nan_pattern_same": true,
+ "scale_1000_zero_pattern_same": true,
+ "scale_0.001_bit_identical": false,
+ "scale_0.001_maxabs": 5.773159728050814e-15,
+ "scale_0.001_rounded_identical": true,
+ "scale_0.001_nan_pattern_same": true,
+ "scale_0.001_zero_pattern_same": true,
+ "scale_1234.5_bit_identical": false,
+ "scale_1234.5_maxabs": 5.329070518200751e-15,
+ "scale_1234.5_rounded_identical": true,
+ "scale_1234.5_nan_pattern_same": true,
+ "scale_1234.5_zero_pattern_same": true,
+ "scale_7e+06_bit_identical": false,
+ "scale_7e+06_maxabs": 9.325873406851315e-15,
+ "scale_7e+06_rounded_identical": true,
+ "scale_7e+06_nan_pattern_same": true,
+ "scale_7e+06_zero_pattern_same": true,
+ "nan_zero_flat_no_crash": true,
+ "nan_case_range": [
+  0.0,
+  1.8665553845323768
+ ],
+ "nan_case_inf": 0,
+ "row5_constant_close_all_nan": true,
+ "row6_all_nan_close_all_nan": true,
+ "row9_nan_before_7000": true,
+ "row9_finite_after_7001": true,
+ "row0_nan_before_open": true,
+ "rows_10plus_unchanged": true,
+ "row2_finite_after_flat": true,
+ "row3_after_gap_finite": true,
+ "oned_shape": [
+  1,
+  7860
+ ],
+ "rf_nan_no_change": true,
+ "speed_P500_T10000_s": 0.66,
+ "causality_n_cuts": 100,
+ "causality_cuts_lt300": 19,
+ "causality_cuts_last60": 0,
+ "causality_fails": [],
+ "causality_exact_ok": true
+}

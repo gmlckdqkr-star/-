@@ -1,0 +1,6 @@
+mech True hold1 0.0683
+  f 1.0 tracked oracle(mu_t,sig_t) 0.0623 | tracked static(mu_bar,sig_bar) 0.0547
+  f 1.5 tracked oracle(mu_t,sig_t) 0.0606 | tracked static(mu_bar,sig_bar) 0.0548
+mech False hold1 0.0698
+  f 1.0 tracked oracle(mu_t,sig_t) 0.0536 | tracked static(mu_bar,sig_bar) 0.0536
+  f 1.5 tracked oracle(mu_t,sig_t) 0.0503 | tracked static(mu_bar,sig_bar) 0.0503

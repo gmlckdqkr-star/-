@@ -1,0 +1,32 @@
+imports: ['math', 'numpy'] OK
+suspicious tokens in source: []
+INPUTS ('close', 'rf') PARAMS {'E0': 1.25, 'THETA': 0.35}
+signature (close, rf, y10=None, params={'E0': 1.25, 'THETA': 0.35})
+PARAMS is a literal: True
+edge-case run 0.48s
+inputs unchanged: True
+output shape (60, 7860) float64 finite-or-NaN in [0,3]: True on 0.5 grid: True NaN count 0
+path0 (NaN 500): level at 499/520/600: 0.0 0.0 1.5
+path2 flat 1000-1300: levels at 999/1030/1299/1350: 1.0 0.0 0.0 1.0
+path5 all flat: unique [0.]
+path6 all NaN: unique [0.]
+  path 0 unique levels [0.  1.  1.5]
+  path 1 unique levels [0.  1.  1.5]
+  path 2 unique levels [0.  1.  1.5]
+  path 3 unique levels [0.  1.  1.5]
+  path 4 unique levels [0.  1.  1.5]
+  path 7 unique levels [0.  1.  1.5]
+  path 8 unique levels [0.  1.  1.5]
+  path 9 unique levels [0.  1.  1.5]
+  path 10 unique levels [0.  1.  1.5]
+y10 ignored (y vs None identical): True True
+short T=400 P=1 ok (1, 400)
+scale x1000 identical: True
+scale x0.001 identical: True
+scale x7.77 identical: True
+scale x1e+06 identical: True
+scale x0.0123 identical: True
+start at 1 identical: True
+float32 input runs: float64
+speed P=500 T=10000: 1.28s OK (500, 10000) float64
+deterministic: True

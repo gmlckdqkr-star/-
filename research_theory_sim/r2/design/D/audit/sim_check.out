@@ -1,0 +1,57 @@
+== mechanism ON  P=2000  (p10 / median / p90 over paths)
+ premium over rf (arith, /yr)   -0.001   0.039   0.084
+ volatility (/yr)                0.096   0.161   0.270
+ worst drawdown 1x              -0.860  -0.458  -0.211  P(mdd<=-50%)=0.44 P(mdd<=-70%)=0.22
+ 1x hold after-tax CAGR          0.007   0.068   0.137
+ mean short rate (/yr)           0.011   0.048   0.101  y10 mean %   2.345   5.926  10.722
+ spread y10-R (/yr)              0.001   0.010   0.020
+ sd of yearly vol / mean vol     0.185   0.451   0.937
+ annual return std               0.087   0.153   0.280
+ daily kurtosis                  6.091  15.719  52.218
+  finite r: True r[:,0]==0: True
+  finite rf: True  
+  finite y10: True  
+== mechanism OFF  P=2000  (p10 / median / p90 over paths)
+ premium over rf (arith, /yr)   -0.011   0.039   0.092
+ volatility (/yr)                0.125   0.171   0.232
+ worst drawdown 1x              -0.719  -0.442  -0.258  P(mdd<=-50%)=0.38 P(mdd<=-70%)=0.12
+ 1x hold after-tax CAGR          0.006   0.068   0.147
+ mean short rate (/yr)           0.011   0.048   0.101  y10 mean %   2.345   5.926  10.722
+ spread y10-R (/yr)              0.001   0.010   0.020
+ sd of yearly vol / mean vol     0.053   0.068   0.105
+ annual return std               0.127   0.183   0.263
+ daily kurtosis                  4.503   5.889  13.139
+  finite r: True r[:,0]==0: True
+  finite rf: True  
+  finite y10: True  
+same per-path params ON/OFF (mu_bar, sigma_bar, df): True
+same rates ON/OFF: True True
+
+== per-path prior draws (P=2000, seed 1): p10 / median / p90
+ mu_bar all           0.0073 / 0.0367 / 0.0715  mean 0.0381 sd 0.0242
+ mu_bar price-index   0.0019 / 0.0252 / 0.0476  n=1257 mean 0.0252
+ mu_bar total-return  0.0376 / 0.0603 / 0.0820  n=743 mean 0.0600
+ sigma_bar            0.1248 / 0.1709 / 0.2314  geo-mean 0.1706 sd(log) 0.240
+ df                   3.9607 / 5.7269 / 7.4655
+ ON  realised premium all/PI/TR medians: 0.0392 0.0296 0.0612 ; realised vol median 0.1606 ; mean(var)/mean(sigma_bar^2) 1.112
+ OFF realised premium all/PI/TR medians: 0.0392 0.0261 0.0625 ; realised vol median 0.1708 ; mean(var)/mean(sigma_bar^2) 0.998
+ premium ON-OFF per path: mean -0.0003 median +0.0006 ; vs mu_bar: ON mean +0.0016, OFF mean +0.0019
+ realised vol / sigma_bar: ON median 0.060 mean-of-var 0.004 ; OFF median 0.063 mean-of-var 0.004
+   [auditor note: the line above had a units slip (daily std / annual sigma), fixed in sim_check.py; corrected values from a P=1000 seed-1 re-run:
+    ON realised vol/sigma_bar median 0.965 (p10 0.598, p90 1.423), RMS 1.062; OFF median 0.998 (p10 0.981, p90 1.016), RMS 0.999]
+
+== rates: P(10-y rise >= 3pp) 0.72  P(10-y fall >= 3pp) 0.64  P(either) 0.92  P(10-y rise >= 5pp) 0.38  P(fall >= 5pp) 0.27
+ P(10-y window rising >= 3pp with >= 8 of 10 yearly steps up) 0.30 ; falling likewise 0.20
+ P(a 5-y window with rate range <= 1pp, stable) 0.44
+ fraction of days with a rate change 0.0244 ; change sizes (pp): [0.25 0.5  0.75]
+ ON : median acf(|r|) lag1 0.200 lag20 0.182 lag250 0.066 ; corr(r_t, spread_{t-1}) 0.0014 ; corr(r_t, dy10_t) -0.0190
+ OFF: median acf(|r|) lag1 -0.000 lag20 -0.000 lag250 -0.001 ; corr(r_t, spread_{t-1}) 0.0000 ; corr(r_t, dy10_t) -0.0006
+
+states=True leaves paths unchanged: True
+corr(standardised ON shock, OFF shock) per path: p10 0.966 median 0.996
+ finite {'prior_scale': 0.5} True True min r -0.300
+ finite {'prior_scale': 0.5} False True min r -0.285
+ finite {'prior_scale': 1.5} True True min r -0.300
+ finite {'prior_scale': 1.5} False True min r -0.300
+ finite {'block': True} True True min r -0.300
+ finite {'block': True} False True min r -0.275

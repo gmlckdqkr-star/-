@@ -1,0 +1,4 @@
+base + online premium kp=10y                               ON +0.0335 (vs h1 -0.0194, vs bc +0.0105; L 0.91 tr 3.8) OFF +0.0150 (vs bc -0.0083; L 0.92 tr 3.9) N=87
+base + online premium kp=30y                               ON +0.0438 (vs h1 -0.0091, vs bc +0.0208; L 0.97 tr 4.0) OFF +0.0205 (vs bc -0.0027; L 0.98 tr 4.1) N=88
+base + dd_need=0.05                                        ON +0.0559 (vs h1 +0.0030, vs bc +0.0329; L 0.91 tr 4.2) OFF +0.0259 (vs bc +0.0026; L 0.90 tr 4.3) N=89
+base + dd_need=0.03                                        ON +0.0563 (vs h1 +0.0034, vs bc +0.0332; L 0.90 tr 4.3) OFF +0.0260 (vs bc +0.0027; L 0.90 tr 4.4) N=90
