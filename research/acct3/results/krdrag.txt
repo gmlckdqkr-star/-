@@ -1,0 +1,11 @@
+KODEX 409820 (H)   1Y    2025-10-31~2026-11-02 NAV   +6.21%  model(drag0)   +8.35%  model(drag 2.45%)   +5.72%  implied drag 1.99%/yr
+KODEX 409820 (H)   3Y    2023-11-02~2026-11-02 NAV +165.22%  model(drag0) +172.51%  model(drag 2.45%) +153.21%  implied drag 0.90%/yr
+KODEX 409820 (H)   상장이후  2021-12-08~2026-11-02 NAV  +76.39%  model(drag0)  +84.38%  model(drag 2.45%)  +63.51%  implied drag 0.90%/yr
+TIGER 418660 (UH)  1Y    2025-10-31~2026-11-02 NAV   -5.10%  model(drag0)   +1.19%  model(drag 2.45%)   -1.27%  implied drag 6.39%/yr
+TIGER 418660 (UH)  3Y    2023-11-02~2026-11-02 NAV +189.15%  model(drag0) +170.70%  model(drag 2.45%) +151.53%  implied drag -2.20%/yr
+TIGER 418660 (UH)  상장이후  2022-02-18~2026-11-02 NAV +239.07%  model(drag0) +186.48%  model(drag 2.45%) +155.29%  implied drag -3.58%/yr
+TIGER UH hypB (2x KRW index) 1Y    NAV   -5.10% model0   -5.67% implied drag -0.59%/yr
+TIGER UH hypB (2x KRW index) 3Y    NAV +189.15% model0 +165.08% implied drag -2.90%/yr
+TIGER UH hypB (2x KRW index) 상장이후  NAV +239.07% model0 +212.22% implied drag -1.75%/yr
+TQQQ 3Y           actual +227.60% model(drag0) +249.13% model(2.45%) +224.40% implied drag 2.12%/yr
+TQQQ 2021-12-08~  actual  +40.10% model(drag0)  +52.53% model(2.45%)  +35.26% implied drag 1.73%/yr
