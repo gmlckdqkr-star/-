@@ -2,12 +2,15 @@
 members, delisted names included, after costs and Korean overseas-stock tax, with delisting stress rows and a random
 basket null.
 
-Panel: research/data/us_stocks/sp500_le2014_v2.npz.xz (env LAB_STOCKS; its exit gaps in META_v2.json next to it),
+Panel: research/data/us_stocks/sp500_le2014_v3.npz.xz (env LAB_STOCKS; its exit gaps in META_v3.json next to it),
 sealed <= 2014-12-31. Source github.com/Johnbrick123/sp500-data (no licence published: personal research only, never
 republish the data). 1503 names = every name that was an S&P 500 member at some point 1968..2014, with point-in-time
 membership (start inclusive, end exclusive), split + dividend adjusted closes, dollar volume (mostly missing before
 1996; refused, L1) and no-trade days (`stale`, the source carried the prior close; unread, L2). v2 = v1 without the
 post-2014 delisting dates in the ticker strings (tools/build_us_stocks.py: AET-201811 -> AET); every array is identical.
+v3 = v2 + divy (every v2 array identical, checked at build and in tests): the cash dividend paid on day t per share /
+the previous traded close (raw dividends and closes on one split basis; capped at the distribution the adjusted total
+return paid in that day; META_v3 divy), read ONLY by the dividend tax below, never by a score / filter / signal.
 The strings are still NOT point in time: they are the source's last-known symbols, so some names print under a
 symbol adopted after 2014, and 8 bare symbols shared because one of two names was delisted after 2014 show as X / X_2
 (in three pairs both names are members at the same time; names are not listed here). No decision reads a symbol
@@ -36,6 +39,8 @@ Source-dependent leaks (research/indiv_stock/is6 L1-L3, data NOTE_KO.md), closed
      lab rule since the L3 fix (with the floor the cap is no longer what closes L3).
   L4 price level: adjusted levels differ by source (retroactive adjustment) -> only ratios exist (ret, sma_ratio,
      high_dist); price-level names are refused.
+  Dividends (divy): tax input only. div / dividend / yield names are refused in every expression (MSG_DIV): the
+     source's distribution records are not checked as a signal (coverage, timing) and lab never needs them to pick.
   Exit gaps (META exit_gaps: documented halts around removal) overlap membership by 2..695 rows in all six gaps, so
   the decision side (eligibility, rank universe, beta market) does not read them; they only freeze trading.
 
@@ -114,18 +119,27 @@ After a series' last price (before 2014-12-31) the next day returns the delistin
 >= DL_MIN = 20; prices <= the last price only) < -30% -> fail-type, delisting return -50% (between Shumway's NYSE
 -30% and Nasdaq -55%); else merger-type, 0 (an acquisition is paid at about the last price). Execution: lab's ETF
 engine (engine.run: delay 2 = decided at close t, traded at close t+2, earning from day t+3's return; 0.30% per side,
-22% yearly net realized gain tax, final liquidation taxed, cash earns the T-bill) with one addition for single stocks:
+22% yearly net realized gain tax, final liquidation taxed, cash earns the T-bill) with two additions for single stocks:
 inside a recorded exit gap or on a day without a price inside the series a name cannot be traded (frozen, the trade is
-retried when it trades again) and a name with no price cannot be bought.
+retried when it trades again) and a name with no price cannot be bought; DIVIDEND TAX (STOCK_VERSION 7, DIV_TAX =
+15.4%, KR resident: US 15% withheld, KR 15.4% with the foreign credit, taken when paid): the adjusted close is a total
+return, so on a day a held name pays (divy > 0) the book pays DIV_TAX x (position value at the previous close x divy)
+out of that position and adds the other 84.6% to its cost basis (reinvested cash, not a capital gain): the 22% tax
+then falls on price gains only. Every book carries it: strategy rows, equal-weight benchmark, null baskets, stress
+rows, the MS1 stream. ETF sleeves (else, the NDX hold row) are not taxed on distributions (README: ETF side).
 
 Rows: base h=0, CONSERVATIVE = the classified rule (the headline), ALL30 = every series end -30% (stress; the headline
 up to STOCK_VERSION 2), EXTREME = base + a 6%/year -100% hazard on each held name (20 seeded draws, median; reference
 only). Benchmarks on the same engine / costs / tax: equal-weight members (monthly) and NDX 1x hold (QQQ sleeve of the
-ETF panel). Annualised after-cost pre-tax Sharpe over the T-bill (G1 non-timing test, pass >= 1.1). Random-basket
+ETF panel). Annualised after-cost PRE-TAX (no 22% tax, no dividend tax) Sharpe over the T-bill (G1 non-timing test,
+pass >= 1.1); the same run's CAGR is cagr_pretax in the JSON. cagr_before_liq_tax (JSON) = CAGR of the equity curve:
+after cost, the yearly 22% tax and the dividend tax, before only the final liquidation tax (it was cagr_pre up to
+STOCK_VERSION 6: not a pre-tax number). Random-basket
 null: 200 seeded baskets with the same rebalance dates, eligibility, name count and name retention (see null_baskets),
 equal weight, same exposure, engine, costs, tax and delisting rule.
 MS1 / G1 (lab/ms1.py, `--std auto`): ms1_stream = the CONSERVATIVE (classified) book's daily return after trading
-cost, before tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve starts later,
+cost and the dividend tax, before the 22% tax (MS1 applies its own), with the reinvested after-tax dividend of each day
+as basis_add (measure_series adds it to the stream's cost basis: not taxed again at 22%), on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve starts later,
 the exposure gate is warmed up later (gate_valid) or the score / filter signals are informed later (signal_row)),
 measured on the MS1 bases by ms1.measure_series (re-sampled stream, no path recomputation). The 1986 headline window
 also starts at the warmed-up gate / informed signals (marked). G1 = the Sharpe line above; a spec with an exposure gate
@@ -138,9 +152,12 @@ import ast, io, json, lzma, math, os, re, time
 import numpy as np, pandas as pd
 from . import data, dsl, engine, gates
 
-STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014_v2.npz.xz')
+STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014_v3.npz.xz')
 DEV_END = gates.DEV_END
-STOCK_VERSION = 6           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+STOCK_VERSION = 7           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+                            # 7: dividend tax (DIV_TAX 15.4% when paid, the rest to cost basis; panel v3 divy) in
+                            #    every book and the MS1 stream (basis_add); JSON cagr_pre -> cagr_before_liq_tax,
+                            #    + cagr_pretax (the Sharpe run: no 22% tax, no dividend tax)
                             # 6: a tie at the top-K boundary is shared (top_k), not broken by the panel column order;
                             #    the 1971 row keeps its (게이트 / 신호 ..~) mark in the shortest form; an empty book
                             #    with never-informed signals says so
@@ -160,6 +177,9 @@ DL_WIN, DL_MIN, DL_FAIL = 250, 20, -0.30   # series-end class: return over DL_WI
 H_FAIL = 0.50               # fail-type delisting return -50% (between Shumway's NYSE -30% and Nasdaq -55%)
 H_CONS = (H_FAIL, 0.0)      # headline rule (h_fail, h_merger): classified, fail-type -50%, merger-type 0
 H_ALL = 0.30                # stress row: every series end -30% (the headline rule up to STOCK_VERSION 2)
+DIV_TAX = 0.154             # dividend tax of a KR resident on a US stock's dividend, taken when paid: US withholds 15%,
+                            # KR taxes foreign dividends at 15.4% with a credit for it -> ~15.4% of each dividend; the
+                            # reinvested 84.6% is cost basis (not part of the 22% capital gain)
 MAX_WIN = 260               # longest per-stock window in rows (lab rule since the L3 fix; the window floor closes L3)
 PIT_FROM = pd.Timestamp('1970-01-02')   # first day with point-in-time members (names members then: membership unknown
                                         # before it; their window floor is the first price, age() counts from it)
@@ -198,16 +218,20 @@ class Panel:
     EXECUTION side: frozen = no real price inside the series, no_buy = no real price. fm = first membership row
     (age()), wfloor = the first row a per-stock window may start on (L3: fm, or the first price for names already
     members on PIT_FROM). `dvol` and `stale` are kept as loaded and read by nothing (leaks L1 / L2, module
-    docstring). `tickers` are the source's last-known symbols (not point in time, module docstring): read only to map
-    the META exit gaps; output prints `ids` (label)."""
+    docstring). `divy` ([T, N] float, 0 = no dividend; zeros when not given) = the dividend paid on day t per share /
+    the previous traded close: read ONLY by the dividend tax of the engines (fast_run, frames), never by a decision.
+    `tickers` are the source's last-known symbols (not point in time, module docstring): read only to map the META
+    exit gaps; output prints `ids` (label)."""
 
-    def __init__(self, dates, tickers, adj, dvol, member, stale, pause=None, ids=None):
+    def __init__(self, dates, tickers, adj, dvol, member, stale, pause=None, ids=None, divy=None):
         dates = pd.DatetimeIndex(dates)
         keep = np.asarray(dates <= DEV_END)
         pause = np.zeros(np.shape(adj), bool) if pause is None else np.asarray(pause, bool)
+        self.div_known = divy is not None        # False: no dividend data (zeros; load() refuses such a file)
+        divy = np.zeros(np.shape(adj), np.float32) if divy is None else np.asarray(divy, np.float32)
         if not keep.all():                       # seal: drop later rows before any number is derived
-            dates, adj, dvol, member, stale, pause = (dates[keep], adj[keep], dvol[keep], member[keep], stale[keep],
-                                                      pause[keep])
+            dates, adj, dvol, member, stale, pause, divy = (dates[keep], adj[keep], dvol[keep], member[keep],
+                                                            stale[keep], pause[keep], divy[keep])
         self.idx = _sealed(dates)
         self.tickers = np.asarray(tickers).astype(str)
         self.adj = np.asarray(adj, np.float32)
@@ -215,8 +239,10 @@ class Panel:
         self.member = np.asarray(member, bool)
         self.stale = np.asarray(stale, bool)
         self.pause = pause
+        self.divy = np.where(np.isfinite(divy) & (divy > 0), divy, 0.0).astype(np.float32)   # tax input only
         T, N = self.adj.shape
-        assert self.member.shape == self.stale.shape == self.dvol.shape == (T, N) == (len(dates), len(self.tickers))
+        assert self.member.shape == self.stale.shape == self.dvol.shape == self.divy.shape == (T, N) \
+            == (len(dates), len(self.tickers))
         fin = np.isfinite(self.adj) & (self.adj > 0)
         self.has = fin                           # decision side: never reads stale (L2) or pause
         self.real = fin & ~self.pause            # execution side: a name inside an exit gap cannot trade
@@ -237,12 +263,13 @@ class Panel:
     def cut(self, c):
         """The panel as it was known at the close of row c - 1 (rows [0, c))."""
         return Panel(self.idx[:c], self.tickers, self.adj[:c], self.dvol[:c], self.member[:c], self.stale[:c],
-                     self.pause[:c], self.ids)
+                     self.pause[:c], self.ids, self.divy[:c] if self.div_known else None)
 
     def subset(self, cols):
         cols = np.asarray(cols)
         return Panel(self.idx, self.tickers[cols], self.adj[:, cols], self.dvol[:, cols], self.member[:, cols],
-                     self.stale[:, cols], self.pause[:, cols], self.ids[cols])
+                     self.stale[:, cols], self.pause[:, cols], self.ids[cols],
+                     self.divy[:, cols] if self.div_known else None)
 
     def _get(self, k, f):
         if k not in self._m:
@@ -364,15 +391,21 @@ def pit_ids(fm):
 
 
 def meta_path(path=None):
-    """The META file next to a panel: sp500_le2014_v2.npz.xz -> META_v2.json, sp500_le2014.npz.xz -> META.json."""
+    """The META file next to a panel: sp500_le2014_v3.npz.xz -> META_v3.json, sp500_le2014.npz.xz -> META.json."""
     path = path or STOCKS
     m = re.search(r'(_v\d+)?\.npz(?:\.xz)?$', os.path.basename(path))
     return os.path.join(os.path.dirname(path), f"META{(m.group(1) or '') if m else ''}.json")
 
 
-def load(path=None):
+class NoDividendError(ValueError):
+    pass
+
+
+def load(path=None, allow_nodiv=False):
     """The sealed stock panel (cached per process). Nothing is dropped except rows after DEV_END. The exit gaps listed
-    in the META file next to the panel (meta_path, if present) become `pause` rows (no trade possible inside)."""
+    in the META file next to the panel (meta_path, if present) become `pause` rows (no trade possible inside). A file
+    without `divy` (v1 / v2) is refused: its books would not pay the dividend tax (allow_nodiv=True: tests that compare
+    the shared arrays of the panel versions; divy is then zero)."""
     path = path or STOCKS
     if ('panel', path) not in _cache:
         z = np.load(io.BytesIO(lzma.open(path).read()))
@@ -389,8 +422,12 @@ def load(path=None):
                 if g['ticker'] in col:
                     pause[a + 1:b, col[g['ticker']]] = True
         _cache[('panel', path)] = Panel(dates, tick, z['adj'], z['dvol'], unpack(z['member']), unpack(z['stale']),
-                                        pause)
-    return _cache[('panel', path)]
+                                        pause, divy=z['divy'] if 'divy' in z.files else None)
+    P = _cache[('panel', path)]
+    if not P.div_known and not allow_nodiv:
+        raise NoDividendError(f'{os.path.basename(path)}: 배당 자료(divy) 없음 — 배당세(15.4%)를 못 매겨 세후가 '
+                              f'부풀려짐; v3 패널(sp500_le2014_v3.npz.xz)을 씀')
+    return P
 
 
 def sp500ew(P):
@@ -440,7 +477,13 @@ MSG_FIRST = ('{nm} 사용 불가: 첫 가격 날짜(가격 이력 길이)는 미
 MSG_WIN = ('{what}: {call} 창 {w}행 > ' + str(MAX_WIN) + ' 사용 불가 — lab 창 상한 ' + str(MAX_WIN) + '행(ret는 n+skip, '
            'invvol(n)도; 12-1 모멘텀은 ret(231, 21)). 창은 첫 편입일부터의 가격만 읽음(편입 전 이력은 미래 상폐와 엮임; '
            '1970-01-02에 이미 편입된 종목은 첫 가격부터)')
+MSG_DIV = ('{nm} 사용 불가: 배당 자료(divy)는 배당세(15.4%) 계산에만 씀 — 출처의 배당 기록(유무·시점·크기)은 신호로 '
+           '검증 안 됨(score·filter·signals 어디서도 못 읽음)')
+DIV_NAMES = ('div', 'divs', 'divy', 'dividend', 'dividends', 'div_yield', 'dividend_yield', 'yield', 'yld', 'dy',
+             'payout', 'distribution', 'distributions')
+_DIV_RE = re.compile(r'(?<![A-Za-z0-9_])(' + '|'.join(sorted(DIV_NAMES, key=len, reverse=True)) + r')(?![A-Za-z0-9_])')
 FORBID = dict({k: MSG_DVOL.format(nm=k) for k in VOL_NAMES},
+              **{k: MSG_DIV.format(nm=k) for k in DIV_NAMES},
               **{k: MSG_LEVEL.format(nm=k) for k in ('price', 'close', 'adj', 'adj_close', 'level', 'sma', 'ema',
                                                     'high', 'low', 'open', 'mcap')},
               **{k: MSG_FIRST.format(nm=k) for k in ('first_price', 'listed', 'listing_age', 'history', 'price_age',
@@ -465,6 +508,27 @@ def _forbid(nm, what, expr):
         raise ValueError(f'{FORBID[nm]} (stock {what}: {expr!r})')
 
 
+def forbid_div_names(spec):
+    """Dividend names anywhere in a stock spec (signal names, signal / exposure / score / filter expressions) -> the
+    Korean reason. dsl.check_spec calls it before any expression is parsed (`yield` alone is a syntax error)."""
+    sig = spec.get('signals') if isinstance(spec.get('signals'), dict) else {}
+    for k, e in sig.items():
+        if k in DIV_NAMES:
+            raise ValueError(f'{MSG_DIV.format(nm=k)} (signal name {k!r})')
+        _div_forbid(e, f'signal {k}')
+    st = spec.get('stock') if isinstance(spec.get('stock'), dict) else {}
+    for k in ('exposure', 'score', 'filter'):
+        _div_forbid(st.get(k), f'stock {k}')
+
+
+def _div_forbid(expr, where):
+    """A dividend name anywhere in an expression (also `yield`, a Python keyword that would only give a syntax error):
+    the one-line Korean reason (MSG_DIV)."""
+    m = _DIV_RE.search(str(expr)) if isinstance(expr, str) else None
+    if m:
+        raise ValueError(f'{MSG_DIV.format(nm=m.group(1))} ({where}: {expr!r})')
+
+
 def parse_stock(expr, what='score', sig=()):
     """Parse and check a per-stock expression (whitelisted AST; unknown names / functions raise; refused inputs
     (FORBID) and windows above MAX_WIN raise a one-line Korean reason). sig: the spec's signal names, allowed as bare
@@ -472,6 +536,7 @@ def parse_stock(expr, what='score', sig=()):
     sig = set(sig)
     if isinstance(expr, bool) or not isinstance(expr, (str, int, float)):
         raise ValueError(f'stock {what} must be an expression string, not {expr!r}')
+    _div_forbid(expr, f'stock {what}')
     try:
         tree = ast.parse(str(expr), mode='eval')
     except SyntaxError as e:
@@ -747,6 +812,8 @@ def check_spec(spec):
         if not isinstance(k, str) or not k.isidentifier() or k.startswith('_') or k in dsl.FUNCS:
             raise ValueError(f'signal name {k!r} must be an identifier that is not a DSL function (YAML on/off/yes/no '
                              'are booleans) and does not start with _')
+        if k in DIV_NAMES:                         # a dividend name: the Korean reason, whatever the signal holds
+            raise ValueError(f'{MSG_DIV.format(nm=k)} (signal name {k!r})')
         if k in SFUNCS or k in FORBID:            # a score / filter reads signal names: no per-stock name collisions
             raise ValueError(f'signal name {k!r} is a per-stock function or a refused input name: rename it '
                              '(e.g. up, calm)')
@@ -769,7 +836,8 @@ def _known_series():
 
 
 def _gate_forbid(expr):
-    """Gate expressions (signals / exposure, the ETF DSL) may not name dollar volume either (L1)."""
+    """Gate expressions (signals / exposure, the ETF DSL) may not name dollar volume (L1) or dividends either."""
+    _div_forbid(expr, 'gate')
     try:
         tree = ast.parse(str(expr), mode='eval')
     except SyntaxError:
@@ -1136,7 +1204,8 @@ def _daily_pos(P, tg):
 
 
 def frames(P, tg, h):
-    """DataFrames for engine.run: W (held-ever names + else sleeves + CASH), R, rebal flags, frozen, no_buy."""
+    """DataFrames for engine.run: W (held-ever names + else sleeves + CASH), R, rebal flags, frozen, no_buy, DV (the
+    names' dividend yields divy; else sleeves and CASH 0)."""
     names = np.unique(np.concatenate(list(tg.picks) + [np.zeros(0, np.int64)])).astype(np.int64)
     k = len(names); ci = np.full(P.N, -1); ci[names] = np.arange(k)
     B = np.zeros((len(tg.dec), k))
@@ -1157,15 +1226,18 @@ def frames(P, tg, h):
     reb = pd.Series(False, index=P.idx); reb.iloc[tg.dec] = True
     FZ = pd.DataFrame(P.frozen[:, names], index=P.idx, columns=labels)
     NB = pd.DataFrame(P.no_buy[:, names], index=P.idx, columns=labels)
-    return W, R, reb, FZ, NB, names
+    DV = pd.DataFrame(P.divy[:, names].astype(np.float64), index=P.idx, columns=labels)
+    return W, R, reb, FZ, NB, names, DV
 
 
-def run_engine(P, tg, h, start, cost, tax, delay, R_edit=None):
-    """engine.run on the spec's targets (the reference engine). R_edit(R) may change the returns (tests: hazard)."""
-    W, R, reb, FZ, NB, names = frames(P, tg, h)
+def run_engine(P, tg, h, start, cost, tax, delay, R_edit=None, dtax=DIV_TAX):
+    """engine.run on the spec's targets (the reference engine), with the dividend tax (div = the names' divy, div_tax =
+    dtax). R_edit(R) may change the returns (tests: hazard)."""
+    W, R, reb, FZ, NB, names, DV = frames(P, tg, h)
     if R_edit is not None:
         R = R_edit(R, names)
-    o = engine.run(W, R, start, DEV_END, cost=cost, tax=tax, delay=delay, rebal=reb, frozen=FZ, no_buy=NB)
+    o = engine.run(W, R, start, DEV_END, cost=cost, tax=tax, delay=delay, rebal=reb, frozen=FZ, no_buy=NB, div=DV,
+                   div_tax=dtax)
     _sealed(o['E'].index)
     return o
 
@@ -1176,14 +1248,20 @@ def _rows(P, start):
     return i0, i1
 
 
-def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, want_E=False, keep_book=False):
-    """engine.run (with frozen / no_buy) vectorised over D books that share the decision rows, exposure and else
-    sleeves: the same rules line by line (yearly tax, a trade on a target change / decision row / blocked-trade retry,
-    the initial book free of cost). Parity with engine.run is tested (tests/test_stocks.py).
+def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, want_E=False, keep_book=False,
+             dtax=DIV_TAX):
+    """engine.run (with frozen / no_buy / div) vectorised over D books that share the decision rows, exposure and else
+    sleeves: the same rules line by line (yearly tax, the dividend tax, a trade on a target change / decision row /
+    blocked-trade retry, the initial book free of cost). Parity with engine.run is tested (tests/test_stocks.py).
     baskets: None = the spec's own picks in every book, else a list over decisions of (cols [D, n] panel name columns,
-    -1 = none; w [D, n]); hits: {panel row: (book idx, name col)} wipes those positions (-100%) after the row's return.
-    Returns per-book arrays cagr_at, cagr_pre, final_at, mdd, turn, trades, taxpaid (+ E [D, rows] with want_E;
-    + book [rows, k] = book 0's position values after each row's trade, columns names + else + CASH, with keep_book)."""
+    -1 = none; w [D, n]); hits: {panel row: (book idx, name col)} wipes those positions (-100%) after the row's return
+    (a wiped position gets no dividend that row). dtax: dividend tax rate (DIV_TAX; 0 = dividends untaxed but still
+    cost basis): on a row where a held name pays, dividend cash dc = its value at the previous close x divy; its value
+    after the row's total return loses dtax x dc, its cost basis gains (1 - dtax) x dc.
+    Returns per-book arrays cagr_at, cagr_before_liq_tax (CAGR of E: after cost, the yearly tax and the dividend tax,
+    before only the final liquidation tax), final_at, mdd, turn, trades, taxpaid (22% tax), divtax (dividend tax)
+    (+ E [D, rows] and dnet [D, rows] = the reinvested after-tax dividend cash of each row, with want_E; + book
+    [rows, k] = book 0's position values after each row's trade, columns names + else + CASH, with keep_book)."""
     idx = P.idx
     i0, i1 = _rows(P, start)
     assert i0 >= delay and idx[i1] <= DEV_END
@@ -1205,6 +1283,9 @@ def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, wa
         G[:, kn + q] = np.nan_to_num(Re[s].values[i0:i1 + 1], nan=0.0)
     G[:, cashi] = rf_on(idx)[i0:i1 + 1]
     G += 1.0
+    DY = np.zeros((nr, k))                                # dividend yields of the names (else sleeves, CASH: 0)
+    DY[:, :kn] = P.divy[i0:i1 + 1][:, names]
+    pays = DY.any(1)
     FZ = np.zeros((nr, k), bool); NB = np.zeros((nr, k), bool)
     FZ[:, :kn] = P.frozen[i0:i1 + 1][:, names]; NB[:, :kn] = P.no_buy[i0:i1 + 1][:, names]
     e_sh = tg.e[src]
@@ -1239,7 +1320,9 @@ def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, wa
     val = Wt.copy(); basis = val.copy()
     pend = np.zeros((D, k), bool)
     realized = np.zeros(D); turnover = np.zeros(D); taxpaid = np.zeros(D); trades = np.zeros(D, np.int64)
+    divtax = np.zeros(D)
     eq = np.empty((D, nr)) if want_E else None
+    dnet = np.zeros((D, nr)) if want_E else None
     book = np.empty((nr, k)) if keep_book else None
     peak = np.full(D, -np.inf); mdd = np.zeros(D)
     years = idx.year.values[i0:i1 + 1]; yr = years[0]
@@ -1252,10 +1335,20 @@ def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, wa
                     s = val.sum(1); f = np.where(t > 0, t / s, 0.0)
                     realized = np.where(t > 0, f * (val[:, :cashi] - basis[:, :cashi]).sum(1), 0.0)
                     val = val * (1 - f)[:, None]; basis = basis * (1 - f)[:, None]
+            dv = i > 0 and pays[i]
+            if dv:
+                dc = val * DY[i]                          # dividend cash: value at the previous close x divy
             if i > 0:
                 val *= G[i]
             if i in hit:
                 val[hit[i]] = 0.0
+                if dv:
+                    dc[hit[i]] = 0.0                      # a wiped position (-100% row) gets no dividend
+            if dv:                                        # tax when paid; the rest is reinvested cash = cost basis
+                val -= dtax * dc; basis += (1.0 - dtax) * dc
+                ds = dc.sum(1); divtax += dtax * ds
+                if want_E:
+                    dnet[:, i] = (1.0 - dtax) * ds
             go = np.zeros(D, bool)
             if cand[i]:
                 Wn = target(i)
@@ -1294,25 +1387,26 @@ def fast_run(P, tg, h, start, cost, tax, delay, baskets=None, D=1, hits=None, wa
     final = E - t
     yrs = (idx[i1] - idx[i0]).days / 365.25
     cg = lambda x: np.where(x > 0, np.abs(x) ** (1 / yrs), 0.0) - 1
-    out = dict(cagr_at=cg(final), cagr_pre=cg(E), final_at=final, mdd=mdd, turn=turnover / yrs, trades=trades,
-               taxpaid=taxpaid, yrs=yrs, names=names)
+    out = dict(cagr_at=cg(final), cagr_before_liq_tax=cg(E), final_at=final, mdd=mdd, turn=turnover / yrs,
+               trades=trades, taxpaid=taxpaid, divtax=divtax, yrs=yrs, names=names)
     if want_E or keep_book:
         out['idx'] = idx[i0:i1 + 1]
     if want_E:
-        out['E'] = eq
+        out['E'] = eq; out['dnet'] = dnet
     if keep_book:
         out['book'] = book; out['cols'] = list(names) + els + ['CASH']
     return out
 
 
-def run1(P, tg, h, start, cost, tax, delay, ends=False):
+def run1(P, tg, h, start, cost, tax, delay, ends=False, dtax=DIV_TAX):
     """One book on the fast path (same numbers as run_engine, parity-tested) -> engine.run-like dict. ends: also
     count the series ends the book holds into (a position > 0 after the last price's row), {'fail': n, 'merger': m}."""
-    o = fast_run(P, tg, h, start, cost, tax, delay, want_E=True, keep_book=ends)
+    o = fast_run(P, tg, h, start, cost, tax, delay, want_E=True, keep_book=ends, dtax=dtax)
     _sealed(o['idx'])
-    out = dict(E=pd.Series(o['E'][0], index=o['idx']), cagr_at=float(o['cagr_at'][0]), cagr_pre=float(o['cagr_pre'][0]),
-               final_at=float(o['final_at'][0]), mdd=float(o['mdd'][0]), turn=float(o['turn'][0]),
-               trades=int(o['trades'][0]), taxpaid=float(o['taxpaid'][0]), yrs=o['yrs'])
+    out = dict(E=pd.Series(o['E'][0], index=o['idx']), cagr_at=float(o['cagr_at'][0]),
+               cagr_before_liq_tax=float(o['cagr_before_liq_tax'][0]), final_at=float(o['final_at'][0]),
+               mdd=float(o['mdd'][0]), turn=float(o['turn'][0]), trades=int(o['trades'][0]),
+               taxpaid=float(o['taxpaid'][0]), divtax=float(o['divtax'][0]), yrs=o['yrs'])
     if ends:
         i0, i1 = _rows(P, start)
         nm = o['names']; L = P.last[nm]
@@ -1434,7 +1528,8 @@ def tie_count(P, tg, start, delay):
 
 
 def sharpe(o, P):
-    """Annualised mean / stdev of daily (pre-tax, after-cost) returns over the T-bill."""
+    """Annualised mean / stdev of daily returns over the T-bill (evaluate passes the pre-tax book: after cost, no 22%
+    tax, no dividend tax)."""
     E = o['E']
     r = E.pct_change().dropna()
     rf = pd.Series(rf_on(P.idx), index=P.idx).reindex(r.index).values
@@ -1489,11 +1584,14 @@ def gate_spec(spec):
 
 def ms1_stream(spec, P=None):
     """MS1 input of a stock spec (ms1.measure_series): the CONSERVATIVE book's (H_CONS: the classified delisting rule,
-    the headline) daily return after trading cost and BEFORE tax (MS1 applies its own tax), on the real stock calendar, from MS1_FROM (1970-01-02, the first
+    the headline) daily return after trading cost and the dividend tax (DIV_TAX, paid when the dividend is), BEFORE the
+    22% tax (MS1 applies its own), with basis_add = each day's reinvested after-tax dividend / the book's value at the
+    previous close (measure_series adds it to the stream's cost basis, so MS1's 22% tax does not fall on dividends
+    again), on the real stock calendar, from MS1_FROM (1970-01-02, the first
     point-in-time member day) or the later start of an else sleeve, of the warmed-up gate (gate_start: before it
     the gate is forced to the else share) or of the informed score / filter signals (signal_row + delay: before it the
     stock share is CASH), to 2014-12-31. turnover = min(1, one-way yearly turnover) = measure_series' realized share.
-    -> dict(dates, ret, label, turnover, start, min_cover)."""
+    -> dict(dates, ret, basis_add, label, turnover, start, min_cover)."""
     spec = dsl.check_spec(spec)
     P = load() if P is None else P
     c = cfg_of(spec)
@@ -1515,21 +1613,27 @@ def ms1_stream(spec, P=None):
     g = gate_start(P, signal_row(tg), delay)                     # before it the stock share is CASH (not informed)
     st += [g] if g is not None else []
     st = max(st)
-    o = fast_run(P, tg, H_CONS, st, cost, 0.0, delay, want_E=True)
+    o = fast_run(P, tg, H_CONS, st, cost, 0.0, delay, want_E=True, dtax=DIV_TAX)
     _sealed(o['idx'])
     E = o['E'][0]
     r = E[1:] / E[:-1] - 1.0
+    q = np.where(E[:-1] > 0, o['dnet'][0][1:] / np.where(E[:-1] > 0, E[:-1], 1.0), 0.0)
     one_way = float(o['turn'][0]) / 2.0
     return dict(dates=[d.strftime('%Y-%m-%d') for d in o['idx'][1:]], ret=[float(x) for x in r],
-                label=f"{spec.get('name', h)} 보수(상폐 분류: 실패형 -{H_FAIL:.0%}·인수형 0) 비용후 세전 "
-                      f"{o['idx'][0].year}~2014",
+                basis_add=[float(x) for x in q],
+                label=f"{spec.get('name', h)} 보수(상폐 분류: 실패형 -{H_FAIL:.0%}·인수형 0) 비용·배당세 "
+                      f"{DIV_TAX:.1%} 후, 22% 양도세 전 {o['idx'][0].year}~2014",
                 turnover=min(1.0, one_way), start=str(o['idx'][0].date()), min_cover=0.95)
 
 
 # ---------------------------------------------------------------- report
 def _row(o, names):
-    return dict(cagr_at=float(o['cagr_at']), cagr_pre=float(o['cagr_pre']), mdd=float(o['mdd']), turn=float(o['turn']),
-                trades=int(o['trades']), names=names, yrs=float(o['yrs']))
+    """cagr_at = after cost and every tax (dividend tax when paid, 22% yearly, final liquidation); cagr_before_liq_tax =
+    the same before only the final liquidation tax (NOT pre-tax); taxpaid / divtax = 22% / dividend tax paid (units of
+    the starting value)."""
+    return dict(cagr_at=float(o['cagr_at']), cagr_before_liq_tax=float(o['cagr_before_liq_tax']), mdd=float(o['mdd']),
+                turn=float(o['turn']), trades=int(o['trades']), names=names, yrs=float(o['yrs']),
+                taxpaid=float(o['taxpaid']), divtax=float(o['divtax']))
 
 
 def evaluate(spec, P=None, null=True, pit=True):
@@ -1562,6 +1666,9 @@ def evaluate(spec, P=None, null=True, pit=True):
                         never=tg.sig_never[:3], rule='not informed -> no eligible name (stock share CASH)')
     out = dict(kind='stock', universe='sp500', stock_version=STOCK_VERSION, dev_end=str(DEV_END.date()),
                label='개별주 S&P500 시점편입·상폐포함 (개발 요약, 기준 아님)', cost=cost, delay=delay, tax=tax,
+               div_tax=DIV_TAX, tax_rule=f'세후 = 비용·배당세 {DIV_TAX:.1%}(지급일, 나머지는 취득가)·연 22% 순실현이익·마지막 '
+                                         f'청산세 뒤; cagr_before_liq_tax = 청산세만 빼기 전(세전 아님); cagr_pretax = '
+                                         f'비용 뒤 세금 전부 전(Sharpe와 같은 장부)',
                h_cons=dict(rule='classified', fail_if=f'return over {DL_WIN} rows (>= {DL_MIN}) to the last price < '
                            f'{DL_FAIL:.0%}', fail=0.0 - H_CONS[0], merger=0.0 - H_CONS[1]), h_all=H_ALL, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3],
                signal_from=None if sig_info is None else sig_info['signal_from'], signals=sig_info, windows={})
@@ -1584,10 +1691,12 @@ def evaluate(spec, P=None, null=True, pit=True):
             row['ndx'] = ndx_hold(st, cost, tax, delay)
             if empty:
                 row['sharpe'], row['g1_pass'] = None, False
+                row['cons']['cagr_pretax'] = None
             else:
-                pre = run1(P, tg, H_CONS, st, cost, 0.0, delay)
+                pre = run1(P, tg, H_CONS, st, cost, 0.0, delay, dtax=0.0)    # truly pre-tax: no 22%, no dividend tax
                 row['sharpe'] = sharpe(pre, P)
                 row['g1_pass'] = bool(row['sharpe'] >= G1_SHARPE)
+                row['cons']['cagr_pretax'] = float(pre['cagr_at'])
             ex = fast_run(P, tg, 0.0, st, cost, tax, delay, D=N_HAZ, hits=hazard_hits(P, tg, st))
             row['extreme'] = dict(cagr_at=float(np.median(ex['cagr_at'])), mdd=float(np.median(ex['mdd'])),
                                   draws=[round(float(x), 6) for x in ex['cagr_at']], n=N_HAZ, seed=HAZ_SEED,

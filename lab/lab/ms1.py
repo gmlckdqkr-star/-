@@ -34,6 +34,8 @@ G1 part: the spec compiled on the full real frames (NDX 1984-2014, SPX 1928-1985
   real SPX 55-85, lower era) against 1.1 (never mixed with the MS1-basis Sharpe of INFO_GATE_KO.md).
 measure_series(dates, daily_ret_after_cost, label): any daily return stream on the MS1 bases by re-sampling it with
   the same path index matrices (the IS1 method, research/indiv_stock/code/bases.py + eng.py), paired with s0.85.
+  basis_add (optional, the stock stream): each day's reinvested after-tax dividend / the previous day's level, added
+  to the stream's cost basis (the dividend was taxed 15.4% when paid, inside the stream; MS1's 22% falls on the rest).
 """
 import hashlib, json, math, os, select, shutil, subprocess, sys, time
 
@@ -398,7 +400,8 @@ def report(spec, h, family, ses):
 
 
 # ---------------- single-stock specs (universe: sp500, lab/stocks.py) ----------------
-STOCK_MS1_VERSION = 1             # bump when the stock stream / gate adapter changes (ledger cache key)
+STOCK_MS1_VERSION = 2             # bump when the stock stream / gate adapter changes (ledger cache key)
+                                  # 2: the stream is after the dividend tax, its dividends are cost basis (basis_add)
 
 
 def stock_key():
@@ -421,7 +424,8 @@ def _stock_gate(spec):
 
 def begin_stock(spec, h, family, ses, stream_fn):
     """begin() for a stock spec. MS1 = measure_series on the strategy's own daily return stream (stream_fn():
-    stocks.ms1_stream, the CONSERVATIVE book after trading cost and before tax, real dates; the IS1 method: re-sampled
+    stocks.ms1_stream, the CONSERVATIVE book after trading cost and the dividend tax, before the 22% tax, real dates,
+    with its reinvested dividends as basis_add; the IS1 method: re-sampled
     with std.contexts()' path index matrices, no path recomputation). G1 = the Sharpe branch of the dev summary
     (after-cost pre-tax Sharpe 1986-2014 vs 1.1, in stocks.evaluate) and, when the spec has an exposure gate,
     gate.test on that gate (stocks.gate_spec: the gate as a QQQ / cash spec, compiled on the G1 real frames exactly
@@ -600,12 +604,17 @@ def fmt_g1(g, ev, N):
 _SES = None
 
 
-def measure_series(dates, daily_ret_after_cost, label, turnover=1.0, min_cover=0.95):
+def measure_series(dates, daily_ret_after_cost, label, turnover=1.0, min_cover=0.95, basis_add=None):
     """Measure an arbitrary daily return stream (after trading cost) on the MS1 bases, re-sampled with the same path
     index matrices as std.contexts() (paired with s0.85 path by path). Tax: IS1 rules (research/indiv_stock/code/
     eng.py): every 252 days 22% of max(min(1, turnover) x unrealized gain - 2.5M/10M, 0), no carry-forward, entry and
     exit cost 0.3%, liquidation tax. turnover = one-way yearly turnover of the strategy behind the stream (0 =
     buy and hold, only the liquidation is taxed; default 1 = every year's gain realized, the conservative side).
+    basis_add (optional, same length as the stream): the part of each day's return that is reinvested cash already
+    taxed (a dividend after its 15.4% tax), as a share of the previous day's level: it is added to the cost basis of
+    the re-sampled path (moved with its day), so the 22% tax never falls on it (no double tax). None = 0 (an ETF or
+    price stream: every gain is a capital gain). IS1's flat div_tax drag is NOT applied (the stock stream already pays
+    the dividend tax day by day).
     A basis whose used source days the stream covers less than min_cover -> None. Rows after 2014-12-31 are dropped
     (seal). -> dict(basis -> row or None, HEADLINE_MS1, FLOOR_MS1, label, cover). No path recomputation: the stream
     is what it is; the label says so."""
@@ -615,6 +624,11 @@ def measure_series(dates, daily_ret_after_cost, label, turnover=1.0, min_cover=0
     x = np.asarray(daily_ret_after_cost, float)
     req = dict(op='series', dates=[t.strftime('%Y-%m-%d') for t in d], ret=x.tolist(), label=str(label),
                turnover=float(turnover), min_cover=float(min_cover))
+    if basis_add is not None:
+        q = np.asarray(basis_add, float)
+        if q.shape != x.shape:
+            raise ValueError(f'basis_add: {q.shape} values for a stream of {x.shape}')
+        req['basis_add'] = q.tolist()
     if _SRV is not None:                                   # already inside the worker
         return _SRV.series(req)
     g = guard()
@@ -980,13 +994,22 @@ class _Server:
     # ---------------- arbitrary return stream (IS1 method) ----------------
     def series(self, req):
         np, pd, std = self.np, self.pd, self.std
-        s = pd.Series(np.asarray(req['ret'], float), index=pd.DatetimeIndex(pd.to_datetime(req['dates'])))
-        s = s[~s.index.duplicated(keep='last')].sort_index()
-        n_cut = int((s.index > self.seal).sum())
-        s = s[s.index <= self.seal].dropna()
+        x = np.asarray(req['ret'], float)
+        qa = req.get('basis_add')
+        qa = np.zeros(len(x)) if qa is None else np.asarray(qa, float)
+        if qa.shape != x.shape:
+            raise ValueError(f'basis_add: {qa.shape} values for a stream of {x.shape}')
+        S = pd.DataFrame(dict(r=x, q=qa), index=pd.DatetimeIndex(pd.to_datetime(req['dates'])))
+        S = S[~S.index.duplicated(keep='last')].sort_index()
+        n_cut = int((S.index > self.seal).sum())
+        S = S[(S.index <= self.seal) & S['r'].notna()]
+        s = S['r']
         share = min(1.0, max(0.0, float(req.get('turnover', 1.0))))
-        out = dict(label=SERIES_LABEL + f' [{req.get("label", "")}]', cut_after_seal=n_cut, turnover=share, cover={})
+        out = dict(label=SERIES_LABEL + f' [{req.get("label", "")}]', cut_after_seal=n_cut, turnover=share, cover={},
+                   basis_add=bool(np.any(qa != 0)))
         lvl = (1.0 + s).cumprod()
+        # reinvested taxed cash (basis_add) in level units, cumulated: moved onto the source calendar like the level
+        cc = (S['q'].fillna(0.0) * lvl.shift(1).fillna(1.0)).cumsum()
         for bn in BASES:
             c = self.C[bn]; X = self.X[self.src[bn]]
             if len(s):
@@ -997,8 +1020,13 @@ class _Server:
                 v[0] = 0.0
                 have = np.asarray((X.index >= s.index[0]) & (X.index <= s.index[-1]))
                 v = np.where(have, np.nan_to_num(v), 0.0)
+                C = cc.reindex(X.index, method='ffill').fillna(0.0)
+                qv = np.array((C - C.shift(1).fillna(0.0)) / L.shift(1).fillna(1.0), dtype=float)
+                qv[0] = 0.0
+                qv = np.where(have, np.nan_to_num(qv), 0.0)
             else:
                 v, have = np.zeros(len(X)), np.zeros(len(X), bool)
+                qv = np.zeros(len(X))
             used = c.ii[:, WARM:]
             cover = float(have[used].mean())
             out['cover'][bn] = cover
@@ -1006,7 +1034,8 @@ class _Server:
                 out[bn] = None
                 continue
             Mx = v[c.ii]; Mx[:, 0] = 0.0; Mx = np.ascontiguousarray(Mx[:, WARM:])
-            fin, E = self.eng.series_run(Mx, share, COST, TAX, D_UNITS)
+            Qx = qv[c.ii]; Qx[:, 0] = 0.0; Qx = np.ascontiguousarray(Qx[:, WARM:])
+            fin, E = self.eng.series_run(Mx, Qx, share, COST, TAX, D_UNITS)
             yrs = E.shape[1] / 252
             fc = np.maximum(fin, 1e-9) ** (1 / yrs) - 1
             row, _ = std.row(fc, E)

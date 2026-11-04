@@ -149,6 +149,19 @@ def test_series(W):
           res['dev250_path']['cagr'], f"path {100 * res3['dev250_path']['cagr']:.2f}")
     sh = W.call(dict(op='hold_stream', cal='spx'))
     res4 = W.call(dict(op='series', dates=sh['dates'], ret=sh['ret'], label='spx1x', turnover=0.0))['series']
+    # basis_add: reinvested cash already taxed (a stock's dividend after its 15.4%) is cost basis, never taxed at 22%
+    q = 0.002                                           # every day's whole return is such cash (~65%/yr: far above D)
+    dd = [d.strftime('%Y-%m-%d') for d in r.index]
+    rq = W.call(dict(op='series', dates=dd, ret=[q] * len(dd), basis_add=[q] * len(dd), label='div', turnover=1.0))['series']
+    r0 = W.call(dict(op='series', dates=dd, ret=[q] * len(dd), label='nodiv', turnover=1.0))['series']
+    w12 = (1 - ms1.COST) * (1 + q) ** (12 * 252)          # w12 = level after 12 x 252 stream days
+    check('basis_add: a stream whose return is all taxed-and-reinvested cash pays no 22% (12y level = entry cost x '
+          'growth exactly on dev250_path and real NDX); the same stream without basis_add is taxed',
+          all(abs(rq[bn]['w12'] - w12) < 1e-9 * w12 for bn in ('dev250_path', 'real_ndx_86_14'))
+          and r0['dev250_path']['w12'] < 0.9 * w12 and rq['basis_add'] and not r0['basis_add'])
+    rh = W.call(dict(op='series', dates=dd, ret=r.values.tolist(), basis_add=[0.0] * len(dd), label='ndx1x',
+                     turnover=1.0))['series']
+    check('basis_add of zeros = no basis_add (same numbers)', all(rh[bn] == res3[bn] for bn in ms1.BASES))
     check('SPX 1x stream 1928-1985: SPX55-85 = 1x hold row within 0.1pp, NDX bases None',
           abs(res4['real_spx_55_85']['cagr'] - res4['real_spx_55_85']['hold1x']) < 1e-3 and res4['dev250_path'] is None,
           f"{100 * res4['real_spx_55_85']['cagr']:.2f}/{100 * res4['real_spx_55_85']['hold1x']:.2f}")
@@ -270,9 +283,15 @@ def test_stocks(W):
     tg = stocks.compile_targets(sp, P)
     o = stocks.fast_run(P, tg, stocks.H_CONS, pd.Timestamp(st['start']), 0.003, 0.0, 2, want_E=True)
     gr = float(np.prod(1 + np.asarray(st['ret'])))
-    check('stream = the CONSERVATIVE (classified delisting rule) book after cost, before tax (compounds to its pre-tax equity)',
-          abs(gr - o['E'][0][-1] / o['E'][0][0]) < 1e-9 and abs(o['cagr_pre'][0] - stocks.run1(
-              P, tg, stocks.H_CONS, pd.Timestamp(st['start']), 0.003, 0.0, 2)['cagr_pre']) < 1e-12, f'x{gr:.2f}')
+    E0 = o['E'][0]
+    qa = np.asarray(st['basis_add'])
+    check('stream = the CONSERVATIVE (classified delisting rule) book after cost and the 15.4% dividend tax, before the '
+          '22% tax (compounds to that equity); basis_add = each day\'s reinvested after-tax dividend / the previous '
+          'close\'s value', abs(gr - E0[-1] / E0[0]) < 1e-9 and abs(o['cagr_before_liq_tax'][0] - stocks.run1(
+              P, tg, stocks.H_CONS, pd.Timestamp(st['start']), 0.003, 0.0, 2)['cagr_before_liq_tax']) < 1e-12
+          and len(qa) == len(st['ret']) and np.allclose(qa, o['dnet'][0][1:] / E0[:-1], rtol=0, atol=1e-15)
+          and qa.min() >= 0 and qa.sum() > 0 and o['divtax'][0] > 0 and '배당세 15.4% 후, 22% 양도세 전' in st['label'],
+          f'x{gr:.2f}')
     sg = stocks.ms1_stream(dict(STK_GATE), P)
     check('gated spec: stream starts when the gate data starts (lab _NDX, 1985)', sg['start'] >= '1985', sg['start'])
     gs = stocks.gate_spec(dict(STK_GATE))
@@ -305,9 +324,13 @@ def test_stocks(W):
     check('stock line: no G1 gate part without a gate', 'G1게이트' not in lp and 'G1 게이트' not in lp)
     h = dsl.spec_hash(dsl.check_spec(dict(STK_PLAIN)))
     row = ledger.get_std(h, ms1.stock_key())
-    ref = W.call(dict(op='series', dates=st['dates'], ret=st['ret'], label='x', turnover=st['turnover']))['series']
-    check('stock MS1 = measure_series of the stream (ledger row, headline, SPX70-85 covered, SPX55-85 None)',
-          row is not None and abs(rp['ms1'] - ref['HEADLINE_MS1']) < 1e-12 and row['ms1']['real_spx_70_85'] is not None
+    ref = W.call(dict(op='series', dates=st['dates'], ret=st['ret'], basis_add=st['basis_add'], label='x',
+                      turnover=st['turnover']))['series']
+    nob = W.call(dict(op='series', dates=st['dates'], ret=st['ret'], label='x', turnover=st['turnover']))['series']
+    check('stock MS1 = measure_series of the stream with its basis_add (ledger row, headline, SPX70-85 covered, '
+          'SPX55-85 None); without basis_add (dividends taxed again at 22%) it is lower',
+          row is not None and abs(rp['ms1'] - ref['HEADLINE_MS1']) < 1e-12 and nob['HEADLINE_MS1'] < ref['HEADLINE_MS1']
+          and row['ms1']['real_spx_70_85'] is not None
           and row['ms1']['real_spx_55_85'] is None,
           ' '.join(f"{short(bn)} {'-' if row['ms1'][bn] is None else round(100 * row['ms1'][bn]['cagr'], 2)}"
                    for bn in ms1.BASES))

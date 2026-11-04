@@ -1,7 +1,7 @@
 """Tests for the single-stock universe (spec `universe: sp500`, lab/stocks.py). Run as a script, in its own process:
     LAB_HOME=<fresh dir> python3 -B tests/test_stocks.py
 Prints PASS/FAIL lines and identity / timing results only (no strategy performance numbers), ends with 'FAILS: ...'.
-Needs the sealed stock panel (LAB_STOCKS, default research/data/us_stocks/sp500_le2014_v2.npz.xz) and the ETF panel.
+Needs the sealed stock panel (LAB_STOCKS, default research/data/us_stocks/sp500_le2014_v3.npz.xz) and the ETF panel.
 """
 import io, json, lzma, math, os, re, subprocess, sys, tempfile, textwrap, time
 LAB = __file__.rsplit('/tests/', 1)[0]
@@ -143,6 +143,20 @@ def test_errors():
     check('(L3) first-price age refused (age() is the membership age)',
           all(raises(bad({'score': 'ret(20)', 'filter': e, 'top': 5}), ValueError, '첫 가격 날짜') for e in
               ('first_price() > 100', 'listing_age() > 1')))
+    dm = {e: err(bad(st, **kw)) for e, (st, kw) in {
+        'div': ({'score': 'div', 'top': 5}, {}),
+        'dividend': ({'score': 'ret(20)', 'filter': 'dividend > 0', 'top': 5}, {}),
+        'yield': ({'score': 'rank(yield) + ret(20)', 'top': 5}, {}),
+        'divy': ({'score': 'ret(20) * (1 + divy(63))', 'top': 5}, {}),
+        'dividend_yield': ({'score': 'ret(20)', 'top': 5, 'exposure': 'up'}, {'signals': {'up': 'dividend_yield > 0'}}),
+        'div ': ({'score': 'ret(20)', 'top': 5, 'exposure': 'price(_NDX) > div'}, {}),
+        'yield ': ({'score': 'up * ret(20)', 'top': 5}, {'signals': {'yield': 'price(_NDX) > 1', 'up': 'yield'}}),
+    }.items()}
+    check('(D) dividend names (div, dividend, yield, divy, dividend_yield) refused in score, filter, signals, exposure '
+          'and as a signal name, with the one-line Korean reason (tax input only)',
+          all(m.startswith(f'{e.strip()} 사용 불가: 배당 자료(divy)는 배당세(15.4%) 계산에만 씀') and '\n' not in m
+              for e, m in dm.items()) and not set(stocks.DIV_NAMES) & set(stocks.SFUNCS),
+          ' | '.join(f'{e.strip()}: {m[:28]}' for e, m in dm.items()))
     over = ('ret(261)', 'ret(240, 21)', 'ret(252, 21)', 'vol(261)', 'sma_ratio(261)', 'high_dist(261)', 'beta(261)',
             'rank(ret(300))', 'csz(-vol(500))', 'ret(20) + high_dist(1000)')
     w = '창 261행 > 260 사용 불가'
@@ -264,15 +278,18 @@ def test_leaks(P):
     dv = (rng.random(P.dvol.shape) * 1e9).astype(np.float32); dv[rng.random(dv.shape) < 0.5] = np.nan
     st = rng.random(P.stale.shape) < 0.05
     st[np.flatnonzero(P.member.any(1))[::7]] = True                  # and every name stale on many whole rows
-    Pd = stocks.Panel(P.idx, P.tickers, P.adj, dv, P.member, st, P.pause)                       # dvol, stale scrambled
-    Pz = stocks.Panel(P.idx, P.tickers, P.adj, P.dvol, P.member, P.stale, np.zeros_like(P.pause))  # no exit gaps
+    Pd = stocks.Panel(P.idx, P.tickers, P.adj, dv, P.member, st, P.pause, divy=P.divy)            # dvol, stale scrambled
+    Pz = stocks.Panel(P.idx, P.tickers, P.adj, P.dvol, P.member, P.stale, np.zeros_like(P.pause), divy=P.divy)  # no gaps
+    dy = P.divy.copy(); dy[rng.random(dy.shape) < 0.02] = 0.05; dy[rng.random(dy.shape) < 0.3] = 0.0
+    Py = stocks.Panel(P.idx, P.tickers, P.adj, P.dvol, P.member, P.stale, P.pause, divy=dy)        # divy scrambled
     for k, s in SPECS.items():
         a = stocks.compile_targets(s, P)              # F built from the panel given (_SP500EW: from that panel)
         same = lambda b: (np.array_equal(a.dec, b.dec) and np.array_equal(a.elig, b.elig) and np.array_equal(a.e, b.e)
                           and all(np.array_equal(x, y) and np.array_equal(u, v)
                                   for x, y, u, v in zip(a.picks, b.picks, a.wts, b.wts)))
-        check(f'(L) {k}: decisions identical with dvol + stale scrambled, and with every exit-gap pause removed',
-              same(stocks.compile_targets(s, Pd)) and same(stocks.compile_targets(s, Pz)))
+        check(f'(L) {k}: decisions identical with dvol + stale scrambled, with every exit-gap pause removed, and with '
+              'divy (dividends) scrambled', same(stocks.compile_targets(s, Pd)) and same(stocks.compile_targets(s, Pz))
+              and same(stocks.compile_targets(s, Py)))
     ew = stocks.sp500ew(P)
     check('(R2) _SP500EW identical with dvol + stale scrambled and with every exit-gap pause removed (reads none)',
           np.array_equal(ew, stocks.sp500ew(Pd), equal_nan=True) and np.array_equal(ew, stocks.sp500ew(Pz), equal_nan=True))
@@ -286,7 +303,7 @@ def test_leaks(P):
         adj = P.adj.copy()
         lvl = np.broadcast_to(P.adj[np.minimum(P.fm, P.T - 1), np.arange(P.N)][None, :], pre.shape)[pre]
         adj[pre] = np.nan if v == 'deleted' else (lvl * np.exp(rng.normal(0, 0.03, lvl.shape))).astype(np.float32)
-        Pv = stocks.Panel(P.idx, P.tickers, adj, P.dvol, P.member, P.stale, P.pause)
+        Pv = stocks.Panel(P.idx, P.tickers, adj, P.dvol, P.member, P.stale, P.pause, divy=P.divy)
         for k, s in SPECS.items():
             F, a = base[k]
             b = stocks.compile_targets(s, Pv, F)       # F None: rebuilt from Pv (its _SP500EW too)
@@ -352,7 +369,7 @@ def test_pit(P):
         mem[c + 1:] = rng.random(mem[c + 1:].shape) < 0.4
         st[c + 1:] = rng.random(st[c + 1:].shape) < 0.05
         pz = P.pause.copy(); pz[c + 1:] = rng.random(pz[c + 1:].shape) < 0.01
-        P2 = stocks.Panel(P.idx, P.tickers, adj, dv, mem, st, pz)
+        P2 = stocks.Panel(P.idx, P.tickers, adj, dv, mem, st, pz, divy=P.divy)
         with np.errstate(over='ignore'):              # the rewritten rows compound to inf: only after t*
             ew, ew2 = stocks.sp500ew(P), stocks.sp500ew(P2)
         check(f'(a/R2) _SP500EW t*={ts}: identical up to t* on the rewritten panel (and different after)',
@@ -423,7 +440,7 @@ def test_signals(P):
         adj2[c + 1:][rng.random(adj2[c + 1:].shape) < 0.05] = np.nan
         mem2[c + 1:] = rng.random(mem2[c + 1:].shape) < 0.4
         dv[c + 1:] = 1e9; st[c + 1:] = rng.random(st[c + 1:].shape) < 0.05; pz[c + 1:] = rng.random(pz[c + 1:].shape) < .01
-        P2 = stocks.Panel(P.idx, P.tickers, adj2, dv, mem2, st, pz)
+        P2 = stocks.Panel(P.idx, P.tickers, adj2, dv, mem2, st, pz, divy=P.divy)
         with np.errstate(over='ignore'):              # the rewritten rows compound to inf: only after t*
             e2 = stocks.sp500ew(P2)
         res = [np.array_equal(ew[:c + 1], e2[:c + 1], equal_nan=True) and not np.allclose(ew[c + 1:], e2[c + 1:])]
@@ -698,7 +715,7 @@ def test_exit_gap(P):
     st = pd.Timestamp('2003-01-02')
     f = stocks.fast_run(P, tg, 0.0, st, COST, TAX, DELAY, want_E=True, keep_book=True)
     e = stocks.run_engine(P, tg, 0.0, st, COST, TAX, DELAY)
-    W, R, reb, FZ, NB, _ = stocks.frames(P, tg, 0.0)
+    W, R, reb, FZ, NB, _, _ = stocks.frames(P, tg, 0.0)
     esc = engine.run(W, R, st, stocks.DEV_END, cost=COST, tax=TAX, delay=DELAY, rebal=reb)     # no frozen: escapes
     i0, _ = stocks._rows(P, st)
     cj = list(o for o in f['cols']).index(j)
@@ -841,6 +858,63 @@ def test_classified_synthetic():
           and np.allclose(res['all30'][0], [0.7, 0.7], rtol=0, atol=1e-12) and max(res['cls'][1], res['all30'][1]) < 1e-12)
 
 
+# ---------------------------------------------------------------- (e2) dividend tax
+def test_dividend(P):
+    print('== (e2) dividend tax: 15.4% of each dividend when paid, the rest to cost basis (no 22% on it) ==')
+    T = 300
+    idx = pd.bdate_range('1995-01-02', periods=T)
+    adj = np.empty((T, 2), np.float32)
+    a = np.full(T, 100.0); a[100:] = 102.0; a[200:] = 112.2   # A: flat price, a 2 (2%) dividend on row 100, +10% on 200
+    adj[:, 0] = a
+    adj[:, 1] = 50.0 * np.cumprod(np.where(np.isin(np.arange(T), [50, 150]), 1.05, 1.0))   # B: never held, pays 5% twice
+    dy = np.zeros((T, 2), np.float32); dy[100, 0] = 0.02; dy[[50, 150], 1] = 0.05
+    mem = np.ones((T, 2), bool)
+    mk = lambda d: stocks.Panel(idx, np.array(['A', 'B']), adj, np.full(adj.shape, np.nan, np.float32), mem,
+                                np.zeros_like(mem), divy=d)
+    Q, Q0, Qb = mk(dy), mk(None), mk(np.where(np.arange(2) == 0, dy, 0).astype(np.float32))
+    tg = mk_targets(Q, [5], [[0]], [[1.0]])
+    st = idx[3]
+    f = stocks.fast_run(Q, tg, 0.0, st, 0.0, TAX, DELAY, want_E=True)
+    f0 = stocks.fast_run(Q0, tg, 0.0, st, 0.0, TAX, DELAY, want_E=True)
+    fb = stocks.fast_run(Qb, tg, 0.0, st, 0.0, TAX, DELAY, want_E=True)
+    i0 = stocks._rows(Q, st)[0]
+    E, E0 = f['E'][0], f0['E'][0]
+    V = E[99 - i0]                                         # the A position (whole book) at the close before the dividend
+    d = float(Q.divy[100, 0])                              # 2% as stored (float32 0.0199999996), so checks are exact
+    g1 = float(Q.adj[100, 0]) / float(Q.adj[99, 0])        # the dividend day's total return (1.02, exact)
+    g = float(Q.adj[200, 0]) / float(Q.adj[199, 0])        # +10% as stored
+    jump, jump0 = E[100 - i0] / V, E0[100 - i0] / E0[99 - i0]
+    check('(e2) dividend day: value x (1 + 2% - 15.4% x 2%) = x1.01692 (no dividend tax: x1.02); tax paid = '
+          '15.4% x dividend', abs(jump - (g1 - stocks.DIV_TAX * d)) < 1e-12 and abs(jump0 - 1.02) < 1e-12
+          and abs(f['divtax'][0] - stocks.DIV_TAX * d * V) < 1e-12 and f0['divtax'][0] == 0
+          and abs(f['dnet'][0][100 - i0] - (1 - stocks.DIV_TAX) * d * V) < 1e-12, f'x{jump:.6f}')
+    A, B = V * (g1 - stocks.DIV_TAX * d), V * (1 + (1 - stocks.DIV_TAX) * d)   # value / cost basis after the dividend
+    want = A * g - TAX * (A * g - B)                       # 22% on the 10% price gain only (A ~ B: 2% - 15.4% x 2%)
+    want0 = E0[-1] - TAX * (E0[-1] - E0[99 - i0])                          # old rule: the dividend is in the gain
+    check('(e2) basis up by 84.6% of the dividend: the final 22% falls on the +10% price gain only (no 22% on the '
+          'dividend); without dividend data the dividend sits in the 22% gain', abs(f['final_at'][0] - want) < 1e-12
+          and abs(f0['final_at'][0] - want0) < 1e-12 and f['taxpaid'][0] == 0, f"{f['final_at'][0]:.6f} vs {want:.6f}")
+    e = stocks.run_engine(Q, tg, 0.0, st, 0.0, TAX, DELAY)
+    check('(e2) engine.run (reference) gives the same book on the constructed panel, the same dividend tax',
+          _cmp(f, e) < 1e-12 and abs(e['divtax'] - f['divtax'][0]) < 1e-12)
+    check('(e2) a name that pays while not held changes nothing (B pays 5% twice, never held)',
+          np.array_equal(f['E'], fb['E']) and f['final_at'][0] == fb['final_at'][0])
+    # zero-dividend run unchanged: a panel with no dividends on the fast path = engine.run's original rule (div=None)
+    sub = [col(P, t) for t in ('AAPL', 'JNJ', 'XOM', 'GE', 'IBM', 'KO', 'PG', 'MRK', 'EHC')]
+    Ps = P.subset(sub)
+    Pn = stocks.Panel(Ps.idx, Ps.tickers, Ps.adj, Ps.dvol, Ps.member, Ps.stale, Ps.pause, Ps.ids,
+                      np.zeros_like(Ps.divy))
+    t2 = stocks.compile_targets(spec({'score': 'ret(126)', 'top': 4}), Ps)
+    w = stocks.WINDOWS['w86']
+    fz = stocks.fast_run(Pn, t2, stocks.H_CONS, w, COST, TAX, DELAY, want_E=True)
+    W_, R_, reb, FZ, NB, _, _ = stocks.frames(Pn, t2, stocks.H_CONS)
+    eo = engine.run(W_, R_, w, stocks.DEV_END, cost=COST, tax=TAX, delay=DELAY, rebal=reb, frozen=FZ, no_buy=NB)
+    fd = stocks.fast_run(Ps, t2, stocks.H_CONS, w, COST, TAX, DELAY, want_E=True)
+    check('(e2) zero dividends: fast path (dividend tax on) == engine.run without the div argument (the rule before '
+          'STOCK_VERSION 7) exactly; with the real dividends tax is paid and the result moves',
+          _cmp(fz, eo) < 1e-12 and fz['divtax'][0] == 0 and fd['divtax'][0] > 0 and fd['cagr_at'][0] != fz['cagr_at'][0])
+
+
 # ---------------------------------------------------------------- (e) costs and tax
 def test_cost_tax(P):
     print('== (e) cost and tax are applied ==')
@@ -850,9 +924,14 @@ def test_cost_tax(P):
     g = lambda c, t: float(r[(c, t)]['cagr_at'][0])
     check('(e) zero-cost zero-tax > cost only, tax only > cost and tax', g(0, 0) > g(COST, 0) > g(COST, TAX)
           and g(0, 0) > g(0, TAX) > g(COST, TAX))
-    check('(e) tax paid > 0 with tax, = 0 without; pre-tax CAGR unchanged by the final tax only when tax = 0',
+    check('(e) tax paid > 0 with tax, = 0 without; the final tax is the only gap between cagr_at and '
+          'cagr_before_liq_tax (equal when tax = 0)',
           r[(COST, TAX)]['taxpaid'][0] > 0 and r[(COST, 0.0)]['taxpaid'][0] == 0
-          and abs(r[(COST, 0.0)]['cagr_at'][0] - r[(COST, 0.0)]['cagr_pre'][0]) < 1e-15)
+          and abs(r[(COST, 0.0)]['cagr_at'][0] - r[(COST, 0.0)]['cagr_before_liq_tax'][0]) < 1e-15
+          and r[(COST, TAX)]['cagr_before_liq_tax'][0] > r[(COST, TAX)]['cagr_at'][0])
+    nd = stocks.fast_run(P, tg, 0.3, st, COST, TAX, DELAY, dtax=0.0)
+    check('(e) dividend tax paid in every run (divtax > 0) and it lowers the result (dtax 0 > dtax 15.4%)',
+          all(r[k]['divtax'][0] > 0 for k in r) and nd['divtax'][0] == 0 and nd['cagr_at'][0] > g(COST, TAX))
     s2 = dict(SPECS['mom'], cost=0.001)
     check('(e) spec cost below 0.30% is clamped up (cost only raised)',
           stocks.evaluate(s2, P, null=False, pit=False)['cost'] == dsl.MIN_COST)
@@ -875,7 +954,7 @@ def test_parity(P):
     cols = sorted(set([col(P, 'EHC')] + ended + stale + big))[:30]
     Ps = P.subset(cols)
     st = pd.Timestamp('1986-01-02')
-    worst = 0.0
+    worst, paid = 0.0, np.inf
     for k, s in (('mom', spec({'score': 'ret(231, 21)', 'top': 5})),
                  ('week_iv', spec({'rebalance': 'week', 'score': '-vol(63)', 'top': 8, 'weight': 'invvol(63)'})),
                  ('gate', spec({'score': 'ret(126)', 'top': 6, 'exposure': 'up', 'else': {'QQQ': 0.5}},
@@ -884,19 +963,21 @@ def test_parity(P):
                                 'exposure': 'min(1, 0.15 / vol(_GSPC, 20))', 'else': {'CASH': 1.0}}))):
         tg = stocks.compile_targets(s, Ps)
         for h in (0.0, stocks.H_ALL, stocks.H_CONS):
-            for tax in (0.0, TAX):
-                f = stocks.fast_run(Ps, tg, h, st, COST, tax, DELAY, want_E=True)
-                e = stocks.run_engine(Ps, tg, h, st, COST, tax, DELAY)
-                worst = max(worst, _cmp(f, e))
+            for tax, dt in ((0.0, 0.0), (TAX, stocks.DIV_TAX), (0.0, stocks.DIV_TAX)):
+                f = stocks.fast_run(Ps, tg, h, st, COST, tax, DELAY, want_E=True, dtax=dt)
+                e = stocks.run_engine(Ps, tg, h, st, COST, tax, DELAY, dtax=dt)
+                worst = max(worst, _cmp(f, e), abs(f['divtax'][0] - e['divtax']))
+                paid = min(paid, f['divtax'][0]) if dt else paid
     blocked = int(Ps.frozen[row(P, '1986-01-02'):].sum())
-    check(f'(f) 30-name subset, 4 specs x (base, all-30, classified) x tax: fast path == engine.run (max abs diff '
-          f'{worst:.1e} < 1e-9)',
-          worst < 1e-9, f'{blocked} frozen name-days in the subset')
+    check(f'(f) 30-name subset, 4 specs x (base, all-30, classified) x (tax, dividend tax): fast path == engine.run '
+          f'with the dividends (max abs diff {worst:.1e} < 1e-9; every taxed book paid dividend tax)',
+          worst < 1e-9 and paid > 0, f'{blocked} frozen name-days in the subset')
     # full universe, the strategy itself
     tg = stocks.compile_targets(SPECS['mom'], P)
     t0 = time.time(); e = stocks.run_engine(P, tg, stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY); te = time.time() - t0
     t0 = time.time(); f = stocks.fast_run(P, tg, stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY, want_E=True); tf = time.time() - t0
-    check(f'(f) full universe momentum: fast path == engine.run ({_cmp(f, e):.1e})', _cmp(f, e) < 1e-9,
+    check(f'(f) full universe momentum, with dividends: fast path == engine.run ({_cmp(f, e):.1e})', _cmp(f, e) < 1e-9
+          and abs(f['divtax'][0] - e['divtax']) < 1e-9 and e['divtax'] > 0,
           f'engine {te:.1f}s fast {tf:.2f}s')
     # null draws and the hazard draws vs engine.run, one book at a time
     st = stocks.WINDOWS['w86']
@@ -965,9 +1046,11 @@ def test_seal(P):
     P2 = stocks.Panel(idx2, Ps.tickers, big(Ps.adj, lambda s: (rng.random(s) * 1e6).astype(np.float32)),
                       big(Ps.dvol, lambda s: (rng.random(s) * 1e12).astype(np.float32)),
                       big(Ps.member, lambda s: rng.random(s) < 0.5), big(Ps.stale, lambda s: np.zeros(s, bool)),
-                      big(Ps.pause, lambda s: rng.random(s) < 0.5))
-    check('(h) a panel with post-2014 rows is cut at load (same rows, same arrays)',
-          P2.T == Ps.T and P2.idx.max() <= stocks.DEV_END and np.array_equal(P2.adj, Ps.adj, equal_nan=True))
+                      big(Ps.pause, lambda s: rng.random(s) < 0.5),
+                      divy=big(Ps.divy, lambda s: (rng.random(s) * 0.5).astype(np.float32)))
+    check('(h) a panel with post-2014 rows is cut at load (same rows, same arrays, dividends too)',
+          P2.T == Ps.T and P2.idx.max() <= stocks.DEV_END and np.array_equal(P2.adj, Ps.adj, equal_nan=True)
+          and np.array_equal(P2.divy, Ps.divy))
     s = spec({'score': 'ret(231, 21)', 'top': 3})
     a = stocks.fast_run(Ps, stocks.compile_targets(s, Ps), stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY)
     b = stocks.fast_run(P2, stocks.compile_targets(s, P2), stocks.H_CONS, stocks.WINDOWS['w86'], COST, TAX, DELAY)
@@ -978,12 +1061,14 @@ def test_seal(P):
     np.savez(buf, dates=idx2.values.astype('datetime64[D]').astype(np.int64), tickers=P2.tickers,
              adj=big(Ps.adj, lambda s: np.full(s, 5.0, np.float32)), dvol=big(Ps.dvol, lambda s: np.ones(s, np.float32)),
              member=np.packbits(big(Ps.member, lambda s: np.ones(s, bool)), axis=0),
-             stale=np.packbits(big(Ps.stale, lambda s: np.zeros(s, bool)), axis=0), shape=np.array([T2, len(sub)]))
+             stale=np.packbits(big(Ps.stale, lambda s: np.zeros(s, bool)), axis=0), shape=np.array([T2, len(sub)]),
+             divy=big(Ps.divy, lambda s: np.full(s, 0.3, np.float32)))
     fp = os.path.join(TMP, 'late.npz.xz')
     with lzma.open(fp, 'wb') as fh:
         fh.write(buf.getvalue())
     L = stocks.load(fp)
-    check('(h) loader drops rows after 2014-12-31 from a file that has them', L.T == Ps.T and L.idx[-1] == Ps.idx[-1])
+    check('(h) loader drops rows after 2014-12-31 from a file that has them (dividends too)',
+          L.T == Ps.T and L.idx[-1] == Ps.idx[-1] and np.array_equal(L.divy, Ps.divy))
     check('(h) the seal guard raises on a later index', raises(lambda: stocks._sealed(idx2), stocks.SealError))
     F = stocks.gate_frame(SPECS['gate'], P.idx)
     Re, first = stocks.else_returns({'QQQ': 0.5}, P.idx)
@@ -1115,9 +1200,32 @@ def test_review(P):
           and np.array_equal(P.cut(row(P, '1990-01-02')).ids, P.ids) and np.array_equal(P.subset([5, 9]).ids, P.ids[[5, 9]]))
     if 'AET-201811' not in P.tickers:      # v2: no post-2014 delisting date in a string (but see above)
         check('tickers (v2 panel): no ticker string holds a year after 2014 (AET-201811 is AET)', not late and 'AET' in P.tickers)
+    v2 = os.path.join(os.path.dirname(stocks.STOCKS), 'sp500_le2014_v2.npz.xz')
+    if stocks.STOCKS.endswith('_v3.npz.xz') and os.path.isfile(v2):
+        P2 = stocks.load(v2, allow_nodiv=True)
+        same = (np.array_equal(P.idx, P2.idx) and np.array_equal(P.tickers, P2.tickers)
+                and np.array_equal(P.adj, P2.adj, equal_nan=True) and np.array_equal(P.dvol, P2.dvol, equal_nan=True)
+                and np.array_equal(P.member, P2.member) and np.array_equal(P.stale, P2.stale)
+                and np.array_equal(P.pause, P2.pause) and np.array_equal(P.ids, P2.ids))
+        z3 = np.load(io.BytesIO(lzma.open(stocks.STOCKS).read()))
+        z2 = np.load(io.BytesIO(lzma.open(v2).read()))
+        raw = all(np.array_equal(z3[k], z2[k], equal_nan=z2[k].dtype.kind == 'f') for k in z2.files)
+        check('panel v3 == v2 on every shared array (file arrays dates, tickers, adj, dvol, member, stale, shape; '
+              'loaded panel incl. exit-gap pauses and output ids); v3 adds divy only; v2 has no divy and is refused '
+              'by load() (its books would skip the dividend tax)',
+              same and raw and set(z3.files) - set(z2.files) == {'divy'} and P.div_known and not P2.div_known
+              and raises(lambda: stocks.load(v2), stocks.NoDividendError, '배당 자료(divy) 없음'))
+        stocks._cache.pop(('panel', v2), None); del P2, z3, z2
+    dvy = P.divy
+    pos = dvy > 0
+    check('divy: finite, >= 0, < 1, only on days with a price; >= one payer on most member days (1970-2014)',
+          bool(np.isfinite(dvy).all() and (dvy >= 0).all() and dvy.max() < 1 and not (pos & ~P.has).any())
+          and np.mean((pos & P.member).any(1)[P.f0:]) > 0.5)
     v1 = os.path.join(os.path.dirname(stocks.STOCKS), 'sp500_le2014.npz.xz')
-    if stocks.STOCKS.endswith('_v2.npz.xz') and os.path.isfile(v1):
-        P1 = stocks.load(v1)
+    v2 = os.path.join(os.path.dirname(stocks.STOCKS), 'sp500_le2014_v2.npz.xz')
+    if os.path.isfile(v2) and os.path.isfile(v1):
+        P = stocks.load(v2, allow_nodiv=True)
+        P1 = stocks.load(v1, allow_nodiv=True)
         same = (np.array_equal(P.idx, P1.idx) and np.array_equal(P.adj, P1.adj, equal_nan=True)
                 and np.array_equal(P.dvol, P1.dvol, equal_nan=True) and np.array_equal(P.member, P1.member)
                 and np.array_equal(P.stale, P1.stale) and np.array_equal(P.pause, P1.pause))
@@ -1126,7 +1234,8 @@ def test_review(P):
         check(f'panel v2 == v1 except {len(ch)} ticker strings (adj, dvol, member, stale, dates, exit gaps identical); '
               'changed ones only lose a post-2014 suffix or take _2 by first membership start; output ids identical '
               '(they never read a string)', same and okt and ch and np.array_equal(P1.ids, P.ids))
-        stocks._cache.pop(('panel', v1), None); del P1
+        stocks._cache.pop(('panel', v1), None); stocks._cache.pop(('panel', v2), None); del P1
+        P = stocks.load()
     # gate warm-up: the 1986 window and the MS1 stream start at the first decision with sma(_NDX, 200) defined (+ delay)
     g = SPECS['gate']
     nd = data.series('_NDX').reindex(P.idx).ffill()
@@ -1206,6 +1315,16 @@ def test_docs():
         + open(os.path.join(LAB, 'tools', 'build_us_stocks.py')).read()
     check('docs: no claim that the ticker strings hold no post-2014 fact; the last-known-symbol limit is stated',
           'no post-2014 fact in a ticker' not in src and 'NOT point in time' in src and '시점 사실이 아님' in src)
+    rd = open(os.path.join(LAB, 'README.md')).read() + '\n'.join(use)
+    code = open(stocks.__file__).read() + open(engine.__file__).read()
+    check("labels: no result key 'cagr_pre' in the engines (renamed cagr_before_liq_tax: after the yearly 22% tax, "
+          "before only the liquidation tax); docs say it is not pre-tax and name the truly pre-tax cagr_pretax; the "
+          "MS1 stream label says after the dividend tax, before the 22% tax",
+          "cagr_pre=" not in code and "['cagr_pre']" not in code and 'cagr_before_liq_tax' in rd
+          and '세전이 아님' in rd and '세전이 아니다' in rd and 'cagr_pretax' in rd and '비용·배당세 "\n' in code and '{DIV_TAX:.1%} 후, 22% 양도세 전' in code
+          and '비용후 세전' not in code)
+    check('docs: the dividend tax (15.4% when paid, the rest to cost basis) and the ETF distribution bias are stated',
+          'DIV_TAX' in rd and '84.6%' in rd and 'ETF 분배금' in rd and 'MS1 줄은 해당 없음' in rd)
 
 
 if __name__ == '__main__':
@@ -1222,6 +1341,7 @@ if __name__ == '__main__':
     test_classified_synthetic()
     test_leaks(P)
     test_cost_tax(P)
+    test_dividend(P)
     test_parity(P)
     test_null(P)
     test_seal(P)

@@ -7,6 +7,11 @@ at the decision close itself.
 Cost per side (default 0.30% = 0.25% fee + 0.05% spread) on traded notional. Korean overseas CGT 22% on
 yearly net realized gain (average cost, no deduction, no carry-forward); final liquidation taxed.
 Cash earns T-bill.
+Dividend tax (lab addition, `div` / `div_tax`, default None = the original rule; single stocks only): R is a total
+return (dividends reinvested in the adjusted close); on a row where a column pays a dividend (div = cash paid per unit
+of the previous close's value) the book pays div_tax of that cash out (15.4% for a KR resident, stocks.DIV_TAX: US 15%
+withheld, KR 15.4% with the foreign credit, taken when paid) and the rest is reinvested cash, added to the column's
+cost basis, so the 22% tax applies to price gains only.
 """
 import numpy as np, pandas as pd
 
@@ -34,7 +39,7 @@ def limit_target(tgt, val, frozen, no_buy, cashi, V):
 
 
 def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='yearly', tax_by_col=None,
-        frozen=None, no_buy=None):
+        frozen=None, no_buy=None, div=None, div_tax=0.0):
     """rebal (lab addition, default None = the original rule): a boolean Series on W's index; on a flagged decision row the
     book is traded back to the target even if the target row did not change (periodic rebalancing of drifted weights).
     It is shifted by `delay` exactly like the weights.
@@ -43,7 +48,14 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
     tax_by_col (per_sale only): {column: rate} overrides `tax` for those columns (e.g. KR domestic-equity ETFs 0).
     frozen / no_buy (lab addition for single stocks, default None = the original rule): boolean DataFrames on R's index
     (execution-day facts, NOT shifted): see limit_target. A trade held off its target by `frozen` is retried on the
-    first row that column trades again."""
+    first row that column trades again.
+    div (lab addition for single stocks, default None = the original rule): a DataFrame on R's index of the dividend
+    paid on each row per unit of the column's value at the previous close (execution-day facts, NOT shifted; CASH
+    ignored). On such a row, before trading: dividend cash dc = value at the previous close x div (0 on a -100% row);
+    the value after the row's total return loses div_tax x dc (cash out of the book, `divtax`), and (1 - div_tax) x dc
+    is added to the column's cost basis (reinvested cash, not a capital gain). Returns also `divtax` (sum paid) and
+    `cagr_before_liq_tax` = CAGR of E: after cost, after the yearly tax on realized gains and the dividend tax already
+    taken out of E, before ONLY the final liquidation tax (not a pre-tax CAGR)."""
     assert tax_mode in ('yearly', 'per_sale')
     ps = tax_mode == 'per_sale'
     idx = R.index[(R.index >= start) & (R.index <= end)]
@@ -67,6 +79,11 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
         FZ, NB = msk(frozen), msk(no_buy)
         FZ[:, cashi] = NB[:, cashi] = False
         pend = np.zeros(k, bool)
+    Dv = None
+    if div is not None:
+        Dv = div.reindex(index=idx, columns=cols).fillna(0.0).values.astype(float)
+        Dv[:, cashi] = 0.0
+    divpaid = 0.0
     trate = np.array([(tax_by_col or {}).get(c, tax) for c in cols], float)
     assert tax_by_col is None or ps, 'tax_by_col needs tax_mode per_sale'
     eq = np.empty(n)
@@ -80,7 +97,10 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
                 realized += f * sum(val[j] - basis[j] for j in range(k) if j != cashi)
                 val *= 1 - f; basis *= 1 - f
         if i > 0:
+            dc = None if Dv is None else np.where(1.0 + Rr[i] > 0, val * Dv[i], 0.0)   # dividend cash on the row
             val *= 1.0 + Rr[i]
+            if dc is not None and dc.any():
+                val = val - div_tax * dc; basis = basis + (1.0 - div_tax) * dc; divpaid += div_tax * dc.sum()
         V = val.sum(); tgt = Wv[i] * V
         go = i == 0 or force[i] or np.any(Wv[i] != Wv[i - 1])
         if lim:
@@ -112,6 +132,6 @@ def run(W, R, start, end, cost=0.003, tax=0.22, delay=2, rebal=None, tax_mode='y
         t = tax * max(0.0, realized + unreal)
     final_at = eq[-1] - t
     E = pd.Series(eq, index=idx); yrs = (idx[-1] - idx[0]).days / 365.25
-    return dict(E=E, cagr_pre=E.iloc[-1] ** (1 / yrs) - 1, cagr_at=final_at ** (1 / yrs) - 1,
+    return dict(E=E, cagr_before_liq_tax=E.iloc[-1] ** (1 / yrs) - 1, cagr_at=final_at ** (1 / yrs) - 1,
                 final_at=final_at, mdd=(E / E.cummax() - 1).min(), turn=turnover / yrs,
-                taxpaid=taxpaid, yrs=yrs, trades=trades)
+                taxpaid=taxpaid, divtax=divpaid, yrs=yrs, trades=trades)

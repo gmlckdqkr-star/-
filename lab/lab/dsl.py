@@ -126,6 +126,9 @@ def check_spec(spec):
     if isinstance(c, bool) or not isinstance(c, (int, float)) or not np.isfinite(c):
         raise ValueError(f'cost must be a finite number, not {c!r}')
     acct, _ = account_of(spec)
+    if is_universe(spec):                     # dividend names: the Korean reason before any expression is parsed
+        from . import stocks
+        stocks.forbid_div_names(spec)
     badm = sorted(k for k in macro_keys(spec) if k not in data.MACRO_KEYS)
     if badm:
         raise ValueError(f'macro(k): k must be one of {", ".join(data.MACRO_KEYS)}, not {badm}')

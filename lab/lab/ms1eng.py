@@ -138,15 +138,19 @@ def runP(R, CR, W, FORCE, delay, cost, tax, D, harvest, hthr):
 
 
 @njit(parallel=True, cache=True)
-def series_run(M, real_share, cost, tax, D):
+def series_run(M, Q, real_share, cost, tax, D):
     """IS1 stream engine (research/indiv_stock/code/eng.py run, without its turnover / dividend drag: the stream is
-    already after cost): M (P, T) daily returns after WARM. Entry cost, every 252 days tax * max(real_share x
-    unrealized - D, 0) on the realized share (no carry-forward), exit cost and liquidation tax at the end."""
+    already after cost, and a stock stream already after the dividend tax): M (P, T) daily returns after WARM; Q (P, T)
+    the part of each day's return that is reinvested cash already taxed (a stock's dividend after its 15.4% tax), per
+    unit of the previous day's value: added to the cost basis (zeros for a price stream). Entry cost, every 252 days
+    tax * max(real_share x unrealized - D, 0) on the realized share (no carry-forward), exit cost and liquidation tax
+    at the end; unrealized = value - basis, so a dividend is never taxed at 22%."""
     P, T = M.shape
     fin = np.zeros(P); EE = np.zeros((P, T))
     for i in prange(P):
         Wv = 1.0 - cost; Bv = Wv
         for t in range(T):
+            Bv = Bv + Wv * Q[i, t]
             Wv = Wv * (1.0 + M[i, t])
             if (t + 1) % 252 == 0 and t + 1 < T:
                 Rz = real_share * (Wv - Bv); tx = tax * max(Rz - D, 0.0)
