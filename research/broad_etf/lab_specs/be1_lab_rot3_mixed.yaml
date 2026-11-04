@@ -1,0 +1,13 @@
+name: be1_lab_rot3_mixed
+family: broad_etf
+known: 2
+idea: 'BE1 lab 교차 확인: lab 상품 15개(1x 5 + 3x 업종·채권·금 10) 중 6개월 수익 상위 3(200일선 위만) 월초 교체'
+rules:
+- rotate:
+    assets: [QQQ, SPY, TLT, GLD, IEF, TQQQ, UPRO, TMF, UGL, FAS, ERX, CURE, TNA, DRN, TECL]
+    score: ret(*, 126)
+    filter: price(*) > sma(*, 200)
+    top: 3
+    every: monthly
+    exit: daily
+    total: 1.0

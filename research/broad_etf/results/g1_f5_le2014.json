@@ -1,0 +1,155 @@
+{
+ "s1_stk_gt_bond63": {
+  "ndx_86_14": {
+   "hit": 0.514367816091954,
+   "n": 348,
+   "se": 0.026791745054179018,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.4203376984201227
+  },
+  "spx_55_85": {
+   "hit": 0.4540540540540541,
+   "n": 370,
+   "se": 0.025883782361304623,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.36321058356328406
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "s2_cyc_gt_def63": {
+  "ndx_86_14": {
+   "hit": 0.5287356321839081,
+   "n": 348,
+   "se": 0.02675851263428892,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.4348221492570874
+  },
+  "spx_55_85": {
+   "hit": 0.4945945945945946,
+   "n": 370,
+   "se": 0.02599224320843615,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.403370462590439
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "s3_small_gt_mkt63": {
+  "ndx_86_14": {
+   "hit": 0.47126436781609193,
+   "n": 348,
+   "se": 0.02675851263428892,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.37735088488927127
+  },
+  "spx_55_85": {
+   "hit": 0.5,
+   "n": 370,
+   "se": 0.025993762245501817,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.4087705366807791
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "s4_gold126_neg": {
+  "ndx_86_14": {
+   "hit": 0.46264367816091956,
+   "n": 348,
+   "se": 0.02672790231429642,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.3688376272802403
+  },
+  "spx_55_85": null,
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "s5_breadth7of11": {
+  "ndx_86_14": {
+   "hit": 0.47988505747126436,
+   "n": 348,
+   "se": 0.026781115166485014,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.38589224717111353
+  },
+  "spx_55_85": {
+   "hit": 0.5405405405405406,
+   "n": 370,
+   "se": 0.025908178014562744,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.4496114494176727
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "s6_banks_gt_mkt63": {
+  "ndx_86_14": {
+   "hit": 0.45689655172413796,
+   "n": 348,
+   "se": 0.026703033360491527,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.3631777826031171
+  },
+  "spx_55_85": {
+   "hit": 0.518918918918919,
+   "n": 370,
+   "se": 0.02597514792023742,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.4277547856926597
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "s7_semis_gt_mkt63": {
+  "ndx_86_14": {
+   "hit": 0.5316091954022989,
+   "n": 348,
+   "se": 0.026749200158093636,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.4377283961707989
+  },
+  "spx_55_85": {
+   "hit": 0.5054054054054054,
+   "n": 370,
+   "se": 0.025992243208436152,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.41418127340124977
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "s8_vote4of7": {
+  "ndx_86_14": {
+   "hit": 0.4942528735632184,
+   "n": 348,
+   "se": 0.026801042747433713,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.400190124079273
+  },
+  "spx_55_85": {
+   "hit": 0.5081081081081081,
+   "n": 370,
+   "se": 0.02599034428725444,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.4168906406859648
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ }
+}
