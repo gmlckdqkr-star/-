@@ -41,6 +41,13 @@ for _n, _k in KR_SLEEVES.items():
 # (보유기간과세 15.4%); their real tax base (과표기준가) is small, but lab books the conservative upper bound
 # 15.4% of every sale gain.  Every other sleeve in a kr_etf account stands for a KR-listed overseas-index ETF -> 15.4%.
 KR_TAX = {'KR200': 0.0, 'KRSEMI': 0.0, 'KRLEV': 0.154, 'KRINV': 0.154}
+# Derived signal series (not ETF panel keys, never on a bar / MS1 path): _SP500EW = the point-in-time equal-weight index
+# of S&P 500 members from the sealed stock panel (lab/stocks.py sp500ew: mean close-to-close return of the names that
+# were members at t-1 and have a price at t-1 and t; level 1.0 on 1970-01-02, the first point-in-time member day).
+# A signal name like _NDX: price / sma / ret / vol / ... read it; series() builds it on the stock calendar (<= SEAL),
+# price_for_signal carries it onto a frame's dates (ETF frame: from 1985-10 like any panel key).
+SP500EW = '_SP500EW'
+DERIVED = (SP500EW,)
 _cache = {}
 
 
@@ -58,7 +65,13 @@ def _z():
 
 
 def keys():
+    """ETF panel keys (the derived signal series DERIVED are not panel keys: signal_keys)."""
     return sorted({k.split('|')[0] for k in _z().files})
+
+
+def signal_keys():
+    """Every name a signal expression may read as a series: the panel keys and the derived series (DERIVED)."""
+    return sorted(set(keys()) | set(DERIVED))
 
 
 def _dates(ts):
@@ -68,7 +81,14 @@ def _dates(ts):
 
 
 def series(k, col=4):
-    """One panel column on its own dates, rows <= SEAL only (holdout seal: later rows are dropped first)."""
+    """One panel column on its own dates, rows <= SEAL only (holdout seal: later rows are dropped first). k = _SP500EW
+    (DERIVED): the stock panel's equal-weight member index level (lab/stocks.py sp500ew_series, close only)."""
+    if k == SP500EW:
+        if col != 4:
+            raise ValueError(f'{SP500EW} is a close level only (col 4), not col {col}')
+        from . import stocks                       # lazy: stocks imports data
+        s = stocks.sp500ew_series()
+        return s[s.index <= SEAL]
     z = _z()
     d = _dates(z[k + '|ts'])
     s = pd.Series(z[k + '|v'][:, col].astype(float), index=d)

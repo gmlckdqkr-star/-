@@ -1,0 +1,18 @@
+# Regime switch on the point-in-time equal-weight S&P 500 member index (_SP500EW, from 1970-01-02): while it closes
+# above its 200-day average, the 20 members with the best 12-1 momentum; otherwise the 20 with the lowest 1-year
+# daily volatility. Always invested (no exposure gate), equal weight, monthly. The signal is read at the decision
+# close (one number per decision); before sma(_SP500EW, 200) exists (1970-10) the book holds cash. Textbook constants
+# (200-day trend, Jegadeesh-Titman 12-1, 252-day vol), not searched.
+name: stk_regime_switch
+family: stk_regime
+known: 2
+idea: EW-member trend regime picks 12-1 momentum (up) or low volatility (down), top 20 monthly
+universe: sp500
+signals:
+  up: "price(_SP500EW) > sma(_SP500EW, 200)"
+stock:
+  rebalance: month
+  score: "up * rank(ret(231, 21)) + (1 - up) * rank(-vol(252))"
+  top: 20
+  weight: equal
+  max_weight: 0.10

@@ -555,7 +555,7 @@ def _eval(expr, env, assets):
         scope.setdefault(a, a)
     unknown = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and n.id not in scope}
     if unknown:  # bare panel keys (_IRX, KRW_X, ..) read like quoted names; anything else is a typo -> readable error
-        keys = set(data.keys())
+        keys = set(data.signal_keys())                 # panel keys + derived series (_SP500EW)
         for u in unknown & keys:
             scope[u] = u
         left = sorted(unknown - keys)

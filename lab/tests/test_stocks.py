@@ -77,7 +77,14 @@ SPECS = {   # every per-stock function, filter, weights, top_pct, cap, cadences
                  signals={'up': 'price(_NDX) > sma(_NDX, 200)'}),
     'gate_frac': spec({'score': 'max(ret(63), ret(21, 5))', 'top': 15, 'exposure': 'min(1, 0.2 / vol(_GSPC, 20))',
                        'exposure_every': 'rebalance', 'else': {'CASH': 1.0}}),
+    # signals in the score (R1) on the point-in-time equal-weight member index (R2), and an _SP500EW exposure gate
+    'sig_mix': spec({'score': 'up * rank(ret(231, 21)) + (1 - up) * rank(-vol(252))', 'filter': 'not (calm < 0) or '
+                     'age() > 60', 'top': 20}, signals={'up': 'price(_SP500EW) > sma(_SP500EW, 200)',
+                                                        'calm': '0.15 - vol(_SP500EW, 63)'}),
+    'ew_gate': spec({'score': 'ret(126)', 'top': 15, 'exposure': 'up', 'else': {'CASH': 1.0}},
+                    signals={'up': 'price(_SP500EW) > sma(_SP500EW, 200)'}),
 }
+EW = '_SP500EW'
 
 
 # ---------------------------------------------------------------- (j) spec errors
@@ -150,6 +157,42 @@ def test_errors():
     check('(L3) exactly 260 rows accepted (ret(239, 21), vol(260), ..., invvol(260))',
           all(dsl.check_spec(spec({'score': e, 'top': 5})) for e in ok260)
           and dsl.check_spec(spec({'score': 'ret(20)', 'top': 5, 'weight': 'invvol(260)'})))
+    # (R1) signals in score / filter: the per-stock rules still hold through them
+    up = {'up': f'price({EW}) > sma({EW}, 200)'}
+    sg = lambda st, sig=None: (lambda: dsl.check_spec(spec(st, signals=dict(up) if sig is None else sig)))
+    check('(R1) a signal name is accepted in score and filter (bare name = one number per decision)',
+          dsl.check_spec(spec({'score': 'up * rank(ret(231, 21)) + (1 - up) * rank(-vol(252))', 'top': 5},
+                                  signals=up)) is not None
+          and dsl.check_spec(spec({'score': 'ret(126)', 'filter': 'up or age() > 500', 'top': 5}, signals=up)))
+    check('(R1) the 260-row cap still refuses long per-stock windows next to / multiplied by a signal (score, filter)',
+          all(raises(sg({'score': e, 'top': 5}), ValueError, '> 260 사용 불가') for e in
+              ('up * ret(300)', 'rank(ret(261)) * up + (1 - up) * rank(-vol(252))', 'up * rank(ret(240, 21))',
+               'max(up, vol(500))'))
+          and raises(sg({'score': 'ret(20)', 'filter': 'up and high_dist(300) > -0.2', 'top': 5}), ValueError,
+                     '> 260 사용 불가')
+          and raises(sg({'score': 'up * ret(20)', 'top': 5, 'weight': 'invvol(261)'}), ValueError, '창 261행'))
+    check('(R1) a signal is never a window argument: ret(up), ret(231 * up), vol(up + 1) refused (window must be a '
+          'number written in the expression)',
+          all(raises(sg({'score': e, 'top': 5}), ValueError, 'whole number') for e in
+              ('ret(up)', 'ret(231 * up)', 'vol(up + 1)', 'ret(231, up)')))
+    check('(R1) dvol / volume refused inside signals read by the score, and next to a signal in the score',
+          raises(sg({'score': 'up * ret(20)', 'top': 5}, {'up': f'dvol({EW}, 20) > 1'}), ValueError, dv)
+          and raises(sg({'score': 'up * ret(20)', 'top': 5}, {'up': f'price({EW}) > 1 and volume > 0'}), ValueError,
+                     'volume 사용 불가')
+          and raises(sg({'score': 'up * dvol(20)', 'top': 5}), ValueError, dv)
+          and raises(sg({'score': 'ret(20)', 'filter': 'up and dvol(20) > 1e7', 'top': 5}), ValueError, dv))
+    nm = {k: err(sg({'score': f'{k} * ret(20)', 'top': 5}, {k: f'price({EW}) > 1'})) for k in
+          ('rank', 'age', 'beta', 'close', 'dvol', 'volume', 'adj')}
+    check('(R1) a signal named like a per-stock function or a refused input is refused (no name collision)',
+          all(('per-stock function or a refused input' in m) or ('사용 불가' in m) for m in nm.values()),
+          ' | '.join(f'{k}: {m[:30]}' for k, m in nm.items()))
+    e1 = err(sg({'score': 'down * ret(20)', 'top': 5}))
+    check('(R1) an undefined name in the score says unknown name and lists the signal names',
+          "unknown name 'down'" in e1 and 'signals: up' in e1, e1[:120])
+    check('(R1/R2) _SP500EW is a known series for stock signals; level() / unknown series still refused',
+          dsl.check_spec(spec({'score': 'ret(20)', 'top': 5, 'exposure': 'up'}, signals=up)) is not None
+          and raises(sg({'score': 'up * ret(20)', 'top': 5}, {'up': 'price(_SP500XX) > 1'}), ValueError, 'unknown name')
+          and raises(sg({'score': 'up * ret(20)', 'top': 5}, {'up': 'level(QLD) > 1'}), ValueError, 'level(x)'))
 
 
 # ---------------------------------------------------------------- per-stock functions vs direct formulas
@@ -224,20 +267,21 @@ def test_leaks(P):
     Pd = stocks.Panel(P.idx, P.tickers, P.adj, dv, P.member, st, P.pause)                       # dvol, stale scrambled
     Pz = stocks.Panel(P.idx, P.tickers, P.adj, P.dvol, P.member, P.stale, np.zeros_like(P.pause))  # no exit gaps
     for k, s in SPECS.items():
-        F = stocks.gate_frame(s, P.idx) if s['stock'].get('exposure') else None
-        a = stocks.compile_targets(s, P, F)
+        a = stocks.compile_targets(s, P)              # F built from the panel given (_SP500EW: from that panel)
         same = lambda b: (np.array_equal(a.dec, b.dec) and np.array_equal(a.elig, b.elig) and np.array_equal(a.e, b.e)
                           and all(np.array_equal(x, y) and np.array_equal(u, v)
                                   for x, y, u, v in zip(a.picks, b.picks, a.wts, b.wts)))
         check(f'(L) {k}: decisions identical with dvol + stale scrambled, and with every exit-gap pause removed',
-              same(stocks.compile_targets(s, Pd, F)) and same(stocks.compile_targets(s, Pz, F)))
+              same(stocks.compile_targets(s, Pd)) and same(stocks.compile_targets(s, Pz)))
+    ew = stocks.sp500ew(P)
+    check('(R2) _SP500EW identical with dvol + stale scrambled and with every exit-gap pause removed (reads none)',
+          np.array_equal(ew, stocks.sp500ew(Pd), equal_nan=True) and np.array_equal(ew, stocks.sp500ew(Pz), equal_nan=True))
     # (L3) pre-membership history: delete it, or give every later joiner a full one; no decision may change
     pre = (np.arange(P.T)[:, None] < P.fm[None, :]) & (P.fm > P.f0)[None, :]
     base = {}
     for k, s in SPECS.items():
-        F = stocks.gate_frame(s, P.idx) if s['stock'].get('exposure') else None
-        base[k] = (F, stocks.compile_targets(s, P, F))
-    res, mk = {}, []
+        base[k] = (None, stocks.compile_targets(s, P))
+    res, mk, ewv = {}, [], []
     for v in ('deleted', 'full random'):
         adj = P.adj.copy()
         lvl = np.broadcast_to(P.adj[np.minimum(P.fm, P.T - 1), np.arange(P.N)][None, :], pre.shape)[pre]
@@ -245,17 +289,20 @@ def test_leaks(P):
         Pv = stocks.Panel(P.idx, P.tickers, adj, P.dvol, P.member, P.stale, P.pause)
         for k, s in SPECS.items():
             F, a = base[k]
-            b = stocks.compile_targets(s, Pv, F)
+            b = stocks.compile_targets(s, Pv, F)       # F None: rebuilt from Pv (its _SP500EW too)
             res[k] = res.get(k, True) and (
                 np.array_equal(a.dec, b.dec) and np.array_equal(a.elig, b.elig) and np.array_equal(a.e, b.e)
                 and all(np.array_equal(x, y) and np.allclose(u, w, rtol=0, atol=1e-12)
                         for x, y, u, w in zip(a.picks, b.picks, a.wts, b.wts)))
         mk.append(np.array_equal(P.mkt(), Pv.mkt()))
+        ewv.append(np.array_equal(stocks.sp500ew(P), stocks.sp500ew(Pv), equal_nan=True))
         del Pv, adj
     for k, ok in res.items():
         check(f'(L3) {k}: decisions identical with every later joiner\'s pre-membership prices deleted, and with a full '
               'random pre-membership history for each (window floor)', ok)
     check('(L3) the beta market does not read pre-membership prices either', all(mk) and pre.sum() > 10 ** 6)
+    check('(L3/R2) _SP500EW does not read pre-membership prices (members at t-1 only): identical with them deleted / '
+          'randomized', all(ewv) and len(ewv) == 2)
     e1, e2, e3 = stocks.ew_targets(P), stocks.ew_targets(Pd), stocks.ew_targets(Pz)
     check('(L) equal-weight benchmark and the beta market do not read stale / pause / dvol',
           all(np.array_equal(x, y) and np.array_equal(x, z) for x, y, z in zip(e1.picks, e2.picks, e3.picks))
@@ -285,8 +332,7 @@ def test_leaks(P):
           np.array_equal(pz, P.pause) and not (other & P.member).any() and not (other & P.has).any() and sum(inside) > 0)
     hit = 0
     for k, s in SPECS.items():
-        F = stocks.gate_frame(s, P.idx) if s['stock'].get('exposure') else None
-        t2 = stocks.compile_targets(s, P, F)
+        t2 = stocks.compile_targets(s, P)
         hit += sum(int(P.pause[np.minimum(d + DELAY, P.T - 1), p].sum()) for d, p in zip(t2.dec, t2.picks))
     print(f'   info: picks of the {len(SPECS)} test specs whose execution day falls inside an exit gap: {hit} '
           '(bought only when it trades again)')
@@ -307,11 +353,15 @@ def test_pit(P):
         st[c + 1:] = rng.random(st[c + 1:].shape) < 0.05
         pz = P.pause.copy(); pz[c + 1:] = rng.random(pz[c + 1:].shape) < 0.01
         P2 = stocks.Panel(P.idx, P.tickers, adj, dv, mem, st, pz)
+        with np.errstate(over='ignore'):              # the rewritten rows compound to inf: only after t*
+            ew, ew2 = stocks.sp500ew(P), stocks.sp500ew(P2)
+        check(f'(a/R2) _SP500EW t*={ts}: identical up to t* on the rewritten panel (and different after)',
+              np.array_equal(ew[:c + 1], ew2[:c + 1], equal_nan=True) and not np.allclose(ew[c + 1:], ew2[c + 1:]))
         for k, s in SPECS.items():
-            F = stocks.gate_frame(s, P.idx) if s['stock'].get('exposure') else None
+            F = stocks.gate_frame(s, P.idx, P) if stocks.needs_frame(s) else None
             F2 = None
-            if F is not None:
-                F2 = F.copy()
+            if F is not None:                          # the rewritten panel's own frame (_SP500EW from P2), then
+                F2 = stocks.gate_frame(s, P2.idx, P2)   # every column after t* scrambled once more
                 F2.iloc[c + 1:] = F2.iloc[c + 1:].values * np.exp(rng.normal(0, 0.5, F2.iloc[c + 1:].shape))
             a, b = stocks.compile_targets(s, P, F), stocks.compile_targets(s, P2, F2)
             nd = int(np.searchsorted(a.dec, c, side='right'))
@@ -323,6 +373,186 @@ def test_pit(P):
     s = SPECS['mom']; tg = stocks.compile_targets(s, P)
     pc = stocks.pit_check(s, P, tg, n_cuts=4, seed=11)
     check('(a) runtime cut check (pit_check) passes on the real panel', pc['ok'] and pc['cuts'] >= 3, str(pc))
+
+
+# ---------------------------------------------------------------- R1 signals in score / filter, R2 _SP500EW
+def _picks_eq(a, b, js=None):
+    js = range(len(a.dec)) if js is None else js
+    return all(np.array_equal(a.picks[j], b.picks[j]) and np.allclose(a.wts[j], b.wts[j], rtol=0, atol=1e-12)
+               for j in js)
+
+
+def test_signals(P):
+    print('== R2 _SP500EW (point-in-time equal-weight members) and R1 signals in score / filter ==')
+    from lab import data, ms1, bb
+    # (R2) an independent recomputation from the panel file itself (not the Panel's derived arrays)
+    t0 = time.time()
+    z = np.load(io.BytesIO(lzma.open(stocks.STOCKS).read()))
+    T0 = int(z['shape'][0]); d0 = pd.to_datetime(z['dates'], unit='D'); keep = np.asarray(d0 <= stocks.DEV_END)
+    adj = z['adj'][keep].astype(np.float64); mem = np.unpackbits(z['member'], axis=0)[:T0].astype(bool)[keep]
+    del z
+    f0 = int(np.flatnonzero(mem.any(1))[0])
+    lv = np.full(len(adj), np.nan); lv[f0] = 1.0; cnt = []
+    for t in range(f0 + 1, len(adj)):
+        a, b = adj[t - 1], adj[t]
+        m = mem[t - 1] & np.isfinite(a) & (a > 0) & np.isfinite(b) & (b > 0)
+        cnt.append(int(m.sum()))
+        lv[t] = lv[t - 1] * (1.0 + (np.mean(b[m] / a[m] - 1.0) if m.any() else 0.0))
+    ew = stocks.sp500ew(P)
+    rel = np.nanmax(np.abs(ew[f0:] / lv[f0:] - 1.0))
+    s = data.series(EW)
+    check('(R2) _SP500EW = an independent per-day recomputation from the panel file (members at t-1 with a price at '
+          't-1 and t, mean return, level 1.0 on 1970-01-02, NaN before); data.series gives the same values, <= 2014',
+          P.idx[f0] == pd.Timestamp('1970-01-02') and ew[f0] == 1.0 and np.isnan(ew[:f0]).all() and rel < 1e-10
+          and np.array_equal(np.isnan(ew), np.isnan(lv)) and s.index[0] == P.idx[f0] and s.index[-1] == stocks.DEV_END
+          and np.array_equal(s.values, ew[f0:]) and min(cnt) >= 490,
+          f'max rel diff {rel:.1e}, names per day {min(cnt)}..{max(cnt)}, {time.time() - t0:.0f}s')
+    del adj, mem
+    sp = data.series('_GSPC').reindex(P.idx[f0:]).pct_change(fill_method=None).values[1:]
+    er = ew[f0 + 1:] / ew[f0:-1] - 1
+    ok = np.isfinite(sp)
+    print(f'   info: daily return correlation with _GSPC 1970-2014 {np.corrcoef(er[ok], sp[ok])[0, 1]:.3f} '
+          f'({ok.sum()} days)')
+    # (R2) causal: rewrite everything after t* (prices, membership, dvol, stale, pauses) in the regime years
+    rng = np.random.default_rng(21)
+    for ts in ('1973-01-11', '1982-08-12'):
+        c = row(P, ts)
+        adj2 = P.adj.copy(); mem2 = P.member.copy(); dv = P.dvol.copy(); st = P.stale.copy(); pz = P.pause.copy()
+        adj2[c + 1:] = (np.nan_to_num(adj2[c + 1:], nan=10.0) * np.exp(rng.normal(0, 0.3, adj2[c + 1:].shape))
+                        ).astype(np.float32)
+        adj2[c + 1:][rng.random(adj2[c + 1:].shape) < 0.05] = np.nan
+        mem2[c + 1:] = rng.random(mem2[c + 1:].shape) < 0.4
+        dv[c + 1:] = 1e9; st[c + 1:] = rng.random(st[c + 1:].shape) < 0.05; pz[c + 1:] = rng.random(pz[c + 1:].shape) < .01
+        P2 = stocks.Panel(P.idx, P.tickers, adj2, dv, mem2, st, pz)
+        with np.errstate(over='ignore'):              # the rewritten rows compound to inf: only after t*
+            e2 = stocks.sp500ew(P2)
+        res = [np.array_equal(ew[:c + 1], e2[:c + 1], equal_nan=True) and not np.allclose(ew[c + 1:], e2[c + 1:])]
+        for k in ('sig_mix', 'ew_gate'):
+            a, b = stocks.compile_targets(SPECS[k], P), stocks.compile_targets(SPECS[k], P2)   # frames from each panel
+            nd = int(np.searchsorted(a.dec, c, side='right'))
+            res.append(np.array_equal(a.dec, b.dec) and np.array_equal(a.e[:c + 1], b.e[:c + 1]) and _picks_eq(a, b, range(nd))
+                       and any(not np.array_equal(a.picks[j], b.picks[j]) for j in range(nd, len(a.dec)))
+                       and sum(len(a.picks[j]) for j in range(nd)) > 0)
+        check(f'(R2/a) t*={ts}: _SP500EW up to t* identical on a panel rewritten after t*; the signal-mixed score and '
+              'the _SP500EW gate give the same decisions <= t* (and later ones change)', all(res), str(res))
+        del P2, adj2, mem2, dv, st, pz
+    for k in ('sig_mix', 'ew_gate'):
+        tg = stocks.compile_targets(SPECS[k], P)
+        pc = stocks.pit_check(SPECS[k], P, tg, stocks.gate_frame(SPECS[k], P.idx, P), n_cuts=4, seed=13)
+        check(f'(R2/a) runtime cut check on {k} (gate frame rebuilt from each cut panel) passes', pc['ok'] and
+              pc['cuts'] >= 3, str(pc))
+    # (R1) the value used is the one at the decision close t (not t+1, not t-1)
+    sx = spec({'score': 'up * rank(ret(231, 21)) + (1 - up) * rank(-vol(252))', 'top': 20},
+              signals={'up': f'price({EW}) > 1'})
+    D = np.flatnonzero(dsl.reb_rows(P.idx, 'monthly'))
+    fr = lambda rows: pd.DataFrame({EW: np.where(np.isin(np.arange(P.T), rows), 2.0, 0.5)}, index=P.idx)
+    hi, lo = stocks.compile_targets(sx, P, fr(np.arange(P.T))), stocks.compile_targets(sx, P, fr([]))
+    at, nx, pv = (stocks.compile_targets(sx, P, fr(r)) for r in (D, D + 1, D - 1))
+    live = [j for j in range(len(D)) if len(hi.picks[j])]
+    differ = sum(not np.array_equal(hi.picks[j], lo.picks[j]) for j in live)
+    check('(R1) signal read at the decision close t: up = 1 only on decision rows -> the up picks on every decision; '
+          'up = 1 only on t+1 or only on t-1 -> the down picks', _picks_eq(at, hi) and _picks_eq(nx, lo)
+          and _picks_eq(pv, lo) and differ > 0.9 * len(live), f'{differ}/{len(live)} decisions differ between regimes')
+    F = stocks.gate_frame(SPECS['sig_mix'], P.idx, P)
+    up_t = (F[EW] > F[EW].rolling(200, min_periods=200).mean()).values
+    s1 = spec({'score': sx['stock']['score'], 'top': 20}, signals={'up': SPECS['sig_mix']['signals']['up']})
+    real = stocks.compile_targets(s1, P)
+    inf_j = [j for j in range(len(D)) if real.sig_ok[j]]
+    flips = sum(up_t[D[j]] != up_t[min(D[j] + 1, P.T - 1)] for j in inf_j)
+    check('(R1) real _SP500EW regime: every informed decision holds the up picks when EW > SMA200 at its close, the '
+          'down picks otherwise (independent rolling mean)',
+          all(np.array_equal(real.picks[j], (hi if up_t[D[j]] else lo).picks[j]) for j in inf_j) and len(inf_j) > 500,
+          f'{len(inf_j)} decisions, {int(sum(up_t[D[j]] for j in inf_j))} up; the regime flips the next day on {flips}')
+    # (R1) warm-up and NaN: not informed -> no eligible name (CASH), never "missing = 0"
+    sv = F[EW].rolling(200, min_periods=200).mean().first_valid_index()
+    r0 = int(D[D >= row(P, sv)][0])
+    tg = stocks.compile_targets(SPECS['sig_mix'], P)
+    check('(R1) warm-up: the first informed decision is the first one with sma(_SP500EW, 200) defined (1970-10); '
+          'every decision before it holds no name, the ones after hold 20',
+          stocks.signal_row(tg) == r0 and all(len(p) == 0 for j, p in enumerate(tg.picks) if D[j] < r0)
+          and all(len(p) == 20 for j, p in enumerate(tg.picks) if D[j] >= r0) and P.idx[r0].year == 1970,
+          f'signal_from {P.idx[r0].date()}')
+    a_, b_ = row(P, '1990-03-01'), row(P, '1990-08-31')
+    Fn = F.copy(); Fn.iloc[a_:b_ + 1, 0] = np.nan                  # a hole in the series
+    sn = spec({'score': 'rank(ret(126)) + v', 'top': 20}, signals={'v': f'ret({EW}, 20)'})
+    ref = stocks.compile_targets(spec({'score': 'rank(ret(126))', 'top': 20}), P)
+    tn = stocks.compile_targets(sn, P, Fn)
+    okn = np.isfinite((Fn[EW] / Fn[EW].shift(20) - 1).values)[D]          # independent: the 20-day return exists
+    bad = (D >= a_) & (D <= b_ + 20)
+    check('(R1) a numeric signal that is NaN at t (hole + its 20-row window): those decisions hold no name; every '
+          'other decision is the plain score\'s (a signal shared by all names leaves the ranking)',
+          all(len(tn.picks[j]) == 0 for j in range(len(D)) if not okn[j]) and np.array_equal(tn.sig_ok, okn)
+          and np.array_equal(~okn & (D > row(P, '1971-01-04')), bad) and bad.sum() >= 6
+          and _picks_eq(tn, ref, [j for j in range(len(D)) if okn[j]]), f'{int(bad.sum())} decisions not informed')
+    sb = spec({'score': 'ret(126)', 'filter': 'not up', 'top': 20}, signals={'up': f'price({EW}) > sma({EW}, 20)'})
+    tb = stocks.compile_targets(sb, P, Fn)
+    pu = Fn[EW]; ups = (pu > pu.rolling(20, min_periods=20).mean()).values
+    want = np.isfinite(pu.values) & np.isfinite(pu.rolling(20, min_periods=20).mean().values)
+    check('(R1) a boolean signal over an undefined input (price / sma NaN reads False in the DSL): `not up` does NOT '
+          'pass every name there; those decisions hold no name, informed ones follow up at t',
+          np.array_equal(tb.sig_ok, want[D]) and all(len(tb.picks[j]) == 0 for j in range(len(D)) if not want[D[j]])
+          and all((len(tb.picks[j]) == 0) == bool(ups[D[j]]) for j in range(len(D)) if want[D[j]] and len(ref.picks[j]))
+          and (~want[D] & (D > row(P, '1971-01-04'))).sum() >= 6)
+    # (R1) the warm-up marker and the window start, like the gate's (a TLT regime: data from 2002-07)
+    stl = spec({'score': 'up * rank(ret(231, 21)) + (1 - up) * rank(-vol(252))', 'top': 20},
+               signals={'up': 'price(TLT) > sma(TLT, 200)'})
+    se = stocks.evaluate(stl, P, null=False, pit=False)
+    tl = data.series('TLT').reindex(P.idx).ffill().rolling(200, min_periods=200).mean().first_valid_index()
+    rt = int(D[D >= row(P, tl)][0])
+    a86 = se['windows']['w86']
+    ms = stocks.ms1_stream(stl, P)
+    check('(R1) a late signal (TLT SMA200, 2003): signal_from = its first informed decision, the 1986 window and the '
+          'MS1 stream start delay rows later, marked (신호 2003-06~) / (신호03-06~), the 1971 row (신호 2003~)',
+          se['signal_from'] == str(P.idx[rt].date()) and a86['start'] == str(P.idx[rt + DELAY].date())
+          and a86['start_by'] == 'signal' and f"(신호 {se['signal_from'][:7]}~)" in stocks.dev_part(se)
+          and f"(신호 {se['signal_from'][:4]}~)" in stocks.dev_part(se)
+          and f"(신호{se['signal_from'][2:7]}~)" in stocks.dev_part(se, compact=2) and ms['start'] == a86['start']
+          and se['signals']['gaps'] == 0 and '게이트' not in stocks.dev_part(se), f"{se['signal_from']} -> {a86['start']}")
+    # (R1) ETF-DSL window rules on the index; a series name is not a value
+    bw = {e: err(lambda e=e: stocks.compile_targets(spec({'score': 'up * ret(20)', 'top': 5}, signals={'up': e}), P, F))
+          for e in (f'sma({EW}, 0) > 1', f'ret({EW}, -5) > 0', f'lag(price({EW}), -1) > 1')}
+    check('(R2) the ETF DSL window rules on _SP500EW: window / lag 0 or negative refused; a long index window is an '
+          'ETF-DSL window (allowed, not a per-stock one)',
+          all('integer >= 1' in m for m in bw.values())
+          and len(stocks.compile_targets(spec({'score': 'up * ret(20)', 'top': 5}, signals={'up': f'price({EW}) > '
+                                              f'sma({EW}, 400)'}), P, F).dec) == len(D), str(list(bw.values()))[:160])
+    e2 = err(lambda: stocks.compile_targets(spec({'score': 'x * ret(20)', 'top': 5}, signals={'x': EW}), P))
+    check('(R1) a signal that is only a series name (x: _SP500EW) is refused in a score with a readable reason',
+          'is the series name' in e2, e2[:100])
+    # (R2) where it may go: ETF specs (dev only), bar, MS1, G1
+    es = dict(name='etf_ew', family='tst', signals={'up': f'price({EW}) > sma({EW}, 200)'},
+              rules=[{'when': 'up', 'hold': {'QLD': 1.0}}, {'else': {'CASH': 1.0}}])
+    Fe, Re, _, _ = data.build(['QLD', 'QQQ']); Fe = Fe[Fe.index <= stocks.DEV_END]; Re = Re[Re.index <= stocks.DEV_END]
+    We = dsl.compile_weights(es, Fe, ['QLD', 'QQQ'], Re)
+    pe = data.price_for_signal(Fe, EW)
+    want = (pe > pe.rolling(200, min_periods=200).mean()).astype(float).values
+    tc = dsl.truncation_check(es, Fe, ['QLD', 'QQQ'], Re, n_cuts=2, seed=3)
+    check('(R2) ETF spec (dev only): _SP500EW on the ETF frame = the stock-calendar series carried onto it (from '
+          '1985-10 like any panel key), weights follow it, dev truncation check passes',
+          np.array_equal(pe.values, pd.Series(ew, P.idx).reindex(Fe.index).ffill().values, equal_nan=True)
+          and np.array_equal(We['QLD'].values, want) and tc['ok'], f'frame from {Fe.index[0].date()}')
+    jb = bb.judge(es, 'quick'); el = ms1.eligibility(es)
+    check('(R2) ETF spec reading _SP500EW: bar -> REJECT (version impossible), MS1 -> 해당 없음 (읽는 계열 _SP500EW)',
+          jb['verdict'] == 'REJECT (version impossible)' and EW in jb['reason'] and el[0] is False
+          and el[1].startswith(f'읽는 계열 {EW}'), f"{jb['reason'][:60]} | {el[1]}")
+    gok, gi = ms1._stock_gate(SPECS['ew_gate'])
+    gt = ms1.fmt_gate(dict(gate=True, na=gi), 1)[0]
+    mix = spec({'score': 'up * ret(126) + (1 - up) * ret(21)', 'top': 15, 'exposure': 'g'},
+               signals={'up': SPECS['ew_gate']['signals']['up'], 'g': 'price(_NDX) > sma(_NDX, 200)'})
+    mok, mg = ms1._stock_gate(mix)
+    check('(R2) stock gate reading _SP500EW -> G1 게이트 해당 없음 (읽는 계열 _SP500EW ..); an NDX gate next to a score-only '
+          '_SP500EW signal keeps its G1 (the gate spec carries only the signals the exposure reads)',
+          gok is False and gt.startswith(f'G1 게이트 해당 없음 (읽는 계열 {EW}') and mok is True
+          and mg['signals'] == {'g': mix['signals']['g']}, gt)
+    m2 = spec({'score': 'up * ret(126) + (1 - up) * ret(21)', 'top': 15, 'exposure': 'g'},
+              signals={'up': 'price(TLT) > sma(TLT, 200)', 'g': 'price(_NDX) > sma(_NDX, 200)'})
+    F2 = stocks.gate_frame(m2, P.idx, P)
+    rg, _ = stocks.gate_valid(m2, P, F2)
+    nd = data.series('_NDX').reindex(P.idx).ffill().rolling(200, min_periods=200).mean().first_valid_index()
+    check('(R1) the gate is the exposure + the signals it reads: a score-only TLT signal moves signal_from (2003), '
+          'not the NDX gate\'s warm-up (1986-07) or its data columns',
+          P.idx[rg] == nd and stocks.gate_cols(m2, F2) == ['_NDX'] and sorted(F2.columns) == ['TLT', '_NDX']
+          and stocks.signal_row(stocks.compile_targets(m2, P, F2)) == rt, f'gate {P.idx[rg].date()}')
 
 
 # ---------------------------------------------------------------- (b) membership start + delay
@@ -871,6 +1101,7 @@ if __name__ == '__main__':
     P = stocks.load()
     test_functions(P)
     test_pit(P)
+    test_signals(P)
     test_membership(P)
     test_exit_gap(P)
     test_series_end(P)

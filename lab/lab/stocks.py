@@ -51,6 +51,31 @@ Spec (YAML):
       else: {CASH: 1.0}         # what the unexposed share holds (CASH or US ETF sleeves); default CASH
       exposure_every: daily     # daily (default) | rebalance (sample the exposure on decision rows only)
     signals: {up: "price(_NDX) > sma(_NDX, 200)"}   # optional, the ETF DSL on the ETF panel (cut at 2014-12-31)
+                                                    # and _SP500EW (below), on the stock calendar
+
+Signals in score / filter (STOCK_VERSION 5): a name defined under `signals:` may appear as a bare name in stock.score
+and stock.filter, e.g. "up * rank(ret(231, 21)) + (1 - up) * rank(-vol(252))": it is one number per decision, the
+signal's value at the decision close t (the row the stock scores use; boolean -> 1.0 / 0.0), the same for every name.
+A signal is INFORMED at t when its value is finite and every indicator call inside it, and inside the signals it reads
+(dsl.FUNCS minus the stateful / calendar ones dsl._NO_WARM, as dsl.valid_from), has a value at t: a comparison of an
+undefined sma reads False in the DSL, so a boolean alone cannot say it is missing. On a decision where a score / filter
+signal is not informed the stock share holds CASH (no name is eligible; the exposure / else part is unchanged), never
+"missing = 0"; signal_from = the first informed decision (warm-up, e.g. sma(_SP500EW, 200) -> 1970-10): the 1986
+window and the MS1 stream start delay rows after it when it is later (marked (신호 YYYY-MM~), the 1971 row is marked
+(신호 YYYY~) when it starts before it), like the gate warm-up. Signal names may not be per-stock function or refused
+input names; a window argument is still a number written in the expression (ret(up) is refused) and per-stock
+windows stay <= 260 rows (signals are index series: they never compute a per-stock window). Arithmetic is plain:
+0 * NaN = NaN, so a name whose unused branch is undefined has no score (put availability in `filter` if it matters).
+_SP500EW (data.SP500EW, sp500ew): point-in-time equal-weight index of S&P 500 members from this panel: return at t =
+mean of adj[t] / adj[t-1] - 1 over the names that were members at t-1 and have a price at t-1 and at t (dividend
+adjusted closes; no stale / pause / dvol read; members only, so no pre-membership price; a series end's delisting
+return is not in it: whether a price comes back is not known at t); level 1.0 on 1970-01-02 (the first point-in-time
+member day), NaN before. Causal: the value at t reads panel rows t-1 and t only. A series in the ETF DSL like _NDX
+(price, sma, ret, vol, dd, zscore, ...; the ETF DSL window rules, no 260 cap: it is an index, not a name's history),
+so a regime can be measured from 1970 where lab _NDX starts 1985-10. ETF specs may read it too (dev summary only, on
+the ETF frame from 1985-10 like any panel key): the bar paths do not have it (REJECT (version impossible)) and MS1
+does not (MS1: 해당 없음 (읽는 계열 _SP500EW ...)). A stock spec's exposure gate that reads it gets 'G1 게이트 해당 없음
+(읽는 계열 _SP500EW ...)': the G1 frames hold NDX / SPX only (the gate spec carries only the signals the exposure reads).
 
 Per-stock functions (evaluated on decision rows only, every window ends at the decision close and starts on or after
 the first membership start (the window floor, L3), n (n + skip) <= 260):
@@ -88,11 +113,13 @@ ETF panel). Annualised after-cost pre-tax Sharpe over the T-bill (G1 non-timing 
 null: 200 seeded baskets with the same rebalance dates, eligibility, name count and name retention (see null_baskets),
 equal weight, same exposure, engine, costs, tax and delisting rule.
 MS1 / G1 (lab/ms1.py, `--std auto`): ms1_stream = the CONSERVATIVE (classified) book's daily return after trading
-cost, before tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve starts later or
-the exposure gate is warmed up later: gate_valid), measured on the MS1 bases by ms1.measure_series (re-sampled stream,
-no path recomputation). The 1986 headline window also starts at the warmed-up gate (marked). G1 = the
-Sharpe line above; a spec with an exposure gate also gets gate.test on it (gate_spec: the gate as a QQQ / cash spec on
-the G1 real frames).
+cost, before tax, on the real stock calendar from 1970 (first point-in-time member day; later when an else sleeve starts later,
+the exposure gate is warmed up later (gate_valid) or the score / filter signals are informed later (signal_row)),
+measured on the MS1 bases by ms1.measure_series (re-sampled stream, no path recomputation). The 1986 headline window
+also starts at the warmed-up gate / informed signals (marked). G1 = the Sharpe line above; a spec with an exposure gate
+also gets gate.test on it (gate_spec: the gate, with only the signals it reads, as a QQQ / cash spec on the G1 real
+frames; a gate reading _SP500EW or another series the G1 frames lack: 'G1 게이트 해당 없음 (읽는 계열 ..)'). Signals that
+only steer the score are not a timing gate (the book is always invested): G1 = the Sharpe line.
 HOLDOUT SEAL: the panel and every ETF series are cut at 2014-12-31 before anything is computed; asserted below.
 """
 import ast, io, json, lzma, math, os, re, time
@@ -101,7 +128,10 @@ from . import data, dsl, engine, gates
 
 STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014_v2.npz.xz')
 DEV_END = gates.DEV_END
-STOCK_VERSION = 4           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+STOCK_VERSION = 5           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+                            # 5: signals in score / filter (informed per decision, signal_from), _SP500EW; the
+                            #    gate (warm-up, data start, G1 gate spec) is the exposure + the signals it reads
+                            #    only; runtime PIT cuts rebuild the gate frame from the cut panel
                             # 2: the 1986 window and the MS1 stream start once the exposure gate is warmed up
                             #    (gate_from = first decision with every gate indicator defined); empty books say so;
                             #    tickers delisted after 2014 print bare
@@ -348,6 +378,36 @@ def load(path=None):
     return _cache[('panel', path)]
 
 
+def sp500ew(P):
+    """[T] _SP500EW level on the panel's rows (cached on P): r[t] = mean over the names that were members at t-1 and
+    have a price at t-1 and at t (has: finite > 0; stale / pause / dvol are not read) of adj[t] / adj[t-1] - 1
+    (= rr there); level 1.0 on the first point-in-time member day P.f0 (1970-01-02), cumprod(1 + r) after it, NaN
+    before. A day with no such name (none in the panel after 1970: >= 496 names every day) returns 0. Causal: row t
+    reads rows t-1 and t only, and only members' prices (no pre-membership history, L3). A series end's delisting
+    return is not in it (no price at t; whether one comes back is not known at t)."""
+    def f():
+        T = P.T
+        lv = np.full(T, np.nan)
+        if P.f0 >= T:
+            return lv
+        M = np.zeros((T, P.N), bool)
+        M[1:] = P.member[:-1] & P.has[:-1] & P.has[1:]
+        cnt = M.sum(1)
+        r = np.where(cnt > 0, np.where(M, P.rr, 0.0).sum(1) / np.maximum(cnt, 1), 0.0)
+        r[:P.f0 + 1] = 0.0
+        lv[P.f0:] = np.cumprod(1.0 + r[P.f0:])
+        return lv
+    return P._get('sp500ew', f)
+
+
+def sp500ew_series(path=None):
+    """_SP500EW as a Series on the stock calendar (rows <= DEV_END, from 1970-01-02): data.series('_SP500EW')."""
+    P = load(path)
+    s = pd.Series(sp500ew(P), index=P.idx).dropna()
+    _sealed(s.index)
+    return s
+
+
 # ---------------------------------------------------------------- per-stock expressions
 SFUNCS = {'ret': (1, 2), 'vol': (1, 1), 'sma_ratio': (1, 1), 'high_dist': (1, 1), 'age': (0, 0),
           'beta': (1, 1), 'rank': (1, 1), 'csz': (1, 1), 'abs': (1, 1), 'min': (2, 2), 'max': (2, 2), 'log': (1, 1)}
@@ -390,9 +450,11 @@ def _forbid(nm, what, expr):
         raise ValueError(f'{FORBID[nm]} (stock {what}: {expr!r})')
 
 
-def parse_stock(expr, what='score'):
+def parse_stock(expr, what='score', sig=()):
     """Parse and check a per-stock expression (whitelisted AST; unknown names / functions raise; refused inputs
-    (FORBID) and windows above MAX_WIN raise a one-line Korean reason)."""
+    (FORBID) and windows above MAX_WIN raise a one-line Korean reason). sig: the spec's signal names, allowed as bare
+    names (one number per decision); a window argument must still be a number (ret(up) is refused)."""
+    sig = set(sig)
     if isinstance(expr, bool) or not isinstance(expr, (str, int, float)):
         raise ValueError(f'stock {what} must be an expression string, not {expr!r}')
     try:
@@ -425,18 +487,29 @@ def parse_stock(expr, what='score'):
                 if w > MAX_WIN:
                     raise ValueError(MSG_WIN.format(what=f'stock {what}', call=ast.unparse(n), w=w))
     for n in ast.walk(tree):
-        if isinstance(n, ast.Name) and not any(isinstance(c, ast.Call) and c.func is n for c in ast.walk(tree)):
+        if isinstance(n, ast.Name) and n.id not in sig \
+                and not any(isinstance(c, ast.Call) and c.func is n for c in ast.walk(tree)):
             raise ValueError(f'stock {what}: unknown name {n.id!r} in {expr!r} (per-stock expressions use only '
-                             f'numbers and the functions {", ".join(SFUNCS)})')
+                             f'numbers, the functions {", ".join(SFUNCS)} and the names defined under signals: '
+                             f'{", ".join(sorted(sig)) or "none"})')
     return tree
 
 
-class _Ctx:
-    """Evaluation of per-stock expressions on decision rows D ([nd] row numbers) -> [nd, N] arrays."""
+def _bare_names(expr):
+    """Bare names of a per-stock expression (not called): after parse_stock these are signal names."""
+    tree = ast.parse(str(expr), mode='eval')
+    fn = {id(n.func) for n in ast.walk(tree) if isinstance(n, ast.Call)}
+    return {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and id(n) not in fn}
 
-    def __init__(self, P, D):
+
+class _Ctx:
+    """Evaluation of per-stock expressions on decision rows D ([nd] row numbers) -> [nd, N] arrays. sig: {signal
+    name: [nd] value at each decision close} (a bare signal name reads it, the same for every name)."""
+
+    def __init__(self, P, D, sig=None):
         self.P, self.D = P, np.asarray(D, np.int64)
         self.E0 = P.member[self.D] & P.has[self.D]           # members with a price at the decision close (no stale)
+        self.sig = {k: np.asarray(v, float).reshape(len(self.D)) for k, v in (sig or {}).items()}
         self.memo = {}
 
     def _valid(self, start):
@@ -510,6 +583,8 @@ class _Ctx:
             return self.ev(node.body)
         if isinstance(node, ast.Constant):
             return float(node.value)
+        if isinstance(node, ast.Name):                         # a signal: [nd, 1], broadcast over the names
+            return self.sig[node.id][:, None]
         if isinstance(node, ast.UnaryOp):
             v = self.ev(node.operand)
             if isinstance(node.op, ast.Not):
@@ -554,11 +629,11 @@ class _Ctx:
         raise ValueError(f'cannot evaluate {type(node).__name__}')
 
     def value(self, expr):
-        v = self.ev(parse_stock(expr))
+        v = self.ev(parse_stock(expr, 'score', self.sig))
         return np.broadcast_to(_f(v), (len(self.D), self.P.N)).astype(float)
 
     def mask(self, expr):
-        v = self.ev(parse_stock(expr, 'filter'))
+        v = self.ev(parse_stock(expr, 'filter', self.sig))
         return np.broadcast_to(_b(v), (len(self.D), self.P.N))
 
 
@@ -599,9 +674,13 @@ def cfg_of(spec):
         raise ValueError(f'stock rebalance must be month | quarter | week, not {reb!r}')
     if st.get('score') is None:
         raise ValueError('stock needs `score:` (a per-stock expression, higher = picked first)')
-    parse_stock(st['score'], 'score')
+    sg = spec.get('signals') or {}
+    sg = set(sg) if isinstance(sg, dict) else set()
+    parse_stock(st['score'], 'score', sg)
+    used = _bare_names(st['score'])
     if st.get('filter') is not None:
-        parse_stock(st['filter'], 'filter')
+        parse_stock(st['filter'], 'filter', sg)
+        used |= _bare_names(st['filter'])
     if ('top' in st) == ('top_pct' in st):
         raise ValueError('stock needs exactly one of `top: K` or `top_pct: x`')
     top, pct = st.get('top'), st.get('top_pct')
@@ -633,7 +712,7 @@ def cfg_of(spec):
         raise ValueError(f"stock exposure_every must be daily | rebalance, not {ee!r}")
     return dict(rebalance=CAD[reb], score=st['score'], filter=st.get('filter'), top=top, top_pct=pct, weight=wk,
                 wn=wn, cap=None if cap is None else float(cap), exposure=ex, exposure_every=ee,
-                els={k: float(v) for k, v in els.items() if k != 'CASH' and float(v) > 0})
+                els={k: float(v) for k, v in els.items() if k != 'CASH' and float(v) > 0}, sig=sorted(used))
 
 
 def check_spec(spec):
@@ -653,6 +732,9 @@ def check_spec(spec):
         if not isinstance(k, str) or not k.isidentifier() or k.startswith('_') or k in dsl.FUNCS:
             raise ValueError(f'signal name {k!r} must be an identifier that is not a DSL function (YAML on/off/yes/no '
                              'are booleans) and does not start with _')
+        if k in SFUNCS or k in FORBID:            # a score / filter reads signal names: no per-stock name collisions
+            raise ValueError(f'signal name {k!r} is a per-stock function or a refused input name: rename it '
+                             '(e.g. up, calm)')
     c = cfg_of(spec)
     for e in list(sig.values()) + ([c['exposure']] if isinstance(c['exposure'], str) else []):
         _gate_forbid(e)
@@ -667,7 +749,7 @@ def check_spec(spec):
 
 def _known_series():
     if 'keys' not in _cache:
-        _cache['keys'] = set(data.keys()) | set(data.SLEEVES)
+        _cache['keys'] = set(data.signal_keys()) | set(data.SLEEVES)      # panel keys, _SP500EW, sleeves
     return _cache['keys']
 
 
@@ -705,8 +787,16 @@ def _gate_names(expr, own):
 
 
 # ---------------------------------------------------------------- gate (ETF DSL on the stock calendar)
-def gate_frame(spec, idx):
-    """Panel series the gate reads (sleeve names -> their underlying), each cut at DEV_END, on the stock calendar."""
+def needs_frame(spec):
+    """The spec reads the ETF DSL on the stock calendar: an exposure gate, or signals in its score / filter."""
+    c = cfg_of(spec)
+    return c['exposure'] is not None or bool(c['sig'])
+
+
+def gate_frame(spec, idx, P=None):
+    """Series the signals / exposure read (sleeve names -> their underlying), each cut at DEV_END, on the stock
+    calendar idx. _SP500EW is built from the stock panel P (default: the loaded panel), so a cut or rewritten panel
+    gives its own (causal) index."""
     c = cfg_of(spec)
     sig = spec.get('signals') or {}
     exprs = list(sig.values()) + ([c['exposure']] if isinstance(c['exposure'], str) else [])
@@ -716,6 +806,10 @@ def gate_frame(spec, idx):
             keys.add(data.SLEEVES[nm][1] if nm in data.SLEEVES else nm)
     F = pd.DataFrame(index=idx)
     for k in sorted(keys):
+        if k == data.SP500EW:                           # derived from the (sealed) stock panel, not the ETF panel
+            Pk = load() if P is None else P
+            F[k] = pd.Series(sp500ew(Pk), index=Pk.idx).reindex(idx).ffill()
+            continue
         s = data.series(k)
         s = s[s.index <= DEV_END]                       # seal: nothing after 2014-12-31 enters
         F[k] = s.reindex(idx).ffill() if len(s) else np.nan
@@ -731,17 +825,129 @@ def _gate_env(spec, F):
     return env, assets
 
 
+def gate_exprs(spec):
+    """The exposure gate's expressions: the signals the exposure reads (sig_closure, in order) and the exposure."""
+    c = cfg_of(spec)
+    ex = c['exposure']
+    if not isinstance(ex, str):
+        return []
+    sig = spec.get('signals') or {}
+    return [sig[k] for k in sig_closure(spec, _dsl_refs(ex, set(sig)))] + [ex]
+
+
+def gate_cols(spec, F):
+    """Columns of the gate frame F that the exposure gate reads (gate_exprs)."""
+    sig = spec.get('signals') or {}
+    keys = set()
+    for e in gate_exprs(spec):
+        for nm in _gate_names(e, set(sig))['series']:
+            keys.add(data.SLEEVES[nm][1] if nm in data.SLEEVES else nm)
+    return [k for k in F.columns if k in keys]
+
+
+def _dsl_refs(expr, own):
+    """Signal names (of `own`) an ETF-DSL expression reads (bare names; a macro(k) key is not one)."""
+    if isinstance(expr, (int, float)) or not dsl._parses(expr):
+        return set()
+    tree = dsl._parse(expr)
+    skip = {id(n.func) for n in ast.walk(tree) if isinstance(n, ast.Call)}
+    skip |= {id(a) for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+             and n.func.id == 'macro' for a in n.args}
+    return {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and id(n) not in skip and n.id in own}
+
+
+def sig_closure(spec, names):
+    """The signals `names` read, directly or through other signals, in spec order (they are evaluated in order)."""
+    sig = spec.get('signals') or {}
+    need, todo = set(), list(names)
+    while todo:
+        k = todo.pop()
+        if k in need or k not in sig:
+            continue
+        need.add(k)
+        todo += sorted(_dsl_refs(sig[k], set(sig) - {k}))
+    return [k for k in sig if k in need]
+
+
+def _ind_calls(expr):
+    """Indicator calls inside an ETF-DSL expression whose value can be undefined (dsl.valid_from's set)."""
+    if isinstance(expr, (int, float)) or not dsl._parses(expr):
+        return []
+    return [ast.unparse(n) for n in ast.walk(dsl._parse(expr)) if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Name) and n.func.id in dsl.FUNCS and n.func.id not in dsl._NO_WARM]
+
+
+def _sig_array(k, v, idx):
+    """A signal's value on idx as floats (boolean -> 1.0 / 0.0; NaN kept)."""
+    if isinstance(v, str):
+        raise ValueError(f'signal {k!r} is the series name {v!r}, not a value: a stock score / filter reads a signal '
+                         f'as a number or a boolean (write e.g. price({v}) > sma({v}, 200))')
+    if isinstance(v, pd.Series):
+        v = v.reindex(idx)
+        try:
+            return v.astype(float).values
+        except (TypeError, ValueError):
+            raise ValueError(f'signal {k!r} is not a number or a boolean series')
+    a = np.asarray(v, dtype=float)
+    if a.ndim == 0:
+        return np.full(len(idx), float(a))
+    if a.shape != (len(idx),):
+        raise ValueError(f'signal {k!r}: unexpected shape {a.shape}')
+    return a.copy()
+
+
+def signal_values(spec, P, F=None):
+    """Signals read by stock.score / stock.filter on the stock calendar -> ({name: [T] float at each close (boolean ->
+    1 / 0)}, informed [T] bool or None, [indicator calls never defined]). Informed at t = every used signal is finite
+    at t and every indicator call inside it and inside the signals it reads (sig_closure) has a value at t
+    (dsl.valid_from's calls, row by row: before sma(_SP500EW, 200) exists the comparison reads False, which is not a
+    regime). Causal: the ETF DSL reads rows <= t."""
+    c = cfg_of(spec)
+    if not c['sig']:
+        return {}, None, []
+    F = gate_frame(spec, P.idx, P) if F is None else F
+    env, assets = _gate_env(spec, F)
+    vals = {k: _sig_array(k, env[k], P.idx) for k in c['sig']}
+    ok = np.ones(P.T, bool)
+    for v in vals.values():
+        ok &= np.isfinite(v)
+    never, sig = [], spec.get('signals') or {}
+    for k in sig_closure(spec, c['sig']):
+        for call in _ind_calls(sig[k]):
+            try:
+                v = dsl._eval(call, env, assets)
+            except Exception:                           # evaluated inside the signal already; nothing to add
+                continue
+            if not isinstance(v, pd.Series) or v.dtype == bool:
+                continue
+            try:
+                fin = np.isfinite(v.reindex(P.idx).astype(float).values)
+            except (TypeError, ValueError):
+                continue
+            ok &= fin
+            if not fin.any():
+                never.append(call)
+    return vals, ok, never
+
+
+def signal_row(tg):
+    """First decision row on which every score / filter signal is informed (None: no such signals, or never)."""
+    if tg.sig_ok is None or not tg.sig_ok.any():
+        return None
+    return int(tg.dec[int(np.argmax(tg.sig_ok))])
+
+
 def gate_valid(spec, P, F):
-    """First decision row at which the exposure gate is informed: every indicator call of the gate (signals +
-    exposure) has a value (dsl.valid_from: sma(_NDX, 200) on the stock calendar -> its 200th row after _NDX starts;
-    before it a comparison reads False = the gate is forced to the else share). With exposure_every: rebalance, the
-    first rebalance row on or after it. -> (row or None, [never-valid calls])."""
+    """First decision row at which the exposure gate is informed: every indicator call of the gate (the exposure and
+    the signals it reads, gate_exprs; a score-only signal is not the gate's) has a value (dsl.valid_from: sma(_NDX,
+    200) on the stock calendar -> its 200th row after _NDX starts; before it a comparison reads False = the gate is
+    forced to the else share). With exposure_every: rebalance, the first rebalance row on or after it. -> (row or
+    None, [never-valid calls])."""
     c = cfg_of(spec)
     if c['exposure'] is None or F is None:
         return None, []
     env, assets = _gate_env(spec, F)
-    exprs = list((spec.get('signals') or {}).values()) + ([c['exposure']] if isinstance(c['exposure'], str) else [])
-    fv, never = dsl.valid_from(exprs, env, assets)
+    fv, never = dsl.valid_from(gate_exprs(spec), env, assets)
     if fv is None:
         return None, never
     r = int(np.searchsorted(P.idx, fv))
@@ -762,7 +968,7 @@ def exposure(spec, P, F=None):
     c = cfg_of(spec)
     if c['exposure'] is None:
         return np.ones(P.T)
-    F = gate_frame(spec, P.idx) if F is None else F
+    F = gate_frame(spec, P.idx, P) if F is None else F
     env, assets = _gate_env(spec, F)
     ex = c['exposure']
     v = env[ex] if isinstance(ex, str) and ex in (spec.get('signals') or {}) else dsl._eval(ex, env, assets)
@@ -781,23 +987,35 @@ def exposure(spec, P, F=None):
 # ---------------------------------------------------------------- targets
 class Targets:
     """Decisions of one spec: dec (decision rows), picks[j] (name columns), wts[j] (weights), K[j] (the 1/K unit),
-    retain[j] (names kept from decision j-1), elig ([nd, N] eligible), e ([T] exposure), els ({sleeve: w})."""
+    retain[j] (names kept from decision j-1), elig ([nd, N] eligible), e ([T] exposure), els ({sleeve: w}),
+    sig_ok ([nd] score / filter signals informed, None without such signals), sig_never (calls never defined)."""
 
-    def __init__(self, dec, picks, wts, K, elig, e, els, cap):
+    def __init__(self, dec, picks, wts, K, elig, e, els, cap, sig_ok=None, sig_never=()):
         self.dec, self.picks, self.wts, self.K, self.elig, self.e, self.els, self.cap = dec, picks, wts, K, elig, e, els, cap
+        self.sig_ok, self.sig_never = sig_ok, list(sig_never)
         self.retain = np.array([0] + [len(np.intersect1d(picks[j], picks[j - 1])) for j in range(1, len(picks))],
                                np.int64)
 
 
 def compile_targets(spec, P, F=None):
-    """Per-decision picks and weights (point in time: decision row t reads panel rows <= t only)."""
+    """Per-decision picks and weights (point in time: decision row t reads panel rows <= t only). F: the gate frame
+    (gate_frame; built from P when None and the spec needs one). A decision whose score / filter signals are not all
+    informed (signal_values) has no eligible name: the stock share holds CASH."""
     c = cfg_of(spec)
     D = np.flatnonzero(dsl.reb_rows(P.idx, c['rebalance']))
-    cx = _Ctx(P, D)
+    if F is None and needs_frame(spec):
+        F = gate_frame(spec, P.idx, P)
+    ok, never, sv = None, [], {}
+    if c['sig']:
+        vals, ok, never = signal_values(spec, P, F)
+        sv = {k: np.where(ok, v, np.nan)[D] for k, v in vals.items()}      # not informed -> NaN, never 0
+    cx = _Ctx(P, D, sv)
     S = cx.value(c['score'])
     E = cx.E0 & np.isfinite(S)
     if c['filter'] is not None:
         E = E & cx.mask(c['filter'])
+    if ok is not None:
+        E = E & ok[D][:, None]                         # `not up` of a missing up is not True: no name, CASH
     V = None
     if c['weight'] == 'invvol':
         V = cx.call('vol', [c['wn']])
@@ -820,7 +1038,8 @@ def compile_targets(spec, P, F=None):
         if c['cap'] is not None:
             w = np.minimum(w, c['cap'])
         picks.append(p.astype(np.int64)); wts.append(w); Ks.append(K)
-    return Targets(D, picks, wts, np.array(Ks), E, exposure(spec, P, F), c['els'], c['cap'])
+    return Targets(D, picks, wts, np.array(Ks), E, exposure(spec, P, F), c['els'], c['cap'],
+                   None if ok is None else ok[D], never)
 
 
 def ew_targets(P, cad='monthly'):
@@ -1174,7 +1393,9 @@ def sharpe(o, P):
 
 # ---------------------------------------------------------------- causality (runtime cuts)
 def pit_check(spec, P, tg, F=None, n_cuts=N_PIT_CUTS, seed=None):
-    """Decisions built on the panel (and gate frame) cut at a row must equal the full-panel decisions before it."""
+    """Decisions built on the panel cut at a row must equal the full-panel decisions before it. The gate frame of a
+    cut is rebuilt from the cut panel (gate_frame: _SP500EW from the cut rows, ETF series on the cut calendar), so the
+    derived index is cut-tested too."""
     if seed is None:
         seed = int.from_bytes(os.urandom(8), 'little')
     rng = np.random.default_rng(seed)
@@ -1182,7 +1403,8 @@ def pit_check(spec, P, tg, F=None, n_cuts=N_PIT_CUTS, seed=None):
     cuts = sorted({int(x) for x in rng.integers(lo, P.T, size=n_cuts)})
     bad = []
     for c in cuts:
-        t2 = compile_targets(spec, P.cut(c), None if F is None else F.iloc[:c])
+        Pc = P.cut(c)
+        t2 = compile_targets(spec, Pc, None if F is None else gate_frame(spec, Pc.idx, Pc))
         nd = int(np.searchsorted(tg.dec, c))
         ok = len(t2.dec) == nd and np.array_equal(t2.dec, tg.dec[:nd]) and np.array_equal(t2.e, tg.e[:c])
         ok = ok and all(np.array_equal(t2.picks[j], tg.picks[j]) and np.allclose(t2.wts[j], tg.wts[j], rtol=0,
@@ -1196,14 +1418,18 @@ def pit_check(spec, P, tg, F=None, n_cuts=N_PIT_CUTS, seed=None):
 def gate_spec(spec):
     """The exposure gate as an ETF spec for G1 (gate.test): hold QQQ with the exposure as its weight, else cash
     (in market = exposure > 0, the stock book's own rule), `rebalance:` = the stock cadence when the exposure is
-    sampled on decision rows only. None when the spec has no exposure gate. Same family (G1 deflation uses its N)."""
+    sampled on decision rows only. None when the spec has no exposure gate. Same family (G1 deflation uses its N).
+    Only the signals the exposure reads (sig_closure) go with it: a score-only signal (e.g. on _SP500EW) does not take
+    the gate off the G1 frames."""
     c = cfg_of(spec)
     if c['exposure'] is None:
         return None
     g = dict(name=f"{spec.get('name', 'stock')}:gate", family=str(spec.get('family', 'unset')),
              rules=[{'else': {'QQQ': c['exposure']}}])
-    if spec.get('signals'):
-        g['signals'] = dict(spec['signals'])
+    sig = spec.get('signals') or {}
+    keep = sig_closure(spec, _dsl_refs(c['exposure'], set(sig))) if sig else []
+    if keep:
+        g['signals'] = {k: sig[k] for k in keep}             # = gate_exprs
     if c['exposure_every'] == 'rebalance':
         g['rebalance'] = c['rebalance']
     return g
@@ -1212,8 +1438,9 @@ def gate_spec(spec):
 def ms1_stream(spec, P=None):
     """MS1 input of a stock spec (ms1.measure_series): the CONSERVATIVE book's (H_CONS: the classified delisting rule,
     the headline) daily return after trading cost and BEFORE tax (MS1 applies its own tax), on the real stock calendar, from MS1_FROM (1970-01-02, the first
-    point-in-time member day) or the later start of an else sleeve or of the warmed-up gate (gate_start: before it
-    the gate is forced to the else share), to 2014-12-31. turnover = min(1, one-way yearly turnover) = measure_series' realized share.
+    point-in-time member day) or the later start of an else sleeve, of the warmed-up gate (gate_start: before it
+    the gate is forced to the else share) or of the informed score / filter signals (signal_row + delay: before it the
+    stock share is CASH), to 2014-12-31. turnover = min(1, one-way yearly turnover) = measure_series' realized share.
     -> dict(dates, ret, label, turnover, start, min_cover)."""
     spec = dsl.check_spec(spec)
     P = load() if P is None else P
@@ -1225,14 +1452,16 @@ def ms1_stream(spec, P=None):
     if hit is not None and hit[0] == h and hit[1] == id(P):
         tg, F = hit[2], hit[3]
     else:
-        F = gate_frame(spec, P.idx) if c['exposure'] is not None else None
+        F = gate_frame(spec, P.idx, P) if needs_frame(spec) else None
         tg = compile_targets(spec, P, F)
     st = [MS1_FROM] + [pd.Timestamp(v) for v in else_returns(tg.els, P.idx)[1].values()]
-    if F is not None and F.shape[1]:
-        fv = [F[k].first_valid_index() for k in F.columns]
+    if c['exposure'] is not None and F is not None and F.shape[1]:
+        fv = [F[k].first_valid_index() for k in gate_cols(spec, F)]
         st += [pd.Timestamp(v) for v in fv if v is not None]
         g = gate_start(P, gate_valid(spec, P, F)[0], delay)     # before it the gate is forced to the else share
         st += [g] if g is not None else []
+    g = gate_start(P, signal_row(tg), delay)                     # before it the stock share is CASH (not informed)
+    st += [g] if g is not None else []
     st = max(st)
     o = fast_run(P, tg, H_CONS, st, cost, 0.0, delay, want_E=True)
     _sealed(o['idx'])
@@ -1259,26 +1488,37 @@ def evaluate(spec, P=None, null=True, pit=True):
     c = cfg_of(spec)
     cost = max(dsl.MIN_COST, float(spec.get('cost', dsl.MIN_COST)))
     delay = int(spec.get('delay', dsl.MIN_DELAY)); tax = dsl.ACCOUNTS['us']['tax']
-    F = gate_frame(spec, P.idx) if c['exposure'] is not None else None
+    F = gate_frame(spec, P.idx, P) if needs_frame(spec) else None
     tg = compile_targets(spec, P, F)
     _cache['last_tg'] = (dsl.spec_hash(spec), id(P), tg, F)    # ms1_stream reuses it (one spec at a time)
     _, efirst = else_returns(tg.els, P.idx)
     gate_data_from, grow, gnever = None, None, []
-    if F is not None and F.shape[1]:
-        fv = [F[k].first_valid_index() for k in F.columns]
-        gate_data_from = None if any(v is None for v in fv) else str(max(fv).date())
+    if c['exposure'] is not None and F is not None and F.shape[1]:
+        fv = [F[k].first_valid_index() for k in gate_cols(spec, F)]
+        gate_data_from = None if not fv or any(v is None for v in fv) else str(max(fv).date())
         grow, gnever = gate_valid(spec, P, F)
     gate_from = None if grow is None else str(P.idx[grow].date())    # first informed gate decision
     gst = gate_start(P, grow, delay)
+    srow = signal_row(tg)                                  # first decision with every score / filter signal informed
+    sst = gate_start(P, srow, delay)
+    sig_info = None
+    if c['sig']:
+        after = tg.sig_ok[tg.dec >= srow] if srow is not None else tg.sig_ok
+        sig_info = dict(names=c['sig'], closure=sig_closure(spec, c['sig']),
+                        signal_from=None if srow is None else str(P.idx[srow].date()),
+                        gaps=int((~after).sum()) if srow is not None else int(len(tg.dec)),
+                        never=tg.sig_never[:3], rule='not informed -> no eligible name (stock share CASH)')
     out = dict(kind='stock', universe='sp500', stock_version=STOCK_VERSION, dev_end=str(DEV_END.date()),
                label='개별주 S&P500 시점편입·상폐포함 (개발 요약, 기준 아님)', cost=cost, delay=delay, tax=tax,
                h_cons=dict(rule='classified', fail_if=f'return over {DL_WIN} rows (>= {DL_MIN}) to the last price < '
-                           f'{DL_FAIL:.0%}', fail=0.0 - H_CONS[0], merger=0.0 - H_CONS[1]), h_all=H_ALL, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3], windows={})
+                           f'{DL_FAIL:.0%}', fail=0.0 - H_CONS[0], merger=0.0 - H_CONS[1]), h_all=H_ALL, gate_from=gate_from, gate_data_from=gate_data_from, gate_never=gnever[:3],
+               signal_from=None if sig_info is None else sig_info['signal_from'], signals=sig_info, windows={})
     for w, st0 in WINDOWS.items():
         st = max([st0] + [pd.Timestamp(v) for v in efirst.values()])
         by = 'else' if st > st0 else None
-        if w == 'w86' and gst is not None and gst > st:   # headline window: no forced-cash warm-up years inside
-            st, by = gst, 'gate'
+        late = [(x, b_) for x, b_ in ((gst, 'gate'), (sst, 'signal')) if x is not None and x > st]
+        if w == 'w86' and late:                          # headline window: no forced-cash warm-up years inside
+            st, by = max(late, key=lambda z: z[0])
         nm = avg_names(P, tg, st, delay)
         cons = run1(P, tg, H_CONS, st, cost, tax, delay, ends=w == 'w86')
         base = run1(P, tg, 0.0, st, cost, tax, delay)
@@ -1335,14 +1575,19 @@ def dev_part(s, compact=False):
     rule: fail-type -50%, merger-type 0), in parentheses 기본 = h 0, 일괄-30% = every end -30%, 극단 = the hazard row.
     compact drops names / turnover and the 95% line;
     compact=2 = the same numbers in the shortest wording (the CLI steps down while the whole line, with the MS1 / G1
-    parts, would pass 400 bytes)."""
+    parts, would pass 400 bytes). Warm-up marks: (게이트 ..~) = the exposure gate's first informed decision, (신호 ..~) =
+    the score / filter signals' (signal_from): on the 1986 window when it starts there, on the 1971 row when later
+    than its start."""
     a, b = s['windows']['w86'], s['windows']['w71']
     a30 = (a.get('all30') or {}).get('cagr_at')          # stress row: every series end -30%
     nl = a.get('null')
     yn = lambda x: '통과' if x else '미달'
     sh = lambda x: f'{x:.2f}' if x is not None and np.isfinite(x) else '-'
     gf = s.get('gate_from') or ''
-    g86 = a.get('start_by') == 'gate' and gf           # the headline window starts once the gate is warmed up
+    sf = s.get('signal_from') or ''
+    by = a.get('start_by')                             # the headline window starts once the gate / signals are informed
+    w86 = ('게이트', gf) if by == 'gate' and gf else ('신호', sf) if by == 'signal' and sf else None
+    late71 = [(wd, x) for wd, x in (('게이트', gf), ('신호', sf)) if x and x > b['start']]
     cz = '' if (s.get('causality') or {}).get('ok', True) else (' 인과성위반' if compact == 2 else ' 개발 인과성 위반')
     if a.get('empty'):                                 # no stock is ever held: say it instead of a normal-looking line
         y = f"{a['start'][2:4]}~14" if compact == 2 else f"{a['start'][:4]}~2014"
@@ -1357,8 +1602,8 @@ def dev_part(s, compact=False):
             npart = f"무작위 상위{'<0.5' if top < 0.5 else f'{top:.0f}'}%(99%선 {yn(nl['beat99'])})"
         else:
             npart = '무작위 미계산'
-        g71 = f"(게이트{gf[2:4]}~)" if gf and gf > b['start'] and not g86 else ''   # g86 already dates the gate
-        return (f"개별주PIT·상폐포함 {a['start'][2:4]}~14{f'(게이트{gf[2:7]}~)' if g86 else ''} "
+        g71 = ''.join(f"({wd}{x[2:4]}~)" for wd, x in late71 if not (w86 and w86[0] == wd))   # w86 dates it already
+        return (f"개별주PIT·상폐포함 {a['start'][2:4]}~14{f'({w86[0]}{w86[1][2:7]}~)' if w86 else ''} "
                 f"세후보수 {_pp(a['cons']['cagr_at'])}"
                 f"(기본 {q(a['base']['cagr_at'])}·일괄30 {q(a30)}·극단 {q(a['extreme']['cagr_at'])}) "
                 f"낙폭{a['cons']['mdd']:.0%} | "
@@ -1372,8 +1617,8 @@ def dev_part(s, compact=False):
     else:
         npart = '무작위 바구니 미계산'
     y86, y71 = a['start'][:4], b['start'][:4]
-    g71 = f"(게이트 {gf[:4]}~)" if gf and gf > b['start'] else ''
-    return (f"개별주 S&P500(시점편입·상폐포함) {y86}~2014{f'(게이트 {gf[:7]}~)' if g86 else ''} "
+    g71 = ''.join(f"({wd} {x[:4]}~)" for wd, x in late71)
+    return (f"개별주 S&P500(시점편입·상폐포함) {y86}~2014{f'({w86[0]} {w86[1][:7]}~)' if w86 else ''} "
             f"세후 보수 {_pp(a['cons']['cagr_at'])} "
             f"(기본 {_pp(a['base']['cagr_at'])}·일괄-30% {_pp(a30)}·극단 {_pp(a['extreme']['cagr_at'])}) "
             f"낙폭 {a['cons']['mdd']:.0%} "
