@@ -1,0 +1,8 @@
+name: gh2_d4_lppls
+family: gh2_lppls
+known: 1
+idea: 추세+거시 기준(macro_trend_tqqq 규칙) 위에 LPPLS 거품 신뢰 >= 0.25 청산
+plugin: plugins/lppls2.py:weights
+sleeves: [TQQQ]
+inputs: [QQQ, 'not ((price(TQQQ) < sma(TQQQ, 200)) and (macro(inv) or macro(shock6m)))']
+params: {thr: 0.25, gate: 'not ((price(TQQQ) < sma(TQQQ, 200)) and (macro(inv) or macro(shock6m)))'}

@@ -1,0 +1,8 @@
+name: gh2_d1_lppls
+family: gh2_lppls
+known: 1
+idea: LPPLS 표준 조건 8창 거품 신뢰 >= 0.25면 현금, 아니면 TQQQ
+plugin: plugins/lppls2.py:weights
+sleeves: [TQQQ]
+inputs: [QQQ]
+params: {thr: 0.25}

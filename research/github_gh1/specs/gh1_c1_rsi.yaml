@@ -1,0 +1,11 @@
+name: gh1_c1_rsi
+family: gh1_rsi
+known: 2
+idea: TQQQ, RSI(QQQ,10) > 79면 현금 (Composer FTLT 과매수 청산)
+rebalance: daily
+signals:
+  hot: rsi(QQQ, 10) > 79
+rules:
+  - when: hot
+    hold: {CASH: 1.0}
+  - else: {TQQQ: 1.0}

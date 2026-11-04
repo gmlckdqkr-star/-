@@ -1,0 +1,8 @@
+name: gh1_b2_infbuy
+family: gh1_infbuy
+known: 2
+idea: 무한매수법 TQQQ 20분할, 평단 +10% 전량 익절, 소진 시 쿼터손절=1
+plugin: plugins/inf_buy.py:weights
+sleeves: [TQQQ]
+inputs: ['level(TQQQ)']
+params: {n: 20, tp: 0.10, stop: 1}

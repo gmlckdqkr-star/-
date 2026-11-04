@@ -1,0 +1,8 @@
+name: gh2_d3_lppls
+family: gh2_lppls
+known: 1
+idea: LPPLS 거품 신뢰 >= 0.25 신호 뒤 63일 현금, 아니면 TQQQ
+plugin: plugins/lppls2.py:weights
+sleeves: [TQQQ]
+inputs: [QQQ]
+params: {thr: 0.25, hold: 63}
