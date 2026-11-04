@@ -1,0 +1,11 @@
+name: etfx_macro_trend_cash
+family: etfx_lab
+known: 3
+idea: 'ETX1 교차 확인 기준: 나스닥100 200일선 아래이고 (금리 역전 또는 10년물 급등) 경보면 현금, 아니면 TQQQ'
+signals:
+  down: price(TQQQ) < sma(TQQQ, 200)
+  warn: macro(inv) or macro(shock6m)
+rules:
+  - when: down and warn
+    hold: {CASH: 1.0}
+  - else: {TQQQ: 1.0}
