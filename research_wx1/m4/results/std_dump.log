@@ -1,0 +1,4 @@
+real_ndx_86_14 cagr [0.31081466] pretax cagr [0.36798588] EE shape (1, 7312) ii (1, 7612) r (1, 7612)
+real_spx_55_85 cagr [0.1193547] pretax cagr [0.13388993] EE shape (1, 7792) ii (1, 8092) r (1, 8092)
+real_spx_70_85 cagr [0.12633407] pretax cagr [0.14945724] EE shape (1, 4043) ii (1, 4343) r (1, 4343)
+done

@@ -1,0 +1,12 @@
+{
+ "pick_mismatch_decisions_1986_2014": 0,
+ "screen_mom_pretax": 0.11412993355625889,
+ "screen_ew_pretax": 0.12156568554832692,
+ "lab_mom_pretax": 0.11418325537626606,
+ "lab_ew_pretax": 0.12186336805770925,
+ "mytargets_lab_aftertax_cons": 0.08370149436557406,
+ "lab_run_aftertax_cons": 0.08370149436557406,
+ "lab_ew_aftertax_cons": 0.09879822930249094,
+ "stream_start": "1986-01-02",
+ "stream_turnover": 1.0
+}

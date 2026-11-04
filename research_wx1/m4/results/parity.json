@@ -1,0 +1,101 @@
+{
+ "trend_tqqq_200": {
+  "pretax_maxabs_diff": 0.0,
+  "pretax_cagr_mine": 0.07737241940717632,
+  "pretax_cagr_lab": 0.07737241940717632,
+  "aftertax_real_ndx_lab_kernel": 0.060830565883109644,
+  "trades": 223
+ },
+ "tqqq_hold": {
+  "pretax_maxabs_diff": 0.0,
+  "pretax_cagr_mine": 0.03920789738336383,
+  "pretax_cagr_lab": 0.03920789738336383,
+  "aftertax_real_ndx_lab_kernel": 0.03871278161694125,
+  "trades": 1
+ },
+ "qqq50_tqqq50_monthly": {
+  "pretax_maxabs_diff": 0.0,
+  "pretax_cagr_mine": 0.12359210181865032,
+  "pretax_cagr_lab": 0.12359210181865032,
+  "aftertax_real_ndx_lab_kernel": 0.10755729769221034,
+  "trades": 349
+ },
+ "qld_088_hold": {
+  "pretax_maxabs_diff": 0.0,
+  "pretax_cagr_mine": 0.10617238044369315,
+  "pretax_cagr_lab": 0.10617238044369315,
+  "aftertax_real_ndx_lab_kernel": 0.09923052280830302,
+  "trades": 1
+ },
+ "data_ndx_maxabs": 0.0,
+ "data_rf_maxabs": 0.0,
+ "data_days_mine_vs_ms1": [
+  7312,
+  7312,
+  7312
+ ],
+ "trend_tqqq_200_myenv": {
+  "aftertax_real_ndx": 0.060830565883109644,
+  "pretax_mine": 0.07737241940717676
+ },
+ "series_ndx1x_myenv": {
+  "dev250_path": [
+   0.09955573465620626,
+   0.09955573465620626,
+   -0.0657661092391365,
+   0.184
+  ],
+  "dev250_glued": [
+   0.09955573465620626,
+   0.09955573465620626,
+   -0.17633648565258364,
+   0.184
+  ],
+  "real_ndx_86_14": [
+   0.09601631497591101,
+   0.09601631497591101,
+   -0.21479834810066167,
+   null
+  ],
+  "real_spx_55_85": [
+   null,
+   null
+  ],
+  "real_spx_70_85": [
+   null,
+   null
+  ]
+ },
+ "series_s085_pretax_stream": {
+  "dev250_path": [
+   0.2829135800728463,
+   0.2829135800728463,
+   0.11813853482579262,
+   0.132
+  ],
+  "dev250_glued": [
+   0.2829135800728463,
+   0.2829135800728463,
+   0.011777593652083196,
+   0.132
+  ],
+  "real_ndx_86_14": [
+   0.2914084926074436,
+   0.2914084926074436,
+   -0.01940617046912907,
+   null
+  ],
+  "real_spx_55_85": [
+   0.09613370670538224,
+   0.09613370670538224,
+   -0.023220996815173978,
+   null
+  ],
+  "real_spx_70_85": [
+   0.1109391601779599,
+   0.1109391601779599,
+   -0.01539491383040481,
+   null
+  ]
+ }
+}

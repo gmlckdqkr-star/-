@@ -1,0 +1,10 @@
+dev250_path SLmed N3 50 68s
+dev250_path SLmed N3 100 125s
+dev250_path SLmed N3 150 179s
+dev250_path SLmed N3 200 232s
+dev250_path SLmed N3 d_act +0.0406 null mean +0.0166 p95 +0.0427 p 0.065
+dev250_path SLmed N2 50 292s
+dev250_path SLmed N2 100 348s
+dev250_path SLmed N2 150 420s
+dev250_path SLmed N2 200 493s
+dev250_path SLmed N2 d_act +0.0406 null mean +0.0333 p95 +0.0521 p 0.244
