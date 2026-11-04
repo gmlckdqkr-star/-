@@ -1,0 +1,8 @@
+name: mc1_w2_L3_gld_lowirx
+family: mc1_w2
+known: 3
+signals: {lowr: "price('_IRX') < 2"}
+rules:
+  - when: lowr
+    hold: {GLD: 0.88}
+  - else: {CASH: 1.0}

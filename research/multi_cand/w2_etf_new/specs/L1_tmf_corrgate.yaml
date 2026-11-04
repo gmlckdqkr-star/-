@@ -1,0 +1,8 @@
+name: mc1_w2_L1_tmf_corrgate
+family: mc1_w2
+known: 3
+signals: {neg: 'corr(QQQ, TLT, 126) < 0'}
+rules:
+  - when: neg
+    hold: {TMF: 0.88}
+  - else: {CASH: 1.0}
