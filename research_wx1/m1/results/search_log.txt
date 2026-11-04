@@ -1,0 +1,35 @@
+N generated 240528 singles 150528 pairs 60000 triples 30000
+era arrays vs std contexts {'spx': {'n': 8044, 'max_abs_r': 0.0, 'max_abs_rf': 0.0}, 'ndx': {'n': 7564, 'max_abs_r': 0.0, 'max_abs_rf': 0.0}}
+months spx 372 ndx 168
+  screened 20000 18s
+  screened 40000 23s
+  screened 60000 28s
+  screened 80000 32s
+  screened 100000 37s
+  screened 120000 43s
+  screened 140000 50s
+  screened 160000 55s
+  screened 180000 60s
+  screened 200000 64s
+  screened 220000 69s
+  screened 240000 74s
+  screened 240528 74s
+dedup: unique 226775 of which never-different-from-1x 1 kept 226774
+  spa chunk 0
+  spa chunk 20000
+  spa chunk 40000
+  spa chunk 60000
+  spa chunk 80000
+  spa chunk 100000
+  spa chunk 120000
+  spa chunk 140000
+  spa chunk 160000
+  spa chunk 180000
+  spa chunk 200000
+  spa chunk 220000
+SPA {'T': 540, 'N': 226774, 'Tspa': 3.3467175218361644, 'p_c': 0.901, 'p_l': 0.793, 'p_u': 0.942, 'maxnull_q50': 3.936366250261103, 'maxnull_q95': 5.0067896852471305, 'rw_n': 0} RW crit [5.0067896852471305]
+  clusters rho 0.7 31791 39s
+  clusters rho 0.5 9624 16s
+  clusters rho 0.9 None 38s
+effective N {'cluster_0.7': 31791, 'cluster_0.5': 9624, 'cluster_0.9': None, 'lij': 806.0000004316221}
+done 207s

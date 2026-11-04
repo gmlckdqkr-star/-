@@ -1,0 +1,506 @@
+{
+ "y3m": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "std frame: ^IRX daily (TB3MS monthly m+1 before 1970)",
+  "c3": false,
+  "first": "1934-02-01",
+  "last": "2014-12-31"
+ },
+ "y10": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "std frame: ^TNX daily (Shiller GS10 monthly m+1 before)",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "curve": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "y10 - y3m",
+  "c3": false,
+  "first": "1934-02-01",
+  "last": "2014-12-31"
+ },
+ "y5": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "panel ^FVX",
+  "c3": false,
+  "first": "1970-01-02",
+  "last": "2014-12-31"
+ },
+ "y30": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "panel ^TYX",
+  "c3": false,
+  "first": "1977-02-15",
+  "last": "2014-12-31"
+ },
+ "cs": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "std frame: DBAA-DAAA daily lag1 (BAA-AAA monthly m+1 before 1986)",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "vix": {
+  "kind": "pos",
+  "freq": "d",
+  "src": "panel ^VIX (1990-)",
+  "c3": false,
+  "first": "1990-01-02",
+  "last": "2014-12-31"
+ },
+ "vrp": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "VIX - 21d realized vol of S&P (1990-)",
+  "c3": false,
+  "first": "1990-01-02",
+  "last": "2014-12-31"
+ },
+ "skew": {
+  "kind": "pos",
+  "freq": "d",
+  "src": "Cboe SKEW clean_a (1990-)",
+  "c3": false,
+  "first": "1990-01-02",
+  "last": "2014-12-31"
+ },
+ "kf_disp": {
+  "kind": "pos",
+  "freq": "d",
+  "src": "x-sect std of 21d log returns, 9 KF industries",
+  "c3": false,
+  "first": "1928-01-27",
+  "last": "2014-12-31"
+ },
+ "kf_breadth": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "share of 9 KF industries above own 200d mean",
+  "c3": false,
+  "first": "1928-09-06",
+  "last": "2014-12-31"
+ },
+ "small_rs": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "log cum KF size quintile 2 / S&P TR",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "micro_rs": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "log cum KF Lo20 size / S&P TR",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "defcyc_rs": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "defensive (Utils+NoDur) vs cyclical (BusEq+Manuf)",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "fin_rs": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "log cum KF FIN / S&P TR",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "ener_rs": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "log cum KF ENER / S&P TR",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "tech_rs": {
+  "kind": "rate",
+  "freq": "d",
+  "src": "log cum KF TECH / S&P TR",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "usd": {
+  "kind": "pos",
+  "freq": "d",
+  "src": "ALFRED DTWEXM first vintage (1973-)",
+  "c3": false,
+  "first": "1973-03-01",
+  "last": "2014-12-31"
+ },
+ "claims_yoy": {
+  "kind": "rate",
+  "freq": "w",
+  "src": "ALFRED ICNSA 4wk avg yoy log (release date or week end +7d)",
+  "c3": false,
+  "first": "1971-02-01",
+  "last": "2014-12-31"
+ },
+ "cpi_yoy": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED CPIAUCNS first vintage, CPI NSA yoy",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "core_yoy": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED CPILFESL first vintage, core CPI yoy",
+  "c3": false,
+  "first": "1958-03-03",
+  "last": "2014-12-31"
+ },
+ "ip_yoy": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED INDPRO first vintage, industrial production yoy",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "pay_yoy": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED PAYEMS first vintage, payrolls yoy",
+  "c3": false,
+  "first": "1940-03-01",
+  "last": "2014-12-31"
+ },
+ "unrate": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED UNRATE first vintage, unemployment rate",
+  "c3": false,
+  "first": "1948-03-01",
+  "last": "2014-12-31"
+ },
+ "houst": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED HOUST first vintage, housing starts (log)",
+  "c3": false,
+  "first": "1959-03-02",
+  "last": "2014-12-31"
+ },
+ "permit": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED PERMIT first vintage, building permits (log)",
+  "c3": false,
+  "first": "1960-03-01",
+  "last": "2014-12-31"
+ },
+ "neword": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED NEWORDER first vintage, core capital goods new orders yoy",
+  "c3": false,
+  "first": "1969-04-01",
+  "last": "2014-12-31"
+ },
+ "tcu": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED TCU first vintage, capacity utilization",
+  "c3": false,
+  "first": "1967-03-01",
+  "last": "2014-12-31"
+ },
+ "fedfunds": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED FEDFUNDS first vintage, fed funds (monthly avg)",
+  "c3": false,
+  "first": "1954-09-01",
+  "last": "2014-12-31"
+ },
+ "oil_yoy": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED OILPRICE first vintage, oil price (FRED OILPRICE) yoy",
+  "c3": false,
+  "first": "1947-03-01",
+  "last": "2013-12-09"
+ },
+ "m2_yoy": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "ALFRED M2SL first vintage yoy (1971-)",
+  "c3": false,
+  "first": "1971-03-01",
+  "last": "2014-12-31"
+ },
+ "realrate": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "y3m - CPI yoy",
+  "c3": false,
+  "first": "1934-02-01",
+  "last": "2014-12-31"
+ },
+ "umich": {
+  "kind": "pos",
+  "freq": "m",
+  "src": "UMich sentiment m+2 (1978-)",
+  "c3": false,
+  "first": "1978-03-01",
+  "last": "2014-12-31"
+ },
+ "philly": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "Philly Fed general activity m+2 (1968-)",
+  "c3": false,
+  "first": "1968-07-01",
+  "last": "2014-12-31"
+ },
+ "philly_no": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "Philly Fed new orders m+2 (1968-)",
+  "c3": false,
+  "first": "1968-07-01",
+  "last": "2014-12-31"
+ },
+ "cape": {
+  "kind": "pos",
+  "freq": "m",
+  "src": "Shiller CAPE m+3",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_dp": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 d/p m+3",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_ep": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 e/p m+3",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_bm": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 b/m m+3",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_ntis": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 ntis m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_dfr": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 cumulated dfr (level index) m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_ltr": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 cumulated ltr (level index) m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_lzrt": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 lzrt m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_ndrbl": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 ndrbl m+2",
+  "c3": false,
+  "first": "1958-04-01",
+  "last": "2014-12-31"
+ },
+ "gwz_skvw": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 skvw m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_tail": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 tail m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_rdsp": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 rdsp m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_avgcor": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 avgcor m+2",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_ygap": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 ygap m+2",
+  "c3": false,
+  "first": "1953-06-01",
+  "last": "2014-12-31"
+ },
+ "gwz_disag": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 disag m+2",
+  "c3": false,
+  "first": "1982-02-01",
+  "last": "2014-12-31"
+ },
+ "gwz_csp": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 csp m+2",
+  "c3": false,
+  "first": "1937-07-01",
+  "last": "2003-06-13"
+ },
+ "gwz_ik": {
+  "kind": "rate",
+  "freq": "q",
+  "src": "GWZ2024 i/k quarterly +3m",
+  "c3": false,
+  "first": "1947-07-01",
+  "last": "2014-12-31"
+ },
+ "gwz_svar": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 svar m+2 (price-derived: C3 family)",
+  "c3": true,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_dtoy": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 dtoy m+2 (price-derived: C3 family)",
+  "c3": true,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "gwz_dtoat": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "GWZ2024 dtoat m+2 (price-derived: C3 family)",
+  "c3": true,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "ipo_n12": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "Ritter IPO count trailing 12m (log1p) m+2 (1976-)",
+  "c3": false,
+  "first": "1976-02-02",
+  "last": "2014-12-31"
+ },
+ "ipo_ret6": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "Ritter IPO first-day return 6m avg m+2",
+  "c3": false,
+  "first": "1975-08-01",
+  "last": "2014-12-31"
+ },
+ "wb_oil": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "World Bank crude oil avg (log) m+2",
+  "c3": false,
+  "first": "1960-03-01",
+  "last": "2014-12-31"
+ },
+ "wb_copper": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "World Bank copper (log) m+2",
+  "c3": false,
+  "first": "1960-03-01",
+  "last": "2014-12-31"
+ },
+ "wb_gold": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "World Bank gold (log) m+2",
+  "c3": false,
+  "first": "1960-03-01",
+  "last": "2014-12-31"
+ },
+ "wb_cuau": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "copper/gold (log) m+2",
+  "c3": false,
+  "first": "1960-03-01",
+  "last": "2014-12-31"
+ },
+ "aqr_multi": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "AQR century MULTI cumulated m+2 (backtest-constructed)",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ },
+ "aqr_mom": {
+  "kind": "rate",
+  "freq": "m",
+  "src": "AQR century MOM cumulated m+2 (backtest-constructed)",
+  "c3": false,
+  "first": "1928-01-03",
+  "last": "2014-12-31"
+ }
+}

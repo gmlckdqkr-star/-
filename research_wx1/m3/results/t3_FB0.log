@@ -1,0 +1,10 @@
+dev250_path FB0 N3 50 66s
+dev250_path FB0 N3 100 123s
+dev250_path FB0 N3 150 177s
+dev250_path FB0 N3 200 230s
+dev250_path FB0 N3 d_act +0.0414 null mean +0.0230 p95 +0.0466 p 0.114
+dev250_path FB0 N2 50 288s
+dev250_path FB0 N2 100 345s
+dev250_path FB0 N2 150 408s
+dev250_path FB0 N2 200 486s
+dev250_path FB0 N2 d_act +0.0414 null mean +0.0454 p95 +0.0573 p 0.751

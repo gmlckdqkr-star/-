@@ -1,0 +1,10 @@
+/mnt/project-files/research/user_port/code/uproxy.py:58: RuntimeWarning: divide by zero encountered in divide
+  sc = np.where(rs > 0, V / rs, 0.0); sc = np.nan_to_num(sc)
+/mnt/project-files/research/user_port/code/uproxy.py:58: RuntimeWarning: divide by zero encountered in divide
+  sc = np.where(rs > 0, V / rs, 0.0); sc = np.nan_to_num(sc)
+dev250_path P 500 s085 0.1616 TMFfill 0.2165 d +0.0522 36s
+dev250_glued P 500 s085 0.2703 TMFfill 0.3155 d +0.0431 4s
+real_ndx_86_14 P 1 s085 0.3108 TMFfill 0.3543 d +0.0435 0s
+real_spx_55_85 P 1 s085 0.1194 TMFfill 0.1194 d +0.0000 0s
+real_spx_70_85 P 1 s085 0.1263 TMFfill 0.1279 d +0.0016 0s
+pool_e8699 P 500 s085 0.3448 TMFfill 0.3500 d +0.0021 8s
