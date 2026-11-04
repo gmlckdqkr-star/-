@@ -1,0 +1,1947 @@
+[
+{
+"date": "1980-01-09",
+"kind": "Meeting",
+"raw": "January 8-9 Meeting - 1980"
+},
+{
+"date": "1980-02-05",
+"kind": "Meeting",
+"raw": "February 4-5 Meeting - 1980"
+},
+{
+"date": "1980-02-22",
+"kind": "Conference Call",
+"raw": "February 22 Conference Call - 1980"
+},
+{
+"date": "1980-03-07",
+"kind": "Conference Call",
+"raw": "March 7 Conference Call - 1980"
+},
+{
+"date": "1980-03-18",
+"kind": "Meeting",
+"raw": "March 18 Meeting - 1980"
+},
+{
+"date": "1980-04-22",
+"kind": "Meeting",
+"raw": "April 22 Meeting - 1980"
+},
+{
+"date": "1980-04-29",
+"kind": "Conference Call",
+"raw": "April 29 Conference Call - 1980"
+},
+{
+"date": "1980-05-06",
+"kind": "Conference Call",
+"raw": "May 6 Conference Call - 1980"
+},
+{
+"date": "1980-05-20",
+"kind": "Meeting",
+"raw": "May 20 Meeting - 1980"
+},
+{
+"date": "1980-06-05",
+"kind": "Conference Call",
+"raw": "June 5 Conference Call - 1980"
+},
+{
+"date": "1980-07-09",
+"kind": "Meeting",
+"raw": "July 9 Meeting - 1980"
+},
+{
+"date": "1980-07-25",
+"kind": "Conference Call",
+"raw": "July 25 Conference Call - 1980"
+},
+{
+"date": "1980-08-12",
+"kind": "Meeting",
+"raw": "August 12 Meeting - 1980"
+},
+{
+"date": "1980-08-22",
+"kind": "Conference Call",
+"raw": "August 22 Conference Call - 1980"
+},
+{
+"date": "1980-09-16",
+"kind": "Meeting",
+"raw": "September 16 Meeting - 1980"
+},
+{
+"date": "1980-10-21",
+"kind": "Meeting",
+"raw": "October 21 Meeting - 1980"
+},
+{
+"date": "1980-11-18",
+"kind": "Meeting",
+"raw": "November 18 Meeting - 1980"
+},
+{
+"date": "1980-11-26",
+"kind": "Conference Call",
+"raw": "November 26 Conference Call - 1980"
+},
+{
+"date": "1980-12-05",
+"kind": "Conference Call",
+"raw": "December 5 Conference Call - 1980"
+},
+{
+"date": "1980-12-12",
+"kind": "Conference Call",
+"raw": "December 12 Conference Call - 1980"
+},
+{
+"date": "1980-12-19",
+"kind": "Meeting",
+"raw": "December 18-19 Meeting - 1980"
+},
+{
+"date": "1981-02-03",
+"kind": "Meeting",
+"raw": "February 2-3 Meeting - 1981"
+},
+{
+"date": "1981-02-24",
+"kind": "Conference Call",
+"raw": "February 24 Conference Call - 1981"
+},
+{
+"date": "1981-03-31",
+"kind": "Meeting",
+"raw": "March 31 Meeting - 1981"
+},
+{
+"date": "1981-04-28",
+"kind": "Conference Call",
+"raw": "April 28 Conference Call - 1981"
+},
+{
+"date": "1981-05-06",
+"kind": "Conference Call",
+"raw": "May 6 Conference Call - 1981"
+},
+{
+"date": "1981-05-18",
+"kind": "Meeting",
+"raw": "May 18 Meeting - 1981"
+},
+{
+"date": "1981-06-17",
+"kind": "Conference Call",
+"raw": "June 17 Conference Call - 1981"
+},
+{
+"date": "1981-07-07",
+"kind": "Meeting",
+"raw": "July 6-7 Meeting - 1981"
+},
+{
+"date": "1981-07-17",
+"kind": "Conference Call",
+"raw": "July 17 Conference Call - 1981"
+},
+{
+"date": "1981-08-07",
+"kind": "Conference Call",
+"raw": "August 7 Conference Call - 1981"
+},
+{
+"date": "1981-08-18",
+"kind": "Meeting",
+"raw": "August 18 Meeting - 1981"
+},
+{
+"date": "1981-10-06",
+"kind": "Meeting",
+"raw": "October 5-6 Meeting - 1981"
+},
+{
+"date": "1981-11-17",
+"kind": "Meeting",
+"raw": "November 17 Meeting - 1981"
+},
+{
+"date": "1981-12-22",
+"kind": "Meeting",
+"raw": "December 21-22 Meeting - 1981"
+},
+{
+"date": "1982-02-02",
+"kind": "Meeting",
+"raw": "February 1-2 Meeting - 1982"
+},
+{
+"date": "1982-03-30",
+"kind": "Meeting",
+"raw": "March 29-30 Meeting - 1982"
+},
+{
+"date": "1982-05-18",
+"kind": "Meeting",
+"raw": "May 18 Meeting - 1982"
+},
+{
+"date": "1982-05-20",
+"kind": "Conference Call",
+"raw": "May 20 Conference Call - 1982"
+},
+{
+"date": "1982-07-01",
+"kind": "Meeting",
+"raw": "June 30-July 1 Meeting - 1982"
+},
+{
+"date": "1982-07-15",
+"kind": "Conference Call",
+"raw": "July 15 Conference Call - 1982"
+},
+{
+"date": "1982-08-24",
+"kind": "Meeting",
+"raw": "August 24 Meeting - 1982"
+},
+{
+"date": "1982-09-24",
+"kind": "Conference Call",
+"raw": "September 24 Conference Call - 1982"
+},
+{
+"date": "1982-10-05",
+"kind": "Meeting",
+"raw": "October 5 Meeting - 1982"
+},
+{
+"date": "1982-11-16",
+"kind": "Meeting",
+"raw": "November 16 Meeting - 1982"
+},
+{
+"date": "1982-12-21",
+"kind": "Meeting",
+"raw": "December 20-21 Meeting - 1982"
+},
+{
+"date": "1983-01-14",
+"kind": "Conference Call",
+"raw": "January 14 Conference Call - 1983"
+},
+{
+"date": "1983-01-21",
+"kind": "Conference Call",
+"raw": "January 21 Conference Call - 1983"
+},
+{
+"date": "1983-01-28",
+"kind": "Conference Call",
+"raw": "January 28 Conference Call - 1983"
+},
+{
+"date": "1983-02-09",
+"kind": "Meeting",
+"raw": "February 8-9 Meeting - 1983"
+},
+{
+"date": "1983-03-29",
+"kind": "Meeting",
+"raw": "March 28-29 Meeting - 1983"
+},
+{
+"date": "1983-04-29",
+"kind": "Conference Call",
+"raw": "April 29 Conference Call - 1983"
+},
+{
+"date": "1983-05-24",
+"kind": "Meeting",
+"raw": "May 24 Meeting - 1983"
+},
+{
+"date": "1983-06-23",
+"kind": "Conference Call",
+"raw": "June 23 Conference Call - 1983"
+},
+{
+"date": "1983-07-13",
+"kind": "Meeting",
+"raw": "July 12-13 Meeting - 1983"
+},
+{
+"date": "1983-08-23",
+"kind": "Meeting",
+"raw": "August 23 Meeting - 1983"
+},
+{
+"date": "1983-09-08",
+"kind": "Conference Call",
+"raw": "September 8 Conference Call - 1983"
+},
+{
+"date": "1983-10-04",
+"kind": "Meeting",
+"raw": "October 4 Meeting - 1983"
+},
+{
+"date": "1983-11-15",
+"kind": "Meeting",
+"raw": "November 14-15 Meeting - 1983"
+},
+{
+"date": "1983-12-20",
+"kind": "Meeting",
+"raw": "December 19-20 Meeting - 1983"
+},
+{
+"date": "1984-01-31",
+"kind": "Meeting",
+"raw": "January 30-31 Meeting - 1984"
+},
+{
+"date": "1984-03-20",
+"kind": "Conference Call",
+"raw": "March 20 Conference Call - 1984"
+},
+{
+"date": "1984-03-27",
+"kind": "Meeting",
+"raw": "March 26-27 Meeting - 1984"
+},
+{
+"date": "1984-05-22",
+"kind": "Meeting",
+"raw": "May 21-22 Meeting - 1984"
+},
+{
+"date": "1984-07-17",
+"kind": "Meeting",
+"raw": "July 16-17 Meeting - 1984"
+},
+{
+"date": "1984-08-21",
+"kind": "Meeting",
+"raw": "August 21 Meeting - 1984"
+},
+{
+"date": "1984-10-02",
+"kind": "Meeting",
+"raw": "October 2 Meeting - 1984"
+},
+{
+"date": "1984-11-07",
+"kind": "Meeting",
+"raw": "November 7 Meeting - 1984"
+},
+{
+"date": "1984-12-18",
+"kind": "Meeting",
+"raw": "December 17-18 Meeting - 1984"
+},
+{
+"date": "1985-01-18",
+"kind": "Conference Call",
+"raw": "January 18 Conference Call - 1985"
+},
+{
+"date": "1985-02-13",
+"kind": "Meeting",
+"raw": "February 12-13 Meeting - 1985"
+},
+{
+"date": "1985-03-26",
+"kind": "Meeting",
+"raw": "March 26 Meeting - 1985"
+},
+{
+"date": "1985-05-21",
+"kind": "Meeting",
+"raw": "May 21 Meeting - 1985"
+},
+{
+"date": "1985-07-10",
+"kind": "Meeting",
+"raw": "July 9-10 Meeting - 1985"
+},
+{
+"date": "1985-08-20",
+"kind": "Meeting",
+"raw": "August 20 Meeting - 1985"
+},
+{
+"date": "1985-09-23",
+"kind": "Conference Call",
+"raw": "September 23 Conference Call - 1985"
+},
+{
+"date": "1985-10-01",
+"kind": "Meeting",
+"raw": "October 1 Meeting - 1985"
+},
+{
+"date": "1985-11-05",
+"kind": "Meeting",
+"raw": "November 4-5 Meeting - 1985"
+},
+{
+"date": "1985-12-17",
+"kind": "Meeting",
+"raw": "December 16-17 Meeting - 1985"
+},
+{
+"date": "1986-02-12",
+"kind": "Meeting",
+"raw": "February 11-12 Meeting - 1986"
+},
+{
+"date": "1986-04-01",
+"kind": "Meeting",
+"raw": "April 1 Meeting - 1986"
+},
+{
+"date": "1986-04-21",
+"kind": "Conference Call",
+"raw": "April 21 Conference Call - 1986"
+},
+{
+"date": "1986-05-20",
+"kind": "Meeting",
+"raw": "May 20 Meeting - 1986"
+},
+{
+"date": "1986-07-09",
+"kind": "Meeting",
+"raw": "July 8-9 Meeting - 1986"
+},
+{
+"date": "1986-08-19",
+"kind": "Meeting",
+"raw": "August 19 Meeting - 1986"
+},
+{
+"date": "1986-09-23",
+"kind": "Meeting",
+"raw": "September 23 Meeting - 1986"
+},
+{
+"date": "1986-11-05",
+"kind": "Meeting",
+"raw": "November 5 Meeting - 1986"
+},
+{
+"date": "1986-12-16",
+"kind": "Meeting",
+"raw": "December 15-16 Meeting - 1986"
+},
+{
+"date": "1987-02-11",
+"kind": "Meeting",
+"raw": "February 10-11 Meeting - 1987"
+},
+{
+"date": "1987-02-23",
+"kind": "Conference Call",
+"raw": "February 23 Conference Call - 1987"
+},
+{
+"date": "1987-03-31",
+"kind": "Meeting",
+"raw": "March 31 Meeting - 1987"
+},
+{
+"date": "1987-04-29",
+"kind": "Conference Call",
+"raw": "April 29 Conference Call - 1987"
+},
+{
+"date": "1987-05-19",
+"kind": "Meeting",
+"raw": "May 19 Meeting - 1987"
+},
+{
+"date": "1987-07-07",
+"kind": "Meeting",
+"raw": "July 7 Meeting - 1987"
+},
+{
+"date": "1987-08-18",
+"kind": "Meeting",
+"raw": "August 18 Meeting - 1987"
+},
+{
+"date": "1987-09-22",
+"kind": "Meeting",
+"raw": "September 22 Meeting - 1987"
+},
+{
+"date": "1987-10-19",
+"kind": "Conference Call",
+"raw": "October 19 Conference Call - 1987"
+},
+{
+"date": "1987-10-20",
+"kind": "Conference Call",
+"raw": "October 20 Conference Call - 1987"
+},
+{
+"date": "1987-11-03",
+"kind": "Meeting",
+"raw": "November 3 Meeting - 1987"
+},
+{
+"date": "1987-12-16",
+"kind": "Meeting",
+"raw": "December 15-16 Meeting - 1987"
+},
+{
+"date": "1988-01-05",
+"kind": "Conference Call",
+"raw": "January 5 Conference Call - 1988"
+},
+{
+"date": "1988-02-10",
+"kind": "Meeting",
+"raw": "February 9-10 Meeting - 1988"
+},
+{
+"date": "1988-03-29",
+"kind": "Meeting",
+"raw": "March 29 Meeting - 1988"
+},
+{
+"date": "1988-05-17",
+"kind": "Meeting",
+"raw": "May 17 Meeting - 1988"
+},
+{
+"date": "1988-06-30",
+"kind": "Meeting",
+"raw": "June 29-30 Meeting - 1988"
+},
+{
+"date": "1988-07-19",
+"kind": "Conference Call",
+"raw": "July 19 Conference Call - 1988"
+},
+{
+"date": "1988-08-16",
+"kind": "Meeting",
+"raw": "August 16 Meeting - 1988"
+},
+{
+"date": "1988-09-20",
+"kind": "Meeting",
+"raw": "September 20 Meeting - 1988"
+},
+{
+"date": "1988-10-17",
+"kind": "Conference Call",
+"raw": "October 17 Conference Call - 1988"
+},
+{
+"date": "1988-11-01",
+"kind": "Meeting",
+"raw": "November 1 Meeting - 1988"
+},
+{
+"date": "1988-11-22",
+"kind": "Conference Call",
+"raw": "November 22 Conference Call - 1988"
+},
+{
+"date": "1988-12-14",
+"kind": "Meeting",
+"raw": "December 13-14 Meeting - 1988"
+},
+{
+"date": "1989-02-08",
+"kind": "Meeting",
+"raw": "February 7-8 Meeting - 1989"
+},
+{
+"date": "1989-03-28",
+"kind": "Meeting",
+"raw": "March 28 Meeting - 1989"
+},
+{
+"date": "1989-05-16",
+"kind": "Meeting",
+"raw": "May 16 Meeting - 1989"
+},
+{
+"date": "1989-05-31",
+"kind": "Conference Call",
+"raw": "May 31 Conference Call - 1989"
+},
+{
+"date": "1989-06-05",
+"kind": "Conference Call",
+"raw": "June 5 Conference Call - 1989"
+},
+{
+"date": "1989-07-06",
+"kind": "Meeting",
+"raw": "July 5-6 Meeting - 1989"
+},
+{
+"date": "1989-07-26",
+"kind": "Conference Call",
+"raw": "July 26 Conference Call - 1989"
+},
+{
+"date": "1989-08-22",
+"kind": "Meeting",
+"raw": "August 22 Meeting - 1989"
+},
+{
+"date": "1989-10-03",
+"kind": "Meeting",
+"raw": "October 3 Meeting - 1989"
+},
+{
+"date": "1989-10-16",
+"kind": "Conference Call",
+"raw": "October 16 Conference Call - 1989"
+},
+{
+"date": "1989-10-17",
+"kind": "Conference Call",
+"raw": "October 17 Conference Call - 1989"
+},
+{
+"date": "1989-10-18",
+"kind": "Conference Call",
+"raw": "October 18 Conference Call - 1989"
+},
+{
+"date": "1989-11-14",
+"kind": "Meeting",
+"raw": "November 14 Meeting - 1989"
+},
+{
+"date": "1989-12-19",
+"kind": "Meeting",
+"raw": "December 18-19 Meeting - 1989"
+},
+{
+"date": "1990-02-07",
+"kind": "Meeting",
+"raw": "February 6-7 Meeting - 1990"
+},
+{
+"date": "1990-03-27",
+"kind": "Meeting",
+"raw": "March 27 Meeting - 1990"
+},
+{
+"date": "1990-04-11",
+"kind": "Conference Call",
+"raw": "April 11 Conference Call - 1990"
+},
+{
+"date": "1990-05-15",
+"kind": "Meeting",
+"raw": "May 15 Meeting - 1990"
+},
+{
+"date": "1990-07-03",
+"kind": "Meeting",
+"raw": "July 2-3 Meeting - 1990"
+},
+{
+"date": "1990-08-21",
+"kind": "Meeting",
+"raw": "August 21 Meeting - 1990"
+},
+{
+"date": "1990-09-07",
+"kind": "Conference Call",
+"raw": "September 7 Conference Call - 1990"
+},
+{
+"date": "1990-09-17",
+"kind": "Conference Call",
+"raw": "September 17 Conference Call - 1990"
+},
+{
+"date": "1990-10-02",
+"kind": "Meeting",
+"raw": "October 2 Meeting - 1990"
+},
+{
+"date": "1990-11-13",
+"kind": "Meeting",
+"raw": "November 13 Meeting - 1990"
+},
+{
+"date": "1990-12-07",
+"kind": "Conference Call",
+"raw": "December 7 Conference Call - 1990"
+},
+{
+"date": "1990-12-18",
+"kind": "Meeting",
+"raw": "December 18 Meeting - 1990"
+},
+{
+"date": "1991-01-09",
+"kind": "Conference Call",
+"raw": "January 9 Conference Call - 1991"
+},
+{
+"date": "1991-02-01",
+"kind": "Conference Call",
+"raw": "February 1 Conference Call - 1991"
+},
+{
+"date": "1991-02-06",
+"kind": "Meeting",
+"raw": "February 5-6 Meeting - 1991"
+},
+{
+"date": "1991-03-26",
+"kind": "Meeting",
+"raw": "March 26 Meeting - 1991"
+},
+{
+"date": "1991-04-12",
+"kind": "Conference Call",
+"raw": "April 12 Conference Call - 1991"
+},
+{
+"date": "1991-04-30",
+"kind": "Conference Call",
+"raw": "April 30 Conference Call - 1991"
+},
+{
+"date": "1991-05-01",
+"kind": "Conference Call",
+"raw": "May 1 Conference Call - 1991"
+},
+{
+"date": "1991-05-14",
+"kind": "Meeting",
+"raw": "May 14 Meeting - 1991"
+},
+{
+"date": "1991-06-10",
+"kind": "Conference Call",
+"raw": "June 10 Conference Call - 1991"
+},
+{
+"date": "1991-06-24",
+"kind": "Conference Call",
+"raw": "June 24 Conference Call - 1991"
+},
+{
+"date": "1991-07-03",
+"kind": "Meeting",
+"raw": "July 2-3 Meeting - 1991"
+},
+{
+"date": "1991-08-05",
+"kind": "Conference Call",
+"raw": "August 5 Conference Call - 1991"
+},
+{
+"date": "1991-08-20",
+"kind": "Meeting",
+"raw": "August 20 Meeting - 1991"
+},
+{
+"date": "1991-09-13",
+"kind": "Conference Call",
+"raw": "September 13 Conference Call - 1991"
+},
+{
+"date": "1991-10-01",
+"kind": "Meeting",
+"raw": "October 1 Meeting - 1991"
+},
+{
+"date": "1991-10-30",
+"kind": "Conference Call",
+"raw": "October 30 Conference Call - 1991"
+},
+{
+"date": "1991-11-05",
+"kind": "Meeting",
+"raw": "November 5 Meeting - 1991"
+},
+{
+"date": "1991-12-02",
+"kind": "Conference Call",
+"raw": "December 2 Conference Call - 1991"
+},
+{
+"date": "1991-12-17",
+"kind": "Meeting",
+"raw": "December 17 Meeting - 1991"
+},
+{
+"date": "1992-01-09",
+"kind": "Conference Call",
+"raw": "January 9 Conference Call - 1992"
+},
+{
+"date": "1992-02-05",
+"kind": "Meeting",
+"raw": "February 4-5 Meeting - 1992"
+},
+{
+"date": "1992-03-11",
+"kind": "Conference Call",
+"raw": "March 11 Conference Call - 1992"
+},
+{
+"date": "1992-03-31",
+"kind": "Meeting",
+"raw": "March 31 Meeting - 1992"
+},
+{
+"date": "1992-05-19",
+"kind": "Meeting",
+"raw": "May 19 Meeting - 1992"
+},
+{
+"date": "1992-07-01",
+"kind": "Meeting",
+"raw": "June 30-July 1 Meeting - 1992"
+},
+{
+"date": "1992-07-02",
+"kind": "Conference Call",
+"raw": "July 2 Conference Call - 1992"
+},
+{
+"date": "1992-08-18",
+"kind": "Meeting",
+"raw": "August 18 Meeting - 1992"
+},
+{
+"date": "1992-10-06",
+"kind": "Meeting",
+"raw": "October 6 Meeting - 1992"
+},
+{
+"date": "1992-11-17",
+"kind": "Meeting",
+"raw": "November 17 Meeting - 1992"
+},
+{
+"date": "1992-12-14",
+"kind": "Conference Call",
+"raw": "December 14 Conference Call - 1992"
+},
+{
+"date": "1992-12-22",
+"kind": "Meeting",
+"raw": "December 22 Meeting - 1992"
+},
+{
+"date": "1993-01-06",
+"kind": "Conference Call",
+"raw": "January 6 Conference Call - 1993"
+},
+{
+"date": "1993-02-03",
+"kind": "Meeting",
+"raw": "February 2-3 Meeting - 1993"
+},
+{
+"date": "1993-02-18",
+"kind": "Conference Call",
+"raw": "February 18 Conference Call - 1993"
+},
+{
+"date": "1993-03-01",
+"kind": "Conference Call",
+"raw": "March 1 Conference Call - 1993"
+},
+{
+"date": "1993-03-23",
+"kind": "Meeting",
+"raw": "March 23 Meeting - 1993"
+},
+{
+"date": "1993-05-18",
+"kind": "Meeting",
+"raw": "May 18 Meeting - 1993"
+},
+{
+"date": "1993-07-07",
+"kind": "Meeting",
+"raw": "July 6-7 Meeting - 1993"
+},
+{
+"date": "1993-08-17",
+"kind": "Meeting",
+"raw": "August 17 Meeting - 1993"
+},
+{
+"date": "1993-09-21",
+"kind": "Meeting",
+"raw": "September 21 Meeting - 1993"
+},
+{
+"date": "1993-10-05",
+"kind": "Conference Call",
+"raw": "October 5 Conference Call - 1993"
+},
+{
+"date": "1993-10-15",
+"kind": "Conference Call",
+"raw": "October 15 Conference Call - 1993"
+},
+{
+"date": "1993-10-22",
+"kind": "Conference Call",
+"raw": "October 22 Conference Call - 1993"
+},
+{
+"date": "1993-11-09",
+"kind": "Conference Call",
+"raw": "November 9 Conference Call - 1993"
+},
+{
+"date": "1993-11-10",
+"kind": "Conference Call",
+"raw": "November 10 Conference Call - 1993"
+},
+{
+"date": "1993-11-16",
+"kind": "Meeting",
+"raw": "November 16 Meeting - 1993"
+},
+{
+"date": "1993-12-21",
+"kind": "Meeting",
+"raw": "December 21 Meeting - 1993"
+},
+{
+"date": "1994-02-04",
+"kind": "Meeting",
+"raw": "February 3-4 Meeting - 1994"
+},
+{
+"date": "1994-02-28",
+"kind": "Conference Call",
+"raw": "February 28 Conference Call - 1994"
+},
+{
+"date": "1994-03-22",
+"kind": "Meeting",
+"raw": "March 22 Meeting - 1994"
+},
+{
+"date": "1994-03-24",
+"kind": "Conference Call",
+"raw": "March 24 Conference Call - 1994"
+},
+{
+"date": "1994-04-18",
+"kind": "Conference Call",
+"raw": "April 18 Conference Call - 1994"
+},
+{
+"date": "1994-05-17",
+"kind": "Meeting",
+"raw": "May 17 Meeting - 1994"
+},
+{
+"date": "1994-07-06",
+"kind": "Meeting",
+"raw": "July 5-6 Meeting - 1994"
+},
+{
+"date": "1994-07-20",
+"kind": "Conference Call",
+"raw": "July 20 Conference Call - 1994"
+},
+{
+"date": "1994-08-16",
+"kind": "Meeting",
+"raw": "August 16 Meeting - 1994"
+},
+{
+"date": "1994-09-27",
+"kind": "Meeting",
+"raw": "September 27 Meeting - 1994"
+},
+{
+"date": "1994-11-15",
+"kind": "Meeting",
+"raw": "November 15 Meeting - 1994"
+},
+{
+"date": "1994-12-20",
+"kind": "Meeting",
+"raw": "December 20 Meeting - 1994"
+},
+{
+"date": "1994-12-30",
+"kind": "Conference Call",
+"raw": "December 30 Conference Call - 1994"
+},
+{
+"date": "1995-01-13",
+"kind": "Conference Call",
+"raw": "January 13 Conference Call - 1995"
+},
+{
+"date": "1995-02-01",
+"kind": "Meeting",
+"raw": "January 31-February 1 Meeting - 1995"
+},
+{
+"date": "1995-03-10",
+"kind": "Conference Call",
+"raw": "March 10 Conference Call - 1995"
+},
+{
+"date": "1995-03-28",
+"kind": "Meeting",
+"raw": "March 28 Meeting - 1995"
+},
+{
+"date": "1995-04-28",
+"kind": "Conference Call",
+"raw": "April 28 Conference Call - 1995"
+},
+{
+"date": "1995-05-23",
+"kind": "Meeting",
+"raw": "May 23 Meeting - 1995"
+},
+{
+"date": "1995-07-06",
+"kind": "Meeting",
+"raw": "July 5-6 Meeting - 1995"
+},
+{
+"date": "1995-08-22",
+"kind": "Meeting",
+"raw": "August 22 Meeting - 1995"
+},
+{
+"date": "1995-09-26",
+"kind": "Meeting",
+"raw": "September 26 Meeting - 1995"
+},
+{
+"date": "1995-11-15",
+"kind": "Meeting",
+"raw": "November 15 Meeting - 1995"
+},
+{
+"date": "1995-12-19",
+"kind": "Meeting",
+"raw": "December 19 Meeting - 1995"
+},
+{
+"date": "1996-01-31",
+"kind": "Meeting",
+"raw": "January 30-31 Meeting - 1996"
+},
+{
+"date": "1996-03-26",
+"kind": "Meeting",
+"raw": "March 26 Meeting - 1996"
+},
+{
+"date": "1996-05-21",
+"kind": "Meeting",
+"raw": "May 21 Meeting - 1996"
+},
+{
+"date": "1996-07-03",
+"kind": "Meeting",
+"raw": "July 2-3 Meeting - 1996"
+},
+{
+"date": "1996-08-20",
+"kind": "Meeting",
+"raw": "August 20 Meeting - 1996"
+},
+{
+"date": "1996-09-24",
+"kind": "Meeting",
+"raw": "September 24 Meeting - 1996"
+},
+{
+"date": "1996-11-13",
+"kind": "Meeting",
+"raw": "November 13 Meeting - 1996"
+},
+{
+"date": "1996-12-17",
+"kind": "Meeting",
+"raw": "December 17 Meeting - 1996"
+},
+{
+"date": "1997-02-05",
+"kind": "Meeting",
+"raw": "February 4-5 Meeting - 1997"
+},
+{
+"date": "1997-03-25",
+"kind": "Meeting",
+"raw": "March 25 Meeting - 1997"
+},
+{
+"date": "1997-05-20",
+"kind": "Meeting",
+"raw": "May 20 Meeting - 1997"
+},
+{
+"date": "1997-07-02",
+"kind": "Meeting",
+"raw": "July 1-2 Meeting - 1997"
+},
+{
+"date": "1997-08-19",
+"kind": "Meeting",
+"raw": "August 19 Meeting - 1997"
+},
+{
+"date": "1997-09-30",
+"kind": "Meeting",
+"raw": "September 30 Meeting - 1997"
+},
+{
+"date": "1997-11-12",
+"kind": "Meeting",
+"raw": "November 12 Meeting - 1997"
+},
+{
+"date": "1997-12-16",
+"kind": "Meeting",
+"raw": "December 16 Meeting - 1997"
+},
+{
+"date": "1998-02-04",
+"kind": "Meeting",
+"raw": "February 3-4 Meeting - 1998"
+},
+{
+"date": "1998-03-31",
+"kind": "Meeting",
+"raw": "March 31 Meeting - 1998"
+},
+{
+"date": "1998-05-19",
+"kind": "Meeting",
+"raw": "May 19 Meeting - 1998"
+},
+{
+"date": "1998-07-01",
+"kind": "Meeting",
+"raw": "June 30-July 1 Meeting - 1998"
+},
+{
+"date": "1998-08-18",
+"kind": "Meeting",
+"raw": "August 18 Meeting - 1998"
+},
+{
+"date": "1998-09-21",
+"kind": "Conference Call",
+"raw": "September 21 Conference Call - 1998"
+},
+{
+"date": "1998-09-29",
+"kind": "Meeting",
+"raw": "September 29 Meeting - 1998"
+},
+{
+"date": "1998-10-15",
+"kind": "Conference Call",
+"raw": "October 15 Conference Call - 1998"
+},
+{
+"date": "1998-11-17",
+"kind": "Meeting",
+"raw": "November 17 Meeting - 1998"
+},
+{
+"date": "1998-12-22",
+"kind": "Meeting",
+"raw": "December 22 Meeting - 1998"
+},
+{
+"date": "1999-02-03",
+"kind": "Meeting",
+"raw": "February 2-3 Meeting - 1999"
+},
+{
+"date": "1999-03-30",
+"kind": "Meeting",
+"raw": "March 30 Meeting - 1999"
+},
+{
+"date": "1999-05-18",
+"kind": "Meeting",
+"raw": "May 18 Meeting - 1999"
+},
+{
+"date": "1999-06-30",
+"kind": "Meeting",
+"raw": "June 29-30 Meeting - 1999"
+},
+{
+"date": "1999-08-24",
+"kind": "Meeting",
+"raw": "August 24 Meeting - 1999"
+},
+{
+"date": "1999-10-05",
+"kind": "Meeting",
+"raw": "October 5 Meeting - 1999"
+},
+{
+"date": "1999-11-16",
+"kind": "Meeting",
+"raw": "November 16 Meeting - 1999"
+},
+{
+"date": "1999-12-21",
+"kind": "Meeting",
+"raw": "December 21 Meeting - 1999"
+},
+{
+"date": "2000-02-02",
+"kind": "Meeting",
+"raw": "February 1-2 Meeting - 2000"
+},
+{
+"date": "2000-03-21",
+"kind": "Meeting",
+"raw": "March 21 Meeting - 2000"
+},
+{
+"date": "2000-05-16",
+"kind": "Meeting",
+"raw": "May 16 Meeting - 2000"
+},
+{
+"date": "2000-06-28",
+"kind": "Meeting",
+"raw": "June 27-28 Meeting - 2000"
+},
+{
+"date": "2000-08-22",
+"kind": "Meeting",
+"raw": "August 22 Meeting - 2000"
+},
+{
+"date": "2000-10-03",
+"kind": "Meeting",
+"raw": "October 3 Meeting - 2000"
+},
+{
+"date": "2000-11-15",
+"kind": "Meeting",
+"raw": "November 15 Meeting - 2000"
+},
+{
+"date": "2000-12-19",
+"kind": "Meeting",
+"raw": "December 19 Meeting - 2000"
+},
+{
+"date": "2001-01-03",
+"kind": "Conference Call",
+"raw": "January 3 Conference Call - 2001"
+},
+{
+"date": "2001-01-31",
+"kind": "Meeting",
+"raw": "January 30-31 Meeting - 2001"
+},
+{
+"date": "2001-03-20",
+"kind": "Meeting",
+"raw": "March 20 Meeting - 2001"
+},
+{
+"date": "2001-04-11",
+"kind": "Conference Call",
+"raw": "April 11 Conference Call - 2001"
+},
+{
+"date": "2001-04-18",
+"kind": "Conference Call",
+"raw": "April 18 Conference Call - 2001"
+},
+{
+"date": "2001-05-15",
+"kind": "Meeting",
+"raw": "May 15 Meeting - 2001"
+},
+{
+"date": "2001-06-27",
+"kind": "Meeting",
+"raw": "June 26-27 Meeting - 2001"
+},
+{
+"date": "2001-08-21",
+"kind": "Meeting",
+"raw": "August 21 Meeting - 2001"
+},
+{
+"date": "2001-09-13",
+"kind": "Conference Call",
+"raw": "September 13 Conference Call - 2001"
+},
+{
+"date": "2001-09-17",
+"kind": "Conference Call",
+"raw": "September 17 Conference Call - 2001"
+},
+{
+"date": "2001-10-02",
+"kind": "Meeting",
+"raw": "October 2 Meeting - 2001"
+},
+{
+"date": "2001-11-06",
+"kind": "Meeting",
+"raw": "November 6 Meeting - 2001"
+},
+{
+"date": "2001-12-11",
+"kind": "Meeting",
+"raw": "December 11 Meeting - 2001"
+},
+{
+"date": "2002-01-30",
+"kind": "Meeting",
+"raw": "January 29-30 Meeting - 2002"
+},
+{
+"date": "2002-03-19",
+"kind": "Meeting",
+"raw": "March 19 Meeting - 2002"
+},
+{
+"date": "2002-05-07",
+"kind": "Meeting",
+"raw": "May 7 Meeting - 2002"
+},
+{
+"date": "2002-06-26",
+"kind": "Meeting",
+"raw": "June 25-26 Meeting - 2002"
+},
+{
+"date": "2002-08-13",
+"kind": "Meeting",
+"raw": "August 13 Meeting - 2002"
+},
+{
+"date": "2002-09-24",
+"kind": "Meeting",
+"raw": "September 24 Meeting - 2002"
+},
+{
+"date": "2002-11-06",
+"kind": "Meeting",
+"raw": "November 6 Meeting - 2002"
+},
+{
+"date": "2002-12-10",
+"kind": "Meeting",
+"raw": "December 10 Meeting - 2002"
+},
+{
+"date": "2003-01-29",
+"kind": "Meeting",
+"raw": "January 28-29 Meeting - 2003"
+},
+{
+"date": "2003-03-18",
+"kind": "Meeting",
+"raw": "March 18 Meeting - 2003"
+},
+{
+"date": "2003-03-25",
+"kind": "Conference Call",
+"raw": "March 25 Conference Call - 2003"
+},
+{
+"date": "2003-04-01",
+"kind": "Conference Call",
+"raw": "April 1 Conference Call - 2003"
+},
+{
+"date": "2003-04-08",
+"kind": "Conference Call",
+"raw": "April 8 Conference Call - 2003"
+},
+{
+"date": "2003-04-16",
+"kind": "Conference Call",
+"raw": "April 16 Conference Call - 2003"
+},
+{
+"date": "2003-05-06",
+"kind": "Meeting",
+"raw": "May 6 Meeting - 2003"
+},
+{
+"date": "2003-06-25",
+"kind": "Meeting",
+"raw": "June 24-25 Meeting - 2003"
+},
+{
+"date": "2003-08-12",
+"kind": "Meeting",
+"raw": "August 12 Meeting - 2003"
+},
+{
+"date": "2003-09-15",
+"kind": "Meeting",
+"raw": "September 15 Meeting - 2003"
+},
+{
+"date": "2003-09-16",
+"kind": "Meeting",
+"raw": "September 16 Meeting - 2003"
+},
+{
+"date": "2003-10-28",
+"kind": "Meeting",
+"raw": "October 28 Meeting - 2003"
+},
+{
+"date": "2003-12-09",
+"kind": "Meeting",
+"raw": "December 9 Meeting - 2003"
+},
+{
+"date": "2004-01-28",
+"kind": "Meeting",
+"raw": "January 27-28 Meeting - 2004"
+},
+{
+"date": "2004-03-16",
+"kind": "Meeting",
+"raw": "March 16 Meeting - 2004"
+},
+{
+"date": "2004-05-04",
+"kind": "Meeting",
+"raw": "May 4 Meeting - 2004"
+},
+{
+"date": "2004-06-30",
+"kind": "Meeting",
+"raw": "June 29-30 Meeting - 2004"
+},
+{
+"date": "2004-08-10",
+"kind": "Meeting",
+"raw": "August 10 Meeting - 2004"
+},
+{
+"date": "2004-09-21",
+"kind": "Meeting",
+"raw": "September 21 Meeting - 2004"
+},
+{
+"date": "2004-11-10",
+"kind": "Meeting",
+"raw": "November 10 Meeting - 2004"
+},
+{
+"date": "2004-12-14",
+"kind": "Meeting",
+"raw": "December 14 Meeting - 2004"
+},
+{
+"date": "2005-02-02",
+"kind": "Meeting",
+"raw": "February 1-2 Meeting - 2005"
+},
+{
+"date": "2005-03-22",
+"kind": "Meeting",
+"raw": "March 22 Meeting - 2005"
+},
+{
+"date": "2005-05-03",
+"kind": "Meeting",
+"raw": "May 3 Meeting - 2005"
+},
+{
+"date": "2005-06-30",
+"kind": "Meeting",
+"raw": "June 29-30 Meeting - 2005"
+},
+{
+"date": "2005-08-09",
+"kind": "Meeting",
+"raw": "August 9 Meeting - 2005"
+},
+{
+"date": "2005-09-20",
+"kind": "Meeting",
+"raw": "September 20 Meeting - 2005"
+},
+{
+"date": "2005-11-01",
+"kind": "Meeting",
+"raw": "November 1 Meeting - 2005"
+},
+{
+"date": "2005-12-13",
+"kind": "Meeting",
+"raw": "December 13 Meeting - 2005"
+},
+{
+"date": "2006-01-31",
+"kind": "Meeting",
+"raw": "January 31 Meeting - 2006"
+},
+{
+"date": "2006-03-28",
+"kind": "Meeting",
+"raw": "March 27-28 Meeting - 2006"
+},
+{
+"date": "2006-05-10",
+"kind": "Meeting",
+"raw": "May 10 Meeting - 2006"
+},
+{
+"date": "2006-06-29",
+"kind": "Meeting",
+"raw": "June 28-29 Meeting - 2006"
+},
+{
+"date": "2006-08-08",
+"kind": "Meeting",
+"raw": "August 8 Meeting - 2006"
+},
+{
+"date": "2006-09-20",
+"kind": "Meeting",
+"raw": "September 20 Meeting - 2006"
+},
+{
+"date": "2006-10-25",
+"kind": "Meeting",
+"raw": "October 24-25 Meeting - 2006"
+},
+{
+"date": "2006-12-12",
+"kind": "Meeting",
+"raw": "December 12 Meeting - 2006"
+},
+{
+"date": "2007-01-31",
+"kind": "Meeting",
+"raw": "January 30-31 Meeting - 2007"
+},
+{
+"date": "2007-03-21",
+"kind": "Meeting",
+"raw": "March 20-21 Meeting - 2007"
+},
+{
+"date": "2007-05-09",
+"kind": "Meeting",
+"raw": "May 9 Meeting - 2007"
+},
+{
+"date": "2007-06-28",
+"kind": "Meeting",
+"raw": "June 27-28 Meeting - 2007"
+},
+{
+"date": "2007-08-07",
+"kind": "Meeting",
+"raw": "August 7 Meeting - 2007"
+},
+{
+"date": "2007-08-10",
+"kind": "Conference Call",
+"raw": "August 10 Conference Call - 2007"
+},
+{
+"date": "2007-08-16",
+"kind": "Conference Call",
+"raw": "August 16 Conference Call - 2007"
+},
+{
+"date": "2007-09-18",
+"kind": "Meeting",
+"raw": "September 18 Meeting - 2007"
+},
+{
+"date": "2007-10-31",
+"kind": "Meeting",
+"raw": "October 30-31 Meeting - 2007"
+},
+{
+"date": "2007-12-06",
+"kind": "Conference Call",
+"raw": "December 6 Conference Call - 2007"
+},
+{
+"date": "2007-12-11",
+"kind": "Meeting",
+"raw": "December 11 Meeting - 2007"
+},
+{
+"date": "2008-01-09",
+"kind": "Conference Call",
+"raw": "January 9 Conference Call - 2008"
+},
+{
+"date": "2008-01-21",
+"kind": "Conference Call",
+"raw": "January 21 Conference Call - 2008"
+},
+{
+"date": "2008-01-30",
+"kind": "Meeting",
+"raw": "January 29-30 Meeting - 2008"
+},
+{
+"date": "2008-03-10",
+"kind": "Conference Call",
+"raw": "March 10 Conference Call - 2008"
+},
+{
+"date": "2008-03-18",
+"kind": "Meeting",
+"raw": "March 18 Meeting - 2008"
+},
+{
+"date": "2008-04-30",
+"kind": "Meeting",
+"raw": "April 29-30 Meeting - 2008"
+},
+{
+"date": "2008-06-25",
+"kind": "Meeting",
+"raw": "June 24-25 Meeting - 2008"
+},
+{
+"date": "2008-07-24",
+"kind": "Conference Call",
+"raw": "July 24 Conference Call - 2008"
+},
+{
+"date": "2008-08-05",
+"kind": "Meeting",
+"raw": "August 5 Meeting - 2008"
+},
+{
+"date": "2008-09-16",
+"kind": "Meeting",
+"raw": "September 16 Meeting - 2008"
+},
+{
+"date": "2008-09-29",
+"kind": "Conference Call",
+"raw": "September 29 Conference Call - 2008"
+},
+{
+"date": "2008-10-07",
+"kind": "Conference Call",
+"raw": "October 7 Conference Call - 2008"
+},
+{
+"date": "2008-10-29",
+"kind": "Meeting",
+"raw": "October 28-29 Meeting - 2008"
+},
+{
+"date": "2008-12-16",
+"kind": "Meeting",
+"raw": "December 15-16 Meeting - 2008"
+},
+{
+"date": "2009-01-16",
+"kind": "Conference Call",
+"raw": "January 16 Conference Call - 2009"
+},
+{
+"date": "2009-01-28",
+"kind": "Meeting",
+"raw": "January 27-28 Meeting - 2009"
+},
+{
+"date": "2009-02-07",
+"kind": "Conference Call",
+"raw": "February 7 Conference Call - 2009"
+},
+{
+"date": "2009-03-18",
+"kind": "Meeting",
+"raw": "March 17-18 Meeting - 2009"
+},
+{
+"date": "2009-04-29",
+"kind": "Meeting",
+"raw": "April 28-29 Meeting - 2009"
+},
+{
+"date": "2009-06-03",
+"kind": "Conference Call",
+"raw": "June 3 Conference Call - 2009"
+},
+{
+"date": "2009-06-24",
+"kind": "Meeting",
+"raw": "June 23-24 Meeting - 2009"
+},
+{
+"date": "2009-08-12",
+"kind": "Meeting",
+"raw": "August 11-12 Meeting - 2009"
+},
+{
+"date": "2009-09-23",
+"kind": "Meeting",
+"raw": "September 22-23 Meeting - 2009"
+},
+{
+"date": "2009-11-04",
+"kind": "Meeting",
+"raw": "November 3-4 Meeting - 2009"
+},
+{
+"date": "2009-12-16",
+"kind": "Meeting",
+"raw": "December 15-16 Meeting - 2009"
+},
+{
+"date": "2010-01-27",
+"kind": "Meeting",
+"raw": "January 26-27 Meeting - 2010"
+},
+{
+"date": "2010-03-16",
+"kind": "Meeting",
+"raw": "March 16 Meeting - 2010"
+},
+{
+"date": "2010-04-28",
+"kind": "Meeting",
+"raw": "April 27-28 Meeting - 2010"
+},
+{
+"date": "2010-05-09",
+"kind": "Conference Call",
+"raw": "May 9 Conference Call - 2010"
+},
+{
+"date": "2010-06-23",
+"kind": "Meeting",
+"raw": "June 22-23 Meeting - 2010"
+},
+{
+"date": "2010-08-10",
+"kind": "Meeting",
+"raw": "August 10 Meeting - 2010"
+},
+{
+"date": "2010-09-21",
+"kind": "Meeting",
+"raw": "September 21 Meeting - 2010"
+},
+{
+"date": "2010-10-15",
+"kind": "Conference Call",
+"raw": "October 15 Conference Call - 2010"
+},
+{
+"date": "2010-11-03",
+"kind": "Meeting",
+"raw": "November 2-3 Meeting - 2010"
+},
+{
+"date": "2010-12-14",
+"kind": "Meeting",
+"raw": "December 14 Meeting - 2010"
+},
+{
+"date": "2011-01-26",
+"kind": "Meeting",
+"raw": "January 25-26 Meeting - 2011"
+},
+{
+"date": "2011-03-15",
+"kind": "Meeting",
+"raw": "March 15 Meeting - 2011"
+},
+{
+"date": "2011-04-27",
+"kind": "Meeting",
+"raw": "April 26-27 Meeting - 2011"
+},
+{
+"date": "2011-06-22",
+"kind": "Meeting",
+"raw": "June 21-22 Meeting - 2011"
+},
+{
+"date": "2011-08-01",
+"kind": "Conference Call",
+"raw": "August 1 Conference Call - 2011"
+},
+{
+"date": "2011-08-09",
+"kind": "Meeting",
+"raw": "August 9 Meeting - 2011"
+},
+{
+"date": "2011-09-21",
+"kind": "Meeting",
+"raw": "September 20-21 Meeting - 2011"
+},
+{
+"date": "2011-11-02",
+"kind": "Meeting",
+"raw": "November 1-2 Meeting - 2011"
+},
+{
+"date": "2011-11-28",
+"kind": "Conference Call",
+"raw": "November 28 Conference Call - 2011"
+},
+{
+"date": "2011-12-13",
+"kind": "Meeting",
+"raw": "December 13 Meeting - 2011"
+},
+{
+"date": "2012-01-25",
+"kind": "Meeting",
+"raw": "January 24-25 Meeting - 2012"
+},
+{
+"date": "2012-03-13",
+"kind": "Meeting",
+"raw": "March 13 Meeting - 2012"
+},
+{
+"date": "2012-04-25",
+"kind": "Meeting",
+"raw": "April 24-25 Meeting - 2012"
+},
+{
+"date": "2012-06-20",
+"kind": "Meeting",
+"raw": "June 19-20 Meeting - 2012"
+},
+{
+"date": "2012-08-01",
+"kind": "Meeting",
+"raw": "July 31-August 1 Meeting - 2012"
+},
+{
+"date": "2012-09-13",
+"kind": "Meeting",
+"raw": "September 12-13 Meeting - 2012"
+},
+{
+"date": "2012-10-24",
+"kind": "Meeting",
+"raw": "October 23-24 Meeting - 2012"
+},
+{
+"date": "2012-12-12",
+"kind": "Meeting",
+"raw": "December 11-12 Meeting - 2012"
+},
+{
+"date": "2013-01-30",
+"kind": "Meeting",
+"raw": "January 29-30 Meeting - 2013"
+},
+{
+"date": "2013-03-20",
+"kind": "Meeting",
+"raw": "March 19-20 Meeting - 2013"
+},
+{
+"date": "2013-05-01",
+"kind": "Meeting",
+"raw": "April/May 30-1 Meeting - 2013"
+},
+{
+"date": "2013-06-19",
+"kind": "Meeting",
+"raw": "June 18-19 Meeting - 2013"
+},
+{
+"date": "2013-07-31",
+"kind": "Meeting",
+"raw": "July 30-31 Meeting - 2013"
+},
+{
+"date": "2013-09-18",
+"kind": "Meeting",
+"raw": "September 17-18 Meeting - 2013"
+},
+{
+"date": "2013-10-30",
+"kind": "Meeting",
+"raw": "October 29-30 Meeting - 2013"
+},
+{
+"date": "2013-12-18",
+"kind": "Meeting",
+"raw": "December 17-18 Meeting - 2013"
+},
+{
+"date": "2014-01-29",
+"kind": "Meeting",
+"raw": "January 28-29 Meeting - 2014"
+},
+{
+"date": "2014-03-19",
+"kind": "Meeting",
+"raw": "March 18-19 Meeting - 2014"
+},
+{
+"date": "2014-04-30",
+"kind": "Meeting",
+"raw": "April 29-30 Meeting - 2014"
+},
+{
+"date": "2014-06-18",
+"kind": "Meeting",
+"raw": "June 17-18 Meeting - 2014"
+},
+{
+"date": "2014-07-30",
+"kind": "Meeting",
+"raw": "July 29-30 Meeting - 2014"
+},
+{
+"date": "2014-09-17",
+"kind": "Meeting",
+"raw": "September 16-17 Meeting - 2014"
+},
+{
+"date": "2014-10-29",
+"kind": "Meeting",
+"raw": "October 28-29 Meeting - 2014"
+},
+{
+"date": "2014-12-17",
+"kind": "Meeting",
+"raw": "December 16-17 Meeting - 2014"
+}
+]
