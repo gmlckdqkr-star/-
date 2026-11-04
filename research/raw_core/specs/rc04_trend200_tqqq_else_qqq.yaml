@@ -1,0 +1,10 @@
+name: rc04_trend200_tqqq_else_qqq
+family: raw_core
+known: 3
+idea: 200일 평균 위면 TQQQ, 아래면 QQQ 1배
+signals:
+  up: price(TQQQ) > sma(TQQQ, 200)
+rules:
+  - when: up
+    hold: {TQQQ: 1.0}
+  - else: {QQQ: 1.0}

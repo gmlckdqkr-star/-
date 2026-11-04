@@ -1,0 +1,17 @@
+name: s2_continuous_c3raw
+family: raw_core_s3
+known: 1
+idea: C3 원형의 위기 관문을 켜기/끄기 대신 연속 비중으로. 경보 중에는 비중 = clip((가격/200일선 - 0.97)/0.06, 0, 1), 경보 없으면 1
+signals:
+  warn: macro(inv) or macro(shock6m)
+  g: max(0, min(1, (price(TQQQ) / sma(TQQQ, 200) - 0.97) / 0.06))
+  one: vol(TQQQ, 20) > 0.40 or macro(shock6m)
+band: 0.10
+rules:
+  - when: warn and one
+    hold: {QQQ: g}
+  - when: warn
+    hold: {TQQQ: g}
+  - when: one
+    hold: {QQQ: 1.0}
+  - else: {TQQQ: 1.0}

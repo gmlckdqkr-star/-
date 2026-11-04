@@ -1,0 +1,10 @@
+name: rc08_volswitch_tqqq
+family: raw_core
+known: 3
+idea: 변동성 전환만. 20일 변동성 40% 넘으면 QQQ 1배, 아니면 TQQQ (C3의 변동성 칸만)
+signals:
+  hv: vol(TQQQ, 20) > 0.40
+rules:
+  - when: hv
+    hold: {QQQ: 1.0}
+  - else: {TQQQ: 1.0}

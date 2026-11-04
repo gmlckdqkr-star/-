@@ -1,0 +1,10 @@
+name: rc01_trend200_tqqq
+family: raw_core
+known: 3
+idea: 원형 추세. 나스닥100이 200일 평균 위면 TQQQ, 아니면 현금
+signals:
+  up: price(TQQQ) > sma(TQQQ, 200)
+rules:
+  - when: up
+    hold: {TQQQ: 1.0}
+  - else: {CASH: 1.0}

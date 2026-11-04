@@ -1,0 +1,10 @@
+name: rc02_trend200_band_tqqq
+family: raw_core
+known: 3
+idea: 원형 추세 + 2% 띠 (C3 관문의 가격 부분만). 200일선 -2% 아래로 가면 현금, +2% 위로 오면 TQQQ
+signals:
+  stop: latch(price(TQQQ) < 0.98 * sma(TQQQ, 200), price(TQQQ) > 1.02 * sma(TQQQ, 200))
+rules:
+  - when: stop
+    hold: {CASH: 1.0}
+  - else: {TQQQ: 1.0}

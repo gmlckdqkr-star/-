@@ -1,0 +1,9 @@
+name: rc09_voltarget_tqqq
+family: raw_core
+known: 3
+idea: 변동성 목표만. 나스닥 20일 변동성 20%일 때 TQQQ 100%, 높으면 비례로 줄이고 나머지 현금, 비중 변화 10% 이상일 때만 매매
+band: 0.10
+signals:
+  w: min(1, 0.20 / vol(TQQQ, 20))
+rules:
+  - else: {TQQQ: w}

@@ -1,0 +1,10 @@
+name: rc13_macroonly_tqqq
+family: raw_core
+known: 3
+idea: 거시 경보만 (가격 무시). 금리 역전(378일 안) 또는 10년물 6개월 +1%p면 현금, 아니면 TQQQ
+signals:
+  warn: macro(inv) or macro(shock6m)
+rules:
+  - when: warn
+    hold: {CASH: 1.0}
+  - else: {TQQQ: 1.0}

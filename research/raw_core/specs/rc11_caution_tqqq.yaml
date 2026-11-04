@@ -1,0 +1,10 @@
+name: rc11_caution_tqqq
+family: raw_core
+known: 3
+idea: C3 주의 칸만. 10년물 6개월 +1%p면 QQQ 1배, 아니면 TQQQ
+signals:
+  c: macro(shock6m)
+rules:
+  - when: c
+    hold: {QQQ: 1.0}
+  - else: {TQQQ: 1.0}

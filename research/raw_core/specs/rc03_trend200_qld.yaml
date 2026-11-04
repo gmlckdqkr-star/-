@@ -1,0 +1,10 @@
+name: rc03_trend200_qld
+family: raw_core
+known: 3
+idea: 원형 추세 2배. 200일 평균 위면 QLD, 아니면 현금
+signals:
+  up: price(QLD) > sma(QLD, 200)
+rules:
+  - when: up
+    hold: {QLD: 1.0}
+  - else: {CASH: 1.0}

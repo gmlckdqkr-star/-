@@ -1,0 +1,11 @@
+name: rc10_macrogate_tqqq
+family: raw_core
+known: 3
+idea: C3 위기 관문만. 200일선 -2% 아래이고 (금리 역전 또는 10년물 6개월 +1%p) 경보면 현금, 띠 +2% 위 또는 경보 해제면 복귀, 아니면 TQQQ
+signals:
+  warn: macro(inv) or macro(shock6m)
+  stop: latch(price(TQQQ) < 0.98 * sma(TQQQ, 200) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 200) or not warn)
+rules:
+  - when: stop
+    hold: {CASH: 1.0}
+  - else: {TQQQ: 1.0}

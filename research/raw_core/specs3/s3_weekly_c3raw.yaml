@@ -1,0 +1,15 @@
+name: s3_weekly_c3raw
+family: raw_core_s3
+known: 2
+rebalance: weekly
+idea: C3 원형을 매일 대신 주 1회 결정 (잡음 매매 줄이기)
+signals:
+  warn: macro(inv) or macro(shock6m)
+  stop: latch(price(TQQQ) < 0.98 * sma(TQQQ, 200) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 200) or not warn)
+  one: vol(TQQQ, 20) > 0.40 or macro(shock6m)
+rules:
+  - when: stop
+    hold: {CASH: 1.0}
+  - when: one
+    hold: {QQQ: 1.0}
+  - else: {TQQQ: 1.0}
