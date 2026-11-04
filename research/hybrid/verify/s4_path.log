@@ -1,0 +1,17 @@
+dev250_path D1a cagr 0.1062 (stored 0.1062)  share_mean 0.4456 (stored 0.4456)
+   replay via _dyn: max|log fin diff| 0.00e+00   max|log EE diff| 0.00e+00
+   decision schedule from EE (own code) vs AA: max abs diff 2.22e-16 ; share of days a=0 0.143
+   perturb after day 400: AA[:j+3] unchanged True, EE[:j+1] unchanged True (paths whose later AA changed: 1.00)
+   perturb after day 3001: AA[:j+3] unchanged True, EE[:j+1] unchanged True (paths whose later AA changed: 1.00)
+   perturb after day 5000: AA[:j+3] unchanged True, EE[:j+1] unchanged True (paths whose later AA changed: 1.00)
+dev250_path D1b cagr 0.1147 (stored 0.1147)  share_mean 0.3557 (stored 0.3557)
+   replay via _dyn: max|log fin diff| 0.00e+00   max|log EE diff| 0.00e+00
+   decision schedule from EE (own code) vs AA: max abs diff 2.22e-16 ; share of days a=0 0.029
+   perturb after day 400: AA[:j+3] unchanged True, EE[:j+1] unchanged True (paths whose later AA changed: 1.00)
+   perturb after day 3001: AA[:j+3] unchanged True, EE[:j+1] unchanged True (paths whose later AA changed: 1.00)
+   perturb after day 5000: AA[:j+3] unchanged True, EE[:j+1] unchanged True (paths whose later AA changed: 1.00)
+dev250_path done 68.1 s
+
+real	1m13.212s
+user	0m43.495s
+sys	0m28.236s
