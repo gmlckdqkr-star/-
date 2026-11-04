@@ -11,8 +11,11 @@ post-2014 delisting dates in the ticker strings (tools/build_us_stocks.py: AET-2
 The strings are still NOT point in time: they are the source's last-known symbols, so some names print under a
 symbol adopted after 2014, and 8 bare symbols shared because one of two names was delisted after 2014 show as X / X_2
 (in three pairs both names are members at the same time; names are not listed here). No decision reads a symbol
-(only the META exit-gap mapping does), and output never prints one: names print as point-in-time ids (Panel.label:
-S0001.. = order of the first membership start, ties by a seeded draw).
+(only the META exit-gap mapping does) or the panel column order (= the symbols' alphabetical order: a tie at the
+top-K boundary is shared by the tied names, top_k, STOCK_VERSION 6), and output never prints one: names print as
+point-in-time ids (Panel.label: S0001.. = order of the first membership start, ties by a seeded draw). Seeded draws
+(the null baskets, the hazard row, the id ties) are independent of the data; which name a draw lands on follows the
+column order like any seed.
 
 Source-dependent leaks (research/indiv_stock/is6 L1-L3, data NOTE_KO.md), closed here:
   L1 dollar volume: 1996-2006 dvol is present 0-4% of days for members that end within 2 years vs 49-86% for the
@@ -65,7 +68,9 @@ window and the MS1 stream start delay rows after it when it is later (marked (�
 (신호 YYYY~) when it starts before it), like the gate warm-up. Signal names may not be per-stock function or refused
 input names; a window argument is still a number written in the expression (ret(up) is refused) and per-stock
 windows stay <= 260 rows (signals are index series: they never compute a per-stock window). Arithmetic is plain:
-0 * NaN = NaN, so a name whose unused branch is undefined has no score (put availability in `filter` if it matters).
+0 * NaN = NaN, so a name whose unused branch is undefined has no score (put availability in `filter` if it matters),
+and a score that is 0 for every name in one regime (`up * rank(..)` alone) ties them all: the tie is shared (Top K
+below), the book holds every eligible name that regime. A never-informed signal empties the book; the line says so.
 _SP500EW (data.SP500EW, sp500ew): point-in-time equal-weight index of S&P 500 members from this panel: return at t =
 mean of adj[t] / adj[t-1] - 1 over the names that were members at t-1 and have a price at t-1 and at t (dividend
 adjusted closes; no stale / pause / dvol read; members only, so no pre-membership price; a series end's delisting
@@ -95,6 +100,13 @@ names already members then count from it).
 Eligibility at decision close t: member at t, a price at t (stale flags and exit-gap pauses are not read), filter
 true, score finite (and vol(n) finite > 0 for weight invvol(n)). A held name that leaves the index is sold at the
 next rebalance (target 0).
+Top K (STOCK_VERSION 6, top_k): the K eligible names with the highest score; when more names share the K-th best score
+than the slots left for them, the tied names SHARE those slots (each gets slots / tied of a name's weight: the expected
+book over a uniformly random order of the tied names; exact for equal / score weights, invvol weights the shares by
+1 / vol), never the panel column order (alphabetical by the source's last-known symbols, which include post-2014
+renames). An all-tied score (`up * rank(ret(231, 21))` while up = 0, a boolean score, high_dist at 0) holds every
+eligible name. The line marks it (동점분할 n/m회: decisions in force in the 1986 window); the null basket holds as many
+names as the strategy at the same total weight (Targets.unit).
 
 Returns: adjusted close to close, carried through a pause (an exit gap books its whole change on the next trade day).
 After a series' last price (before 2014-12-31) the next day returns the delisting return, then 0. Headline rule
@@ -128,7 +140,10 @@ from . import data, dsl, engine, gates
 
 STOCKS = os.environ.get('LAB_STOCKS', '/mnt/project-files/research/data/us_stocks/sp500_le2014_v2.npz.xz')
 DEV_END = gates.DEV_END
-STOCK_VERSION = 5           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+STOCK_VERSION = 6           # bump when the stock summary changes for an unchanged spec hash (cli recomputes)
+                            # 6: a tie at the top-K boundary is shared (top_k), not broken by the panel column order;
+                            #    the 1971 row keeps its (게이트 / 신호 ..~) mark in the shortest form; an empty book
+                            #    with never-informed signals says so
                             # 5: signals in score / filter (informed per decision, signal_from), _SP500EW; the
                             #    gate (warm-up, data start, G1 gate spec) is the exposure + the signals it reads
                             #    only; runtime PIT cuts rebuild the gate frame from the cut panel
@@ -988,13 +1003,40 @@ def exposure(spec, P, F=None):
 class Targets:
     """Decisions of one spec: dec (decision rows), picks[j] (name columns), wts[j] (weights), K[j] (the 1/K unit),
     retain[j] (names kept from decision j-1), elig ([nd, N] eligible), e ([T] exposure), els ({sleeve: w}),
-    sig_ok ([nd] score / filter signals informed, None without such signals), sig_never (calls never defined)."""
+    sig_ok ([nd] score / filter signals informed, None without such signals), sig_never (calls never defined),
+    tie ([nd] the top-K boundary was a tie, shared: top_k), unit ([nd] the equal weight per held name for the null:
+    min(K, eligible) / K / names held = 1/K without a shared tie)."""
 
-    def __init__(self, dec, picks, wts, K, elig, e, els, cap, sig_ok=None, sig_never=()):
+    def __init__(self, dec, picks, wts, K, elig, e, els, cap, sig_ok=None, sig_never=(), tie=None, unit=None):
         self.dec, self.picks, self.wts, self.K, self.elig, self.e, self.els, self.cap = dec, picks, wts, K, elig, e, els, cap
         self.sig_ok, self.sig_never = sig_ok, list(sig_never)
+        self.tie = np.zeros(len(dec), bool) if tie is None else np.asarray(tie, bool)
+        self.unit = 1.0 / np.asarray(K, float) if unit is None else np.asarray(unit, float)
         self.retain = np.array([0] + [len(np.intersect1d(picks[j], picks[j - 1])) for j in range(1, len(picks))],
                                np.int64)
+
+
+def top_k(sx, n):
+    """The top n of one decision's scores sx ([N], -inf = not eligible; n <= the eligible count) -> (columns, inclusion
+    share f). A tie at the boundary (more names with the n-th best score than the slots left for them) is SHARED: every
+    tied name gets f = slots / tied names (the expected book over a uniformly random order of the tied names), never
+    an order of the panel columns (the source's last-known symbols in alphabetical order, not point in time). An
+    all-tied score (e.g. `up * rank(ret(231, 21))` while up = 0) holds every eligible name at n / K / m. -> (cols
+    sorted, f, tie)."""
+    if n <= 0:
+        return np.zeros(0, np.int64), np.zeros(0), False
+    fin = np.isfinite(sx)
+    if n >= int(fin.sum()):
+        p = np.flatnonzero(fin)
+        return p, np.ones(len(p)), False
+    s_n = np.partition(sx, len(sx) - n)[len(sx) - n]                 # the n-th best score (finite: n <= eligible)
+    above, at = sx > s_n, sx == s_n
+    r, g = n - int(above.sum()), int(at.sum())
+    if g <= r:                                                       # the boundary is not shared: every tie fits
+        p = np.flatnonzero(above | at)
+        return p, np.ones(len(p)), False
+    p = np.flatnonzero(above | at)
+    return p, np.where(at[p], r / g, 1.0), True
 
 
 def compile_targets(spec, P, F=None):
@@ -1020,26 +1062,26 @@ def compile_targets(spec, P, F=None):
     if c['weight'] == 'invvol':
         V = cx.call('vol', [c['wn']])
         E = E & np.isfinite(V) & (V > 0)
-    picks, wts, Ks = [], [], []
+    picks, wts, Ks, ties, units = [], [], [], np.zeros(len(D), bool), np.zeros(len(D))
     Sx = np.where(E, S, -np.inf)
-    order = np.argsort(-Sx, axis=1, kind='stable')
     m = E.sum(1)
     for j in range(len(D)):
         K = c['top'] if c['top'] is not None else (max(1, math.ceil(c['top_pct'] * m[j])) if m[j] else 1)
         n = min(K, int(m[j]))
-        p = np.sort(order[j, :n])
+        p, f, ties[j] = top_k(Sx[j], n)             # a tie at the top-K boundary is shared (no column order)
         if c['weight'] == 'equal' or n == 0:
-            w = np.full(n, 1.0 / K)
+            w = f / K
         else:
-            raw = 1.0 / V[j, p] if c['weight'] == 'invvol' else np.maximum(S[j, p], 0.0)
+            raw = (1.0 / V[j, p] if c['weight'] == 'invvol' else np.maximum(S[j, p], 0.0)) * f
             if not raw.sum() > 0:
-                raw = np.ones(n)
+                raw = f.copy()
             w = raw / raw.sum() * n / K
         if c['cap'] is not None:
             w = np.minimum(w, c['cap'])
+        units[j] = n / K / len(p) if len(p) else 1.0 / K
         picks.append(p.astype(np.int64)); wts.append(w); Ks.append(K)
     return Targets(D, picks, wts, np.array(Ks), E, exposure(spec, P, F), c['els'], c['cap'],
-                   None if ok is None else ok[D], never)
+                   None if ok is None else ok[D], never, ties, units)
 
 
 def ew_targets(P, cad='monthly'):
@@ -1305,7 +1347,9 @@ def null_baskets(P, tg, start, delay, D=N_NULL, seed=NULL_SEED):
     strategy). On every decision a book holds as many names as the strategy picked, drawn from the strategy's own
     eligible set (eligibility, filter, finite score), and keeps as many of its previous names as the strategy kept
     from its previous basket (random ones among those still eligible), so name turnover matches. Equal weight with
-    the strategy's unit 1/K and cap. The chain starts fresh at the decision in force on the window's first row."""
+    the strategy's unit 1/K (tg.unit: on a decision whose top-K boundary tie is shared, the same total min(K, m) / K
+    spread over the names it holds) and cap. The chain starts fresh at the decision in force on the window's first
+    row."""
     rng = np.random.default_rng(seed)
     pos = _daily_pos(P, tg)
     i0, _ = _rows(P, start)
@@ -1340,7 +1384,7 @@ def null_baskets(P, tg, start, delay, D=N_NULL, seed=NULL_SEED):
         qq = np.arange(n)[None, :]
         res = np.where(qq < nk[:, None], np.take_along_axis(kept, np.minimum(qq, n - 1).repeat(D, 0), 1),
                        np.take_along_axis(fill, np.maximum(qq - nk[:, None], 0), 1))
-        w = np.full((D, n), 1.0 / tg.K[j])
+        w = np.full((D, n), tg.unit[j])                 # 1/K; less when a shared tie holds more names (top_k)
         if tg.cap is not None:
             w = np.minimum(w, tg.cap)
         out[j] = (res, w); prev = res
@@ -1379,6 +1423,14 @@ def avg_names(P, tg, start, delay):
     pos = _daily_pos(P, tg)[src]
     cnt = np.array([len(p) for p in tg.picks] + [0])[np.where(pos >= 0, pos, -1)]
     return float(np.mean(np.where(tg.e[src] > 0, cnt, 0)))
+
+
+def tie_count(P, tg, start, delay):
+    """(decisions whose top-K boundary tie was shared, decisions) among the ones in force inside the window."""
+    i0, i1 = _rows(P, start)
+    pos = _daily_pos(P, tg)[np.arange(i0, i1 + 1) - delay]
+    js = np.unique(pos[pos >= 0])
+    return int(tg.tie[js].sum()), int(len(js))
 
 
 def sharpe(o, P):
@@ -1550,16 +1602,24 @@ def evaluate(spec, P=None, null=True, pit=True):
                                    p99=float(np.percentile(x, 99)), beat95=bool(s > np.percentile(x, 95)),
                                    beat99=bool(s > np.percentile(x, 99)), turn_med=float(np.median(nr['turn'])),
                                    cagrs=[round(float(v), 6) for v in x])
+        row['ties'], row['decisions'] = tie_count(P, tg, st, delay)   # shared top-K boundary ties (top_k)
         out['windows'][w] = row
     if pit:
         pc = pit_check(spec, P, tg, F)
         out['causality'] = pc
     j = int(np.searchsorted(tg.dec, P.T - 1, side='right')) - 1
+    lp = sorted(zip(-tg.wts[j], P.ids[tg.picks[j]], tg.picks[j]))[:30] if j >= 0 else []   # by weight, then id
     out['last_decision'] = dict(date=str(P.idx[tg.dec[j]].date()) if j >= 0 else None,
-                                names=[P.label(x) for x in tg.picks[j][:30]] if j >= 0 else [],
+                                names=[P.label(x) for _, _, x in lp], held=len(tg.picks[j]) if j >= 0 else 0,
+                                tie=bool(tg.tie[j]) if j >= 0 else False,
                                 names_are='point-in-time ids (S0001.. = order of the first membership start, ties '
-                                          'by a seeded draw); source symbols are last-known ones and are not printed',
+                                          'by a seeded draw), by weight then id, at most 30; source symbols are '
+                                          'last-known ones and are not printed',
                                 exposure=float(tg.e[-1]))
+    out['ties'] = dict(w86=out['windows']['w86']['ties'], of=out['windows']['w86']['decisions'],
+                       all=int(tg.tie.sum()), n_dec=int(len(tg.dec)),
+                       rule='a tie at the top-K boundary is shared: the tied names split the slots left equally '
+                            '(no panel column / symbol order)')
     out['n_decisions'] = int(len(tg.dec))
     out['screen_pass'] = bool(out['windows']['w86'].get('g1_pass')) and (out.get('causality') or {}).get('ok', True)
     out['elapsed_s'] = round(time.time() - t0, 1)
@@ -1577,7 +1637,9 @@ def dev_part(s, compact=False):
     compact=2 = the same numbers in the shortest wording (the CLI steps down while the whole line, with the MS1 / G1
     parts, would pass 400 bytes). Warm-up marks: (게이트 ..~) = the exposure gate's first informed decision, (신호 ..~) =
     the score / filter signals' (signal_from): on the 1986 window when it starts there, on the 1971 row when later
-    than its start."""
+    than its start (in every form, compact=2 too). 동점분할 n/m회 = n of the m decisions in force in the 1986 window
+    had a shared top-K boundary tie (top_k; shown only when n > 0). An empty book whose score / filter signals are
+    never informed says so (and names the never-defined calls) instead of 'filter/게이트 확인'."""
     a, b = s['windows']['w86'], s['windows']['w71']
     a30 = (a.get('all30') or {}).get('cagr_at')          # stress row: every series end -30%
     nl = a.get('null')
@@ -1589,11 +1651,19 @@ def dev_part(s, compact=False):
     w86 = ('게이트', gf) if by == 'gate' and gf else ('신호', sf) if by == 'signal' and sf else None
     late71 = [(wd, x) for wd, x in (('게이트', gf), ('신호', sf)) if x and x > b['start']]
     cz = '' if (s.get('causality') or {}).get('ok', True) else (' 인과성위반' if compact == 2 else ' 개발 인과성 위반')
+    nt, ndc = a.get('ties') or 0, a.get('decisions') or 0       # shared top-K boundary ties (top_k)
     if a.get('empty'):                                 # no stock is ever held: say it instead of a normal-looking line
         y = f"{a['start'][2:4]}~14" if compact == 2 else f"{a['start'][:4]}~2014"
-        return ((f"개별주PIT {y} 종목 0 (filter/게이트 확인) 현금만 세후 {_pp(a['cons']['cagr_at'])} | 무작위·샤프 안 함"
+        sg = s.get('signals') or {}
+        if sg and not sg.get('signal_from'):           # the score / filter signals are never informed (<= 2014)
+            nv = ', '.join(sg.get('never') or [])
+            why = (f"신호 정보 없음{': ' + nv if nv else ''}" if compact == 2 else
+                   f"score·filter 신호가 2014년까지 한 번도 정보 없음{': ' + nv + ' 값 없음' if nv else ''}")
+        else:
+            why = 'filter/게이트 확인'
+        return ((f"개별주PIT {y} 종목 0 ({why}) 현금만 세후 {_pp(a['cons']['cagr_at'])} | 무작위·샤프 안 함"
                  if compact == 2 else
-                 f"개별주 S&P500(시점편입·상폐포함) {y} 종목 0 (filter/게이트 확인): 현금(T-bill)만 세후 "
+                 f"개별주 S&P500(시점편입·상폐포함) {y} 종목 0 ({why}): 현금(T-bill)만 세후 "
                  f"{_pp(a['cons']['cagr_at'])} | 무작위 바구니·Sharpe 계산 안 함 (G1 1.1 미달)") + cz)
     if compact == 2:
         q = lambda x: f'{100 * x:.1f}' if x is not None and np.isfinite(x) else '-'
@@ -1602,11 +1672,11 @@ def dev_part(s, compact=False):
             npart = f"무작위 상위{'<0.5' if top < 0.5 else f'{top:.0f}'}%(99%선 {yn(nl['beat99'])})"
         else:
             npart = '무작위 미계산'
-        g71 = ''.join(f"({wd}{x[2:4]}~)" for wd, x in late71 if not (w86 and w86[0] == wd))   # w86 dates it already
+        g71 = ''.join(f"({wd}{x[2:4]}~)" for wd, x in late71)     # the 1971 row is cash before it: always marked
         return (f"개별주PIT·상폐포함 {a['start'][2:4]}~14{f'({w86[0]}{w86[1][2:7]}~)' if w86 else ''} "
                 f"세후보수 {_pp(a['cons']['cagr_at'])}"
                 f"(기본 {q(a['base']['cagr_at'])}·일괄30 {q(a30)}·극단 {q(a['extreme']['cagr_at'])}) "
-                f"낙폭{a['cons']['mdd']:.0%} | "
+                f"낙폭{a['cons']['mdd']:.0%}{f' 동점분할{nt}/{ndc}' if nt else ''} | "
                 f"EW {q(a['ew_cons']['cagr_at'])}·NDX {q(a['ndx']['cagr_at'])} | {b['start'][2:4]}~14 "
                 f"{_pp(b['cons']['cagr_at'])}{g71} | {npart} | 샤프 {sh(a['sharpe'])} G1 1.1 {yn(a['g1_pass'])}" + cz)
     if nl:
@@ -1621,7 +1691,7 @@ def dev_part(s, compact=False):
     return (f"개별주 S&P500(시점편입·상폐포함) {y86}~2014{f'({w86[0]} {w86[1][:7]}~)' if w86 else ''} "
             f"세후 보수 {_pp(a['cons']['cagr_at'])} "
             f"(기본 {_pp(a['base']['cagr_at'])}·일괄-30% {_pp(a30)}·극단 {_pp(a['extreme']['cagr_at'])}) "
-            f"낙폭 {a['cons']['mdd']:.0%} "
+            f"낙폭 {a['cons']['mdd']:.0%} " + (f"동점분할 {nt}/{ndc}회 " if nt else '')
             + ('' if compact else f"평균 {a['cons']['names']:.0f}종목 회전 {a['cons']['turn']:.1f}x ")
             + f"| 동일가중 {_pp(a['ew_cons']['cagr_at'])} · "
             f"NDX보유 {_pp(a['ndx']['cagr_at'])} | {y71}~2014 {_pp(b['cons']['cagr_at'])}{g71} | {npart} | "

@@ -502,11 +502,14 @@ def test_signals(P):
     a86 = se['windows']['w86']
     ms = stocks.ms1_stream(stl, P)
     check('(R1) a late signal (TLT SMA200, 2003): signal_from = its first informed decision, the 1986 window and the '
-          'MS1 stream start delay rows later, marked (신호 2003-06~) / (신호03-06~), the 1971 row (신호 2003~)',
+          'MS1 stream start delay rows later, marked (신호 2003-06~) / (신호03-06~), the 1971 row (신호 2003~) and in '
+          'the shortest form too (71~14 x%(신호03~))',
           se['signal_from'] == str(P.idx[rt].date()) and a86['start'] == str(P.idx[rt + DELAY].date())
           and a86['start_by'] == 'signal' and f"(신호 {se['signal_from'][:7]}~)" in stocks.dev_part(se)
           and f"(신호 {se['signal_from'][:4]}~)" in stocks.dev_part(se)
           and f"(신호{se['signal_from'][2:7]}~)" in stocks.dev_part(se, compact=2) and ms['start'] == a86['start']
+          and f"71~14 {stocks._pp(se['windows']['w71']['cons']['cagr_at'])}(신호{se['signal_from'][2:4]}~)"
+          in stocks.dev_part(se, compact=2)
           and se['signals']['gaps'] == 0 and '게이트' not in stocks.dev_part(se), f"{se['signal_from']} -> {a86['start']}")
     # (R1) ETF-DSL window rules on the index; a series name is not a value
     bw = {e: err(lambda e=e: stocks.compile_targets(spec({'score': 'up * ret(20)', 'top': 5}, signals={'up': e}), P, F))
@@ -553,6 +556,102 @@ def test_signals(P):
           'not the NDX gate\'s warm-up (1986-07) or its data columns',
           P.idx[rg] == nd and stocks.gate_cols(m2, F2) == ['_NDX'] and sorted(F2.columns) == ['TLT', '_NDX']
           and stocks.signal_row(stocks.compile_targets(m2, P, F2)) == rt, f'gate {P.idx[rg].date()}')
+
+
+# ---------------------------------------------------------------- top-K boundary ties (STOCK_VERSION 6)
+def _books(tg, cols):
+    """Per decision {panel column: weight}; cols maps the targets' columns to panel columns (a subset panel)."""
+    return [dict(zip(cols[p].tolist(), w.tolist())) for p, w in zip(tg.picks, tg.wts)]
+
+
+def test_ties(P):
+    print('== top-K boundary ties: shared by the tied names, never the panel column (= source symbol) order ==')
+    t0 = time.time()
+    TS = {'up_x_mom': spec({'score': 'up * rank(ret(231, 21))', 'top': 20}, signals={'up': f'price({EW}) > sma({EW}, 200)'}),
+          'bool_age': spec({'score': 'age() > 1000', 'top': 20}),
+          'hd_iv': spec({'score': 'high_dist(252)', 'top': 20, 'weight': 'invvol(63)', 'max_weight': 0.08})}
+    rng = np.random.default_rng(5)
+    perms = {'reverse': np.arange(P.N)[::-1], 'random': rng.permutation(P.N), 'pit_id': np.argsort(P.ids)}
+    st = stocks.WINDOWS['w86']
+    TG = {}
+    for k, s in TS.items():
+        F = stocks.gate_frame(s, P.idx, P) if stocks.needs_frame(s) else None
+        a = TG[k] = stocks.compile_targets(s, P, F)
+        ba, ca = _books(a, np.arange(P.N)), float(stocks.fast_run(P, a, stocks.H_CONS, st, COST, TAX, DELAY)['cagr_at'][0])
+        res = []
+        for nm, o in perms.items():
+            if nm == 'pit_id' and k != 'up_x_mom':
+                continue
+            Q = P.subset(o)
+            b = stocks.compile_targets(s, Q, F)
+            same = all(x.keys() == y.keys() and all(abs(x[q] - y[q]) < 1e-12 for q in x) for x, y in zip(ba, _books(b, o)))
+            cb = float(stocks.fast_run(Q, b, stocks.H_CONS, st, COST, TAX, DELAY)['cagr_at'][0])
+            res.append(same and np.array_equal(a.tie, b.tie) and abs(ca - cb) < 1e-12)
+        check(f'(tie) {k}: the same books (names, weights) and the same 1986 CAGR on the panel with its columns '
+              f'reversed / shuffled{" / in id order" if k == "up_x_mom" else ""} ({int(a.tie.sum())}/{len(a.dec)} '
+              'decisions with a shared boundary tie)', all(res) and a.tie.sum() > 50, str(res))
+    # up * rank(..): every informed down-regime decision is all-tied at 0 -> every eligible name at 1 / m
+    a, s = TG['up_x_mom'], TS['up_x_mom']
+    F = stocks.gate_frame(s, P.idx, P)
+    up_t = (F[EW] > F[EW].rolling(200, min_periods=200).mean()).values
+    dn = [j for j in range(len(a.dec)) if a.sig_ok[j] and not up_t[a.dec[j]]]
+    upj = [j for j in range(len(a.dec)) if a.sig_ok[j] and up_t[a.dec[j]]]
+    check('(tie) up * rank(ret(231, 21)): each informed down-regime decision (all scores 0) holds EVERY eligible name '
+          'at 1 / m (not the first 20 panel columns); up-regime decisions hold 20 at 1/20, no tie',
+          all(np.array_equal(a.picks[j], np.flatnonzero(a.elig[j])) and np.allclose(a.wts[j], 1 / a.elig[j].sum())
+              and a.tie[j] for j in dn) and all(len(a.picks[j]) == 20 and np.allclose(a.wts[j], 0.05) and not a.tie[j]
+                                               for j in upj) and len(dn) > 100 and len(upj) > 400,
+          f'{len(dn)} down / {len(upj)} up decisions')
+    # a boolean score, independently: c names with age > 1000 rows (membership age) among the m eligible
+    b = TG['bool_age']
+    D = b.dec
+    el = P.member[D] & P.has[D]
+    hi = el & ((D[:, None] - P.fm[None, :]) > 1000)
+    okb = []
+    for j in range(len(D)):
+        c_, m_ = int(hi[j].sum()), int(el[j].sum())
+        want = {q: 1 / c_ for q in np.flatnonzero(hi[j])} if c_ >= 20 else \
+            {q: (0.05 if hi[j, q] else (20 - c_) / (20 * (m_ - c_))) for q in np.flatnonzero(el[j])}
+        got = dict(zip(b.picks[j].tolist(), b.wts[j].tolist()))
+        okb.append(got.keys() == want.keys() and all(abs(got[q] - want[q]) < 1e-12 for q in got)
+                   and b.tie[j] == (c_ > 20 or (c_ < 20 and m_ > 20)))
+    check('(tie) boolean score age() > 1000, top 20, against an independent count: c >= 20 true names -> all c at 1/c; '
+          'fewer -> the true ones at 1/20 and every other eligible name shares the rest equally; total = 1',
+          all(okb) and all(abs(w.sum() - 1) < 1e-12 for w in b.wts if len(w)) and sum(len(w) > 0 for w in b.wts) > 500,
+          f'{sum(okb)}/{len(okb)}')
+    # no tie: exactly min(K, m) names at the old rule (the K best scores); a tie: more names, same total n / K
+    okn = []
+    for k in ('mom', 'lowvol_iv', 'gate', 'sig_mix', 'mix_pct'):
+        t = stocks.compile_targets(SPECS[k], P)
+        m_ = t.elig.sum(1); n_ = np.minimum(t.K, m_)
+        okn.append(all((len(t.picks[j]) == n_[j]) != bool(t.tie[j]) and (len(t.picks[j]) > n_[j]) == bool(t.tie[j])
+                       and abs(t.unit[j] * len(t.picks[j]) - n_[j] / t.K[j]) < 1e-12 for j in range(len(t.dec))))
+    check('(tie) every test spec: a decision without a shared tie holds exactly min(K, eligible) names (the rule '
+          'before STOCK_VERSION 6); the null unit spreads the same total min(K, m) / K', all(okn), str(okn))
+    # the null matches name count and total weight on tie decisions; the runtime cut check holds
+    j0 = int(stocks._daily_pos(P, a)[stocks._rows(P, st)[0] - DELAY])
+    nb = stocks.null_baskets(P, a, st, DELAY, D=5)
+    check('(tie) null basket on a tie decision: as many names as the strategy holds, the same total weight, from its '
+          'eligible set', all(nb[j][0].shape[1] == len(a.picks[j]) and np.allclose(nb[j][1].sum(1), a.wts[j].sum())
+                              and a.elig[j][nb[j][0]].all() for j in dn if j >= j0))
+    pc = stocks.pit_check(s, P, a, F, n_cuts=3, seed=17)
+    check('(tie) runtime cut check passes on the all-tied regime spec', pc['ok'] and pc['cuts'] >= 2, str(pc))
+    # the line says it: 동점분할 n/m회 (decisions in force in the 1986 window); a spec without ties shows nothing
+    se = stocks.evaluate(s, P, null=False, pit=False)
+    w = se['windows']['w86']
+    i0, i1 = row(P, w['start']), P.T - 1                # decisions in force on the window's rows (decided delay before)
+    js = np.arange(max(int(np.searchsorted(a.dec, i0 - DELAY, side='right')) - 1, 0),
+                   int(np.searchsorted(a.dec, i1 - DELAY, side='right')))
+    s0 = stocks.evaluate(SPECS['mom'], P, null=False, pit=False)
+    check('(tie) the line marks shared ties: 동점분할 n/m회 (long), 동점분할n/m (shortest), n / m = the 1986 window\'s '
+          'decisions; detail JSON ties; no mark without ties',
+          w['ties'] == int(a.tie[js].sum()) and w['decisions'] == len(js) and w['ties'] > 50
+          and f"동점분할 {w['ties']}/{w['decisions']}회" in stocks.dev_part(se)
+          and f"동점분할 {w['ties']}/{w['decisions']}회" in stocks.dev_part(se, compact=True)
+          and f"동점분할{w['ties']}/{w['decisions']}" in stocks.dev_part(se, compact=2)
+          and se['ties']['all'] == int(a.tie.sum()) and s0['windows']['w86']['ties'] == 0
+          and not any('동점' in stocks.dev_part(s0, c_) for c_ in (False, True, 2)),
+          f"{w['ties']}/{w['decisions']}, {time.time() - t0:.0f}s")
 
 
 # ---------------------------------------------------------------- (b) membership start + delay
@@ -1040,6 +1139,11 @@ def test_review(P):
           s['gate_from'] == str(sv.date()) and s['gate_from'].startswith('1986-07') and a['start'] == str(want.date())
           and a['start_by'] == 'gate' and '(게이트 1986-07~)' in stocks.dev_part(s)
           and '(게이트86-07~)' in stocks.dev_part(s, compact=2), f"{s['gate_from']} -> {a['start']}")
+    p71 = stocks._pp(s['windows']['w71']['cons']['cagr_at'])
+    check('gate warm-up: the 1971 row (mostly cash before the gate) keeps its mark in every form: (게이트 1986~), '
+          'shortest 71~14 x%(게이트86~)', f"1971~2014 {p71}(게이트 1986~)" in stocks.dev_part(s)
+          and f"1971~2014 {p71}(게이트 1986~)" in stocks.dev_part(s, compact=True)
+          and f"71~14 {p71}(게이트86~)" in stocks.dev_part(s, compact=2))
     m = stocks.ms1_stream(g, P)
     check('gate warm-up: MS1 stream starts with the 1986 window (no forced-cash months in it)', m['start'] == a['start'])
     sm = dsl.check_spec(dict(SPECS['mom']))
@@ -1070,6 +1174,15 @@ def test_review(P):
     check('empty book: flagged, no null basket, no Sharpe, G1 not passed, line says 종목 0 (filter/게이트 확인)',
           ae['empty'] and 'null' not in ae and ae['sharpe'] is None and not ae['g1_pass'] and not se['screen_pass']
           and all('종목 0 (filter/게이트 확인)' in stocks.dev_part(se, c) for c in (False, True, 2)))
+    # an empty book because the score / filter signal is never informed: the line says so and names the call
+    nv = spec({'score': 'up * ret(231, 21) + ret(20)', 'top': 20}, signals={'up': 'price(TLT) > sma(TLT, 5000)'})
+    sv = stocks.evaluate(nv, P, null=False, pit=False)
+    lines = [stocks.dev_part(sv, c) for c in (False, True, 2)]
+    check('empty book from a never-informed score signal: the line names the signal and the never-defined call '
+          '(신호 .. 정보 없음: sma(TLT, 5000)), not filter/게이트',
+          sv['windows']['w86']['empty'] and sv['signal_from'] is None and sv['signals']['never'] == ['sma(TLT, 5000)']
+          and all('종목 0 (' in x and '신호' in x and '정보 없음' in x and 'sma(TLT, 5000)' in x and 'filter/게이트' not in x
+                  for x in lines), lines[2][:90])
     one = stocks.compile_targets(spec({'score': 'ret(252)', 'top': 1}), P)     # a one-name book the hazard wipes out
     st = pd.Timestamp('1986-01-02')
     with warnings.catch_warnings(record=True) as w2:
@@ -1102,6 +1215,7 @@ if __name__ == '__main__':
     test_functions(P)
     test_pit(P)
     test_signals(P)
+    test_ties(P)
     test_membership(P)
     test_exit_gap(P)
     test_series_end(P)
