@@ -1,0 +1,26 @@
+{
+ "recession": {
+  "n": 69,
+  "hit": 0.609,
+  "always_up": 0.638,
+  "defl": 0.438,
+  "verdict": "CLOSE",
+  "frac_in": 0.971830985915493
+ },
+ "layoffs": {
+  "n": 69,
+  "hit": 0.623,
+  "always_up": 0.638,
+  "defl": 0.454,
+  "verdict": "CLOSE",
+  "frac_in": 0.9859154929577465
+ },
+ "bubble": {
+  "n": 69,
+  "hit": 0.667,
+  "always_up": 0.638,
+  "defl": 0.502,
+  "verdict": "CLOSE",
+  "frac_in": 0.9436619718309859
+ }
+}
