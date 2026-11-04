@@ -1,0 +1,13 @@
+# Trend-Buffett stock version (PRECOMMIT_GT 4.2 analogue on stocks): quality proxy = low 1-year volatility, trend =
+# 12-1 momentum; equal rank blend, top 20, rebalanced quarterly (lab has no yearly). Textbook constants, not searched.
+name: gt_buf_l
+family: giant_trend
+known: 2
+idea: low-vol x 12-1 momentum blend top 20, quarterly rebalance, always invested
+universe: sp500
+stock:
+  rebalance: quarter
+  score: "rank(-vol(252)) + rank(ret(231, 21))"
+  top: 20
+  weight: equal
+  max_weight: 0.10

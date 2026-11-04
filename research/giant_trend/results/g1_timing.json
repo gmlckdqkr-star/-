@@ -1,0 +1,102 @@
+{
+ "TUD_B": {
+  "ndx_86_14": {
+   "hit": 0.5316,
+   "n": 348,
+   "se": 0.0267,
+   "base_up": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4217
+  },
+  "spx_55_85": {
+   "hit": 0.5351,
+   "n": 370,
+   "se": 0.0259,
+   "base_up": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4286
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "MAR_T": {
+  "ndx_86_14": {
+   "hit": 0.5374,
+   "n": 348,
+   "se": 0.0267,
+   "base_up": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4276
+  },
+  "spx_55_85": {
+   "hit": 0.5568,
+   "n": 370,
+   "se": 0.0258,
+   "base_up": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4507
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "GRA_C": {
+  "ndx_86_14": {
+   "hit": 0.4943,
+   "n": 348,
+   "se": 0.0268,
+   "base_up": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3842
+  },
+  "spx_55_85": {
+   "hit": 0.4486,
+   "n": 370,
+   "se": 0.0259,
+   "base_up": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.3424
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "DRU_T": {
+  "ndx_86_14": {
+   "hit": 0.5489,
+   "n": 348,
+   "se": 0.0267,
+   "base_up": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4393
+  },
+  "spx_55_85": {
+   "hit": 0.5486,
+   "n": 370,
+   "se": 0.0259,
+   "base_up": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4424
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "ONE_T": {
+  "ndx_86_14": {
+   "hit": 0.5316,
+   "n": 348,
+   "se": 0.0267,
+   "base_up": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4217
+  },
+  "spx_55_85": {
+   "hit": 0.5351,
+   "n": 370,
+   "se": 0.0259,
+   "base_up": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4286
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ }
+}
