@@ -1,0 +1,740 @@
+{
+ "ntis_V1": {
+  "first": "1937-01-31",
+  "frac_in": 0.7692307692307693,
+  "ndx_86_14": {
+   "hit": 0.5259,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4088,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.573,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4605,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "ntis_V2": {
+  "first": "1937-01-31",
+  "frac_in": 1.0,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4438,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "lzrt_V1": {
+  "first": "1936-02-29",
+  "frac_in": 0.32946145723336856,
+  "ndx_86_14": {
+   "hit": 0.4799,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3627,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4297,
+   "always_up": 0.5568,
+   "hit_deflated": 0.3171,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "lzrt_V2": {
+  "first": "1936-02-29",
+  "frac_in": 0.7381203801478353,
+  "ndx_86_14": {
+   "hit": 0.5201,
+   "always_up": 0.5546,
+   "hit_deflated": 0.403,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5081,
+   "always_up": 0.5568,
+   "hit_deflated": 0.3944,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "wtexas_V1": {
+  "first": "1936-02-29",
+  "frac_in": 0.5300950369588173,
+  "ndx_86_14": {
+   "hit": 0.4914,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3741,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5405,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4272,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "wtexas_V2": {
+  "first": "1936-02-29",
+  "frac_in": 0.8637803590285111,
+  "ndx_86_14": {
+   "hit": 0.5402,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4234,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5351,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4217,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "skvw_V1": {
+  "first": "1936-08-31",
+  "frac_in": 0.5175345377258236,
+  "ndx_86_14": {
+   "hit": 0.5259,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4088,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5027,
+   "always_up": 0.5568,
+   "hit_deflated": 0.389,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "skvw_V2": {
+  "first": "1936-08-31",
+  "frac_in": 0.9489904357066951,
+  "ndx_86_14": {
+   "hit": 0.569,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4528,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5432,
+   "always_up": 0.5568,
+   "hit_deflated": 0.43,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "tail_V1": {
+  "first": "1936-08-31",
+  "frac_in": 0.5611052072263549,
+  "ndx_86_14": {
+   "hit": 0.5517,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4351,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4838,
+   "always_up": 0.5568,
+   "hit_deflated": 0.3701,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "tail_V2": {
+  "first": "1936-08-31",
+  "frac_in": 0.7885228480340064,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5405,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4272,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "ndrbl_V1": {
+  "first": "1968-04-30",
+  "frac_in": 0.6274509803921569,
+  "ndx_86_14": {
+   "hit": 0.5374,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4204,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5619,
+   "always_up": 0.4905,
+   "hit_deflated": 0.4121,
+   "n": 210
+  },
+  "verdict": "CLOSE"
+ },
+ "ndrbl_V2": {
+  "first": "1968-04-30",
+  "frac_in": 0.9073083778966132,
+  "ndx_86_14": {
+   "hit": 0.5747,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4588,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.519,
+   "always_up": 0.4905,
+   "hit_deflated": 0.3682,
+   "n": 210
+  },
+  "verdict": "CLOSE"
+ },
+ "disag_V1": {
+  "first": "1992-01-31",
+  "frac_in": 0.35144927536231885,
+  "ndx_86_14": {
+   "hit": 0.5,
+   "always_up": 0.5474,
+   "hit_deflated": 0.3679,
+   "n": 274
+  },
+  "spx_55_85": null,
+  "verdict": "CLOSE"
+ },
+ "disag_V2": {
+  "first": "1992-01-31",
+  "frac_in": 0.6630434782608695,
+  "ndx_86_14": {
+   "hit": 0.5146,
+   "always_up": 0.5474,
+   "hit_deflated": 0.3825,
+   "n": 274
+  },
+  "spx_55_85": null,
+  "verdict": "CLOSE"
+ },
+ "dfr_V1": {
+  "first": "1936-02-29",
+  "frac_in": 0.4952481520591341,
+  "ndx_86_14": {
+   "hit": 0.4741,
+   "always_up": 0.5546,
+   "hit_deflated": 0.357,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5162,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4026,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "dfr_V2": {
+  "first": "1936-02-29",
+  "frac_in": 0.8986272439281943,
+  "ndx_86_14": {
+   "hit": 0.5259,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4088,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5432,
+   "always_up": 0.5568,
+   "hit_deflated": 0.43,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "ltr_V1": {
+  "first": "1936-02-29",
+  "frac_in": 0.4825765575501584,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5027,
+   "always_up": 0.5568,
+   "hit_deflated": 0.389,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "ltr_V2": {
+  "first": "1936-02-29",
+  "frac_in": 0.8310454065469906,
+  "ndx_86_14": {
+   "hit": 0.5661,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4499,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5676,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4549,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "infl_V1": {
+  "first": "1923-04-30",
+  "frac_in": 0.5122615803814714,
+  "ndx_86_14": {
+   "hit": 0.5144,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3972,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5243,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4107,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "infl_V2": {
+  "first": "1923-04-30",
+  "frac_in": 0.9491371480472298,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5595,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4466,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "i/k_V1": {
+  "first": "1957-07-31",
+  "frac_in": 0.41739130434782606,
+  "ndx_86_14": {
+   "hit": 0.5517,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4351,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4779,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3592,
+   "n": 339
+  },
+  "verdict": "CLOSE"
+ },
+ "i/k_V2": {
+  "first": "1957-07-31",
+  "frac_in": 0.7478260869565218,
+  "ndx_86_14": {
+   "hit": 0.5632,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4469,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.531,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4124,
+   "n": 339
+  },
+  "verdict": "CLOSE"
+ },
+ "govik_V1": {
+  "first": "1957-07-31",
+  "frac_in": 0.0,
+  "ndx_86_14": {
+   "hit": 0.4454,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3289,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4454,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3273,
+   "n": 339
+  },
+  "verdict": "CLOSE"
+ },
+ "govik_V2": {
+  "first": "1957-07-31",
+  "frac_in": 0.6391304347826087,
+  "ndx_86_14": {
+   "hit": 0.5345,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4175,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5487,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4304,
+   "n": 339
+  },
+  "verdict": "CLOSE"
+ },
+ "eqis_V1": {
+  "first": "1938-06-30",
+  "frac_in": 0.6623376623376623,
+  "ndx_86_14": {
+   "hit": 0.5316,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4146,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4595,
+   "always_up": 0.5568,
+   "hit_deflated": 0.3461,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "eqis_V2": {
+  "first": "1938-06-30",
+  "frac_in": 0.961038961038961,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5351,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4217,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "accrul_V1": {
+  "first": "1976-06-30",
+  "frac_in": 0.5384615384615384,
+  "ndx_86_14": {
+   "hit": 0.5,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3827,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5133,
+   "always_up": 0.4956,
+   "hit_deflated": 0.3076,
+   "n": 113
+  },
+  "verdict": "CLOSE"
+ },
+ "accrul_V2": {
+  "first": "1976-06-30",
+  "frac_in": 0.8974358974358975,
+  "ndx_86_14": {
+   "hit": 0.5718,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4558,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4956,
+   "always_up": 0.4956,
+   "hit_deflated": 0.2898,
+   "n": 113
+  },
+  "verdict": "CLOSE"
+ },
+ "cfacc_V1": {
+  "first": "1976-06-30",
+  "frac_in": 0.1794871794871795,
+  "ndx_86_14": {
+   "hit": 0.4741,
+   "always_up": 0.5546,
+   "hit_deflated": 0.357,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5044,
+   "always_up": 0.4956,
+   "hit_deflated": 0.2987,
+   "n": 113
+  },
+  "verdict": "CLOSE"
+ },
+ "cfacc_V2": {
+  "first": "1976-06-30",
+  "frac_in": 0.9487179487179487,
+  "ndx_86_14": {
+   "hit": 0.5402,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4234,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5044,
+   "always_up": 0.4956,
+   "hit_deflated": 0.2987,
+   "n": 113
+  },
+  "verdict": "CLOSE"
+ },
+ "house_V1": {
+  "first": "1940-06-30",
+  "frac_in": 0.7733333333333333,
+  "ndx_86_14": {
+   "hit": 0.546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4292,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5459,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4327,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "house_V2": {
+  "first": "1940-06-30",
+  "frac_in": 0.8933333333333333,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4438,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "gip_V1": {
+  "first": "1937-06-30",
+  "frac_in": 0.3974358974358974,
+  "ndx_86_14": {
+   "hit": 0.5115,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3943,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5162,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4026,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "gip_V2": {
+  "first": "1937-06-30",
+  "frac_in": 0.9743589743589743,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4438,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "gpce_V1": {
+  "first": "1958-06-30",
+  "frac_in": 0.45614035087719296,
+  "ndx_86_14": {
+   "hit": 0.5603,
+   "always_up": 0.5546,
+   "hit_deflated": 0.444,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5122,
+   "always_up": 0.5579,
+   "hit_deflated": 0.3915,
+   "n": 328
+  },
+  "verdict": "CLOSE"
+ },
+ "gpce_V2": {
+  "first": "1958-06-30",
+  "frac_in": 0.9298245614035088,
+  "ndx_86_14": {
+   "hit": 0.5776,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4618,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5457,
+   "always_up": 0.5579,
+   "hit_deflated": 0.4255,
+   "n": 328
+  },
+  "verdict": "CLOSE"
+ },
+ "phil_ga_chg3_V1": {
+  "first": "1978-08-31",
+  "frac_in": 0.5263157894736842,
+  "ndx_86_14": {
+   "hit": 0.4655,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3485,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4253,
+   "always_up": 0.5287,
+   "hit_deflated": 0.1934,
+   "n": 87
+  },
+  "verdict": "CLOSE"
+ },
+ "phil_ga_chg3_V2": {
+  "first": "1978-08-31",
+  "frac_in": 0.8787185354691075,
+  "ndx_86_14": {
+   "hit": 0.4971,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3799,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5287,
+   "always_up": 0.5287,
+   "hit_deflated": 0.2946,
+   "n": 87
+  },
+  "verdict": "CLOSE"
+ },
+ "phil_no_lvl_V1": {
+  "first": "1978-05-31",
+  "frac_in": 0.48863636363636365,
+  "ndx_86_14": {
+   "hit": 0.4454,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3289,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4444,
+   "always_up": 0.5333,
+   "hit_deflated": 0.2153,
+   "n": 90
+  },
+  "verdict": "CLOSE"
+ },
+ "phil_no_lvl_V2": {
+  "first": "1978-05-31",
+  "frac_in": 0.8431818181818181,
+  "ndx_86_14": {
+   "hit": 0.5259,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4088,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4778,
+   "always_up": 0.5333,
+   "hit_deflated": 0.2474,
+   "n": 90
+  },
+  "verdict": "CLOSE"
+ },
+ "copper_gold_chg6_V1": {
+  "first": "1970-08-31",
+  "frac_in": 0.49530956848030017,
+  "ndx_86_14": {
+   "hit": 0.5086,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3914,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4645,
+   "always_up": 0.5027,
+   "hit_deflated": 0.3032,
+   "n": 183
+  },
+  "verdict": "CLOSE"
+ },
+ "copper_gold_chg6_V2": {
+  "first": "1970-08-31",
+  "frac_in": 0.8724202626641651,
+  "ndx_86_14": {
+   "hit": 0.5144,
+   "always_up": 0.5546,
+   "hit_deflated": 0.3972,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4863,
+   "always_up": 0.5027,
+   "hit_deflated": 0.3247,
+   "n": 183
+  },
+  "verdict": "CLOSE"
+ },
+ "combo_V1": {
+  "first": "1923-04-30",
+  "frac_in": 0.49227974568574023,
+  "ndx_86_14": {
+   "hit": 0.5259,
+   "always_up": 0.5546,
+   "hit_deflated": 0.4088,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.4892,
+   "always_up": 0.5568,
+   "hit_deflated": 0.3755,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ },
+ "combo_V2": {
+  "first": "1923-04-30",
+  "frac_in": 0.9936421435059037,
+  "ndx_86_14": {
+   "hit": 0.5546,
+   "always_up": 0.5546,
+   "hit_deflated": 0.438,
+   "n": 348
+  },
+  "spx_55_85": {
+   "hit": 0.5568,
+   "always_up": 0.5568,
+   "hit_deflated": 0.4438,
+   "n": 370
+  },
+  "verdict": "CLOSE"
+ }
+}
