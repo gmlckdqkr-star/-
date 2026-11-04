@@ -1,0 +1,42 @@
+{
+ "ndx_F": {
+  "ndx_86_14": {
+   "hit": 0.47126436781609193,
+   "n": 348,
+   "se": 0.02675851263428892,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.3937364587678395
+  },
+  "spx_55_85": {
+   "hit": 0.5081081081081081,
+   "n": 370,
+   "se": 0.02599034428725444,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.4328058267154946
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ },
+ "ndx_E": {
+  "ndx_86_14": {
+   "hit": 0.47701149425287354,
+   "n": 348,
+   "se": 0.02677446934358902,
+   "base_up": 0.5545977011494253,
+   "always_up": 0.5545977011494253,
+   "hit_deflated": 0.39943735355026
+  },
+  "spx_55_85": {
+   "hit": 0.5081081081081081,
+   "n": 370,
+   "se": 0.02599034428725444,
+   "base_up": 0.5567567567567567,
+   "always_up": 0.5567567567567567,
+   "hit_deflated": 0.4328058267154946
+  },
+  "verdict": "CLOSE",
+  "note": "compare with always_up (the no-information hit rate); a signal must beat it, not 50%"
+ }
+}

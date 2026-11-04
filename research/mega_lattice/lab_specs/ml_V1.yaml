@@ -1,0 +1,8 @@
+name: mega_lattice_V1
+family: mega_lattice
+known: 1
+idea: '초거대 격자(1985년 이전 표 고정) 기대수익 -> 반켈리 0~3배 사다리, 주1회, 0.75 이상 차이일 때만'
+plugin: plugins/mega_lattice.py:weights
+sleeves: [QQQ, QLD, TQQQ]
+inputs: [QQQ, 'month()']
+params: {var: V1}

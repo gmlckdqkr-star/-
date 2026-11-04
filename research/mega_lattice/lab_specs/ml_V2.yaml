@@ -1,0 +1,8 @@
+name: mega_lattice_V2
+family: mega_lattice
+known: 1
+idea: '초거대 격자 확률 -> 3단 분할(0 / 1.5 / 3배), 주1회'
+plugin: plugins/mega_lattice.py:weights
+sleeves: [QQQ, QLD, TQQQ]
+inputs: [QQQ, 'month()']
+params: {var: V2}

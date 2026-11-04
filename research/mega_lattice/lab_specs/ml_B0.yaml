@@ -1,0 +1,8 @@
+name: mega_lattice_B0
+family: mega_lattice
+known: 1
+idea: '대조: 같은 사다리, 기대수익 상수(변동성 맞춤만)'
+plugin: plugins/mega_lattice.py:weights
+sleeves: [QQQ, QLD, TQQQ]
+inputs: [QQQ, 'month()']
+params: {var: B0}
