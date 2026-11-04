@@ -1,0 +1,16 @@
+# MC1 W3 H6: market-residual 1-month reversal (control for H1's peer residual). Buy the 30 members whose last
+# 21-day return fell most below their 252-day beta to the equal-weight member index times that index's 21-day
+# return. Monthly, equal weight. Textbook constants (21-day reversal, 252-day beta), not searched.
+name: mc1_w3_H6_mkt_resid_rev
+family: mc1_w3
+known: 2
+idea: market-residual short-term reversal among point-in-time S&P 500 members (control for peer residual)
+universe: sp500
+signals:
+  m: "ret(_SP500EW, 21)"
+stock:
+  rebalance: month
+  score: "-(ret(21) - beta(252) * m)"
+  filter: "age() >= 252"
+  top: 30
+  weight: equal

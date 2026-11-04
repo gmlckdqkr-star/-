@@ -1,0 +1,45 @@
+real_ndx_86_14 calendar max|dr| 0.00e+00 s085 med 0.3108 L med 0.873
+real_ndx_86_14  H1     expo 0.59 | alone AT 0.015 SR -0.00 mdd -0.44 | corr -0.10 | m80 d -0.0403 pw 0.00 | m70 d -0.0636 | null ['-0.0337', '-0.0383', '-0.0327'] matched -0.0321
+real_ndx_86_14  H1b    expo 0.59 | alone AT 0.029 SR -0.09 mdd -0.13 | corr -0.10 | m80 d -0.0412 pw 0.00 | m70 d -0.0644 | null ['-0.0386', '-0.0400', '-0.0385'] matched -0.0378
+real_ndx_86_14  H1s25  expo 0.39 | alone AT 0.006 SR -0.11 mdd -0.53 | corr -0.12 | m80 d -0.0422 pw 0.00 | m70 d -0.0664 | null ['-0.0390', '-0.0363', '-0.0387'] matched -0.0360
+real_ndx_86_14  H1s35  expo 0.73 | alone AT 0.035 SR 0.13 mdd -0.44 | corr -0.08 | m80 d -0.0366 pw 0.00 | m70 d -0.0581 | null ['-0.0291', '-0.0322', '-0.0254'] matched -0.0292
+real_ndx_86_14  H1L    expo 0.59 | alone AT -0.014 SR 0.01 mdd -0.84 | corr -0.11 | m80 d -0.0391 pw 0.00 | m70 d -0.0625 | null ['-0.0254', '-0.0294', '-0.0262'] matched -0.0249
+real_ndx_86_14  H2     expo 0.65 | alone AT 0.053 SR 0.25 mdd -0.45 | corr 0.05 | m80 d -0.0329 pw 0.00 | m70 d -0.0525 | null ['-0.0329', '-0.0296', '-0.0284'] matched -0.0298
+real_ndx_86_14  H3     expo 0.48 | alone AT 0.007 SR -0.08 mdd -0.60 | corr -0.03 | m80 d -0.0439 pw 0.00 | m70 d -0.0688 | null ['-0.0378', '-0.0284', '-0.0396'] matched -0.0335
+real_ndx_86_14  H4     expo 0.42 | alone AT 0.054 SR 0.31 mdd -0.41 | corr -0.01 | m80 d -0.0185 pw 0.00 | m70 d -0.0305 | null [] matched +nan
+real_ndx_86_14  H5     expo 1.00 | alone AT 0.025 SR 0.11 mdd -0.58 | corr 0.06 | m80 d -0.0402 pw 0.00 | m70 d -0.0631 | null ['-0.0276', '-0.0369', '-0.0290'] matched +nan
+real_ndx_86_14  H6     expo 0.31 | alone AT 0.030 SR 0.05 mdd -0.48 | corr 0.17 | m80 d -0.0434 pw 0.00 | m70 d -0.0673 | null ['-0.0387', '-0.0407', '-0.0425'] matched -0.0391
+real_ndx_86_14  H7     expo 0.54 | alone AT 0.038 SR 0.14 mdd -0.51 | corr -0.18 | m80 d -0.0334 pw 0.00 | m70 d -0.0542 | null ['-0.0341', '-0.0344', '-0.0381'] matched -0.0331
+real_ndx_86_14  A_B3   expo 1.00 | alone AT 0.073 SR 0.36 mdd -0.45 | corr -0.07 | m80 d -0.0229 pw 0.00 | m70 d -0.0388 | null [] matched +nan
+real_ndx_86_14  A_B1   expo 1.00 | alone AT 0.063 SR 0.44 mdd -0.15 | corr -0.07 | m80 d -0.0333 pw 0.00 | m70 d -0.0530 | null [] matched +nan
+real_ndx_86_14  A_EN   expo 1.00 | alone AT 0.096 SR 0.44 mdd -0.54 | corr 0.37 | m80 d -0.0315 pw 0.00 | m70 d -0.0493 | null [] matched +nan
+real_ndx_86_14  A_GD   expo 0.55 | alone AT 0.078 SR 0.44 mdd -0.41 | corr 0.01 | m80 d -0.0141 pw 0.00 | m70 d -0.0240 | null [] matched +nan
+dev250_path calendar max|dr| 0.00e+00 s085 med 0.1616 L med 0.955
+dev250_path     H1     expo 0.59 | alone AT 0.012 SR -0.03 mdd -0.61 | corr - | m80 d -0.0088 pw 0.30 | m70 d -0.0171 | null ['-0.0028', '-0.0075', '-0.0058'] matched -0.0002
+dev250_path     H1b    expo 0.59 | alone AT 0.026 SR -0.14 mdd -0.19 | corr - | m80 d -0.0081 pw 0.31 | m70 d -0.0162 | null ['-0.0057', '-0.0077', '-0.0068'] matched -0.0047
+dev250_path     H1s25  expo 0.38 | alone AT 0.002 SR -0.16 mdd -0.57 | corr - | m80 d -0.0103 pw 0.26 | m70 d -0.0195 | null ['-0.0060', '-0.0055', '-0.0056'] matched -0.0035
+dev250_path     H1s35  expo 0.73 | alone AT 0.033 SR 0.11 mdd -0.58 | corr - | m80 d -0.0042 pw 0.42 | m70 d -0.0104 | null ['+0.0008', '+0.0007', '+0.0010'] matched +0.0018
+dev250_path     H1L    expo 0.59 | alone AT -0.023 SR -0.04 mdd -0.89 | corr - | m80 d -0.0128 pw 0.24 | m70 d -0.0239 | null ['-0.0054', '-0.0077', '-0.0084'] matched +0.0007
+dev250_path     H2     expo 0.65 | alone AT 0.050 SR 0.21 mdd -0.52 | corr - | m80 d -0.0023 pw 0.45 | m70 d -0.0079 | null ['-0.0049', '+0.0013', '+0.0005'] matched +0.0006
+dev250_path     H3     expo 0.48 | alone AT 0.006 SR -0.10 mdd -0.61 | corr - | m80 d -0.0119 pw 0.25 | m70 d -0.0219 | null ['-0.0058', '-0.0042', '-0.0052'] matched -0.0021
+dev250_path     H5     expo 1.00 | alone AT 0.027 SR 0.11 mdd -0.67 | corr - | m80 d -0.0073 pw 0.33 | m70 d -0.0155 | null ['+0.0061', '-0.0037', '-0.0008'] matched +nan
+dev250_path     H6     expo 0.31 | alone AT 0.030 SR 0.04 mdd -0.42 | corr - | m80 d -0.0105 pw 0.24 | m70 d -0.0191 | null ['-0.0013', '-0.0062', '-0.0061'] matched -0.0056
+dev250_path     H7     expo 0.54 | alone AT 0.034 SR 0.10 mdd -0.50 | corr - | m80 d -0.0020 pw 0.46 | m70 d -0.0087 | null ['-0.0048', '-0.0063', '-0.0079'] matched -0.0011
+dev250_path     A_B3   expo 1.00 | alone AT 0.068 SR 0.31 mdd -0.57 | corr - | m80 d +0.0056 pw 0.62 | m70 d +0.0033 | null [] matched +nan
+dev250_path     A_B1   expo 1.00 | alone AT 0.061 SR 0.39 mdd -0.18 | corr - | m80 d -0.0011 pw 0.47 | m70 d -0.0055 | null [] matched +nan
+dev250_path     A_EN   expo 1.00 | alone AT 0.108 SR 0.49 mdd -0.51 | corr - | m80 d +0.0041 pw 0.60 | m70 d +0.0029 | null [] matched +nan
+real_spx_70_85 calendar max|dr| 0.00e+00 s085 med 0.1263 L med 0.913
+real_spx_70_85  H1     expo 0.04 | alone AT 0.051 SR -0.73 mdd -0.09 | corr - | m80 d -0.0076 pw 0.00 | m70 d -0.0133 | null ['-0.0100', '-0.0147', '-0.0089'] matched -0.0081
+real_spx_70_85  H1b    expo 0.04 | alone AT 0.051 SR -2.20 mdd -0.03 | corr - | m80 d -0.0078 pw 0.00 | m70 d -0.0135 | null ['-0.0084', '-0.0100', '-0.0082'] matched -0.0078
+real_spx_70_85  H1s25  expo 0.01 | alone AT 0.056 SR -1.37 mdd -0.04 | corr - | m80 d -0.0072 pw 0.00 | m70 d -0.0126 | null ['-0.0077', '-0.0082', '-0.0070'] matched -0.0080
+real_spx_70_85  H1s35  expo 0.11 | alone AT 0.069 SR -0.15 mdd -0.12 | corr - | m80 d -0.0051 pw 0.00 | m70 d -0.0094 | null ['-0.0140', '-0.0076', '-0.0044'] matched -0.0082
+real_spx_70_85  H1L    expo 0.04 | alone AT 0.049 SR -0.55 mdd -0.13 | corr - | m80 d -0.0079 pw 0.00 | m70 d -0.0137 | null ['-0.0110', '-0.0162', '-0.0096'] matched -0.0082
+real_spx_70_85  H2     expo 0.42 | alone AT 0.084 SR 0.16 mdd -0.42 | corr - | m80 d -0.0026 pw 0.00 | m70 d -0.0055 | null ['-0.0166', '-0.0175', '-0.0053'] matched -0.0096
+real_spx_70_85  H3     expo 0.50 | alone AT 0.083 SR 0.18 mdd -0.57 | corr - | m80 d -0.0013 pw 0.00 | m70 d -0.0039 | null ['-0.0153', '-0.0179', '-0.0007'] matched -0.0101
+real_spx_70_85  H5     expo 0.93 | alone AT 0.093 SR 0.24 mdd -0.52 | corr - | m80 d -0.0002 pw 0.00 | m70 d -0.0022 | null ['-0.0033', '-0.0095', '-0.0019'] matched +nan
+real_spx_70_85  H6     expo 0.39 | alone AT 0.071 SR 0.03 mdd -0.42 | corr - | m80 d -0.0037 pw 0.00 | m70 d -0.0075 | null ['-0.0132', '-0.0050', '-0.0055'] matched -0.0036
+real_spx_70_85  H7     expo 0.04 | alone AT 0.033 SR -0.90 mdd -0.17 | corr - | m80 d -0.0110 pw 0.00 | m70 d -0.0184 | null ['-0.0128', '-0.0173', '-0.0216'] matched -0.0092
+real_spx_70_85  A_B3   expo 1.00 | alone AT 0.030 SR -0.05 mdd -0.77 | corr - | m80 d -0.0132 pw 0.00 | m70 d -0.0214 | null [] matched +nan
+real_spx_70_85  A_B1   expo 1.00 | alone AT 0.075 SR 0.03 mdd -0.21 | corr - | m80 d -0.0043 pw 0.00 | m70 d -0.0081 | null [] matched +nan
+real_spx_70_85  A_EN   expo 1.00 | alone AT 0.110 SR 0.33 mdd -0.52 | corr - | m80 d +0.0021 pw 1.00 | m70 d +0.0014 | null [] matched +nan
+done 50s

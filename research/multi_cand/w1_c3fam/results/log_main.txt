@@ -1,0 +1,48 @@
+== start 2026-11-04T07:17:11Z
+holds {'hold1x': 0.11643356682063832, 'hold2x': 0.1047586313553065, 'hold3x': 0.042299245553364506}
+REF s085        path 16.16% dd80 73% p10 5.23 | glued 27.03 realNDX 31.08 SPX55 11.94 SPX70 12.63  [31s]
+REF c3raw       path 17.12% dd80 91% p10 4.43 | glued 27.21 realNDX 30.68 SPX55 12.82 SPX70 13.54  [33s]
+REF av23        path 14.49% dd80 2% p10 4.34 | glued 25.14 realNDX 30.02 SPX55 11.46 SPX70 12.42  [39s]
+REF volsw       path 13.86% dd80 98% p10 -0.07 | glued 13.86 realNDX 15.30 SPX55 9.84 SPX70 4.35  [42s]
+REF macro       path 13.36% dd80 98% p10 -1.55 | glued 25.44 realNDX 28.98 SPX55 12.82 SPX70 13.54  [44s]
+REF volsw_av23  path 12.26% dd80 1% p10 3.16 | glued 16.24 realNDX 20.32 SPX55 8.69 SPX70 2.54  [47s]
+REF macro_av23  path 13.28% dd80 1% p10 4.19 | glued 23.59 realNDX 27.32 SPX55 11.46 SPX70 12.42  [50s]
+PARITY chk_w1b_raw vs c3raw max |d cagr| = 0.00e+00
+PARITY chk_w1b_av23 vs av23 max |d cagr| = 0.00e+00
+PARITY chk_w1t_s085 vs s085 max |d cagr| = 0.00e+00
+PARITY chk_w1t_av23 vs av23 max |d cagr| = 0.00e+00
+H1a_Nf1_Wraw                       path 17.25% dd80  83% p10  4.66 | d_c3raw -0.24 (pw  33%) d_s085 +0.72 (pw  64%) | glued 26.63 | realNDX 29.88 (d -0.80) SPX55 12.61 (d -0.21) SPX70 13.54 (d +0.00) | verdict {'c3raw': '-', 's085': '-'} [79s]
+H1b_Nraw_Wav23                     path 13.51% dd80  47% p10  2.66 | d_c3raw -2.76 (pw  21%) d_s085 -1.37 (pw  27%) | glued 25.90 | realNDX 30.96 (d +0.28) SPX55 11.62 (d -1.21) SPX70 12.42 (d -1.12) | verdict {'c3raw': '-', 's085': '-'} [83s]
+H1c_Nraw_Wcush                     path 12.72% dd80  47% p10  0.69 | d_c3raw -3.25 (pw  20%) d_s085 -1.94 (pw  23%) | glued 25.57 | realNDX 30.45 (d -0.23) SPX55 11.62 (d -1.21) SPX70 12.42 (d -1.12) | verdict {'c3raw': '-', 's085': '-'} [86s]
+H1d_Nraw_Wcrash                    path 13.43% dd80  59% p10  1.36 | d_c3raw -2.22 (pw  19%) d_s085 -1.11 (pw  32%) | glued 25.28 | realNDX 30.68 (d +0.00) SPX55 12.82 (d +0.00) SPX70 13.54 (d +0.00) | verdict {'c3raw': '-', 's085': '-'} [89s]
+H1e_crash_all                      path 14.88% dd80  24% p10  4.21 | d_c3raw -1.85 (pw  26%) d_s085 -0.73 (pw  33%) | glued 25.41 | realNDX 30.59 (d -0.09) SPX55 12.56 (d -0.27) SPX70 13.54 (d +0.00) | verdict {'c3raw': '-', 's085': '-'} [92s]
+H1f_crash_anti_all                 path 14.99% dd80  24% p10  4.36 | d_c3raw -1.85 (pw  27%) d_s085 -0.62 (pw  34%) | glued 25.41 | realNDX 30.59 (d -0.09) SPX55 12.56 (d -0.27) SPX70 13.54 (d +0.00) | verdict {'c3raw': '-', 's085': '-'} [95s]
+H1g_Nf1_Wcrash                     path 15.30% dd80  20% p10  4.22 | d_c3raw -2.11 (pw  26%) d_s085 -1.04 (pw  28%) | glued 24.91 | realNDX 29.88 (d -0.80) SPX55 12.48 (d -0.34) SPX70 13.54 (d +0.00) | verdict {'c3raw': '-', 's085': '-'} [98s]
+H1h_Ncrashanti_Wav23               path 13.96% dd80   4% p10  4.33 | d_c3raw -2.12 (pw  26%) d_s085 -1.18 (pw  27%) | glued 25.92 | realNDX 30.53 (d -0.15) SPX55 11.16 (d -1.66) SPX70 12.42 (d -1.12) | verdict {'c3raw': '-', 's085': '-'} [102s]
+H1i_av23_no_gcg                    path 14.70% dd80   2% p10  4.29 | d_av23 +0.00 (pw  34%) d_s085 -1.38 (pw  23%) | glued 25.14 | realNDX 30.02 (d +0.00) SPX55 11.82 (d +0.36) SPX70 13.18 (d +0.76) | verdict {'av23': '-', 's085': '-'} [105s]
+H1j_av23_no_crash                  path 13.87% dd80   2% p10  3.95 | d_av23 -0.08 (pw  26%) d_s085 -1.78 (pw  19%) | glued 24.96 | realNDX 29.66 (d -0.36) SPX55 11.46 (d +0.00) SPX70 12.42 (d +0.00) | verdict {'av23': '-', 's085': '-'} [107s]
+H1k_av23_no_anti                   path 14.58% dd80   2% p10  4.24 | d_av23 +0.00 (pw   1%) d_s085 -1.39 (pw  22%) | glued 25.14 | realNDX 30.02 (d +0.00) SPX55 11.46 (d +0.00) SPX70 12.42 (d +0.00) | verdict {'av23': '-', 's085': '-'} [111s]
+H4a_s085_step1                     path 15.48% dd80  70% p10  4.30 | d_s085 -0.45 (pw  34%) d_s085 -0.45 (pw  34%) | glued 26.78 | realNDX 30.82 (d -0.26) SPX55 10.84 (d -1.10) SPX70 12.41 (d -0.23) | verdict {'s085': '-'} [114s]
+H4b_av23_step1                     path 13.89% dd80   1% p10  3.55 | d_av23 -0.42 (pw  39%) d_s085 -1.89 (pw  20%) | glued 25.00 | realNDX 28.44 (d -1.58) SPX55 10.72 (d -0.74) SPX70 10.98 (d -1.44) | verdict {'av23': '-'} [116s]
+H4c_s085_step025                   path 16.21% dd80  73% p10  5.60 | d_s085 +0.13 (pw  59%) d_s085 +0.13 (pw  59%) | glued 27.02 | realNDX 31.20 (d +0.11) SPX55 11.81 (d -0.12) SPX70 12.53 (d -0.11) | verdict {'s085': '-'} [119s]
+H5a_s085_taxadj                    path 16.28% dd80  75% p10  4.96 | d_s085 +0.05 (pw  53%) d_s085 +0.05 (pw  53%) | glued 27.21 | realNDX 31.39 (d +0.31) SPX55 12.00 (d +0.07) SPX70 12.61 (d -0.02) | verdict {'s085': '-'} [122s]
+H5b_av23_taxadj                    path 14.80% dd80  11% p10  3.87 | d_av23 +0.09 (pw  55%) d_s085 -1.15 (pw  26%) | glued 25.73 | realNDX 30.11 (d +0.09) SPX55 11.72 (d +0.26) SPX70 12.68 (d +0.26) | verdict {'av23': '-'} [125s]
+H2a_raw50_av23_never               path 16.35% dd80  82% p10  5.27 | d_s085 +0.01 (pw  50%) d_s085 +0.01 (pw  50%) | glued 26.34 | realNDX 30.36 (d -0.72) SPX55 12.20 (d +0.27) SPX70 13.00 (d +0.37) | verdict {'s085': '-', 'c3raw': '-'} [125s]
+H2b_raw70_av23_never               path 16.69% dd80  88% p10  4.95 | d_s085 +0.34 (pw  59%) d_s085 +0.34 (pw  59%) | glued 26.77 | realNDX 30.49 (d -0.59) SPX55 12.46 (d +0.53) SPX70 13.22 (d +0.59) | verdict {'s085': '-', 'c3raw': '-'} [125s]
+H2c_raw50_s085_never               path 16.84% dd80  87% p10  5.28 | d_s085 +0.48 (pw  64%) d_s085 +0.48 (pw  64%) | glued 27.02 | realNDX 30.88 (d -0.20) SPX55 12.41 (d +0.47) SPX70 13.10 (d +0.47) | verdict {'s085': '-', 'c3raw': '-'} [125s]
+H2d_raw70_s085_never               path 17.04% dd80  89% p10  5.24 | d_s085 +0.65 (pw  64%) d_s085 +0.65 (pw  64%) | glued 27.07 | realNDX 30.80 (d -0.28) SPX55 12.58 (d +0.64) SPX70 13.28 (d +0.65) | verdict {'s085': '-', 'c3raw': '-'} [125s]
+H2e_raw50_av23_yearly              path 16.25% dd80  78% p10  6.03 | d_s085 -0.16 (pw  46%) d_s085 -0.16 (pw  46%) | glued 26.00 | realNDX 30.22 (d -0.86) SPX55 12.02 (d +0.09) SPX70 12.93 (d +0.29) | verdict {'s085': '-', 'c3raw': '-'} [126s]
+H2f_raw70_av23_yearly              path 16.72% dd80  86% p10  5.81 | d_s085 +0.34 (pw  62%) d_s085 +0.34 (pw  62%) | glued 26.49 | realNDX 30.37 (d -0.71) SPX55 12.31 (d +0.38) SPX70 13.16 (d +0.53) | verdict {'s085': '-', 'c3raw': '-'} [126s]
+H2g_raw50_s085_yearly              path 16.82% dd80  87% p10  5.57 | d_s085 +0.54 (pw  70%) d_s085 +0.54 (pw  70%) | glued 26.92 | realNDX 30.80 (d -0.28) SPX55 12.30 (d +0.37) SPX70 13.05 (d +0.42) | verdict {'s085': '-', 'c3raw': '-'} [127s]
+H2h_raw70_s085_yearly              path 17.02% dd80  89% p10  5.23 | d_s085 +0.72 (pw  68%) d_s085 +0.72 (pw  68%) | glued 26.94 | realNDX 30.73 (d -0.35) SPX55 12.49 (d +0.56) SPX70 13.24 (d +0.61) | verdict {'s085': '-', 'c3raw': '-'} [127s]
+  upper(no transfer tax) H2e_raw50_av23_yearly_notransfertax path 16.83% dd80  77% p10  6.45 | d_s085 +0.36 (pw  60%) d_s085 +0.36 (pw  60%) | glued 26.29 | realNDX 30.37 (d -0.71) SPX55 12.16 (d +0.23) SPX70 12.99 (d +0.36)
+  upper(no transfer tax) H2f_raw70_av23_yearly_notransfertax path 17.23% dd80  85% p10  6.13 | d_s085 +0.77 (pw  73%) d_s085 +0.77 (pw  73%) | glued 26.74 | realNDX 30.50 (d -0.58) SPX55 12.43 (d +0.50) SPX70 13.21 (d +0.58)
+  upper(no transfer tax) H2g_raw50_s085_yearly_notransfertax path 17.13% dd80  86% p10  5.82 | d_s085 +0.82 (pw  79%) d_s085 +0.82 (pw  79%) | glued 27.05 | realNDX 30.89 (d -0.19) SPX55 12.38 (d +0.45) SPX70 13.09 (d +0.46)
+  upper(no transfer tax) H2h_raw70_s085_yearly_notransfertax path 17.32% dd80  89% p10  5.44 | d_s085 +0.93 (pw  72%) d_s085 +0.93 (pw  72%) | glued 27.12 | realNDX 30.81 (d -0.28) SPX55 12.56 (d +0.63) SPX70 13.27 (d +0.64)
+H3 lever = H1a_Nf1_Wraw (False, False, 0.007230151673816243)
+H3a_volsw_H1a_Nf1_Wraw             path 13.84% dd80  97% p10  0.44 | d_volsw -0.19 (pw  30%) d_s085 -2.17 (pw  37%) | glued 13.37 | realNDX 14.24 (d -1.06) SPX55  9.50 (d -0.34) SPX70  4.35 (d +0.00) | verdict {'volsw': '-', 's085': '-'} [133s]
+H3c_volsw_raw50_av23_never         path 13.94% dd80  95% p10  3.32 | d_volsw -0.74 (pw  42%) d_s085 -1.53 (pw  35%) | glued 16.14 | realNDX 18.51 (d +3.21) SPX55  9.31 (d -0.53) SPX70  3.50 (d -0.85) | verdict {'volsw': '-', 's085': '-'} [133s]
+H3b_macro_H1a_Nf1_Wraw             path 13.20% dd80  94% p10  0.17 | d_macro +0.00 (pw  45%) d_s085 -2.88 (pw  24%) | glued 24.43 | realNDX 28.14 (d -0.84) SPX55 12.61 (d -0.21) SPX70 13.54 (d +0.00) | verdict {'macro': '-', 's085': '-'} [136s]
+H3d_macro_raw50_av23_never         path 13.73% dd80  93% p10  3.08 | d_macro +0.10 (pw  51%) d_s085 -2.16 (pw  18%) | glued 24.80 | realNDX 28.23 (d -0.76) SPX55 12.20 (d -0.62) SPX70 13.00 (d -0.54) | verdict {'macro': '-', 's085': '-'} [136s]
+passers: []
+== done [136s]

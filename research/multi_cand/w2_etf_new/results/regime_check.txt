@@ -1,0 +1,4 @@
+1986 1997 {'corr_all': np.float64(0.2), 'corr_lo': np.float64(0.21), 'corr_hi': np.float64(0.19), 'share_lo': 0.44}
+1998 2014 {'corr_all': np.float64(-0.27), 'corr_lo': np.float64(-0.26), 'corr_hi': np.float64(-0.3), 'share_lo': 0.71}
+yoy<3% predicts next-126d corr<0: hit 0.631, base rate corr<0 0.552
+trailing corr<0 predicts next-126d corr<0: hit 0.829
