@@ -1,0 +1,11 @@
+name: rc07_monthly_sma10_tqqq
+family: raw_core
+known: 3
+idea: 월 1회 결정. 월초 종가가 10개월(210일) 평균 위면 TQQQ, 아니면 현금
+rebalance: monthly
+signals:
+  up: price(TQQQ) > sma(TQQQ, 210)
+rules:
+  - when: up
+    hold: {TQQQ: 1.0}
+  - else: {CASH: 1.0}

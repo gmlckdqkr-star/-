@@ -1,0 +1,21 @@
+name: s1_ensemble_c3raw
+family: raw_core_s3
+known: 1
+idea: C3 원형의 위기 관문 가격 부분을 200일 하나 대신 100·150·200·250일 × 띠 0·2% 8개 규칙의 평균 비중으로 (고르지 않고 평균)
+signals:
+  warn: macro(inv) or macro(shock6m)
+  sa100: latch(price(TQQQ) < 1.0 * sma(TQQQ, 100) and warn, price(TQQQ) > 1.0 * sma(TQQQ, 100) or not warn)
+  sb100: latch(price(TQQQ) < 0.98 * sma(TQQQ, 100) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 100) or not warn)
+  sa150: latch(price(TQQQ) < 1.0 * sma(TQQQ, 150) and warn, price(TQQQ) > 1.0 * sma(TQQQ, 150) or not warn)
+  sb150: latch(price(TQQQ) < 0.98 * sma(TQQQ, 150) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 150) or not warn)
+  sa200: latch(price(TQQQ) < 1.0 * sma(TQQQ, 200) and warn, price(TQQQ) > 1.0 * sma(TQQQ, 200) or not warn)
+  sb200: latch(price(TQQQ) < 0.98 * sma(TQQQ, 200) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 200) or not warn)
+  sa250: latch(price(TQQQ) < 1.0 * sma(TQQQ, 250) and warn, price(TQQQ) > 1.0 * sma(TQQQ, 250) or not warn)
+  sb250: latch(price(TQQQ) < 0.98 * sma(TQQQ, 250) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 250) or not warn)
+  g: 1 - (sa100 + sb100 + sa150 + sb150 + sa200 + sb200 + sa250 + sb250) / 8
+  one: vol(TQQQ, 20) > 0.40 or macro(shock6m)
+band: 0.10
+rules:
+  - when: one
+    hold: {QQQ: g}
+  - else: {TQQQ: g}

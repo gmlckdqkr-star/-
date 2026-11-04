@@ -1,0 +1,14 @@
+name: s5_asymreentry_c3raw
+family: raw_core_s3
+known: 2
+idea: C3 원형, 관문에서 나갈 때는 그대로, 다시 들어올 때는 200일선 +2% 위와 63일 고점 갱신을 함께 확인 (경보 해제면 바로 복귀)
+signals:
+  warn: macro(inv) or macro(shock6m)
+  stop: latch(price(TQQQ) < 0.98 * sma(TQQQ, 200) and warn, (price(TQQQ) > 1.02 * sma(TQQQ, 200) and price(TQQQ) >= high(TQQQ, 63)) or not warn)
+  one: vol(TQQQ, 20) > 0.40 or macro(shock6m)
+rules:
+  - when: stop
+    hold: {CASH: 1.0}
+  - when: one
+    hold: {QQQ: 1.0}
+  - else: {TQQQ: 1.0}

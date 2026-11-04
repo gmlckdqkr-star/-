@@ -1,0 +1,17 @@
+name: s6_ensemble_continuous_c3raw
+family: raw_core_s3
+known: 1
+idea: S1+S2. 경보 중 비중 = 100·150·200·250일선 각각의 clip((가격/평균 - 0.97)/0.06, 0, 1) 평균, 경보 없으면 1
+signals:
+  warn: macro(inv) or macro(shock6m)
+  g: (max(0, min(1, (price(TQQQ) / sma(TQQQ, 100) - 0.97) / 0.06)) + max(0, min(1, (price(TQQQ) / sma(TQQQ, 150) - 0.97) / 0.06)) + max(0, min(1, (price(TQQQ) / sma(TQQQ, 200) - 0.97) / 0.06)) + max(0, min(1, (price(TQQQ) / sma(TQQQ, 250) - 0.97) / 0.06))) / 4
+  one: vol(TQQQ, 20) > 0.40 or macro(shock6m)
+band: 0.10
+rules:
+  - when: warn and one
+    hold: {QQQ: g}
+  - when: warn
+    hold: {TQQQ: g}
+  - when: one
+    hold: {QQQ: 1.0}
+  - else: {TQQQ: 1.0}

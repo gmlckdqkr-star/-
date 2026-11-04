@@ -1,0 +1,14 @@
+name: s4_qld_c3raw
+family: raw_core_s3
+known: 2
+idea: C3 원형 2배 몸통 (TQQQ 대신 QLD, 신호는 같은 나스닥100)
+signals:
+  warn: macro(inv) or macro(shock6m)
+  stop: latch(price(TQQQ) < 0.98 * sma(TQQQ, 200) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 200) or not warn)
+  one: vol(TQQQ, 20) > 0.40 or macro(shock6m)
+rules:
+  - when: stop
+    hold: {CASH: 1.0}
+  - when: one
+    hold: {QQQ: 1.0}
+  - else: {QLD: 1.0}

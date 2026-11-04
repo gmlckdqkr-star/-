@@ -1,0 +1,14 @@
+name: rc12_c3raw_tqqq
+family: raw_core
+known: 3
+idea: C3 핵심 전부, 제동 장치 없음. 위기 관문이면 현금, 아니면 (변동성 40% 초과 또는 주의 경보)면 QQQ 1배, 아니면 TQQQ
+signals:
+  warn: macro(inv) or macro(shock6m)
+  stop: latch(price(TQQQ) < 0.98 * sma(TQQQ, 200) and warn, price(TQQQ) > 1.02 * sma(TQQQ, 200) or not warn)
+  one: vol(TQQQ, 20) > 0.40 or macro(shock6m)
+rules:
+  - when: stop
+    hold: {CASH: 1.0}
+  - when: one
+    hold: {QQQ: 1.0}
+  - else: {TQQQ: 1.0}
