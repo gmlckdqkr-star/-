@@ -1,0 +1,8 @@
+name: gh1_a2_lppls
+family: gh1_lppls
+known: 1
+idea: LPPLS 거품 신뢰 >= 1/3이면 현금, 아니면 TQQQ
+plugin: plugins/lppls_gate.py:weights
+sleeves: [TQQQ]
+inputs: [QQQ]
+params: {thr: 0.3333333}

@@ -1,0 +1,8 @@
+name: gh2_d5_lppls
+family: gh2_lppls
+known: 1
+idea: QQQ 1배, LPPLS 거품 신뢰 >= 0.25면 현금
+plugin: plugins/lppls2.py:weights
+sleeves: [QQQ]
+inputs: [QQQ]
+params: {thr: 0.25}

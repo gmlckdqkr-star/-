@@ -1,0 +1,8 @@
+name: gh2_d2_lppls
+family: gh2_lppls
+known: 1
+idea: 기본 QQQ 1배; 반대 거품(급락 가속) 신뢰 >= 0.25 뒤 63일 TQQQ; 거품 신뢰 >= 0.25면 현금
+plugin: plugins/lppls2.py:weights
+sleeves: [TQQQ, QQQ]
+inputs: [QQQ]
+params: {thr: 0.25, nthr: 0.25, boost: 63, lev: TQQQ, base_sleeve: QQQ}

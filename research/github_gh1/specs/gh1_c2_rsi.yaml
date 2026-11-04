@@ -1,0 +1,17 @@
+name: gh1_c2_rsi
+family: gh1_rsi
+known: 2
+idea: FTLT 단순형 - 200일선 위면 RSI10>79 현금 아니면 TQQQ, 아래면 RSI10<31 TQQQ 아니면 현금
+rebalance: daily
+signals:
+  up: price(QQQ) > sma(QQQ, 200)
+  hot: rsi(QQQ, 10) > 79
+  cold: rsi(QQQ, 10) < 31
+rules:
+  - when: up and hot
+    hold: {CASH: 1.0}
+  - when: up
+    hold: {TQQQ: 1.0}
+  - when: cold
+    hold: {TQQQ: 1.0}
+  - else: {CASH: 1.0}

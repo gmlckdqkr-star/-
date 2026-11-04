@@ -1,0 +1,14 @@
+name: gh1_c3_rsi
+family: gh1_rsi
+known: 2
+idea: 200일선 위면 TQQQ, 아래면 RSI10<31일 때만 TQQQ 아니면 현금
+rebalance: daily
+signals:
+  up: price(QQQ) > sma(QQQ, 200)
+  cold: rsi(QQQ, 10) < 31
+rules:
+  - when: up
+    hold: {TQQQ: 1.0}
+  - when: cold
+    hold: {TQQQ: 1.0}
+  - else: {CASH: 1.0}
