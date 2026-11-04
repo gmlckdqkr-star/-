@@ -1,0 +1,11 @@
+name: etfx_macro_trend_tmf
+family: etfx_lab
+known: 2
+idea: 'ETX1 교차 확인: 위와 같은 경보에서 현금 대신 TMF(장기국채 3배)로 채움 = 유휴 채우기 S2_TMF의 lab 표현'
+signals:
+  down: price(TQQQ) < sma(TQQQ, 200)
+  warn: macro(inv) or macro(shock6m)
+rules:
+  - when: down and warn
+    hold: {TMF: 1.0}
+  - else: {TQQQ: 1.0}
