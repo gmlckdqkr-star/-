@@ -30,21 +30,25 @@ def sleeve(L, kind):
         return W, fl
     return f
 PRODS = ['TQQQ', 'QQQ', 'SPY', 'IAU', 'PSQ', 'CASH']
-STRESS = {'base': dict(delay=2, cost=0.003), 'delay3': dict(delay=3, cost=0.003), 'cost2x': dict(delay=2, cost=0.006)}
-kinds = sys.argv[1].split(',') if len(sys.argv) > 1 else ['B1', 'B2', 'B3', 'B4', 'B5']
-out = {}
-for sn, s in STRESS.items():
-    for bn in BASES:
-        b = X.Basis(bn); L = X.s085_levels(bn, delay=s['delay'])
-        ref = X.run(b, PRODS, [sleeve(L, 'base')], [1.0], cost=s['cost'])
-        rr = X.row(ref)
-        if sn == 'base': print('v1 %-7s %-15s cagr %.4f' % (sn, bn, rr['cagr']), flush=True)
-        for k in kinds:
-            if k == 'B6': continue
-            res = X.run(b, PRODS, [sleeve(L, k)], [1.0], cost=s['cost'], cash_kind=('sgov' if k == 'B1' else 'ms1'))
-            r = X.row(res, ref); r['v1'] = rr['cagr']
-            for n in ('GLD', 'U_SPX'):
-                if (k == 'B4' and n == 'GLD') or (k == 'B3' and n == 'U_SPX'): r['cover_' + n] = b.cover(n)
-            out['%s|%s|%s' % (k, sn, bn)] = r
-            print('%s %-7s %-15s cagr %.4f v1 %.4f d %+.4f pw %.2f dd80 %.2f tr %.1f %s' % (k, sn, bn, r['cagr'], r['v1'], r['d_ref'], r['pw_ref'], r['dd80'], r['tr'], {a: round(v, 3) for a, v in r.items() if a.startswith('cover')}), flush=True)
-json.dump(out, open('/mnt/project-files/research/v1_states/results/b_group.json', 'w'), indent=1)
+def main():
+    STRESS = {'base': dict(delay=2, cost=0.003), 'delay3': dict(delay=3, cost=0.003), 'cost2x': dict(delay=2, cost=0.006)}
+    kinds = sys.argv[1].split(',') if len(sys.argv) > 1 else ['B1', 'B2', 'B3', 'B4', 'B5']
+    out = {}
+    for sn, s in STRESS.items():
+        for bn in BASES:
+            b = X.Basis(bn); L = X.s085_levels(bn, delay=s['delay'])
+            ref = X.run(b, PRODS, [sleeve(L, 'base')], [1.0], cost=s['cost'])
+            rr = X.row(ref)
+            if sn == 'base': print('v1 %-7s %-15s cagr %.4f' % (sn, bn, rr['cagr']), flush=True)
+            for k in kinds:
+                if k == 'B6': continue
+                res = X.run(b, PRODS, [sleeve(L, k)], [1.0], cost=s['cost'], cash_kind=('sgov' if k == 'B1' else 'ms1'))
+                r = X.row(res, ref); r['v1'] = rr['cagr']
+                for n in ('GLD', 'U_SPX'):
+                    if (k == 'B4' and n == 'GLD') or (k == 'B3' and n == 'U_SPX'): r['cover_' + n] = b.cover(n)
+                out['%s|%s|%s' % (k, sn, bn)] = r
+                print('%s %-7s %-15s cagr %.4f v1 %.4f d %+.4f pw %.2f dd80 %.2f tr %.1f %s' % (k, sn, bn, r['cagr'], r['v1'], r['d_ref'], r['pw_ref'], r['dd80'], r['tr'], {a: round(v, 3) for a, v in r.items() if a.startswith('cover')}), flush=True)
+    json.dump(out, open('/mnt/project-files/research/v1_states/results/b_group.json', 'w'), indent=1)
+
+if __name__ == '__main__':
+    main()
