@@ -1,0 +1,17 @@
+{
+ "test": "NI1 C: IGREA -> CYC/DEF industry score, S&P 500 PIT, monthly rank IC",
+ "precommit_sha256": "2e6a7a161fac6b71389eaaa13976c545dde6d2092c117a6d0a5f129d8691e2ff",
+ "written_before_returns": "2026-11-04, before any holding return or IC was computed",
+ "choices": {
+  "timing": "Decision at the last panel trading day of calendar month m (decision month m). Signal = IGREA(m-2) - IGREA(m-5) (3-month change of the m-2 value). Conservative reading: the m-2 value is used at the END of month m, i.e. ~1.5 months after its assumed mid-(m-1) publication (the judge's index run applied it to trading days inside month m; we do not rely on that tighter timing).",
+  "high": "high = signal(m) > expanding median of signal over all months up to and including m (strict >), computed from the full pre-2015 IGREA history from 1968; only used once >= 24 signal values exist. NaN otherwise.",
+  "score": "CYC (Mines, Steel, Machn, Chems, Trans): +1 if high, -1 if not high. DEF (Food, Utils, Cnsum): -1 if high, +1 if not high. Other 9 industries: 0.",
+  "industry": "At each decision day d: multivariate OLS with intercept of the stock's simple daily returns on the 17 Ken French VW daily industry returns (decimal) over the trailing 252 return rows ending at d (needs 253 panel rows with valid adj); industry = argmax of the 17 signed slope coefficients. Stock needs all 252 returns valid AND all 253 rows on/after its first membership day (lab rule against price-history-length leak). Stocks failing this are excluded from that month (not scored 0). KF rows cut at 2014-12-31; panel rows without a KF row are dropped from the window regression.",
+  "universe": "member==1 on decision day d and valid adj on d and on execution day d+2.",
+  "return": "Buy at close of trading row d+2, hold to close of the last trading day of month m+1: adj[end]/adj[d+2]-1. If the stock has no valid price at end: return to its last valid price inside the holding window, compounded with the lab delisting value (-50% if its 250-row return to that last price < -30%, else 0).",
+  "ic": "Spearman (average ranks for ties) between score and holding return across the month's eligible stocks; months with constant score or < 30 stocks skipped.",
+  "periods": "Sub-periods are assigned by the HOLDING month: 1986-01..1999-12 and 2000-01..2014-12. Primary span for the mean IC = holding months 1986-01..2014-12. Conservative reading of the gate: KEEP only if primary mean IC >= .05 AND both sub-period means have the same sign (and, since the spec names no span, also the all-available span from the first usable month must have mean IC >= .05). Otherwise CLOSE.",
+  "t": "t = mean/(sd/sqrt(n)) of monthly ICs, reported only (not part of the gate).",
+  "trials": "N=1 for this test; no variants run."
+ }
+}

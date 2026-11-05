@@ -1,0 +1,20 @@
+{
+ "written_utc": "2026-11-04T23:27Z (before any return was computed; only API row counts and ChangesRatio corporate-action behaviour had been looked at)",
+ "precommit": "research/bt1/ni1/PRECOMMIT_NI1.md sha256 2e6a7a161fac6b71389eaaa13976c545dde6d2092c117a6d0a5f129d8691e2ff, section A",
+ "choices": {
+  "list": "OpenDART list.json pblntf_ty=D, no corp_cls, one query window per calendar month 2002-07-01..2008-12-31, last_reprt_at left at default (N), all pages, dedupe by rcept_no. Name columns (corp_name, flr_nm) are dropped at download.",
+  "insider_rows": "report_nm contains the exact string for the insider ownership report. Rows with [기재정정] or [첨부추가] are excluded. Conservative extension: ANY other bracketed prefix (e.g. [첨부정정]) is also excluded, because such rows are amendments of an earlier filing, not new disclosures. Counts of each prefix are reported.",
+  "sampling": "insider rows sorted by rcept_no ascending; numpy.random.default_rng(20261107).choice(n, 2500, replace=False); sample taken from ALL markets as the spec says (KOSPI filter applied afterwards).",
+  "parsing": "detail table rows with AUNIT=RPT_RSN cell; text containing 장내매수 -> +|MDF_STK_CNT|, 장내매도 -> -|MDF_STK_CNT|; all share kinds summed; every other reason ignored. A doc is 'parsed' if it decodes (cp949, else utf-8) and at least one detail row with a reason cell and a share count is found. Unparsed docs are dropped and counted. Fallback for docs without RPT_RSN attributes: none (counted as unparsed).",
+  "signal": "per document net = sum above. S1: net>0. S2: net<0. One event per document (no de-duplication, literal reading).",
+  "universe": "stock_code 6 digits equals marcap Code with Market=='KOSPI' on rcept_dt; if rcept_dt is not a trading day, on the last trading day before rcept_dt.",
+  "calendar_and_entry": "trading days = dates with at least one KOSPI row in marcap. Entry day E = 2nd trading day strictly after rcept_dt; the stock must have a marcap row on E, else the event is dropped (counted). Holding window = trading days E+1..E+21.",
+  "returns": "marcap Close is NOT adjusted (verified: e.g. 2006-02-23 10:1 split shows raw -89.6% vs ChangesRatio +4.02%). Daily stock return = ChangesRatio/100 (verified to equal Changes/(Close-Changes), i.e. vs the exchange's adjusted base price, on split, stock-dividend and capital-reduction dates). Missing stock row inside the window (halt or delisting) = 0 return that day. 21-day return = product(1+r)-1.",
+  "benchmark": "KOSPI equal-weight: each day the mean of ChangesRatio/100 over all rows with Market=='KOSPI' that day (daily rebalanced, the literal 'members that day' reading; also the higher-return, i.e. more conservative, EW variant), compounded over E+1..E+21. Excess = stock 21d return - EW 21d return.",
+  "t_stat": "gate t = min(naive t of event excess returns, t with standard error clustered by calendar month of E). The more conservative of the two is used against 2.24.",
+  "subperiods": "by rcept_dt: 2002-07-01..2005-12-31 and 2006-01-01..2008-12-31; 'negative' means mean < 0.",
+  "stage1_close_rule": "S1 closes if mean excess < +0.010, or gate t < 2.24, or either sub-period mean < 0. S2 is reported only (expected negative), it does not gate.",
+  "no_outlier_trimming": true,
+  "stage2": "run only if stage 1 passes"
+ }
+}

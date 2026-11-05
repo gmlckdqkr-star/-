@@ -1,0 +1,58 @@
+{
+ "n_split_rows": 196,
+ "median_abs_cr_minus_adj": 3.372093023256556e-05,
+ "share_within_1pp": 0.9132653061224489,
+ "n_reverse_rows": 176,
+ "examples": [
+  {
+   "code": "003560",
+   "date": "2002-01-28",
+   "split_factor": 10.0,
+   "raw_close_ret": -0.9013,
+   "changes_ratio": -0.0126,
+   "sharecount_adj_ret": -0.0126
+  },
+  {
+   "code": "009420",
+   "date": "2006-05-10",
+   "split_factor": 10.0,
+   "raw_close_ret": -0.9115,
+   "changes_ratio": -0.1154,
+   "sharecount_adj_ret": -0.1154
+  },
+  {
+   "code": "005390",
+   "date": "2009-11-16",
+   "split_factor": 10.0,
+   "raw_close_ret": -0.9089,
+   "changes_ratio": -0.0902,
+   "sharecount_adj_ret": -0.0887
+  },
+  {
+   "code": "000060",
+   "date": "2006-02-23",
+   "split_factor": 10.0,
+   "raw_close_ret": -0.896,
+   "changes_ratio": 0.0402,
+   "sharecount_adj_ret": 0.0402
+  },
+  {
+   "code": "000040",
+   "date": "2002-01-14",
+   "split_factor": 0.1,
+   "raw_close_ret": 7.9565,
+   "changes_ratio": -0.1043,
+   "sharecount_adj_ret": -0.1052,
+   "kind": "reverse"
+  },
+  {
+   "code": "000370",
+   "date": "2004-04-28",
+   "split_factor": 0.333,
+   "raw_close_ret": 3.583,
+   "changes_ratio": 0.15,
+   "sharecount_adj_ret": 0.5277,
+   "kind": "reverse"
+  }
+ ]
+}

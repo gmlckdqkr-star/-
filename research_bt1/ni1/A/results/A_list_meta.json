@@ -1,0 +1,22 @@
+{
+ "list_months": 78,
+ "list_total_count_sum": 96264,
+ "list_rows_unique": 96264,
+ "insider_name_rows": 43297,
+ "insider_prefix_counts": {
+  "none": 41596,
+  "[기재정정]": 1701
+ },
+ "insider_rows_used": 41596,
+ "insider_rows_by_corp_cls_now": {
+  "Y": 13641,
+  "K": 12085,
+  "E": 15870
+ },
+ "insider_rows_blank_stock_code": 137,
+ "sample_n": 2500,
+ "sample_first_last": [
+  "20020703000151",
+  "20081230000296"
+ ]
+}

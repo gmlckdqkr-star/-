@@ -1,0 +1,190 @@
+{
+ "test": "NI1-B Frazzini-Lamont expected-announcer premium, S&P 500 PIT",
+ "shift": 0,
+ "ic": {
+  "1975-2014": {
+   "mean": 0.022248539413374513,
+   "sd": 0.060023456940572685,
+   "n": 480,
+   "t": 8.120843103264095
+  },
+  "1975-84": {
+   "mean": 0.01685269235740498,
+   "sd": 0.05682307639165242,
+   "n": 120,
+   "t": 3.2488912410246202
+  },
+  "1985-94": {
+   "mean": 0.023873668049955565,
+   "sd": 0.055153145490049155,
+   "n": 120,
+   "t": 4.741759116426191
+  },
+  "1995-04": {
+   "mean": 0.03545593150749967,
+   "sd": 0.06316263804470909,
+   "n": 120,
+   "t": 6.149209116398667
+  },
+  "2005-14": {
+   "mean": 0.012811865738637839,
+   "sd": 0.06280219141497041,
+   "n": 120,
+   "t": 2.234746180244525
+  },
+  "1989-2014": {
+   "mean": 0.025209475571461536,
+   "sd": 0.06271536971641342,
+   "n": 312,
+   "t": 7.100143420008031
+  }
+ },
+ "gate": {
+  "full_mean_ge_005": false,
+  "four_decades_positive": true,
+  "mean_1989_2014_positive": true,
+  "verdict": "CLOSE"
+ },
+ "basket_reference": {
+  "1975-2014": {
+   "months": 480,
+   "basket_gross_mean_m": 0.013294906218194184,
+   "basket_net_mean_m": 0.011294906218194182,
+   "bench_mean_m": 0.009628884613967456,
+   "excess_net_mean_m": 0.0016660216042267263,
+   "excess_net_t": 2.836288336760156,
+   "basket_net_ann": 0.12884504047932133,
+   "bench_ann": 0.10709770047173972,
+   "basket_net_sharpe_ann_rawret": 0.8212320443985492,
+   "excess_net_ir_ann": 0.4484565622566385
+  },
+  "1975-84": {
+   "months": 120,
+   "basket_gross_mean_m": 0.016178829766753056,
+   "basket_net_mean_m": 0.014178829766753054,
+   "bench_mean_m": 0.01392048918458329,
+   "excess_net_mean_m": 0.00025834058216976327,
+   "excess_net_t": 0.2699964275282976,
+   "basket_net_ann": 0.1696720797993101,
+   "bench_ann": 0.16643953428509928,
+   "basket_net_sharpe_ann_rawret": 1.068497320381725,
+   "excess_net_ir_ann": 0.08538036710980063
+  },
+  "1985-94": {
+   "months": 120,
+   "basket_gross_mean_m": 0.012653319580367067,
+   "basket_net_mean_m": 0.010653319580367063,
+   "bench_mean_m": 0.009214331408075448,
+   "excess_net_mean_m": 0.001438988172291617,
+   "excess_net_t": 1.736572008452808,
+   "basket_net_ann": 0.11833422855828268,
+   "bench_ann": 0.10001750497957618,
+   "basket_net_sharpe_ann_rawret": 0.7423623284750664,
+   "excess_net_ir_ann": 0.5491522867604048
+  },
+  "1995-04": {
+   "months": 120,
+   "basket_gross_mean_m": 0.015950152936085562,
+   "basket_net_mean_m": 0.013950152936085564,
+   "bench_mean_m": 0.0083780823206157,
+   "excess_net_mean_m": 0.0055720706154698645,
+   "excess_net_t": 3.4115192813117377,
+   "basket_net_ann": 0.16757749543812395,
+   "bench_ann": 0.09336962396224568,
+   "basket_net_sharpe_ann_rawret": 1.0945155690932065,
+   "excess_net_ir_ann": 1.0788171210525792
+  },
+  "2005-14": {
+   "months": 120,
+   "basket_gross_mean_m": 0.008397322589571047,
+   "basket_net_mean_m": 0.006397322589571045,
+   "bench_mean_m": 0.0070026355425953845,
+   "excess_net_mean_m": -0.0006053129530243397,
+   "excess_net_t": -0.5779835337464716,
+   "basket_net_ann": 0.06320218565487656,
+   "bench_ann": 0.07081627571572047,
+   "basket_net_sharpe_ann_rawret": 0.43772315228055614,
+   "excess_net_ir_ann": -0.18277444167116436
+  },
+  "1989-2014": {
+   "months": 312,
+   "basket_gross_mean_m": 0.01186982703312947,
+   "basket_net_mean_m": 0.009869827033129469,
+   "bench_mean_m": 0.007465076046474808,
+   "excess_net_mean_m": 0.002404750986654664,
+   "excess_net_t": 2.9773531217978078,
+   "basket_net_ann": 0.11105079334019208,
+   "bench_ann": 0.08008834507401841,
+   "basket_net_sharpe_ann_rawret": 0.7423494714721746,
+   "excess_net_ir_ann": 0.5839069871885928
+  }
+ },
+ "coverage": {
+  "1975-2014": {
+   "members_mean": 500.0229166666667,
+   "linked_mean": 489.8354166666667,
+   "linked_share": 0.979625933811367,
+   "later_delisted_linked_share": 0.9823493056060496,
+   "other_linked_share": 0.9773208090039773,
+   "later_delisted_members_mean": 229.21666666666667
+  },
+  "1975-84": {
+   "members_mean": 500.0,
+   "linked_mean": 495.46280991735534,
+   "linked_share": 0.9909256198347107,
+   "later_delisted_linked_share": 0.9904369407318018,
+   "other_linked_share": 0.9922200108557988,
+   "later_delisted_members_mean": 362.9669421487603
+  },
+  "1985-94": {
+   "members_mean": 500.0,
+   "linked_mean": 495.85,
+   "linked_share": 0.9917,
+   "later_delisted_linked_share": 0.9873979461212414,
+   "other_linked_share": 0.9977864530929287,
+   "later_delisted_members_mean": 292.94166666666666
+  },
+  "1995-04": {
+   "members_mean": 500.0,
+   "linked_mean": 490.625,
+   "linked_share": 0.98125,
+   "later_delisted_linked_share": 0.967312199333909,
+   "other_linked_share": 0.9907508618515093,
+   "later_delisted_members_mean": 202.675
+  },
+  "2005-14": {
+   "members_mean": 500.0924369747899,
+   "linked_mean": 477.25210084033614,
+   "linked_share": 0.9543277713363916,
+   "later_delisted_linked_share": 0.9571708641230584,
+   "other_linked_share": 0.9539712556732224,
+   "later_delisted_members_mean": 55.72268907563025
+  },
+  "1989-2014": {
+   "members_mean": 500.0353697749196,
+   "linked_mean": 487.0032154340836,
+   "linked_share": 0.9739375349653723,
+   "later_delisted_linked_share": 0.9749575137225792,
+   "other_linked_share": 0.9734369907398531,
+   "later_delisted_members_mean": 164.60771704180064
+  }
+ },
+ "diagnostics": {
+  "months_total": 480,
+  "months_ic": 480,
+  "ic_cross_section_n_mean": 489.57708333333335,
+  "signal_count_mean": 146.69375,
+  "signal_share_mean": 0.29974160192895527,
+  "ic_positive_share": 0.6291666666666667,
+  "signal_share_by_decade": {
+   "1975-2014": 0.29974160192895527,
+   "1975-84": 0.29289990537588645,
+   "1985-94": 0.29317272831359287,
+   "1995-04": 0.30565030489127615,
+   "2005-14": 0.30724346913506567,
+   "1989-2014": 0.30396703943709674
+  },
+  "min_linked_month": 438,
+  "max_linked_month": 499
+ }
+}

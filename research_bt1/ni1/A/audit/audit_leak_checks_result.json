@@ -1,0 +1,106 @@
+{
+ "codes_with_both_KOSPI_and_KOSDAQ_labels_2002_2009": 27,
+ "included_events_by_corp_cls_now": {
+  "S1": {
+   "E": 143,
+   "Y": 290
+  },
+  "S2": {
+   "E": 42,
+   "Y": 150
+  }
+ },
+ "S1_mean_excess_by_cls_now": {
+  "E": {
+   "size": 143,
+   "mean": 0.0005980763666246136
+  },
+  "Y": {
+   "size": 290,
+   "mean": 0.007135568772334495
+  }
+ },
+ "dropped_absent_on_rcept_dt": [
+  {
+   "rcept_dt": "20040618",
+   "first_row": "2002-01-02",
+   "last_row": "2004-06-17",
+   "markets": [
+    "KOSDAQ"
+   ],
+   "sig": "S1"
+  }
+ ],
+ "dropped_blank_stock_code": [
+  {
+   "sig": "S2",
+   "cls_now": "E",
+   "rcept_dt": "20020807"
+  },
+  {
+   "sig": "S2",
+   "cls_now": "E",
+   "rcept_dt": "20020810"
+  },
+  {
+   "sig": "S2",
+   "cls_now": "E",
+   "rcept_dt": "20020910"
+  },
+  {
+   "sig": "S1",
+   "cls_now": "E",
+   "rcept_dt": "20021007"
+  },
+  {
+   "sig": "S1",
+   "cls_now": "E",
+   "rcept_dt": "20021108"
+  },
+  {
+   "sig": "S2",
+   "cls_now": "E",
+   "rcept_dt": "20030605"
+  },
+  {
+   "sig": "S1",
+   "cls_now": "E",
+   "rcept_dt": "20031210"
+  }
+ ],
+ "kospi_rows_abs_changesratio_gt_15_5pct": 723,
+ "ew_daily_mean": 0.0007038248012059892,
+ "ew_daily_mean_capped_15pct": 0.0007230446207009813,
+ "kospi_rows_zero_volume_share": 0.055102020874921186,
+ "S1_top5_excess": [
+  0.3987,
+  0.4055,
+  0.4319,
+  0.4421,
+  2.2541
+ ],
+ "S1_bottom5_excess": [
+  -0.5595,
+  -0.3852,
+  -0.3377,
+  -0.281,
+  -0.2601
+ ],
+ "S1_events_with_missing_days": [
+  {
+   "rcept_dt": "20050425",
+   "nmiss": 21,
+   "x": -0.018370450311711917
+  }
+ ],
+ "entry_after_rcept_all": true,
+ "S1_events_per_year": {
+  "2002": 28,
+  "2003": 77,
+  "2004": 69,
+  "2005": 45,
+  "2006": 53,
+  "2007": 82,
+  "2008": 79
+ }
+}

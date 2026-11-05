@@ -1,0 +1,19 @@
+{
+ "remote_rows": 5544521,
+ "row_groups": 56,
+ "checks": [
+  {
+   "group": 7,
+   "rows": 41063,
+   "missing_in_local": 0,
+   "value_mismatch": 0
+  },
+  {
+   "group": 40,
+   "rows": 86710,
+   "missing_in_local": 0,
+   "value_mismatch": 0
+  }
+ ],
+ "bytes_fetched": 1595369
+}
