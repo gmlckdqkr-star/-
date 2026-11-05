@@ -1,0 +1,15 @@
+K1a_delay1       real_ndx_86_14  cagr=0.315 mdd=-0.697 w7=6.075 w12=36.502 d_vs_s085=0.004 pw_vs_s085=1.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+K1a_delay1       dev250_glued    cagr=0.278 mdd=-0.736 w7=6.595 w12=23.389 p10=0.174 dd80=0.068 dd95=0.000 d_vs_s085=0.004 pw_vs_s085=0.618 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+K1a_delay1       dev250_path     cagr=0.160 mdd=-0.828 w7=3.522 w12=6.465 p10=0.056 dd80=0.722 dd95=0.000 d_vs_s085=0.000 pw_vs_s085=0.514 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+K1a_delay1       real_spx_55_85  cagr=0.121 mdd=-0.631 w7=6.487 w12=6.040 d_vs_s085=0.002 pw_vs_s085=1.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+K1a_delay1       real_spx_70_85  cagr=0.134 mdd=-0.521 w7=3.244 w12=2.765 d_vs_s085=0.008 pw_vs_s085=1.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
+K1b_cspr1        real_ndx_86_14  cagr=0.313 mdd=-0.699 w7=7.127 w12=42.202 d_vs_s085=0.003 pw_vs_s085=1.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+K1b_cspr1        dev250_glued    cagr=0.274 mdd=-0.736 w7=6.372 w12=21.635 p10=0.170 dd80=0.056 dd95=0.000 d_vs_s085=0.002 pw_vs_s085=0.934 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+K1b_cspr1        dev250_path     cagr=0.164 mdd=-0.828 w7=3.521 w12=6.969 p10=0.054 dd80=0.712 dd95=0.000 d_vs_s085=0.002 pw_vs_s085=0.888 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+K1b_cspr1        real_spx_55_85  cagr=0.121 mdd=-0.631 w7=6.504 w12=6.067 d_vs_s085=0.001 pw_vs_s085=1.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+K1b_cspr1        real_spx_70_85  cagr=0.128 mdd=-0.498 w7=3.152 w12=2.993 d_vs_s085=0.002 pw_vs_s085=1.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
+K1c_delay3       real_ndx_86_14  cagr=0.309 mdd=-0.736 w7=7.300 w12=39.549 d_vs_s085=-0.002 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+K1c_delay3       dev250_glued    cagr=0.278 mdd=-0.740 w7=6.773 w12=22.911 p10=0.177 dd80=0.096 dd95=0.000 d_vs_s085=0.006 pw_vs_s085=0.630 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+K1c_delay3       dev250_path     cagr=0.163 mdd=-0.831 w7=3.559 w12=6.993 p10=0.056 dd80=0.752 dd95=0.000 d_vs_s085=0.000 pw_vs_s085=0.510 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+K1c_delay3       real_spx_55_85  cagr=0.116 mdd=-0.632 w7=6.564 w12=5.936 d_vs_s085=-0.003 pw_vs_s085=0.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+K1c_delay3       real_spx_70_85  cagr=0.124 mdd=-0.515 w7=2.777 w12=2.831 d_vs_s085=-0.003 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
