@@ -1,0 +1,12 @@
+{
+ "id": "(조정자가 배정; T33 자금 경색 계열의 짝, 예: T36)",
+ "area": "시점",
+ "name": "TED 급등(DED3-DTB3 63거래일 변화가 직전 1260거래일 분포 90% 초과) -> v1 3x를 1x로 (A형 CUT, OV1-E); T33 자금 경색 계열 짝",
+ "kw": "TED,TED spread,유로달러,Eurodollar,DED3,DTB3,TEDRATE,LIBOR,은행 단기 자금,자금 경색,funding stress,money market spread,3x 깎기,CUT",
+ "verdict": "CLOSED",
+ "result": "OV1-E N=1(계열 N=2) A형: 초기(SPX 1976-04..1985 + NDX 1986-99) v1-3x 블록 218개 중 on 18개, on 적중 72.2% vs 시대 맞춤 base 54.8% -> 낙폭 -17.4pp(반대 방향) FAIL; SPX +0.6pp(on 6), NDX -26.4pp(on 12개 중 10승: 1987-11, 1992, 1994-12, 1996-97, 1998-11, 1999 Y2K); 미공개 미개봉, measure2 미실행; 신호 재계산 불일치 0",
+ "evidence": "research/ov1/lanes/OV1-E/RESULT_OV1-E_KO.md",
+ "reopen": "은행 단기 자금 스프레드 계열(TED, LIBOR/유로달러/CD/CP-국채 스프레드; 변화 창·백분위·임계값·BEY 환산·유지 기간·1x 대신 현금 변형)은 새 정보 입력과 새 N 없이 다시 열지 않음. 반대 방향(급등 때 3x 유지·추가)은 이 결과를 본 사후 가설이라 별도 사전 등록과 계열 N 3으로만",
+ "idea_check_add_draft": "python3 -I /mnt/project-files/tools/idea_check/idea_check.py add --id <ID> --area '시점' --name 'TED 급등(DED3-DTB3 63거래일 변화가 직전 1260거래일 분포 90% 초과) -> v1 3x를 1x로 (A형 CUT, OV1-E); T33 자금 경색 계열 짝' --kw 'TED,TED spread,유로달러,Eurodollar,DED3,DTB3,TEDRATE,LIBOR,은행 단기 자금,자금 경색,funding stress,money market spread,3x 깎기,CUT' --verdict CLOSED --result 'OV1-E N=1(계열 N=2) A형: 초기(SPX 1976-04..1985 + NDX 1986-99) v1-3x 블록 218개 중 on 18개, on 적중 72.2% vs 시대 맞춤 base 54.8% -> 낙폭 -17.4pp(반대 방향) FAIL; SPX +0.6pp(on 6), NDX -26.4pp(on 12개 중 10승: 1987-11, 1992, 1994-12, 1996-97, 1998-11, 1999 Y2K); 미공개 미개봉, measure2 미실행; 신호 재계산 불일치 0' --evidence research/ov1/lanes/OV1-E/RESULT_OV1-E_KO.md --reopen '은행 단기 자금 스프레드 계열(TED, LIBOR/유로달러/CD/CP-국채 스프레드; 변화 창·백분위·임계값·BEY 환산·유지 기간·1x 대신 현금 변형)은 새 정보 입력과 새 N 없이 다시 열지 않음. 반대 방향(급등 때 3x 유지·추가)은 이 결과를 본 사후 가설이라 별도 사전 등록과 계열 N 3으로만'",
+ "note": "초안만. 이 레인은 idea_check add를 실행하지 않았다."
+}

@@ -1,0 +1,50 @@
+{
+ "lane": "OV1-B",
+ "fetched_utc": "2026-11-05T08:24:01Z",
+ "files": [
+  {
+   "path": "qqq_td_raw.json",
+   "source_url": "https://api.twelvedata.com/time_series?symbol=QQQ&interval=1day&start_date=1999-03-10&end_date=2014-12-31&outputsize=5000&apikey=demo",
+   "fetched_utc": "2026-11-05T08:24:01Z",
+   "sha256": "32abdfe9567be1940a44e66d50f670175e4187c04e884d3c679fc70432d81dcd",
+   "rows": 3979,
+   "first_date": "1999-03-10",
+   "last_date": "2014-12-30",
+   "note": "raw as fetched; split-adjusted, not dividend-adjusted; request end_date was 2014-12-31 but source has no 2014-12-31 row (connector get_time_series also lacks it); no rows after 2014 were fetched"
+  },
+  {
+   "path": "qqq_1day_cut_le20141231.csv",
+   "source_url": "derived from qqq_td_raw.json",
+   "sha256": "297d875cb1171642f2daf2d1064e9af615261fdbfe5d25b9175cfd6cbf81f393",
+   "rows": 3979,
+   "first_date": "1999-03-10",
+   "last_date": "2014-12-30",
+   "note": "cut copy rows<=2014-12-31, ascending, columns date,open,high,low,close,volume"
+  },
+  {
+   "path": "spy_panel_19930129_19991231.csv",
+   "source_url": "local file /mnt/project-files/research/data/panel_f32.npz.xz (shared base panel, Yahoo chart v8, layout [open,high,low,close,adjclose,volume]; sha256 fa2c35b295642ddf27924e1125a50c823ea464a0f6b47e54c0b3b254fd35242c); rows cut to <=2014-12-31 before anything else",
+   "fetched_utc": "2026-11-05 (builder extract)",
+   "sha256": "9368a6212d5dcf2e3513774e73fc0e90a58d59069735e3afae24467274329a8a",
+   "rows": 1749,
+   "first_date": "1993-01-29",
+   "last_date": "1999-12-31",
+   "note": "pre-gate only (SPY overnight/intraday split 1993-02-01..1999-03-10); open/close split-adjusted, not dividend-adjusted (adjclose column kept but unused)"
+  },
+  {
+   "path": "qqq_panel_xcheck_le20141231.csv",
+   "source_url": "local file /mnt/project-files/research/data/panel_f32.npz.xz (shared base panel, Yahoo chart v8, layout [open,high,low,close,adjclose,volume]; sha256 fa2c35b295642ddf27924e1125a50c823ea464a0f6b47e54c0b3b254fd35242c); rows cut to <=2014-12-31 before anything else",
+   "fetched_utc": "2026-11-05 (builder extract)",
+   "sha256": "40b2f44de7fb25abb9b3599413e5f45d7faba0852e27896f8fcca96942ae9cb8",
+   "rows": 3980,
+   "first_date": "1999-03-10",
+   "last_date": "2014-12-31",
+   "note": "second-source cross-check of the Twelve Data QQQ opens/closes; read for 2000+ only after the pre-gate; not a primary input"
+  }
+ ],
+ "not_fetched": {
+  "SPY_1993-1999": "Twelve Data route failed (scout); builder found SPY OHLC 1993-01-29.. in the existing local panel and extracted 1993-01-29..1999-12-31 -> pre-gate is COVERED (spy_panel_19930129_19991231.csv)",
+  "NDX_r_rf": "not downloaded: taken from jp.mkX(R,M,'NDX') in /mnt/project-files/research/c3_combo/code/jp.py (existing MS1 data); jp NDX dates 1999-03-10..2014-12-31 equal QQQ dates plus 2014-12-31"
+ },
+ "pit_rule": "QQQ O_t is public at the t open, C_t at the t close, so no lag beyond the trading-day clock: on_t=O_t/C_{t-1}-1 is known at the t open; a postponed fill at the open of e+1 uses only O_{e+1}. Fixed lag 0 for prices, no ALFRED vintages needed (no macro series added). 2014-12-31 has no QQQ row -> on_t=0 (identical to v1, 'not covered'). Prices are vendor split-adjusted (as of 2026), not dividend-adjusted; the 2010-era QQQ split history was not verified against as-traded prices (check O_t/C_{t-1} for jumps only inside the engine parity step)."
+}

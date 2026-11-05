@@ -1,0 +1,4 @@
+{"lane": "OV1-B", "N": 1, "kill_type": "F", "pregate_pass": true, "F_pass": false, "final_pass": false, "kill_verdict": "FAIL",
+ "reason": "dev250_path d_vs_s085 = +0.00352 <= +0.005 (F threshold); real_ndx_86_14 d = +0.00726 > 0",
+ "files": ["PRECOMMIT.md", "PRECOMMIT.sha256", "results/parity.json", "results/pregate.json", "results/pregate_ii_events.csv",
+           "results/measure.json", "results/diag_posthoc.json", "results/registry_row.txt", "ledger.csv", "RESULT_OV1-B_KO.md"]}

@@ -1,0 +1,7 @@
+# Suggested closed-registry row for OV1-B (the lane does not write outside its folder; the coordinator runs it and may renumber the id)
+python3 -I /mnt/project-files/tools/idea_check/idea_check.py add --id X40 --area 실행 \
+ --name "방향별 체결 시각: v1 노출 감소만 다음 날 미국 시가 체결(QQQ 시가로 밤/낮 분리), 증가·하베스트는 종가 (OV1-B)" \
+ --kw "시가,체결 시각,overnight,밤 수익,open fill,감소 체결,QQQ open" --verdict CLOSED \
+ --result "OV1-B N=1 F형: 사전관문 통과(SPY93-99+QQQ99 밤-낮 log 차 NW t 3.64, v1 감소일 S=+0.176), measure2 1회: path 16.84%(d 중앙 +0.35%p, 이긴 비율 .74) 실제 NDX 31.81%(+0.73%p) -> F 기준 path +0.5%p 미달 FAIL. 비용 +0.1%p 스트레스 +0.16/+0.37%p, 1999 제외 +0.19/+0.27%p; 2000-14 v1 감소일 밤 수익 평균 0.00%(2008-14 음수)" \
+ --evidence "research/ov1/lanes/OV1-B/RESULT_OV1-B_KO.md" \
+ --reopen "없음 (실행 미세조정, 기대 +0.2~0.4%p로 문턱 +0.5%p 아래). 실제 TQQQ 시가 체결 자료가 생겨도 상한 낮음"

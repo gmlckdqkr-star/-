@@ -1,0 +1,13 @@
+lane,variant,window,metric,value
+OV1-B,decrease_at_next_open,early_1993-1999,pregate_i_mean_x_daily,0.000928927
+OV1-B,decrease_at_next_open,early_1993-1999,pregate_i_nw_t_lag10,3.6437
+OV1-B,decrease_at_next_open,early_1993-1999,pregate_ii_S,0.175780
+OV1-B,decrease_at_next_open,early_1993-1999,pregate_pass,1
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,dev250_path_d_vs_s085,0.003520
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,real_ndx_86_14_d,0.007259
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,F_pass,0.000000
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,HEADLINE_MS1_dev250_path_cagr,0.168415
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,REAL_NDX_cagr,0.318074
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,dev250_path_pw_vs_s085,0.736000
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,stress_dev250_path_d_vs_s085,0.001618
+OV1-B,decrease_at_next_open,unseen_F_measure2_1986-2014,stress_real_ndx_d,0.003667

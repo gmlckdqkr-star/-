@@ -1,0 +1,42 @@
+{
+ "pregate_i": {
+  "window": "SPY 1993-02-01..1999-03-10 + QQQ 1999-03-11..1999-12-31",
+  "n": 1748,
+  "dropped_days": 0,
+  "stale_open_spy": 94,
+  "stale_open_qqq": 8,
+  "mean_log_overnight": 0.0009394116833114411,
+  "mean_log_intraday": 1.0484319732511486e-05,
+  "mean_x": 0.0009289273635789295,
+  "nw_t_lag10": 3.643683800753936,
+  "ann_overnight": 0.23673174419448315,
+  "ann_intraday": 0.0026420485725928947,
+  "spy_part": {
+   "n": 1542,
+   "mean_x": 0.0005733282106964961,
+   "nw_t": 2.394042713615703
+  },
+  "qqq_part": {
+   "n": 206,
+   "mean_x": 0.0035907423817571455
+  },
+  "PASS": true
+ },
+ "pregate_ii": {
+  "window": "real_ndx_86_14 v1 decrease fills, open e+1 in 1993-02-01..1999-12-31",
+  "n_events": 30,
+  "n_level": 25,
+  "n_tax": 5,
+  "n_not_eligible_k251": 0,
+  "missing_on": 0,
+  "sum_dexp": 46.250695971513956,
+  "S": 0.17577973247330173,
+  "S_level_only": 0.17142166912392987,
+  "mean_on_event_days": 0.003877232411802996,
+  "mean_on_all_days": 0.000955510548113411,
+  "frac_on_positive": 0.7,
+  "v1_real_cagr_check": 0.3108146630765727,
+  "PASS": true
+ },
+ "PREGATE_PASS": true
+}

@@ -1,0 +1,34 @@
+{
+ "lane": "OV1-D",
+ "fetched_utc_raw": "2026-11-05T08:26:41Z",
+ "fetched_utc_metadata": "2026-11-05T08:27:02Z",
+ "files": [
+  {
+   "path": "boj_tankan_raw.csv",
+   "source_url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=csv&lang=en&db=CO&startDate=197401&endDate=201404&code=TK99F1000601GCQ01000,TK99F1000601GCQ11000,TK99F1150601GCQ01000,TK99F1150601GCQ11000",
+   "sha256": "ab49c62a5cc8e48c7fecbb2feb9d37671ffd71a2b4769ab5cec0ee61fdc3f1ff",
+   "lines": 668,
+   "data_rows": 656,
+   "first_date": "197401 (quarter code; first non-null 197402 actual, 197403 forecast)",
+   "last_date": "201404 (2014 Dec survey); fetched with endDate=201404 so no later values were downloaded",
+   "note": "raw as fetched; header block plus 4 series x 164 quarters"
+  },
+  {
+   "path": "boj_metadata_raw.csv",
+   "source_url": "https://www.stat-search.boj.or.jp/api/v1/getMetadata?format=csv&lang=en&db=CO",
+   "sha256": "8759032cae28ffba112d3633f85147ab29f6c5621494ebb756235b37d9b38bfe",
+   "lines": 168127,
+   "note": "metadata only (series catalog of db CO); contains no data values; only the 4 needed series were inspected. Break note: no continuity between Dec 2003 and Mar 2004 survey."
+  },
+  {
+   "path": "boj_tankan_cut_le2014.csv",
+   "source_url": "derived from boj_tankan_raw.csv",
+   "sha256": "89ff76734e41bd25178d64162d2cf50e2122eeaad5eec1c62ebede8ca686b2bc",
+   "rows": 164,
+   "first_date": "1974-03-31",
+   "last_date": "2014-12-31",
+   "note": "tidy: quarter_end <= 2014-12-31; surprise_q = mean(A-F mfg, A-F el); 2004Q1 (200401) NaN by spec; usable_from_calendar = 1st calendar day of 2nd month after quarter-end month (trading-day roll-forward to be done in code)"
+  }
+ ],
+ "pit_rule": "No release-date vintages for Tankan in a free machine-readable source; conservative fixed lag: U_q = first trading day on/after 1st of 2nd month after q end month (Mar->May, Jun->Aug, Sep->Nov, Dec->Feb). Actual and forecast DI are not revised in the BoJ series except sample/continuity breaks (2003/04)."
+}

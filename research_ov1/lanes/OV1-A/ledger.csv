@@ -1,0 +1,14 @@
+lane,variant,window,metric,value
+OV1-A,noise_relief,early,n_universe,24
+OV1-A,noise_relief,early,base,0.5833333333333334
+OV1-A,noise_relief,early,n_on,1
+OV1-A,noise_relief,early,cond,0.0
+OV1-A,noise_relief,early,cond_minus_base,-0.5833333333333334
+OV1-A,noise_relief,early,pass_B,False
+OV1-A,vix_control(not_in_N),early,n_universe,24
+OV1-A,vix_control(not_in_N),early,base,0.5833333333333334
+OV1-A,vix_control(not_in_N),early,n_on,0
+OV1-A,vix_control(not_in_N),early,cond,nan
+OV1-A,vix_control(not_in_N),early,cond_minus_base,nan
+OV1-A,vix_control(not_in_N),early,pass_B,False
+OV1-A,noise_relief,early,verdict,FAIL(n_on<8)

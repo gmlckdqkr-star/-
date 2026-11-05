@@ -1,0 +1,27 @@
+{
+ "plain_events_le1999": 41,
+ "sig_g_events_le1999": 41,
+ "events_equal": true,
+ "on_check": {
+  "SPX": {
+   "n_blocks": 38,
+   "on_blocks_brute": 16,
+   "mismatches": 0
+  },
+  "NDX": {
+   "n_blocks": 168,
+   "on_blocks_brute": 40,
+   "mismatches": 0
+  }
+ },
+ "v1B_check": {
+  "NDX": {
+   "days": 3839,
+   "mismatches": 0
+  },
+  "SPX": {
+   "days": 826,
+   "mismatches": 0
+  }
+ }
+}

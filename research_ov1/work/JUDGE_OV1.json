@@ -1,0 +1,138 @@
+{
+ "judge": "OV1 JUDGE",
+ "date": "2026-11-05",
+ "data_cutoff": "2014-12-31 (no post-2014 number used)",
+ "verdict_ko": "OV1 4개 레인(OV1-A 국채 잡음 ADD, OV1-B 감소 체결 시가 이동, OV1-C 해외 동시 긴축 CUT, OV1-D 단칸 예측 오차 CUT)은 모두 사전 등록한 kill test에서 FAIL했고, 거짓 음성 감사 4건 모두 FAIL_CONFIRMED라 INCONCLUSIVE나 PASS는 없다. OV1-B만 measure2까지 갔고 숫자상 v1을 둘 다 넘었다(path 16.84% > 16.16%, 실제 NDX 31.81% > 31.08%). 그러나 사전 등록한 F 기준(path d +0.5%p)에 못 미쳤고(+0.35%p), 비용 스트레스를 주면 +0.16%p로 줄며, 2008-14 v1 감소일 밤 수익 합은 음수(-0.097)라 채택할 수 없다. OV1-C는 방향은 맞았지만 낙폭 8.2pp(약 1.4 SE)로 10pp에 못 미쳤고, OV1-D는 부호가 반대(-5.5pp)였으며, OV1-A는 on 블록이 1개뿐이었다. 총 시도 N=4(레인마다 1개), 팀 축소 계수 sqrt(1+ln4)=1.54이고, 정직한 최선 후보는 없으므로 v1(s0.85)을 유지한다.",
+ "team_verdict": "NO PASS. All 4 lanes FAIL (kill test failed, false-negative audit FAIL_CONFIRMED for each). 0 INCONCLUSIVE, 0 NOGO. Keep v1 (s0.85).",
+ "rules_applied": "PASS needs the pre-registered variant to beat v1 on BOTH HEADLINE_MS1 > 0.1616 and REAL_NDX > 0.3108, survive the leak hunter (no fatal or major issue), and be reproduced by the validator; kill-test FAIL confirmed by the FN audit = FAIL; POSSIBLE_FALSE_NEGATIVE = INCONCLUSIVE; scout no-go = NOGO. No lane reached the leak-hunter or validator stage because none passed its kill test.",
+ "lanes": [
+  {
+   "lane_id": "OV1-A",
+   "title": "국채 가격 잡음(HPW) 급등 뒤 절반 해소 -> v1 1x/현금을 3x로 (B형 ADD)",
+   "status": "FAIL",
+   "kill_type": "B",
+   "key_numbers": "early 1988-99: v1 non-3x universe 24 blocks (14 cash, 10 1x), base 58.3%; noise on-blocks 1 (1998-09-17, v1 1x, lost) < 8; cond 0%; VIX control on 0 (no T02 close); signal on 59 days in 1987-99, 56 of them with v1 already 3x; peak/base 1990 1.86, 1994 1.31 < 2.0; unseen not opened; MS1 not run; N=1",
+   "note_ko": "kill test B FAIL(on 블록 1개 < 8, cond 0%). 거짓 음성 감사 FAIL_CONFIRMED: 시차를 없애도(look-ahead) on 블록 1개, 블록 안 어느 날이든 세도 1개. 완벽한 신호라면 14/14로 통과할 수 있었으므로 시험은 유효하다. 신호가 너무 드물고, 켜질 때는 v1이 이미 3x였다.",
+   "verified_files": [
+    "research/ov1/lanes/OV1-A/RESULT_OV1-A_KO.md",
+    "research/ov1/lanes/OV1-A/results/killB_early.json",
+    "research/ov1/lanes/OV1-A/results/s3_check_early.json"
+   ],
+   "precommit_sha256_matches": true,
+   "fn_audit": "FAIL_CONFIRMED"
+  },
+  {
+   "lane_id": "OV1-B",
+   "title": "방향별 체결 시각: v1 노출 감소만 다음 날 미국 시가 체결 (F형)",
+   "status": "FAIL",
+   "kill_type": "F",
+   "key_numbers": "pregate PASS (SPY93-99+QQQ99 overnight-intraday NW t 3.64; v1 decrease S +0.176, 30 events); measure2 once: HEADLINE dev250_path 16.84% (v1 16.16), d_vs_s085 +0.352pp < +0.5pp F bar, pw .736, dd80 71.8%; REAL_NDX 31.81% (v1 31.08, d +0.73pp); glued 27.81% upper bound; SPX not covered (=v1); stress +0.1%/side: path d +0.16pp pw .616, real +0.37pp; post-hoc 1999 zeroed: path +0.19pp, real +0.27pp; 2000-14 v1 decrease-day S +0.019 (2000-07 +0.116, 2008-14 -0.097); parity 0.0 on 5 bases; open coverage 53% of days; N=1",
+   "note_ko": "F 기준 FAIL(path d +0.35%p <= +0.5%p). 숫자상 HEADLINE과 REAL 둘 다 v1을 넘지만, 사전 등록한 F 관문이 먼저라서 PASS가 아니다. 거짓 음성 감사 FAIL_CONFIRMED: 정렬, 부호, dev250 매핑, 엔진 동일성 모두 정상. 비용 스트레스와 1999 제외 진단에서 효과가 절반 이하로 줄고 2008-14에는 음수라 우연과 구분되지 않는다. 시가 현금이 하루 예금 이자를 다 받는 작은 유리한 편향도 있다.",
+   "verified_files": [
+    "research/ov1/lanes/OV1-B/RESULT_OV1-B_KO.md",
+    "research/ov1/lanes/OV1-B/results/measure.json",
+    "research/ov1/lanes/OV1-B/results/pregate.json",
+    "research/ov1/lanes/OV1-B/results/parity.json",
+    "research/ov1/lanes/OV1-B/results/diag_posthoc.json"
+   ],
+   "precommit_sha256_matches": true,
+   "fn_audit": "FAIL_CONFIRMED"
+  },
+  {
+   "lane_id": "OV1-C",
+   "title": "해외 중앙은행 동시 긴축(BoJ·분데스방크/ECB·BoE 2곳 이상 126일 +25bp) -> v1 3x를 1x로 (A형 CUT)",
+   "status": "FAIL",
+   "kill_type": "A",
+   "key_numbers": "early pooled (SPX 1960-85 + NDX 1986-99): v1-3x universe 369, on 76, hit_on 47.4% vs era-matched base 55.6%, drop 8.24pp < 10pp (~1.45 SE); SPX 232/57, 27 wins, drop 7.8pp (p .15); NDX 137/19, 9 wins, drop 9.6pp (p .27, report-only; 16 of 19 on-blocks in 1988-09..1989-12); auditor t+2 read about 9.2pp, still < 10; unseen not opened; MS1 not run; N=1",
+   "note_ko": "kill test A FAIL(낙폭 8.2pp < 10pp, on 개수는 충족). 거짓 음성 감사 FAIL_CONFIRMED: 라벨 478개 모두 일치, v1 상태와 부호 정상, 1987-91 정책금리 이력 일치. 방향은 두 시대 모두 가설과 같지만 약하고 통계적으로 유의하지 않다. 임계값이나 창을 바꿔 10pp를 넘기면 사후 조정이다.",
+   "verified_files": [
+    "research/ov1/lanes/OV1-C/RESULT_OV1-C_KO.md",
+    "research/ov1/lanes/OV1-C/results/killA_early.json",
+    "research/ov1/lanes/OV1-C/results/s3_check_early.json"
+   ],
+   "precommit_sha256_matches": true,
+   "fn_audit": "FAIL_CONFIRMED"
+  },
+  {
+   "lane_id": "OV1-D",
+   "title": "단칸 대기업 예측 오차(실제 DI - 직전 예측 DI, 제조업+전기기계) 하위 1/3 -> v1 3x를 1x로 (A형 CUT)",
+   "status": "FAIL",
+   "kill_type": "A",
+   "key_numbers": "early pooled (SPX 1979-08..85 + NDX 1986-99): v1-3x universe 178, on 61, era-matched drop -5.5pp (wrong sign; need >= +10pp); SPX 41/11, 8 wins, hit 72.7% vs base 56.1%; NDX 137/50, 30 wins, hit 60.0% vs 56.9%; signal OFF in Oct-1987 and 1990; auditor lag shift -25/-45 days still negative (-2.0/-2.2pp); unseen not opened; MS1 not run; N=1",
+   "note_ko": "kill test A FAIL(낙폭 -5.5pp, 부호 반대). 거짓 음성 감사 FAIL_CONFIRMED: 예측과 실제 정렬이 맞고, 발표를 앞당겨도 음수가 유지되며, 독립 재계산이 정확히 일치했다. 신호는 일본 국내 경기 후퇴기에 몰려 켜졌고, v1이 크게 진 1987년과 1990년은 놓쳤다. 부호를 뒤집은 ADD 판은 사후 변형이라 금지한다.",
+   "verified_files": [
+    "research/ov1/lanes/OV1-D/RESULT_OV1-D_KO.md",
+    "research/ov1/lanes/OV1-D/results/killA_early.json",
+    "research/ov1/lanes/OV1-D/results/s3_verify_early.json"
+   ],
+   "precommit_sha256_matches": true,
+   "fn_audit": "FAIL_CONFIRMED"
+  }
+ ],
+ "total_trials": {
+  "N": 4,
+  "per_lane": {
+   "OV1-A": 1,
+   "OV1-B": 1,
+   "OV1-C": 1,
+   "OV1-D": 1
+  },
+  "not_counted": "OV1-A VIX control (binding control, not a candidate); OV1-B +0.1%/side stress (report-only) and post-hoc 1999-zeroed diagnostic; FN-auditor diagnostics (OV1-A no-lag and any-day checks, OV1-C t+2 alignment read, OV1-D -25/-45 day lag shifts); OV1-A pre-1987 proxy dropped by the court. None is selectable.",
+  "team_deflation": "sqrt(1+ln 4) = 1.545; it would only shrink OV1-B further, and the verdict does not depend on it."
+ },
+ "best_honest_candidate": "none, keep v1 (s0.85). Nearest miss: OV1-B (path 16.84% / real 31.81%, d +0.35pp). It failed its own pre-registered F bar of +0.5pp, the effect halves under a +0.1%/side open-cost stress, and the 2008-14 event-day overnight sum is negative. It is not adoptable.",
+ "independent_checks": [
+  "PRECOMMIT.md sha256 recomputed for all 4 lanes; each matches its PRECOMMIT.sha256 and the builder-reported hash.",
+  "Timestamps: in every lane PRECOMMIT.md was written before the test results (killB/killA/parity/pregate/measure). The s1_inspect files predate PRECOMMIT but hold input descriptives only.",
+  "OV1-C pooled drop recomputed from the per-block lists: SPX 57 on-blocks / 27 wins (drop 7.80pp), NDX 19 / 9 (9.57pp), pooled 8.24pp, about 1.45 SE.",
+  "OV1-D pooled drop recomputed from the on-block list: SPX 11 / 8 wins, NDX 50 / 30, pooled -5.51pp.",
+  "OV1-B measure.json: HEADLINE 0.168415 and REAL 0.318074 both beat v1, but dev250_path d_vs_s085 0.003520 < 0.005, so F fails; parity.json is exactly 0.0 on all 5 bases.",
+  "OV1-A killB_early.json: universe 24, n_on 1, cond 0.0, VIX n_on 0, brute_equal true."
+ ],
+ "open_issues": [
+  "OV1-B execution realism (TQQQ open vs 3x the QQQ overnight move, opening spread, Korean-broker market-on-open availability) was not measured. It could only lower the number.",
+  "Registry rows were not added by the lanes (they write inside their own folders only). The coordinator should run the idea_check add commands below."
+ ],
+ "registry_adds": [
+  {
+   "id": "T33",
+   "area": "시점",
+   "name": "국채 가격 잡음(Hu-Pan-Wang Noise) 급등(1년 중앙값 2배) 뒤 절반 해소 -> v1 1x/현금을 3x로 (B형 ADD, OV1-A); 같은 계열 TED·유로달러 자금 경색 합침",
+   "kw": "HPW,Hu-Pan-Wang,국채 잡음,noise measure,차익 자본,arbitrage capital,자금 경색,funding stress,TED,유로달러,유동성 위기 해소,재진입",
+   "result": "OV1-A N=1 B형: 초기 1988-99 v1 비3x 블록 24개 중 on 1개(<8), cond 0% vs base 58.3% FAIL; 신호 59일 중 56일은 v1 이미 3x; 1990/1994 급등 1.86/1.31배로 2배 미달; VIX 대조 on 0; 미공개 미개봉; 감사 재현",
+   "evidence": "research/ov1/lanes/OV1-A/RESULT_OV1-A_KO.md",
+   "reopen": "v1이 3x가 아닌 날에 켜지는 새 시점 정합 자금 경색 정보가 있고, 초기 on 블록 8개 이상을 사전에 보일 수 있을 때만 (상수 2.0배·절반·창 변경은 같은 계열)",
+   "idea_check_add": "python3 -I /mnt/project-files/tools/idea_check/idea_check.py add --id T33 --area '시점' --name '국채 가격 잡음(Hu-Pan-Wang Noise) 급등(1년 중앙값 2배) 뒤 절반 해소 -> v1 1x/현금을 3x로 (B형 ADD, OV1-A); 같은 계열 TED·유로달러 자금 경색 합침' --kw 'HPW,Hu-Pan-Wang,국채 잡음,noise measure,차익 자본,arbitrage capital,자금 경색,funding stress,TED,유로달러,유동성 위기 해소,재진입' --verdict CLOSED --result 'OV1-A N=1 B형: 초기 1988-99 v1 비3x 블록 24개 중 on 1개(<8), cond 0% vs base 58.3% FAIL; 신호 59일 중 56일은 v1 이미 3x; 1990/1994 급등 1.86/1.31배로 2배 미달; VIX 대조 on 0; 미공개 미개봉; 감사 재현' --evidence research/ov1/lanes/OV1-A/RESULT_OV1-A_KO.md --reopen 'v1이 3x가 아닌 날에 켜지는 새 시점 정합 자금 경색 정보가 있고, 초기 on 블록 8개 이상을 사전에 보일 수 있을 때만 (상수 2.0배·절반·창 변경은 같은 계열)'"
+  },
+  {
+   "id": "X40",
+   "area": "실행",
+   "name": "방향별 체결 시각: v1 노출 감소만 다음 날 미국 시가 체결(QQQ 시가로 밤/낮 분리), 증가·하베스트는 종가 (F형, OV1-B)",
+   "kw": "시가,체결 시각,open fill,overnight,밤 수익,감소 체결,MOO,시가 주문,QQQ open,비대칭 체결",
+   "result": "OV1-B N=1 F형: 사전관문 통과(NW t 3.64), measure2 1회 path 16.84%(d +0.35%p < +0.5%p, 이긴 비율 .74) 실제 NDX 31.81%(+0.73%p) -> F FAIL; 비용 +0.1%p 스트레스 +0.16/+0.37%p; 2008-14 v1 감소일 밤 수익 합 -0.097; 감사 재현",
+   "evidence": "research/ov1/lanes/OV1-B/RESULT_OV1-B_KO.md",
+   "reopen": "없음 (실행 미세조정 기대 +0.2~0.4%p로 문턱 아래). 실제 3배 상품 시가 체결 자료가 생겨도 상한이 낮음",
+   "idea_check_add": "python3 -I /mnt/project-files/tools/idea_check/idea_check.py add --id X40 --area '실행' --name '방향별 체결 시각: v1 노출 감소만 다음 날 미국 시가 체결(QQQ 시가로 밤/낮 분리), 증가·하베스트는 종가 (F형, OV1-B)' --kw '시가,체결 시각,open fill,overnight,밤 수익,감소 체결,MOO,시가 주문,QQQ open,비대칭 체결' --verdict CLOSED --result 'OV1-B N=1 F형: 사전관문 통과(NW t 3.64), measure2 1회 path 16.84%(d +0.35%p < +0.5%p, 이긴 비율 .74) 실제 NDX 31.81%(+0.73%p) -> F FAIL; 비용 +0.1%p 스트레스 +0.16/+0.37%p; 2008-14 v1 감소일 밤 수익 합 -0.097; 감사 재현' --evidence research/ov1/lanes/OV1-B/RESULT_OV1-B_KO.md --reopen '없음 (실행 미세조정 기대 +0.2~0.4%p로 문턱 아래). 실제 3배 상품 시가 체결 자료가 생겨도 상한이 낮음'"
+  },
+  {
+   "id": "T34",
+   "area": "시점",
+   "name": "해외 중앙은행 동시 긴축(BoJ·분데스방크/ECB·BoE 중 2곳 이상 126거래일 +25bp) -> v1 3x를 1x로 (A형 CUT, OV1-C); BIS 정책금리 패널 변형 합침",
+   "kw": "해외 정책금리,BoJ,분데스방크,ECB,BoE,동시 긴축,foreign policy rate,global tightening,BIS 정책금리,중앙은행 인상",
+   "result": "OV1-C N=1 A형: 초기 SPX 1960-85 + NDX 1986-99 v1-3x 369블록 중 on 76, 적중 47.4% vs 시대 base 55.6%, 낙폭 8.2pp < 10pp FAIL (SPX 7.8pp p .15, NDX 9.6pp p .27); 미공개 미개봉; 감사 재현",
+   "evidence": "research/ov1/lanes/OV1-C/RESULT_OV1-C_KO.md",
+   "reopen": "해외 정책금리 계열(국가 조합·창·임계값 변경 포함)은 새 정보 입력 없이는 닫음. 실제 발표일 단위 결정 자료를 쓰더라도 사전 등록과 새 N이 필요하고, 같은 초기 자료에서는 사후 조정으로 봄",
+   "idea_check_add": "python3 -I /mnt/project-files/tools/idea_check/idea_check.py add --id T34 --area '시점' --name '해외 중앙은행 동시 긴축(BoJ·분데스방크/ECB·BoE 중 2곳 이상 126거래일 +25bp) -> v1 3x를 1x로 (A형 CUT, OV1-C); BIS 정책금리 패널 변형 합침' --kw '해외 정책금리,BoJ,분데스방크,ECB,BoE,동시 긴축,foreign policy rate,global tightening,BIS 정책금리,중앙은행 인상' --verdict CLOSED --result 'OV1-C N=1 A형: 초기 SPX 1960-85 + NDX 1986-99 v1-3x 369블록 중 on 76, 적중 47.4% vs 시대 base 55.6%, 낙폭 8.2pp < 10pp FAIL (SPX 7.8pp p .15, NDX 9.6pp p .27); 미공개 미개봉; 감사 재현' --evidence research/ov1/lanes/OV1-C/RESULT_OV1-C_KO.md --reopen '해외 정책금리 계열(국가 조합·창·임계값 변경 포함)은 새 정보 입력 없이는 닫음. 실제 발표일 단위 결정 자료를 쓰더라도 사전 등록과 새 N이 필요하고, 같은 초기 자료에서는 사후 조정으로 봄'"
+  },
+  {
+   "id": "T35",
+   "area": "시점",
+   "name": "단칸 대기업 예측 오차(실제 DI - 직전 조사 예측 DI, 제조업+전기기계) 하위 1/3 -> v1 3x를 1x로 (A형 CUT, OV1-D)",
+   "kw": "단칸,Tankan,일본 기업 설문,예측 오차,expectation error,DI 서프라이즈,해외 설문,business survey surprise",
+   "result": "OV1-D N=1 A형: 초기 SPX 1979-08..85 + NDX 1986-99 v1-3x 178블록 중 on 61, 시대 맞춤 낙폭 -5.5pp(부호 반대, 기준 +10pp) FAIL; on일 때 3x 승률 SPX 72.7% vs 56.1%, NDX 60.0% vs 56.9%; 1987-10·1990 미포착; 감사 재현",
+   "evidence": "research/ov1/lanes/OV1-D/RESULT_OV1-D_KO.md",
+   "reopen": "외국 기업 설문 예측 오차로 미국 3x를 깎는 축은 닫음. 부호를 뒤집은 ADD 판은 같은 초기 자료를 이미 본 사후 변형이라, 새 정보와 새 초기 구간 없이는 열지 않음",
+   "idea_check_add": "python3 -I /mnt/project-files/tools/idea_check/idea_check.py add --id T35 --area '시점' --name '단칸 대기업 예측 오차(실제 DI - 직전 조사 예측 DI, 제조업+전기기계) 하위 1/3 -> v1 3x를 1x로 (A형 CUT, OV1-D)' --kw '단칸,Tankan,일본 기업 설문,예측 오차,expectation error,DI 서프라이즈,해외 설문,business survey surprise' --verdict CLOSED --result 'OV1-D N=1 A형: 초기 SPX 1979-08..85 + NDX 1986-99 v1-3x 178블록 중 on 61, 시대 맞춤 낙폭 -5.5pp(부호 반대, 기준 +10pp) FAIL; on일 때 3x 승률 SPX 72.7% vs 56.1%, NDX 60.0% vs 56.9%; 1987-10·1990 미포착; 감사 재현' --evidence research/ov1/lanes/OV1-D/RESULT_OV1-D_KO.md --reopen '외국 기업 설문 예측 오차로 미국 3x를 깎는 축은 닫음. 부호를 뒤집은 ADD 판은 같은 초기 자료를 이미 본 사후 변형이라, 새 정보와 새 초기 구간 없이는 열지 않음'"
+  }
+ ]
+}

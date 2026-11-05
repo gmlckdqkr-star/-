@@ -1,0 +1,5 @@
+{"lane": "OV1-A", "status": "CLOSED", "date": "2026-11-05",
+ "title_ko": "국채 가격 잡음(Hu-Pan-Wang) 급등 뒤 절반 해소 → v1 1x/현금을 3x로 (B형 ADD)",
+ "result_ko": "초기(1988-1999) v1 비3x 블록 24개 중 on 1개(<8), cond 0% vs base 58.3% -> FAIL. 신호 59일 중 56일은 v1이 이미 3x. 1990/1994 급등은 1년 중앙값 2배 미달. 미공개 미개봉, N=1.",
+ "evidence": "research/ov1/lanes/OV1-A/RESULT_OV1-A_KO.md",
+ "reopen_ko": "같은 차익 자본/자금 경색 계열(HPW 잡음, TED, 유로달러)은 새 정보 입력과 새 N 없이는 다시 열지 않음"}

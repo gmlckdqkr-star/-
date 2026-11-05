@@ -1,0 +1,9 @@
+{"lane_id": "OV1-C", "kill_type": "A", "n_variants": 1,
+ "precommit_sha256": "40ca6129c4f72f68d905a16bf54d7149572ab51f4adc868db2300758ab2f721b",
+ "early": {"window": "SPX 1960-01-04..1985-12-31 + NDX 1986-01-02..1999-12-31 (label end <= 1999-12-31)",
+           "pooled_n_on": 76, "pooled_drop": 0.0824, "era_matched_base_weighted": 0.5561, "pooled_hit_on": 0.4737, "pass_A": false,
+           "SPX_1960_1985": {"n_blocks": 310, "n_universe_v1_3x": 232, "base": 0.5517, "n_on": 57, "hit_on": 0.4737, "drop": 0.0780, "p_binom_le": 0.147},
+           "NDX_1986_1999": {"n_blocks": 168, "n_universe_v1_3x": 137, "base": 0.5693, "n_on": 19, "hit_on": 0.4737, "drop": 0.0957, "p_binom_le": 0.269, "gates": false},
+           "check": "loop recomputation of ON on all 478 early block dates: 0 mismatches"},
+ "unseen_opened": false, "unseen": "not run", "ms1": "not run", "kill_verdict": "FAIL",
+ "deflation": "N=1 -> sqrt(1+ln N)=1 (no shrink); the fail does not depend on deflation"}
