@@ -1,0 +1,30 @@
+R1               real_ndx_86_14  cagr=0.311 mdd=-0.700 w7=7.046 w12=41.480 d_vs_s085=0.000 pw_vs_s085=1.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+R1               dev250_glued    cagr=0.276 mdd=-0.735 w7=6.441 w12=21.984 p10=0.172 dd80=0.064 dd95=0.000 d_vs_s085=0.005 pw_vs_s085=0.732 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R1               dev250_path     cagr=0.167 mdd=-0.826 w7=3.631 w12=7.346 p10=0.054 dd80=0.720 dd95=0.000 d_vs_s085=0.004 pw_vs_s085=0.738 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R1               real_spx_55_85  cagr=0.119 mdd=-0.631 w7=6.504 w12=6.053 d_vs_s085=0.000 pw_vs_s085=0.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+R1               real_spx_70_85  cagr=0.126 mdd=-0.498 w7=3.119 w12=2.929 d_vs_s085=0.000 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
+R2               real_ndx_86_14  cagr=0.301 mdd=-0.700 w7=6.968 w12=41.037 d_vs_s085=-0.010 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+R2               dev250_glued    cagr=0.263 mdd=-0.738 w7=6.123 w12=19.700 p10=0.160 dd80=0.062 dd95=0.000 d_vs_s085=-0.006 pw_vs_s085=0.356 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R2               dev250_path     cagr=0.168 mdd=-0.819 w7=3.622 w12=7.046 p10=0.060 dd80=0.660 dd95=0.000 d_vs_s085=0.003 pw_vs_s085=0.574 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R2               real_spx_55_85  cagr=0.119 mdd=-0.631 w7=6.504 w12=6.053 d_vs_s085=0.000 pw_vs_s085=0.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+R2               real_spx_70_85  cagr=0.126 mdd=-0.498 w7=3.119 w12=2.929 d_vs_s085=0.000 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
+R3               real_ndx_86_14  cagr=0.285 mdd=-0.735 w7=7.046 w12=41.480 d_vs_s085=-0.025 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+R3               dev250_glued    cagr=0.255 mdd=-0.745 w7=5.686 w12=17.820 p10=0.157 dd80=0.078 dd95=0.000 d_vs_s085=-0.014 pw_vs_s085=0.098 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R3               dev250_path     cagr=0.154 mdd=-0.830 w7=3.308 w12=6.160 p10=0.049 dd80=0.770 dd95=0.000 d_vs_s085=-0.006 pw_vs_s085=0.208 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R3               real_spx_55_85  cagr=0.119 mdd=-0.631 w7=6.504 w12=6.053 d_vs_s085=0.000 pw_vs_s085=0.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+R3               real_spx_70_85  cagr=0.126 mdd=-0.498 w7=3.119 w12=2.929 d_vs_s085=0.000 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
+R4               real_ndx_86_14  cagr=0.254 mdd=-0.699 w7=4.543 w12=23.961 d_vs_s085=-0.057 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+R4               dev250_glued    cagr=0.230 mdd=-0.735 w7=5.134 w12=13.836 p10=0.136 dd80=0.062 dd95=0.000 d_vs_s085=-0.039 pw_vs_s085=0.036 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R4               dev250_path     cagr=0.142 mdd=-0.818 w7=3.148 w12=5.745 p10=0.049 dd80=0.628 dd95=0.000 d_vs_s085=-0.019 pw_vs_s085=0.180 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R4               real_spx_55_85  cagr=0.116 mdd=-0.631 w7=6.504 w12=6.053 d_vs_s085=-0.004 pw_vs_s085=0.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+R4               real_spx_70_85  cagr=0.117 mdd=-0.510 w7=3.119 w12=2.929 d_vs_s085=-0.009 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
+R5               real_ndx_86_14  cagr=0.113 mdd=-0.699 w7=1.790 w12=3.325 d_vs_s085=-0.197 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+R5               dev250_glued    cagr=0.112 mdd=-0.675 w7=2.348 w12=4.046 p10=0.059 dd80=0.024 dd95=0.000 d_vs_s085=-0.159 pw_vs_s085=0.000 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R5               dev250_path     cagr=0.081 mdd=-0.738 w7=1.938 w12=2.824 p10=0.027 dd80=0.170 dd95=0.000 d_vs_s085=-0.084 pw_vs_s085=0.062 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+R5               real_spx_55_85  cagr=0.106 mdd=-0.631 w7=6.504 w12=6.053 d_vs_s085=-0.013 pw_vs_s085=0.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+R5               real_spx_70_85  cagr=0.097 mdd=-0.498 w7=3.119 w12=2.929 d_vs_s085=-0.029 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
+N0               real_ndx_86_14  cagr=0.293 mdd=-0.700 w7=7.269 w12=39.066 d_vs_s085=-0.017 pw_vs_s085=0.000 ref_s085=0.311 hold1x=0.115 hold2x=0.101 hold3x=0.039
+N0               dev250_glued    cagr=0.259 mdd=-0.736 w7=6.117 w12=18.411 p10=0.159 dd80=0.052 dd95=0.000 d_vs_s085=-0.011 pw_vs_s085=0.168 ref_s085=0.270 hold1x=0.116 hold2x=0.105 hold3x=0.042
+N0               dev250_path     cagr=0.162 mdd=-0.818 w7=3.398 w12=6.912 p10=0.054 dd80=0.664 dd95=0.000 d_vs_s085=-0.003 pw_vs_s085=0.406 ref_s085=0.162 hold1x=0.116 hold2x=0.105 hold3x=0.042
+N0               real_spx_55_85  cagr=0.130 mdd=-0.584 w7=6.504 w12=7.625 d_vs_s085=0.010 pw_vs_s085=1.000 ref_s085=0.119 hold1x=0.090 hold2x=0.090 hold3x=0.098
+N0               real_spx_70_85  cagr=0.126 mdd=-0.498 w7=3.119 w12=2.929 d_vs_s085=0.000 pw_vs_s085=0.000 ref_s085=0.126 hold1x=0.084 hold2x=0.060 hold3x=0.044
