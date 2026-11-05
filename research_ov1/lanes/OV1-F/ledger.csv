@@ -1,0 +1,15 @@
+lane,variant,window,metric,value
+OV1-F,yen21_q95_756_hold21_cut1x,early:SPX_1974_1985,n_universe,95
+OV1-F,yen21_q95_756_hold21_cut1x,early:SPX_1974_1985,base,0.5263157894736842
+OV1-F,yen21_q95_756_hold21_cut1x,early:SPX_1974_1985,n_on,21
+OV1-F,yen21_q95_756_hold21_cut1x,early:SPX_1974_1985,hit_on,0.6190476190476191
+OV1-F,yen21_q95_756_hold21_cut1x,early:SPX_1974_1985,drop,-0.09273182957393489
+OV1-F,yen21_q95_756_hold21_cut1x,early:NDX_1986_1999,n_universe,137
+OV1-F,yen21_q95_756_hold21_cut1x,early:NDX_1986_1999,base,0.5693430656934306
+OV1-F,yen21_q95_756_hold21_cut1x,early:NDX_1986_1999,n_on,25
+OV1-F,yen21_q95_756_hold21_cut1x,early:NDX_1986_1999,hit_on,0.6
+OV1-F,yen21_q95_756_hold21_cut1x,early:NDX_1986_1999,drop,-0.03065693430656935
+OV1-F,yen21_q95_756_hold21_cut1x,early:pooled,n_on,46
+OV1-F,yen21_q95_756_hold21_cut1x,early:pooled,drop,-0.05899547345036667
+OV1-F,yen21_q95_756_hold21_cut1x,early:pooled,pass_A,False
+OV1-F,yen21_q95_756_hold21_cut1x,early:pooled,verdict,FAIL(drop -5.90pp<10pp; wrong sign)

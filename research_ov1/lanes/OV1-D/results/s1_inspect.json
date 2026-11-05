@@ -1,0 +1,93 @@
+{
+ "raw_rows": 656,
+ "series_rows": {
+  "actual_mfg": 164,
+  "forecast_mfg": 164,
+  "actual_el": 164,
+  "forecast_el": 164
+ },
+ "quarters": 164,
+ "first_q": 197401,
+ "last_q": 201404,
+ "null_counts": {
+  "actual_mfg": 1,
+  "forecast_mfg": 2,
+  "actual_el": 1,
+  "forecast_el": 2
+ },
+ "null_quarters": {
+  "actual_mfg": [
+   197401
+  ],
+  "forecast_mfg": [
+   197401,
+   197402
+  ],
+  "actual_el": [
+   197401
+  ],
+  "forecast_el": [
+   197401,
+   197402
+  ]
+ },
+ "non_integer_values": 0,
+ "missing_quarter_codes": [],
+ "cut_rows": 164,
+ "cut_vs_rebuild_max_abs_diff": 0.0,
+ "cut_vs_rebuild_nan_mismatch": 0,
+ "cut_ucal_mismatch": 0,
+ "cut_col_diff_actual_mfg": 0.0,
+ "cut_col_diff_forecast_mfg": 0.0,
+ "cut_col_diff_actual_el": 0.0,
+ "cut_col_diff_forecast_el": 0.0,
+ "n_valid_surprise": 161,
+ "nan_surprise_quarters": [
+  197401,
+  197402,
+  200401
+ ],
+ "surprise_descr": {
+  "mean": -0.5900621118012422,
+  "sd": 9.518877329870262,
+  "min": -28.5,
+  "max": 28.5,
+  "share_negative": 0.453416149068323,
+  "share_multiple_of_half": 1.0
+ },
+ "example_2008Q4": {
+  "actual_mfg": -24.0,
+  "forecast_mfg": -4.0,
+  "actual_el": -37.0,
+  "forecast_el": -4.0
+ },
+ "u_roll_calendar_days_max": 2,
+ "u_after_2014": [
+  201404
+ ],
+ "release_gap_trading_days": {
+  "min": 61,
+  "max": 125,
+  "median": 63.0,
+  "note": "max includes the 2004Q1 NaN skip"
+ },
+ "first_release_with_threshold": {
+  "quarter": 197903,
+  "u_trading": "1979-11-01",
+  "n_prior": 20
+ },
+ "twentieth_valid_surprise": {
+  "quarter": 197902,
+  "u_trading": "1979-08-01"
+ },
+ "releases_with_threshold": {
+  "spx_era_before_1986": 25,
+  "early_ndx_1986_1999": 56,
+  "unseen_2000_2014": 59
+ },
+ "last_release_in_sample": {
+  "quarter": 201403,
+  "u_trading": "2014-11-03"
+ },
+ "spec_note": "U < U_q strictly with >= 20 prior: the 20th valid surprise is released at its own U, so the first release that HAS a threshold is the 21st valid surprise."
+}

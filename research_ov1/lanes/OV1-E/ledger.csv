@@ -1,0 +1,15 @@
+lane,variant,window,metric,value
+OV1-E,ted63_p90_1260,early:SPX_1976_1985,n_universe,81
+OV1-E,ted63_p90_1260,early:SPX_1976_1985,base,0.5061728395061729
+OV1-E,ted63_p90_1260,early:SPX_1976_1985,n_on,6
+OV1-E,ted63_p90_1260,early:SPX_1976_1985,hit_on,0.5
+OV1-E,ted63_p90_1260,early:SPX_1976_1985,drop,0.006172839506172867
+OV1-E,ted63_p90_1260,early:NDX_1986_1999,n_universe,137
+OV1-E,ted63_p90_1260,early:NDX_1986_1999,base,0.5693430656934306
+OV1-E,ted63_p90_1260,early:NDX_1986_1999,n_on,12
+OV1-E,ted63_p90_1260,early:NDX_1986_1999,hit_on,0.8333333333333334
+OV1-E,ted63_p90_1260,early:NDX_1986_1999,drop,-0.26399026763990274
+OV1-E,ted63_p90_1260,early:pooled,n_on,18
+OV1-E,ted63_p90_1260,early:pooled,drop,-0.17393589859121086
+OV1-E,ted63_p90_1260,early:pooled,pass_A,False
+OV1-E,ted63_p90_1260,early:pooled,verdict,FAIL(drop -17.39pp<10pp; wrong sign)

@@ -1,0 +1,8 @@
+{"lane": "OV1-F", "status": "CLOSED", "date": "2026-11-05", "id_suggestion": "next free T id (T33 if unused)",
+ "area": "시점",
+ "name": "엔 캐리 청산 CUT: 엔화(DEXJPUS) 21일 절상률이 직전 756일 분포 95% 초과 → 21일간 v1 3x를 1x로 (A형)",
+ "kw": ["엔화", "엔 캐리", "캐리 청산", "DEXJPUS", "JPY", "안전통화", "환율 급변", "디레버리징", "Brunnermeier-Nagel-Pedersen"],
+ "verdict": "CLOSED",
+ "result_ko": "초기(SPX 1974-02..1985 + NDX 1986-99) v1-3x 블록 232개 중 on 46개, 시대 맞춤 base 55.0% 대비 on 적중 60.9% -> 낙폭 -5.9pp(반대 방향) < +10pp -> FAIL. SPX -9.3pp(on 21), NDX -3.1pp(on 25). 엔 급등 뒤 3x가 오히려 더 자주 이김(플라자 1985-86, 1995, 1978·1980·1982 등). 미공개 미개봉, measure2 미실행, N=1.",
+ "evidence": "research/ov1/lanes/OV1-F/RESULT_OV1-F_KO.md",
+ "reopen_ko": "엔화·단일 안전통화 절상 신호(창·분위·유지 기간·CHF 등 다른 안전통화 변형 포함)는 같은 계열. 환율 수준·변화가 아닌 새 정보(예: 엔 선물 투기 포지션 CFTC COT 1986~ 자료)와 새 N 없이는 다시 열지 않음."}

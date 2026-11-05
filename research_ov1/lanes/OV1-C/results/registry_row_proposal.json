@@ -1,0 +1,5 @@
+{"lane": "OV1-C", "status": "CLOSED", "date": "2026-11-05",
+ "title_ko": "해외 중앙은행 동시 긴축(BoJ·분데스방크/ECB·BoE 중 2곳 이상 126거래일 +25bp) → v1 3x를 1x로 (A형 CUT)",
+ "result_ko": "초기(SPX 1960-85 + NDX 1986-99) v1-3x 블록 369개 중 on 76개, 시대 맞춤 base 55.6% 대비 on 적중 47.4% -> 낙폭 8.2pp < 10pp -> FAIL. SPX 7.8pp(p .15), NDX 9.6pp(p .27). 방향은 맞지만 기준 미달. 미공개 미개봉, measure2 미실행, N=1.",
+ "evidence": "research/ov1/lanes/OV1-C/RESULT_OV1-C_KO.md",
+ "reopen_ko": "해외 정책금리 계열(BoJ·분데스방크/ECB·BoE 정책금리, BIS 정책금리 패널, 개수·창·임계값 변형)은 새 정보 입력과 새 N 없이는 다시 열지 않음. 임계값·창·국가 조합을 바꾸는 것은 같은 계열."}

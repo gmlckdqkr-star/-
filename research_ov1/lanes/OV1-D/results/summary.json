@@ -1,0 +1,18 @@
+{
+ "lane": "OV1-D",
+ "variant": "tankan_surprise_t33 (N = 1)",
+ "kill_type": "A",
+ "precommit_sha256": "4e83e9db0ff10cdbf4138f680d25e46e34014c21b6c30b400f9d4ff432087779",
+ "early": {
+  "window": "SPX 1979-08-01..1985-12-31 + NDX 1986-01-02..1999-12-31 (label end <= 1999-12-31)",
+  "SPX_1979_1985": {"n_universe": 41, "base": 0.5610, "n_on": 11, "hit_on": 0.7273, "drop": -0.1663},
+  "NDX_1986_1999": {"n_universe": 137, "base": 0.5693, "n_on": 50, "hit_on": 0.6000, "drop": -0.0307, "note": "NDX-only, does not gate"},
+  "n_on": 61, "drop_era_matched": -0.0551, "need": "drop >= 0.10 and n_on >= 8", "pass_A": false
+ },
+ "unseen_opened": false,
+ "ms1": "not run (early FAIL)",
+ "kill_verdict": "FAIL",
+ "verification": "results/s3_verify_early.json: independent raw-csv parse, hand percentile, loop search -> identical counts and drop; v1 1988-1999 day shares 82.4/7.6/10.0 match OV1-A",
+ "tie_note": "1 of 81 releases <= 1999 would flip under a 100/3 percentile (not computed as a variant; one release covers <= 3 blocks, cannot move drop from -5.5pp to +10pp)",
+ "deflation": "N = 1, sqrt(1 + ln N) = 1"
+}

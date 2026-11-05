@@ -1,0 +1,7 @@
+{"lane": "OV1-G", "status": "CLOSED", "date": "2026-11-05",
+ "area": "이벤트/연준 정책 (FOMC 일정 밖 금리 인하, B형 ADD)",
+ "title_ko": "연준 회의 밖 금리 인하(정례회의·다음 평일이 아닌 날 목표금리 인하) 뒤 42거래일 v1 1x/현금 -> 3x",
+ "keywords": ["연준", "회의 밖 인하", "intermeeting cut", "off-meeting", "DFEDTAR", "conference call", "정책 풋", "policy put", "B형 ADD"],
+ "result_ko": "초기(SPX 1982-09~85 + NDX 1986-99, 사건 41개) v1 비3x on 블록 8개(최소치) 6승 75% vs base 59.2% (+15.8pp, 이항 p .30) 통과 -> 미공개(2000-14, 사건 5개) on 10개 4승 40% vs base 42% (-2pp, <60%) FAIL. on 블록 10개 모두 v1 현금. measure2 안 돌림. N=1.",
+ "evidence": "research/ov1/lanes/OV1-G/RESULT_OV1-G_KO.md",
+ "reopen_ko": "없음. 같은 연준 행동 시점 정보(정례/비정례 인하·재할인율·FOMC 일정)는 새 정보 입력과 새 N 없이 다시 열지 않음. 2001·2008 회의 밖 인하는 v1 현금 구간의 약세장 한가운데였다."}

@@ -1,0 +1,15 @@
+lane,variant,window,metric,value
+OV1-C,fcb2of3_126d_25bp,early:SPX_1960_1985,n_universe,232
+OV1-C,fcb2of3_126d_25bp,early:SPX_1960_1985,base,0.5517241379310345
+OV1-C,fcb2of3_126d_25bp,early:SPX_1960_1985,n_on,57
+OV1-C,fcb2of3_126d_25bp,early:SPX_1960_1985,hit_on,0.47368421052631576
+OV1-C,fcb2of3_126d_25bp,early:SPX_1960_1985,drop,0.07803992740471871
+OV1-C,fcb2of3_126d_25bp,early:NDX_1986_1999,n_universe,137
+OV1-C,fcb2of3_126d_25bp,early:NDX_1986_1999,base,0.5693430656934306
+OV1-C,fcb2of3_126d_25bp,early:NDX_1986_1999,n_on,19
+OV1-C,fcb2of3_126d_25bp,early:NDX_1986_1999,hit_on,0.47368421052631576
+OV1-C,fcb2of3_126d_25bp,early:NDX_1986_1999,drop,0.09565885516711486
+OV1-C,fcb2of3_126d_25bp,early:pooled,n_on,76
+OV1-C,fcb2of3_126d_25bp,early:pooled,drop,0.08244465934531775
+OV1-C,fcb2of3_126d_25bp,early:pooled,pass_A,False
+OV1-C,fcb2of3_126d_25bp,early:pooled,verdict,FAIL(drop 8.24pp<10pp)

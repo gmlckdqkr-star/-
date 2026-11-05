@@ -1,0 +1,57 @@
+{
+ "raw": {
+  "first": "1971-01-04",
+  "last": "2014-12-31",
+  "n_rows": 11478,
+  "n_nan": 441,
+  "n_values": 11037,
+  "min": 75.72,
+  "max": 358.44,
+  "n_nonpositive": 0,
+  "dup_dates": 0,
+  "max_calendar_gap_days": 18,
+  "gaps_gt_5d": [
+   "1971-08-31"
+  ],
+  "abs_daily_logchg_q": [
+   0.003011435613209379,
+   0.02164431382146823,
+   0.034720062692216835
+  ],
+  "daily_logchg_abs_gt_4pct": {
+   "1971-08-31": -0.0502,
+   "1973-02-13": -0.095,
+   "1974-01-07": 0.0626,
+   "1978-04-03": -0.0515,
+   "1998-06-17": -0.0452,
+   "1998-10-07": -0.0563,
+   "1998-10-08": -0.0422,
+   "2008-10-06": -0.0435,
+   "2008-10-24": -0.0522,
+   "2009-03-19": -0.0441
+  },
+  "n_unchanged_days_1971_1973": 116
+ },
+ "master_cal": {
+  "first": "1928-01-03",
+  "last": "2014-12-31",
+  "n": 22934
+ },
+ "first_avail_trading_day": "1971-01-05",
+ "nan_after_first_avail": 0,
+ "first_yen21_day": "1971-02-03",
+ "first_signal_defined_day": "1974-02-01",
+ "equity_days_with_carried_fx_value_share": 0.04441841607352014,
+ "basis_cal_subset_of_master": {
+  "real_ndx_86_14": true,
+  "dev250_glued": true,
+  "dev250_path": true,
+  "real_spx_55_85": true,
+  "real_spx_70_85": true
+ },
+ "synthetic_thr_check": {
+  "max_abs_diff": 0.0,
+  "nan_pattern_mismatches": 0
+ },
+ "synthetic_hold_check_mismatch": 0
+}

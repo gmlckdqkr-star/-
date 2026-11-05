@@ -1,0 +1,297 @@
+{
+ "lane": "OV1-G",
+ "fetched_at_utc": "2026-11-05T09:15Z",
+ "fetch_note": "curl -A curl/8.0 via agent proxy, all HTTP 200. federalreserve.gov/robots.txt returns 404 (no restrictions). FRED fredgraph.csv is the public CSV endpoint.",
+ "files": {
+  "DFEDTAR": {
+   "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFEDTAR",
+   "raw_file": "raw_DFEDTAR.csv",
+   "raw_sha256": "323b6d9fb014cdd8b39eab02025bb37111e9497c75fdd24ea1731ed3f360376c",
+   "raw_rows": 9577,
+   "cut_file": "cut_DFEDTAR.csv",
+   "cut_sha256": "6b35fbcf494060267b09fc03141c83f104ab7081dd381cf3b4d11d7c9373aa12",
+   "cut_rows": 9577,
+   "header": "observation_date,DFEDTAR",
+   "first_date": "1982-09-27",
+   "last_date_cut": "2008-12-15",
+   "missing_value_rows_in_cut": 0
+  },
+  "DFEDTARU": {
+   "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFEDTARU",
+   "raw_file": "raw_DFEDTARU.csv",
+   "raw_sha256": "ef2a920122e34484d3c55df84016bbd16e9459d85147c9ff392cd03f79a39265",
+   "raw_rows": 6533,
+   "cut_file": "cut_DFEDTARU.csv",
+   "cut_sha256": "c4aa2ed627e7d6d7dc0a202bf73383a8f2b857bf37a6d2c03371ae907b54bc63",
+   "cut_rows": 2207,
+   "header": "observation_date,DFEDTARU",
+   "first_date": "2008-12-16",
+   "last_date_cut": "2014-12-31",
+   "missing_value_rows_in_cut": 0
+  },
+  "DFEDTARL": {
+   "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFEDTARL",
+   "raw_file": "raw_DFEDTARL.csv",
+   "raw_sha256": "aa89af1d0c708d3aea6fcaa0b0b73f182a01c24f25dc55aa8e4151148cbacf10",
+   "raw_rows": 6533,
+   "cut_file": "cut_DFEDTARL.csv",
+   "cut_sha256": "aae89b29aa95e439d409a2474f0c59fc9ccde7520b144669393455019ed01efa",
+   "cut_rows": 2207,
+   "header": "observation_date,DFEDTARL",
+   "first_date": "2008-12-16",
+   "last_date_cut": "2014-12-31",
+   "missing_value_rows_in_cut": 0
+  },
+  "FOMC_pages": {
+   "index_url": "https://www.federalreserve.gov/monetarypolicy/fomc_historical_year.htm",
+   "index_file": "raw_fomc/fomc_historical_year.htm",
+   "index_sha256": "530fc20671256ccc63fd003f0f5fba0621928de840d4e1fd47de1f1017a65166",
+   "pages": [
+    {
+     "year": 1982,
+     "file": "raw_fomc/fomchistorical1982.htm",
+     "sha256": "d8b011b85532712b02c4a92e7e560fbdf7ca3874ecd9497680b1bf4fbf283b65",
+     "n_headings": 11,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1982.htm"
+    },
+    {
+     "year": 1983,
+     "file": "raw_fomc/fomchistorical1983.htm",
+     "sha256": "126920365e24cb328226d82753966a69997094807b3acbf9272cf236a8b8fd8e",
+     "n_headings": 14,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1983.htm"
+    },
+    {
+     "year": 1984,
+     "file": "raw_fomc/fomchistorical1984.htm",
+     "sha256": "66b1482d0f121e59fde4e9410ec0b76ed556d43c8c25add44f38bc6df1fe372b",
+     "n_headings": 9,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1984.htm"
+    },
+    {
+     "year": 1985,
+     "file": "raw_fomc/fomchistorical1985.htm",
+     "sha256": "266a28bc5e79208d72b111ce49f3f136b0613c61181917fdfbab87e88e42055d",
+     "n_headings": 10,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1985.htm"
+    },
+    {
+     "year": 1986,
+     "file": "raw_fomc/fomchistorical1986.htm",
+     "sha256": "3d830800c71c8f6a4f256b8d41b295714c09f5858b6772869e464ae9914073c4",
+     "n_headings": 9,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1986.htm"
+    },
+    {
+     "year": 1987,
+     "file": "raw_fomc/fomchistorical1987.htm",
+     "sha256": "16116b2fb10512412b512475a4d3cb7b138fdb71b4298b799ff0d0dfbbad9bfd",
+     "n_headings": 13,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1987.htm"
+    },
+    {
+     "year": 1988,
+     "file": "raw_fomc/fomchistorical1988.htm",
+     "sha256": "6c15e013393174e5fb762cb3157b7bc4d89567b913c17d26a8129fbc55103849",
+     "n_headings": 12,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1988.htm"
+    },
+    {
+     "year": 1989,
+     "file": "raw_fomc/fomchistorical1989.htm",
+     "sha256": "77a2cb969422d8f5b85afb2ddbe7ee543209c676df9b0383ad44047099f72680",
+     "n_headings": 14,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1989.htm"
+    },
+    {
+     "year": 1990,
+     "file": "raw_fomc/fomchistorical1990.htm",
+     "sha256": "6c42f792fdb1df3f32d89a4ba1781183a25f7dd18f541fd1df0c30325003ddb0",
+     "n_headings": 12,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1990.htm"
+    },
+    {
+     "year": 1991,
+     "file": "raw_fomc/fomchistorical1991.htm",
+     "sha256": "ab7dcd14f78d8f326ccbeacfa00944a9e011c378021e2d5e40b5d89168f0c085",
+     "n_headings": 19,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1991.htm"
+    },
+    {
+     "year": 1992,
+     "file": "raw_fomc/fomchistorical1992.htm",
+     "sha256": "df283bd3e526157fb1e36d7f404f4c5ddc338077065afc627dafb52348b1ec09",
+     "n_headings": 12,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1992.htm"
+    },
+    {
+     "year": 1993,
+     "file": "raw_fomc/fomchistorical1993.htm",
+     "sha256": "dc34c9cda37ed158b1f0dc075c8a62641411e35e1226b9f2ecdea13c3d2eea67",
+     "n_headings": 16,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1993.htm"
+    },
+    {
+     "year": 1994,
+     "file": "raw_fomc/fomchistorical1994.htm",
+     "sha256": "a249d30ca59431cd7e423006d89278c430fe1b9dd4f380531bfc78038d4deb85",
+     "n_headings": 13,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1994.htm"
+    },
+    {
+     "year": 1995,
+     "file": "raw_fomc/fomchistorical1995.htm",
+     "sha256": "3bc708147d7bec05937a50a2c7dd602ad8a6bfa057b62f4d5b13b515726f1ecb",
+     "n_headings": 11,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1995.htm"
+    },
+    {
+     "year": 1996,
+     "file": "raw_fomc/fomchistorical1996.htm",
+     "sha256": "f9c2b6bdec21b010ddfef8c78d3d0a17dcbd831196ee1ba6a277d7dee01a7c1a",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1996.htm"
+    },
+    {
+     "year": 1997,
+     "file": "raw_fomc/fomchistorical1997.htm",
+     "sha256": "f8bc7af2f6509a6e93bbe5217171476cd3a6a8dcf6fc1a370417db0aade12b6e",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1997.htm"
+    },
+    {
+     "year": 1998,
+     "file": "raw_fomc/fomchistorical1998.htm",
+     "sha256": "df00beca9ec3688e4058e558c3c612397fa3bf1a8aa36dc10dbd5ce1cac9bd3e",
+     "n_headings": 10,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1998.htm"
+    },
+    {
+     "year": 1999,
+     "file": "raw_fomc/fomchistorical1999.htm",
+     "sha256": "a51dce471c81204eb1f20ea05a8f04121f627bf852eee2859414697ac0e97cff",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical1999.htm"
+    },
+    {
+     "year": 2000,
+     "file": "raw_fomc/fomchistorical2000.htm",
+     "sha256": "85bf6fa8fbe03301d7a3f7a2857d57d3d459ea2d029c84703760bfbe71a69eb3",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2000.htm"
+    },
+    {
+     "year": 2001,
+     "file": "raw_fomc/fomchistorical2001.htm",
+     "sha256": "62fea35140f3a4dd1259292e433f6bfe96106057313ec8156fb1109404d0675f",
+     "n_headings": 13,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2001.htm"
+    },
+    {
+     "year": 2002,
+     "file": "raw_fomc/fomchistorical2002.htm",
+     "sha256": "9a6a2f4c70c802fdda7bab17e297dfdd1a8c41c67882e28b5c3d7a72b77e648a",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2002.htm"
+    },
+    {
+     "year": 2003,
+     "file": "raw_fomc/fomchistorical2003.htm",
+     "sha256": "562f6b5cf4625f26b2c12a05c6e8e142c3068deb1f04c24bf4804e5183c9c35c",
+     "n_headings": 13,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2003.htm"
+    },
+    {
+     "year": 2004,
+     "file": "raw_fomc/fomchistorical2004.htm",
+     "sha256": "0ea36bb454cc2cd7418a7e660ab8ac5cf59912ee04b5cf0d32f2ac49675498e9",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2004.htm"
+    },
+    {
+     "year": 2005,
+     "file": "raw_fomc/fomchistorical2005.htm",
+     "sha256": "9d32b449353ced0da60eef9b738211ab35e8ee852de4e890f53d7673d0521830",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2005.htm"
+    },
+    {
+     "year": 2006,
+     "file": "raw_fomc/fomchistorical2006.htm",
+     "sha256": "9b8c3359ff0fa802ea311302020a54f2eb6bf4caf75052af0db9fe98feb818eb",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2006.htm"
+    },
+    {
+     "year": 2007,
+     "file": "raw_fomc/fomchistorical2007.htm",
+     "sha256": "470f9df7cda9bb1ce341fca0391b2d228578625da9b5f04614b3bf9292015cfb",
+     "n_headings": 11,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2007.htm"
+    },
+    {
+     "year": 2008,
+     "file": "raw_fomc/fomchistorical2008.htm",
+     "sha256": "348fa3d4c9618f10f4f9a637e22fe0aef7cd2e712e7de9608db3f47a1e640547",
+     "n_headings": 14,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2008.htm"
+    },
+    {
+     "year": 2009,
+     "file": "raw_fomc/fomchistorical2009.htm",
+     "sha256": "1ae9ca7c2b457f9b2ccda54d4ead4c51387b796df9a174a9580ecab8d031e673",
+     "n_headings": 11,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2009.htm"
+    },
+    {
+     "year": 2010,
+     "file": "raw_fomc/fomchistorical2010.htm",
+     "sha256": "39caf08943237cf04a799479c0a8a6663651a83ab52a4aea766d6589d55e8877",
+     "n_headings": 10,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2010.htm"
+    },
+    {
+     "year": 2011,
+     "file": "raw_fomc/fomchistorical2011.htm",
+     "sha256": "b43d63110f850ddd6ef71592a7192dc1b4732c4c3c1f236e75bc7698990bf0c9",
+     "n_headings": 10,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2011.htm"
+    },
+    {
+     "year": 2012,
+     "file": "raw_fomc/fomchistorical2012.htm",
+     "sha256": "4d4d18699829207abcc6cb70a3aeeb002869aa9df12699345620d1a845870f61",
+     "n_headings": 8,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2012.htm"
+    },
+    {
+     "year": 2013,
+     "file": "raw_fomc/fomchistorical2013.htm",
+     "sha256": "d78e670c025dde574c4acb7778edb7b67ef6bdec25091c00dfed490f65a374f1",
+     "n_headings": 9,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2013.htm"
+    },
+    {
+     "year": 2014,
+     "file": "raw_fomc/fomchistorical2014.htm",
+     "sha256": "22070ede3bef8390df4fa231b1aaae87d69f74c60d031bd678fc02437f15b554",
+     "n_headings": 9,
+     "source_url": "https://www.federalreserve.gov/monetarypolicy/fomchistorical2014.htm"
+    }
+   ]
+  },
+  "fomc_events": {
+   "file": "fomc_events_1982_2014.csv",
+   "sha256": "31917500f2b8f7916ffcdd27c4e9e5faf71ef729d5fbf31f0f30a1db14e7c8b6",
+   "rows": 477,
+   "derived_from": "raw_fomc/fomchistorical1982..2014.htm (h5 headings)",
+   "kinds": {
+    "meeting": 378,
+    "conference_call": 97,
+    "unscheduled": 2
+   }
+  }
+ },
+ "raw_note": "raw_DFEDTARU.csv / raw_DFEDTARL.csv / raw_fomc pages are kept as fetched and contain rows after 2014-12-31; lane code reads only cut_*.csv and fomc_events_1982_2014.csv (built from the 1982-2014 pages only). Post-2014 values were never printed or used.",
+ "point_in_time": "pre-1994-02-04 change dates usable from the next trading day close (+1, unannounced era); 1994+ usable at the announcement-day close. DFEDTAR is a single current vintage (pre-1994 intended-rate reconstruction by Fed staff)."
+}

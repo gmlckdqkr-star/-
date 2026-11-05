@@ -1,0 +1,248 @@
+{
+ "lanes": [
+  {
+   "lane_id": "OV1-E",
+   "title": "TED 급등 CUT: TED = DED3 - DTB3, 3개월 변화가 직전 5년 분포 상위 10%이면 v1 3x -> 1x",
+   "build": {
+    "lane_id": "OV1-E",
+    "n_variants": 1,
+    "kill_type": "A",
+    "early": {
+     "window": "SPX block starts 1976-04-09..1985-10-30 (signal defined from 1976-03-31; label end <= 1985-12-31) + NDX block starts 1986-01-02..1999-11-16 (label end <= 1999-12-31); pooled with an era-matched base weighted by n_on (OV1-C court rule)",
+     "pooled_n_on": 18,
+     "era_matched_base_weighted": 0.5483,
+     "pooled_hit_on": 0.7222,
+     "pooled_drop": -0.1739,
+     "pooled_se_hit_on": 0.1056,
+     "pooled_z": -1.65,
+     "pass_A": false,
+     "SPX_1976_1985": {
+      "n_blocks": 116,
+      "n_universe_v1_3x": 81,
+      "base": 0.5062,
+      "n_on": 6,
+      "hit_on": 0.5,
+      "drop": 0.0062,
+      "p_binom_le": 0.645
+     },
+     "NDX_1986_1999": {
+      "n_blocks": 168,
+      "n_universe_v1_3x": 137,
+      "base": 0.5693,
+      "n_on": 12,
+      "hit_on": 0.8333,
+      "drop": -0.264,
+      "p_binom_le": 0.988,
+      "on_blocks_won": "10 of 12 (1987-11, 1992-10/11, 1994-12, 1996-12, 1997-05/06, 1998-11, 1999-08, 1999-10 won; 1987-12, 1999-09 lost)",
+      "gates": false
+     },
+     "on_day_share_1976_1999": 0.0943,
+     "check": "direct-lookup recomputation of ON on all 284 early block dates plus a pandas rolling-quantile check on 6004 days 1976-03-31..1999-12-31: 0 mismatches, q90 diff 0",
+     "deflation_info": {
+      "lane_N": 1,
+      "family": "T33 funding/arbitrage stress (OV1-A HPW ADD + OV1-E TED CUT)",
+      "family_N": 2,
+      "factor": 1.3012,
+      "drop_lower_2se_deflated": -0.4487
+     }
+    },
+    "unseen_opened": false,
+    "unseen": {},
+    "ms1": {},
+    "kill_verdict": "FAIL",
+    "precommit_sha256": "e2a080f6ce9b1dd45b77530ef4bb8f9ce5ef4e8b9aec0183795fe991a26529ad",
+    "result_file": "/mnt/project-files/research/ov1/lanes/OV1-E/RESULT_OV1-E_KO.md",
+    "summary_ko": "OV1-E(TED 급등 CUT)는 초기 구간에서 FAIL이다. 신호는 DED3-DTB3의 63거래일 변화가 직전 1260거래일 분포의 90%를 넘는 것이고, 1일 지연을 두었다. 초기 구간(SPX 1976-04..1985 + NDX 1986-99)의 v1-3x 21일 블록 218개 중 on 블록은 18개로 8개 이상 기준은 채웠다. 그러나 on 적중률은 72.2%로, 시대 맞춤 base 54.8%보다 17.4pp 높았다. 기준은 10pp 이상 낮아야 하므로 방향부터 반대다. 시대별로 보면 SPX는 50.0% vs 50.6%(+0.6pp, on 6개), NDX는 83.3% vs 56.9%(-26.4pp, on 12개 중 10승)다. 1987·1998 정책 지원 뒤 반등과 1999 Y2K 자금 급등이 법정의 예고대로 적대 구간이었다. 사전 등록대로 멈췄다. 미공개 2000-2014는 열지 않았고 measure2도 실행하지 않았다. 독립 재계산(블록 284개, 6,004일)에서 불일치는 0이다. N=1, 계열 T33 N=2(축소 계수 1.30)이며, 판정은 축소와 무관하다. lab 사용: 아니오(유로달러·국채 일별 금리가 lab 패널에 없음).",
+    "caveats": "Ambiguities fixed in PRECOMMIT before any computing: (1) 63/1260-day positions use the master US trading calendar jp.calendar('1928-01-03','2014-12-31'), so NDX 1986+ blocks use TED history from 1971; on dev250_path they would be positions along each path row, with no signal on the first 1323 positions. (2) The one-day lag means each series takes its latest observation dated strictly before t, each forward-filled separately with no limit (longest gap 7 calendar days). (3) DTB3 is used on its published discount basis, with no BEY conversion, as the critic's text says; the generator's BEY/21-day/expanding/21-day-hold draft was not run and is not counted. (4) Percentile is numpy linear over exactly 1260 prior values, 'above' is strict, and there is no hold rule. First defined day is 1976-03-31, so the SPX early window is 1976-04..1985 only. The early gate is pooled with an era-matched base, as the court fixed for OV1-C; the SPX-only drop (+0.6pp on 6 blocks) would also fail. Raw FRED files are kept as fetched and contain post-2014 rows, but lane code reads only the <=2014 cut files and no post-2014 number was computed or quoted. TEDRATE was fetched for a data-quality cross-check only (level corr .953, 63d-change corr .967, 1986-2014) and is not a signal or in N. The reversed reading (TED spikes followed by 3x wins on NDX, 10 of 12) is post-hoc; any ADD/hold rule built on it needs a separate PRECOMMIT and raises the T33 family N to 3. Registry row is a draft only; idea_check add was NOT run. The ID needs to be assigned by the coordinator (T33 family partner; T34/T35 already used in JUDGE_OV1.json). Files: /mnt/project-files/research/ov1/lanes/OV1-E/PRECOMMIT.md, /mnt/project-files/research/ov1/lanes/OV1-E/results/killA_early.json, /mnt/project-files/research/ov1/lanes/OV1-E/results/s3_check_early.json, /mnt/project-files/research/ov1/lanes/OV1-E/results/summary.json, /mnt/project-files/research/ov1/lanes/OV1-E/results/registry_row_proposal.json, /mnt/project-files/research/ov1/lanes/OV1-E/ledger.csv, /mnt/project-files/research/ov1/lanes/OV1-E/data/MANIFEST.json, /mnt/project-files/research/ov1/lanes/OV1-E/code/ (sig_e.py sha 39a9d9aa..., s1_inspect.py, s2_killA.py, s3_check_early.py, s4_measure2.py written but not run).",
+    "registry_row": "id: <coordinator assigns; T33 funding-stress family partner, e.g. T36> | area: 시점 | name: TED 급등(DED3-DTB3 63거래일 변화가 직전 1260거래일 분포 90% 초과) -> v1 3x를 1x로 (A형 CUT, OV1-E); T33 자금 경색 계열 짝 | kw: TED,TED spread,유로달러,Eurodollar,DED3,DTB3,TEDRATE,LIBOR,은행 단기 자금,자금 경색,funding stress,money market spread,3x 깎기,CUT | verdict: CLOSED | result: OV1-E N=1(계열 N=2) A형: 초기(SPX 1976-04..1985 + NDX 1986-99) v1-3x 블록 218개 중 on 18개, on 적중 72.2% vs 시대 맞춤 base 54.8% -> 낙폭 -17.4pp(반대 방향) FAIL; SPX +0.6pp(on 6), NDX -26.4pp(on 12개 중 10승: 1987-11, 1992, 1994-12, 1996-97, 1998-11, 1999 Y2K); 미공개 미개봉, measure2 미실행; 신호 재계산 불일치 0 | evidence: research/ov1/lanes/OV1-E/RESULT_OV1-E_KO.md | reopen: 은행 단기 자금 스프레드 계열(TED, LIBOR/유로달러/CD/CP-국채 스프레드; 변화 창·백분위·임계값·BEY 환산·유지 기간·1x 대신 현금 변형)은 새 정보 입력과 새 N 없이 다시 열지 않음. 반대 방향(급등 때 3x 유지·추가)은 이 결과를 본 사후 가설이라 별도 사전 등록과 계열 N 3으로만"
+   },
+   "review": {
+    "fn": {
+     "verdict": "FAIL_CONFIRMED",
+     "issues": [
+      "None that could reverse the verdict. I rebuilt the whole test with separate code: pd.merge_asof(allow_exact_matches=False) for the one-day lag, a pandas rolling quantile over 1260 prior values, std.contexts() for v1 B, and gate._frame for the labels. It matches the builder exactly. SPX 1976-85: 81 universe blocks, base .5062, 6 ON, hit .500, drop +0.6pp. NDX 1986-99: 137 universe blocks, base .5693, 12 ON, hit .8333, drop -26.4pp. Pooled: 18 ON, drop -17.39pp. The first defined day is 1976-03-31.",
+      "Sign and labels are correct. For each ON block I recomputed the 3x-minus-deposit log excess over t+3..t+23 directly from jp.mkX, and every win/loss flag agrees with the gate._frame label. The NDX wins are large, not borderline: 1987-11 +.43, 1998-11 +.36, 1999-10 +.56, 1997-06 +.29. The label end check (pos+23 <= 1999-12-31) keeps every 2000+ return out of the test.",
+      "The test could pass. A perfect CUT signal (ON = label False) gives a drop of +50.6pp in the SPX era and +56.9pp in the NDX era, with n_on of 40 and 59, so a 10pp drop with at least 8 ON blocks is reachable.",
+      "The v1 state is correct. The era contexts use the same construction as std.contexts() (searchsorted(start) - ov.WARM on the 1984 and 1928 calendars), and every ON block has B == 3.",
+      "Data checks are clean. DED3 runs 3.0-22.0% and DTB3 2.61-17.14% over 1971-1999, both in percent units. The longest gaps are 6 and 5 calendar days. Neither series is discontinued before 2014. TED over 1976-99 runs -0.04 to 5.51pp. Only the <=2014 cut files are read.",
+      "The code follows the spec. The PRECOMMIT sha256 matches the stored hash (e2a080f6...), and s2_killA asserts both that hash and the sig_e.py hash. The code matches PRECOMMIT sections 3-5: strict >, numpy linear quantile, 63/1260 positions on the master calendar, CUT only when B == 3, and the pooled drop with era-matched base weighted by n_on.",
+      "Minor, does not change the verdict: DTB3 is used on its discount basis and not converted to BEY. This follows the critic's spec. In 1986-99 the BEY-discount gap is about 0.1-0.2pp, and its 63-day change is about 0.05pp or less, while ON x values were 0.26-1.25pp. It cannot turn a -26pp NDX result into a +10pp drop.",
+      "Minor: s3_check_early's whole-day check reuses sig_e's x series, so it only checks the quantile step, not the whole pipeline. The per-block check and my own rebuild (merge_asof) cover the TED construction. The 'verdict' line in ledger.csv was added by hand, outside s2_killA.py; this is only bookkeeping."
+     ],
+     "note": "I confirm the early-window FAIL. My independent rebuild reproduces every number: pooled n_on 18, hit_on .722 against an era-matched base of .548, drop -17.4pp. The NDX era is the opposite of the hypothesis (10 of 12 ON blocks won, many by large margins), so this is not a borderline miss and no alignment or unit artifact explains it. The builder did not open the unseen window and did not run measure2; I did not either. I ran no variant search. Audit script: /tmp/claude-0/-home-user--/edfcf3b1-5f4e-5ebe-a258-4da862436b37/scratchpad/ov1e/audit.py (MS1 venv, about 1 min). Lane files checked: /mnt/project-files/research/ov1/lanes/OV1-E/PRECOMMIT.md, code/sig_e.py, code/s2_killA.py, code/s3_check_early.py, results/killA_early.json, data/MANIFEST.json."
+    }
+   }
+  },
+  {
+   "lane_id": "OV1-F",
+   "title": "엔 캐리 청산 CUT: 엔화 21일 절상률이 직전 3년 분포 상위 5%이면 v1 3x -> 1x (21일 유지)",
+   "build": {
+    "lane_id": "OV1-F",
+    "n_variants": 1,
+    "kill_type": "A",
+    "precommit_sha256": "fb5aafb799206934a4d60f4204f5f5b45cf209a11c0cd043eb9037ea60270044",
+    "early": {
+     "window": "SPX 1974-02-01..1985-12-31 + NDX 1986-01-02..1999-12-31 (label end <= 1999-12-31); signal first defined 1974-02-01",
+     "statistic": "era-matched base, n_on-weighted drop = base - hit_on (OV1 A-type template)",
+     "pooled_n_on": 46,
+     "pooled_era_matched_base": 0.5497,
+     "pooled_hit_on": 0.6087,
+     "pooled_drop": -0.059,
+     "pass_A": false,
+     "SPX_1974_1985": {
+      "n_blocks": 142,
+      "n_universe_v1_3x": 95,
+      "base": 0.5263,
+      "n_on": 21,
+      "hit_on": 0.619,
+      "drop": -0.0927,
+      "se_hit_on": 0.106,
+      "p_binom_le": 0.858
+     },
+     "NDX_1986_1999": {
+      "n_blocks": 168,
+      "n_universe_v1_3x": 137,
+      "base": 0.5693,
+      "n_on": 25,
+      "hit_on": 0.6,
+      "drop": -0.0307,
+      "se_hit_on": 0.098,
+      "p_binom_le": 0.693
+     },
+     "on_day_share": {
+      "SPX": 0.174,
+      "NDX": 0.173,
+      "SPX_when_v1_3x": 0.215,
+      "NDX_when_v1_3x": 0.158
+     },
+     "fire_days": {
+      "SPX": 196,
+      "NDX": 191
+     },
+     "episodes": "hypothesis direction only in 1977 (1W 7L) and 1993-94 (1W 6L); opposite in 1978 (4W 1L), 1980 (2W), 1982-83 (3W), Plaza 1985-10..1986-06 (5W 1L), 1995 (3W), 1997-98 (4W 1L)",
+     "check": "independent brute-force recomputation (raw lookup per day, numpy.percentile, explicit 21-day hold loop) on all 310 early block dates: 0 ON mismatches, threshold max diff 0; synthetic test of threshold code vs numpy.percentile: diff 0"
+    },
+    "unseen_opened": false,
+    "unseen": {},
+    "ms1": {},
+    "kill_verdict": "FAIL",
+    "result_file": "/mnt/project-files/research/ov1/lanes/OV1-F/RESULT_OV1-F_KO.md",
+    "summary_ko": "OV1-F(엔 캐리 청산 CUT, A형) FAIL. 초기 구간(SPX 1974-02..1985 + NDX 1986-99)에서 v1이 3x인 블록은 232개, 그중 신호가 켜진 블록은 46개였다(8개 이상 조건 충족). 신호가 켜진 블록의 적중률은 60.9%로, 시대 맞춤 base 55.0%보다 오히려 5.9pp 높았다. 통과하려면 base보다 10pp 이상 낮아야 하므로 방향부터 반대다. 시대별로는 SPX -9.3pp(on 21개), NDX -3.1pp(on 25개)로 둘 다 반대 방향이었다. 가설대로 3x가 진 시기는 1977년과 1993-94년뿐이었다. 1978, 1980, 1982-83, 플라자(1985-86), 1995, 1997-98년에는 엔 급등 뒤 3x가 더 자주 이겼다. 사전 등록대로 여기서 멈췄다. 미공개 구간 2000-2014는 열지 않았고 measure2도 돌리지 않았다. N=1. 독립 재계산 결과 불일치 0. lab 사용: 아니오(DEXJPUS가 lab 패널에 없음).",
+    "caveats": "(1) idea_check printed 'auto reject' only on keyword overlaps (X34 KRW hedge structure via '캐리', E04 carry return stream via 'carry', S02 via 'per' in 'percentile'). None is an FX-rate timing CUT, and WX1-M1 used only the broad dollar DTWEXM. Recorded in PRECOMMIT section 1 and treated as a new axis. The coordinator should confirm. (2) Ambiguities fixed before computing (PRECOMMIT section 4): trading days are the MS1 master US calendar; percentile is numpy 'linear' with a strict '>'; all 756 trailing values are required; ON means a fire in t-20..t; 1x is v1's 1x state. Availability is t+1, which is one day conservative because the noon rate is public on day d. (3) The 1971-73 peg/Smithsonian period falls in the 1974-76 trailing window, as the critic specified; unchanged. (4) The raw download data/raw_DEXJPUS.csv contains post-2014 rows. No code reads it, and no post-2014 value was printed or used (only the <=2014 cut file is read). (5) Reading of episodes as 'dollar-weakness / US-easing regimes' is interpretation, not measured. (6) The fail has the wrong sign, so it does not depend on deflation. A threshold/window retune would be post-hoc and was not run. (7) Planned measure2 handling, never reached: on dev250_path the first ~1.9 of 30 measured years would have no signal and fall back to v1.",
+    "registry_row": "area=시점 | id 제안=다음 빈 T 번호(T33 미사용이면) | name=엔 캐리 청산 CUT: 엔화(DEXJPUS) 21일 절상률이 직전 756거래일 분포 95% 초과 → 21일간 v1 3x를 1x로 (A형) | kw=엔화,엔 캐리,캐리 청산,DEXJPUS,JPY,안전통화,환율 급변,디레버리징,Brunnermeier-Nagel-Pedersen | verdict=CLOSED | result=초기(SPX 1974-02..1985 + NDX 1986-99) v1-3x 블록 232개 중 on 46개, 시대 맞춤 base 55.0% 대비 on 적중 60.9% → 낙폭 -5.9pp(반대 방향, 기준 +10pp) FAIL. SPX -9.3pp(on 21), NDX -3.1pp(on 25). 미공개 미개봉, measure2 미실행, N=1 | evidence=research/ov1/lanes/OV1-F/RESULT_OV1-F_KO.md | reopen=엔화·CHF 등 단일 안전통화 절상 신호(창·분위·유지 기간 변형 포함)는 같은 계열. 환율 수준·변화가 아닌 새 정보(예: CFTC COT 엔 선물 투기 포지션)와 새 N 없이는 다시 열지 않음"
+   },
+   "review": {
+    "fn": {
+     "verdict": "FAIL_CONFIRMED",
+     "issues": [
+      "Minor, provenance only: code/s2_killA.py has mtime 09:12:12, 21 s after PRECOMMIT.md (09:11:51). killA_early.json was written at 09:12:18. The script asserts the precommit sha. Its logic matches PRECOMMIT sections 4-5, and an independent recomputation written from the spec alone reproduces every number, so this does not affect the verdict.",
+      "Minor: s3_check_early.py is only partly independent, because it reuses sig_f.raw() and sig_f.master_cal(). The auditor's own pandas-only rebuild closes that gap.",
+      "Raw file data/raw_DEXJPUS.csv holds post-2014 rows. No lane code reads it. This is a rule-hygiene note, not a cause of the FAIL."
+     ],
+     "note": "The FAIL is real, not an artifact. I first checked PRECOMMIT.md against its sha256 (fb5aafb7..., match). Before the precommit, s1 only screened data quality and the threshold code. results/killA_unseen.json does not exist, so the unseen window was not opened.\n\nI rebuilt the test from the spec in the MS1 venv (script at /tmp/claude-0/-home-user--/edfcf3b1-5f4e-5ebe-a258-4da862436b37/scratchpad/ov1f/audit.py). It reads the cut CSV directly with pandas and does not use sig_f, numba, cumsum or ffill code. Point-in-time is the last observation dated strictly before t. The threshold is pandas rolling quantile(0.95, linear) on y shifted by one day, with all 756 values required. ON is a rolling max over 21 days. Labels are recomputed independently and match gate._frame exactly (same block grid, same win values). v1_B comes from std.contexts() real_spx_55_85 and real_ndx_86_14, the same construction the builder used.\n\nResults reproduce exactly:\n- SPX 1974-02..1985: 95 universe blocks, base 0.5263, n_on 21, hit_on 0.6190, drop -0.0927.\n- NDX 1986-1999: 137 universe blocks, base 0.5693, n_on 25, hit_on 0.6000, drop -0.0307.\n- Pooled: n_on 46, drop -0.059. The threshold is drop >= +0.10.\n\nSign is correct. DEXJPUS is yen per dollar, so yen21 = -Δlog is positive when the yen appreciates. Known yen surges are ON with yen21 above the threshold: Plaza on 1985-10-01 (0.090 vs 0.057), 1995-04-20 (0.097 vs 0.066), the LTCM unwind on 1998-10-09 (0.138 vs 0.065), 1977-10-31 and 1978-04-03. The threshold is first defined on 1974-02-01, as stated.\n\nThe data has no gaps after 1971-08 and no non-positive values. The large daily moves are real events (Smithsonian, 1973 float, 1998, 2008). No discontinuation or unit problem.\n\nThe test can pass. An oracle ON (signal on exactly the losing blocks) gives a drop of 0.53 / 0.57 with 45 / 59 on-blocks.\n\nIt is not a v1-state or universe artifact either. Across all early blocks, ignoring v1's state, ON blocks hit more often than OFF blocks: SPX 0.560 vs 0.496, NDX 0.613 vs 0.562. That is the opposite of the hypothesis in both eras.\n\nNothing here supports reopening the lane. No better variant was searched, and no forbidden file or unseen data was touched."
+    }
+   }
+  },
+  {
+   "lane_id": "OV1-G",
+   "title": "연준 회의 밖 금리 인하 ADD: 정례회의가 아닌 날 목표금리 인하 뒤 42거래일 동안 v1 1x/현금 -> 3x",
+   "build": {
+    "lane_id": "OV1-G",
+    "n_variants": 1,
+    "kill_type": "B",
+    "early": {
+     "window": "SPX 1982-09-27..1985-12-31 + NDX 1986-01-02..1999-12-31 (label end <= 1999-12-31); pooled with era-matched base (OV1-C style)",
+     "events": {
+      "spx_1982_1985": 15,
+      "ndx_1986_1999": 26
+     },
+     "pooled_n_on": 8,
+     "pooled_wins": 6,
+     "pooled_cond": 0.75,
+     "pooled_base": 0.5917,
+     "cond_minus_base": 0.1583,
+     "se_cond": 0.153,
+     "p_binom_ge_info": 0.298,
+     "pass_B": true,
+     "SPX_1982_1985": {
+      "n_blocks": 38,
+      "n_universe_v1_non3x": 8,
+      "base": 0.625,
+      "n_on": 2,
+      "wins": 1,
+      "cond": 0.5
+     },
+     "NDX_1986_1999_report_only": {
+      "n_blocks": 168,
+      "n_universe_v1_non3x": 31,
+      "base": 0.5806,
+      "n_on": 6,
+      "wins": 5,
+      "cond": 0.8333,
+      "p_binom_ge": 0.204
+     },
+     "info_only": {
+      "pit_plus5_pre1994": {
+       "n_on": 8,
+       "cond": 0.75,
+       "base": 0.5917
+      },
+      "control_all_cuts_incl_meeting": {
+       "n_on": 9,
+       "cond": 0.7778,
+       "base": 0.5905
+      },
+      "on_blocks_any_v1_state": {
+       "SPX": 16,
+       "NDX": 40,
+       "note": "1991 (11) and 1992 (7) on-blocks all at v1 3x already"
+      }
+     },
+     "implementation_check": "plain-python re-derivation of 41 early events identical; brute-force ON 0 mismatches on 206 early block dates; v1_B equals std.contexts() on all early days"
+    },
+    "unseen_opened": true,
+    "unseen": {
+     "window": "NDX 2000-01-03..2014-12-31 (opened once after early pass)",
+     "events": 5,
+     "event_dates": [
+      "2001-01-03",
+      "2001-04-18",
+      "2001-09-17",
+      "2008-01-22",
+      "2008-10-08"
+     ],
+     "n_blocks": 179,
+     "always_in_hit": 0.5363,
+     "n_universe_v1_non3x": 50,
+     "base": 0.42,
+     "n_on": 10,
+     "wins": 4,
+     "cond": 0.4,
+     "cond_minus_base": -0.02,
+     "p_binom_ge_info": 0.667,
+     "pass_B": false,
+     "on_blocks": "all 10 at v1 cash (B=0): 2001-01-17 L, 2001-02-15 L, 2001-04-18 W, 2001-05-17 L, 2001-09-21 W, 2001-10-22 W, 2008-01-25 L, 2008-02-26 L, 2008-10-23 L, 2008-11-21 W"
+    },
+    "ms1": {},
+    "kill_verdict": "FAIL",
+    "precommit_sha256": "c45d74eaedd18ba0e04bc659c0f988de0f59207086b43e766b7a0506742c18c7",
+    "result_file": "/mnt/project-files/research/ov1/lanes/OV1-G/RESULT_OV1-G_KO.md",
+    "summary_ko": "OV1-G는 FAIL이다(B형 ADD, N=1). 신호는 정례 FOMC 회의일과 그다음 평일이 아닌 날 목표금리를 내리면(DFEDTAR 기준, 전화회의 날은 회의 밖으로 셈), 사용 가능일부터 42거래일 동안 v1의 1x/현금을 3x로 올린다. 사용 가능일은 1994년 이전이면 변경일 다음 거래일, 그 뒤는 발표 당일이다.\n- 초기 구간(SPX 1982-09..85 + NDX 1986-99, 사건 41개)은 시대 맞춤 base로 합산해 통과했다. 다만 on 블록이 8개로 최소치였다. 결과는 6승 75%로 base 59.2%보다 15.8pp 높았지만, 이항 p가 .30이라 약한 통과다.\n- 미공개 구간(NDX 2000-14, 사건 5개)은 한 번만 열었다. on 블록 10개가 모두 v1 현금 상태였고, 4승 40%로 base 42%보다 2pp 낮았다. base+10pp와 60% 두 기준 모두 미달이라 FAIL이다.\n- MS1 measure2는 돌리지 않았다.\n- 참고(N에 넣지 않음): 1994년 이전 사건을 5거래일 늦게 써도 초기 결과는 같았다. 회의일 인하까지 넣은 대조군은 초기 9개, 77.8%였다.\n- 구현 점검은 모두 일치했다. 원자료에서 사건을 다시 뽑아도 같았고, 반복문으로 다시 계산한 on 신호는 불일치 0, v1_B도 std 문맥과 같았다.",
+    "caveats": "1) The early pass was marginal: n_on = 8 is exactly the minimum, with binomial p .30. The NDX era alone had only 6 on-blocks (5 wins), and the SPX era had 2 (1 win). Most early events fell while v1 was already at 3x: the any-state on-blocks were SPX 16 and NDX 40, while the non-3x universe had only 8. 2) DFEDTAR before 1994 is a later Fed-staff reconstruction of the intended rate (a single current vintage). Markets may not have noticed small moves such as 1983-08 (-6.25bp) and 1987-07 (-12.5bp). The +5-trading-day lag sensitivity did not change the early result. 3) Ambiguities I fixed in PRECOMMIT before any test: 'day after' means the first weekday after the meeting's last day. 1992-07-02 counts as off-meeting because a conference call that day overrides the day-after exclusion. The announcement boundary is 1994-02-04. The 42-day window includes the usable day. Five cuts 2-3 days after a meeting stay events under the literal rule (1982-10-07, 1982-11-19, 1986-07-11, 1986-08-21, 1991-12-20). 4) idea_check auto-rejected the idea on a T20 keyword match. The lane ran as assigned by the critic, and the FAIL also closes the off-meeting subtype. 5) The unseen window was opened once. The 2001/2008 intermeeting cuts are famous, but the result was a fail anyway, so nothing is inflated. 6) No measure2 or MS1 numbers exist for this lane. 7) The raw DFEDTARU/L CSVs and the FOMC pages are kept as fetched and include post-2014 rows. Lane code reads only the <=2014 cut files, and no post-2014 value was printed or used. The FOMC calendar was parsed from federalreserve.gov h5 headings (378 meeting days, 97 conference-call days, 2 unscheduled), and the files are listed in data/MANIFEST.json.",
+    "registry_row": "{\"area\": \"이벤트/연준 정책 (FOMC 일정 밖 금리 인하, B형 ADD)\", \"name\": \"연준 회의 밖 금리 인하(정례회의·다음 평일이 아닌 날 DFEDTAR 인하) 뒤 42거래일 v1 1x/현금 -> 3x\", \"keywords\": [\"연준\", \"회의 밖 인하\", \"intermeeting cut\", \"off-meeting\", \"DFEDTAR\", \"conference call\", \"정책 풋\", \"policy put\", \"B형 ADD\"], \"result\": \"초기(SPX 1982-09~85 + NDX 1986-99, 사건 41) v1 비3x on 8개(최소치) 6승 75% vs base 59.2%(+15.8pp, p .30) 통과 -> 미공개(2000-14, 사건 5) on 10개 4승 40% vs base 42%(-2pp, <60%) FAIL; on 10개 모두 v1 현금; measure2 안 돌림; N=1\", \"evidence\": \"research/ov1/lanes/OV1-G/RESULT_OV1-G_KO.md\", \"reopen\": \"없음. 같은 연준 행동 시점 정보(정례/비정례 인하, 재할인율, FOMC 일정)는 새 정보 입력과 새 N 없이 다시 열지 않음\"}",
+    "result_file_extra": "/mnt/project-files/research/ov1/lanes/OV1-G/results/summary.json"
+   },
+   "review": {
+    "fn": {
+     "verdict": "FAIL_CONFIRMED",
+     "issues": [
+      "Minor, no effect on the verdict: in s2_killB.py the SPX early-era mask is (block start >= 1982-09-27) & (label end <= 1985-12-31). PRECOMMIT section 5 says 'block start in [1982-09-27, 1985-12-31] (labels end <= 1985-12-31 by construction)'. The two can differ only at the end of the SPX grid. The difference touches only the early window, which passed.",
+      "Minor, no effect: fomc_events lists the 2008 intermeeting calls on 2008-01-21 and 2008-10-07, but DFEDTAR moves on 2008-01-22 and 2008-10-08. Neither cut date is a meeting day or the weekday after one, so both still count as off-meeting events under the frozen rule. The usable date is the same-day close in both cases, which is correct because both were announced before the open.",
+      "Info: the early pass is weak (n_on = 8, exactly the minimum; binomial p .30). This does not bear on whether the unseen FAIL is real."
+     ],
+     "note": "The FAIL is real, not an artifact. The PRECOMMIT sha256 matches c45d74ea... and sig_g.py/s2_killB.py follow the frozen spec: same event rule, PIT rule, 42-day ON window that includes the usable day, v1 non-3x universe, and type-B thresholds copied from the brief without relaxing them. I checked the unseen window separately in the MS1 venv (my own label loop, not gate._frame). It reproduces exactly: 179 blocks, 50 in the non-3x universe, base 0.42, 10 on-blocks with 4 wins (cond 0.40), and all 10 on-blocks at v1 B = 0.\n- Labels match gate._frame: the 3x product's excess log return over deposit, summed over t+3..t+23. The direction is right for an ADD test (a win means 3x beats deposit).\n- The events come straight from the raw DFEDTAR cuts for 2000-2008: 2001-01-03, 04-18 and 09-17, and 2008-01-22 and 10-08. Every other cut in that span falls on a scheduled meeting day. The 2008-12-16 move to a range was also on a meeting day, and DFEDTARU/L show no cuts through 2014, so no events are missing.\n- The test could have passed. Five events give up to 10 on-blocks, which clears the minimum of 8, and the bar was 60%, or 6 wins of 10.\n- The outcome is clearly negative. The 3x excess log return over the 42 days after each event was below zero for 4 of the 5 events (-0.63, -0.49, -0.06, -0.39); only 2001-09-17 was positive (+0.69). None of these numbers depends on lag, a sign flip or the choice of blocks.\n- Unseen was opened only once, after an early pass on file; the code asserts this.\n- Files used: /mnt/project-files/research/ov1/lanes/OV1-G/results/killB_unseen.json, killB_early.json, code/s2_killB.py and code/sig_g.py. My check script is /tmp/claude-0/-home-user--/edfcf3b1-5f4e-5ebe-a258-4da862436b37/scratchpad/aud.py."
+    }
+   }
+  }
+ ]
+}

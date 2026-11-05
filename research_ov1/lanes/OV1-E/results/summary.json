@@ -1,0 +1,48 @@
+{
+ "lane_id": "OV1-E",
+ "kill_type": "A",
+ "n_variants": 1,
+ "family_N": 2,
+ "precommit_sha256": "e2a080f6ce9b1dd45b77530ef4bb8f9ce5ef4e8b9aec0183795fe991a26529ad",
+ "early": {
+  "window": "SPX 1976-04-09..1985-10-30 block starts (signal defined from 1976-03-31, label end <= 1985-12-31) + NDX 1986-01-02..1999-11-16 (label end <= 1999-12-31)",
+  "pooled_n_on": 18,
+  "pooled_drop": -0.1739,
+  "era_matched_base_weighted": 0.5483,
+  "pooled_hit_on": 0.7222,
+  "pooled_se_hit_on": 0.1056,
+  "pooled_z": -1.65,
+  "pass_A": false,
+  "SPX_1976_1985": {
+   "n_blocks": 116,
+   "n_universe": 81,
+   "base": 0.5062,
+   "n_on": 6,
+   "hit_on": 0.5,
+   "drop": 0.0062,
+   "p_binom_le": 0.6446
+  },
+  "NDX_1986_1999": {
+   "n_blocks": 168,
+   "n_universe": 137,
+   "base": 0.5693,
+   "n_on": 12,
+   "hit_on": 0.8333,
+   "drop": -0.264,
+   "p_binom_le": 0.9883
+  },
+  "check": "direct-lookup recomputation on all 284 early block dates and pandas rolling-quantile on 6004 days 1976-03-31..1999-12-31: 0 mismatches",
+  "on_day_share_1976_1999": 0.0943,
+  "deflation_info": {
+   "family": "T33 funding/arbitrage stress (OV1-A HPW ADD + OV1-E TED CUT)",
+   "family_N": 2,
+   "factor": 1.3012,
+   "drop_lower_2se_deflated": -0.4487
+  }
+ },
+ "unseen_opened": false,
+ "unseen": "not run",
+ "ms1": "not run",
+ "kill_verdict": "FAIL",
+ "reason": "pooled drop -17.39pp (opposite sign) < +10pp required; n_on 18 >= 8"
+}

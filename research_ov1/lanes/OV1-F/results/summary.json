@@ -1,0 +1,9 @@
+{"lane_id": "OV1-F", "kill_type": "A", "n_variants": 1,
+ "precommit_sha256": "fb5aafb799206934a4d60f4204f5f5b45cf209a11c0cd043eb9037ea60270044",
+ "early": {"window": "SPX 1974-02-01..1985-12-31 + NDX 1986-01-02..1999-12-31 (label end <= 1999-12-31)",
+           "pooled_n_on": 46, "pooled_drop": -0.0590, "era_matched_base_weighted": 0.5497, "pooled_hit_on": 0.6087, "pass_A": false,
+           "SPX_1974_1985": {"n_blocks": 142, "n_universe_v1_3x": 95, "base": 0.5263, "n_on": 21, "hit_on": 0.6190, "drop": -0.0927, "p_binom_le": 0.858},
+           "NDX_1986_1999": {"n_blocks": 168, "n_universe_v1_3x": 137, "base": 0.5693, "n_on": 25, "hit_on": 0.6000, "drop": -0.0307, "p_binom_le": 0.693},
+           "check": "brute-force recomputation (raw lookup, numpy.percentile per day, explicit hold loop) on all 310 early block dates: 0 ON mismatches, thr max diff 0"},
+ "unseen_opened": false, "unseen": "not run", "ms1": "not run", "kill_verdict": "FAIL",
+ "deflation": "N=1 -> sqrt(1+ln N)=1 (no shrink); the fail does not depend on deflation (wrong sign)"}

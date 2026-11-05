@@ -1,0 +1,1 @@
+boj_metadata_raw.csv (BoJ Tankan series catalog, 59.6 MB, used only to look up series codes) deleted 2026-11-05 after the lane closed; sha256 8759032cae28ffba112d3633f85147ab29f6c5621494ebb756235b37d9b38bfe

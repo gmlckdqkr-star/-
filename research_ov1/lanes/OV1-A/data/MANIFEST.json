@@ -1,0 +1,20 @@
+{
+ "lane": "OV1-A",
+ "fetched_at_utc": "2026-11-05T08:24Z",
+ "fetch_note": "curl -A curl/8.0 via agent proxy, HTTP 200, 383856 bytes. robots.txt of en.saif.sjtu.edu.cn disallows /uploads/ /ueditor/ /backup/ /bak/ /cache/ /cgi-bin/ /config/ /data/ /system/ only; /junpan/ not disallowed.",
+ "files": [
+  {"path": "Noise_Measure_2025.xlsx", "role": "raw as fetched (contains rows after 2014-12-31; NOT to be read past 2014)", "source_url": "https://en.saif.sjtu.edu.cn/junpan/Noise_Measure_2025.xlsx", "sha256": "ac1242eb854a125649a321747454156c6d600da00a9cd33a558fbdb7f9609601", "sheet": "Noise Measure", "columns": "Date, Noise_bp"},
+  {"path": "noise_hpw_cut_le2014.csv", "role": "cut copy used by the lane: Date, Noise_bp, rows 1987-01-02..2014-12-31 only", "derived_from": "Noise_Measure_2025.xlsx", "sha256": "2563fb577b1fb41bac074c414eb51dfbc3c750f40143cd22ab699371fca5fdd0", "rows": 6999, "first_date": "1987-01-02", "last_date": "2014-12-31", "nan_rows": 0, "non_positive": 0}
+ ],
+ "coverage_checks": {
+  "ndx_calendar_days_from_1987-01-02": 7059, "noise_days": 6999, "calendar_days_without_noise": 67, "longest_missing_run_trading_days": 4,
+  "noise_dates_not_in_ndx_calendar": 7, "noise_dates_not_in_ndx_calendar_list": ["1996-04-05","2007-01-02","2007-04-06","2008-03-21","2010-04-02","2012-04-06","2012-10-29"],
+  "first_date_with_252_nonNaN_after_1d_lag_ffill5": "1987-12-31 (spec says about 1988-01-04)"
+ },
+ "point_in_time": {
+  "rule": "conservative fixed lag, no release-date or vintage record exists: a value dated d is usable from the close of the next NDX trading day d+1 (N*_t = Noise_bp dated the previous trading day), ffill at most 5 trading days.",
+  "why": "Series is a single 2025 final vintage (no ALFRED/first-vintage history). Each day's value is a same-day cross-sectional fit of the Svensson curve to CRSP Treasury prices with a per-day outlier filter (no look-ahead, no whole-sample parameters), so the only look-ahead risk is data revisions, which are not documented; the 1-day lag covers the same-day close timing.",
+  "caveats": "Not a true first vintage: CRSP Treasury data corrections after the fact cannot be excluded. Noise dates not in the NDX calendar (7, bond-market-open days) must be handled by ffill on the union calendar before reindex, or are simply dropped by reindex (lane code should state which). File footnote says the outlier filter can miss spikes (example dated 2024, not read)."
+ },
+ "dropped_rows_after_2014": "dropped on read by date comparison only; values not inspected"
+}

@@ -1,0 +1,16 @@
+lane,variant,window,metric,value
+OV1-D,tankan_surprise_t33,early:SPX_1979_1985,n_universe,41
+OV1-D,tankan_surprise_t33,early:SPX_1979_1985,base,0.5609756097560976
+OV1-D,tankan_surprise_t33,early:SPX_1979_1985,n_on,11
+OV1-D,tankan_surprise_t33,early:SPX_1979_1985,hit_on,0.7272727272727273
+OV1-D,tankan_surprise_t33,early:SPX_1979_1985,drop,-0.16629711751662968
+OV1-D,tankan_surprise_t33,early:NDX_1986_1999,n_universe,137
+OV1-D,tankan_surprise_t33,early:NDX_1986_1999,base,0.5693430656934306
+OV1-D,tankan_surprise_t33,early:NDX_1986_1999,n_on,50
+OV1-D,tankan_surprise_t33,early:NDX_1986_1999,hit_on,0.6
+OV1-D,tankan_surprise_t33,early:NDX_1986_1999,drop,-0.03065693430656935
+OV1-D,tankan_surprise_t33,early,n_on,61
+OV1-D,tankan_surprise_t33,early,drop_era_matched,-0.05511663947559662
+OV1-D,tankan_surprise_t33,early,pass_A,False
+OV1-D,tankan_surprise_t33,early,verdict,FAIL(drop=-0.055<0.10)
+OV1-D,tankan_surprise_t33,unseen,opened,False

@@ -1,0 +1,24 @@
+{
+ "DEXJPUS": {
+  "description": "Japanese yen to one U.S. dollar, H.10 noon buying rate in New York, daily, not seasonally adjusted (Board of Governors via FRED)",
+  "source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXJPUS",
+  "fetch_time_utc": "2026-11-05T09:08:29Z",
+  "fetch_cmd": "curl -sS -A 'curl/8.0' -o raw_DEXJPUS.csv <source_url>  (HTTP 200)",
+  "raw_file": "raw_DEXJPUS.csv",
+  "raw_sha256": "60ba955456192c4a1cbf6a1f4dee25fb040b2120bdcea0050a4e55b04cf8e997",
+  "raw_bytes": 257255,
+  "raw_note": "raw file contains rows after 2014-12-31; lane code never reads it (reads only the cut file)",
+  "cut_file": "cut_DEXJPUS_le2014.csv",
+  "cut_rule": "awk -F, 'NR==1 || $1<=\"2014-12-31\"' raw_DEXJPUS.csv",
+  "cut_sha256": "1a3ed7e589dc8491c30a1724700ce42be8843260667d5a9092f5a17a180ac164",
+  "cut_bytes": 202469,
+  "cut_rows_excl_header": 11478,
+  "missing_value_rows_in_cut": 441,
+  "missing_value_note": "empty value on NY holidays (no noon rate); dropped, forward-filled onto trading calendars",
+  "first_date": "1971-01-04",
+  "last_date_cut": "2014-12-31",
+  "header": "observation_date,DEXJPUS",
+  "revisions": "market rate, not revised; no vintage needed",
+  "pit_rule": "value dated d usable from the first trading day after d (d+1 calendar day, then ffill)"
+ }
+}

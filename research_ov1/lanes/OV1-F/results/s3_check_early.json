@@ -1,0 +1,28 @@
+{
+ "SPX": {
+  "n_checked": 142,
+  "on_mismatches": 0,
+  "thr_max_abs_diff": 0.0
+ },
+ "v1_state_share_SPX_1974_1985": {
+  "3.0": 0.6625705745599468,
+  "0.0": 0.20724011956160743,
+  "1.0": 0.1301893058784457
+ },
+ "on_day_share_SPX": 0.1743606775157755,
+ "on_day_share_when_v1_3x_SPX": 0.21453634085213033,
+ "fire_days_SPX": 196,
+ "NDX": {
+  "n_checked": 168,
+  "on_mismatches": 0,
+  "thr_max_abs_diff": 0.0
+ },
+ "v1_state_share_NDX_1986_1999": {
+  "3.0": 0.8078553263633795,
+  "1.0": 0.10539700480361684,
+  "0.0": 0.08674766883300368
+ },
+ "on_day_share_NDX": 0.17293020627295846,
+ "on_day_share_when_v1_3x_NDX": 0.15809723679608254,
+ "fire_days_NDX": 191
+}
