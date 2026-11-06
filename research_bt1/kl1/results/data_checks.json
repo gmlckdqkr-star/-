@@ -1,0 +1,36 @@
+{
+ "kr_products_vs_actual_etf": {
+  "KR200": {
+   "start": "2009-04-17",
+   "synthetic_pretax_cagr": 0.0787,
+   "actual_adjclose_cagr": 0.0777,
+   "daily_corr": 0.98,
+   "n": 1418
+  },
+  "KRLEV": {
+   "start": "2010-02-22",
+   "synthetic_pretax_cagr": 0.023,
+   "actual_adjclose_cagr": 0.0025,
+   "daily_corr": 0.9789,
+   "n": 1204
+  },
+  "KRINV": {
+   "start": "2009-09-16",
+   "synthetic_pretax_cagr": -0.0457,
+   "actual_adjclose_cagr": -0.031,
+   "daily_corr": 0.9746,
+   "n": 1310
+  }
+ },
+ "kr200_proxy_daily_corr_2009_06_2014": {
+  "corr": 0.9796,
+  "beta": 0.993,
+  "n": 1386
+ },
+ "lab_kr_etf_holds_aftertax": {
+  "KR200 2009-04~2014": 0.077,
+  "KRINV 2009-09~2014": -0.03,
+  "KRLEV 2010-02~2014": 0.002
+ },
+ "note": "data check only (index/ETF series, not a strategy); actual = panel_f32 adjclose; synthetic = KL1 KR200-proxy products before tax. KR200 synthetic matches the actual ETF within 0.1pp/yr (2009-04~2014); synthetic KRLEV runs about 2.1pp/yr ABOVE the actual ETF (2010-02~2014) and synthetic KRINV 1.5pp/yr BELOW: leveraged-long KR results are if anything optimistic, inverse-using ones pessimistic."
+}

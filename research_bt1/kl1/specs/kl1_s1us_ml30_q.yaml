@@ -1,0 +1,11 @@
+# KL1 S1-US frozen #4 (non-regime proxy of #1): S&P 500 PIT members minus the 30% lowest 12-1 momentum, equal weight, quarterly.
+name: kl1_s1us_ml30_q
+family: kl1_s1us
+known: 1
+idea: market ex-losers (drop bottom 30% 12-1 momentum), EW, quarterly
+universe: sp500
+stock:
+  rebalance: quarter
+  score: "ret(231, 21)"
+  top_pct: 0.7
+  weight: equal

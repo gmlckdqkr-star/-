@@ -1,0 +1,39 @@
+{
+ "audit": "NI1-A (KR-OWN1, DART insider open-market buys, KOSPI) adversarial audit",
+ "written_utc": "2026-11-05",
+ "precommit_sha256_verified": "2e6a7a161fac6b71389eaaa13976c545dde6d2092c117a6d0a5f129d8691e2ff (matches PRECOMMIT_NI1.md.sha256)",
+ "code": ["audit_recompute.py", "audit_split_check.py", "audit_parse_check.py", "audit_leak_checks.py", "audit_sample_check.py", "audit_sensitivity.py"],
+ "1_reproduction": {
+  "reproduced": true,
+  "how": "own code (wide day x code panels, own entry/window indexing, own EW), no import of A/code",
+  "S1": {"n": 433, "mean_excess_21d": 0.004977, "t_naive": 0.669, "t_cluster_month": 0.672, "sub_2002_07_2005_12": -0.00161, "sub_2006_01_2008_12": 0.01172},
+  "S2": {"n": 192, "mean_excess_21d": 0.002151, "t_naive": 0.113, "sub_2002_07_2005_12": 0.00763, "sub_2006_01_2008_12": -0.00568},
+  "counts_match": "parsed 2488, nonzero 1270, S1 docs 789, S2 docs 481, no code 7, not KOSPI 638, kept 625 (433+192)",
+  "entry": "all 625 events enter exactly 2 trading days after the last trading day <= rcept_dt (2nd trading day strictly after rcept_dt); window E+1..E+21 checked",
+  "membership": "KOSPI on rcept_dt (or last trading day before, 39 non-trading rcept_dt) via marcap Market; marcap Market is point-in-time (27 codes switch label 2002-2009)",
+  "returns": "ChangesRatio/100 equals Changes/(Close-Changes) to rounding (max abs diff 5e-5 over 3.6M rows); using full-precision Changes/(Close-Changes) gives S1 +0.498%, t 0.669",
+  "split_check": "196 KOSPI split rows 2002-2009: ChangesRatio equals the share-count-adjusted return (median abs diff 3e-5). Examples 003560 2002-01-28 (10:1, raw -90.1%, CR -1.26%, adj -1.26%), 009420 2006-05-10 (raw -91.2%, CR -11.54%, adj -11.54%), 000060 2006-02-23 (raw -89.6%, CR +4.02%, adj +4.02%)"
+ },
+ "2_parse_check": {
+  "result": "15/15 match",
+  "method": "15 random filings (seed 5150) re-fetched from OpenDART document.xml (generic UA, 0.5 s sleep, key never printed/saved); independent header-text parser with COLSPAN/ROWSPAN grid (no ACODE/AUNIT), plus a second net from (변동후 - 변동전); both equal their net in 15/15 (7 nonzero: 4 buys, 3 sells; 8 zero with reasons such as 신규선임, 임원퇴임, 주식분할, 주식매수선택권, 신규등록, 전환사채 권리행사, 주식매수청구권행사)",
+  "decoding_note": "XML prolog says utf-8 but bytes are cp949; their cp949-first decode is correct (all 2488 parsed docs contain the section label)"
+ },
+ "3_leak_survivorship_joins": {
+  "future_info": "none found. rcept_dt is never earlier than the rcept_no date (184 docs have rcept_dt 1-4 days LATER, i.e. conservative); entry always after rcept_dt; marcap used only 2002-2009",
+  "survivorship": "none by current listing: sample drawn from all corp_cls; 143 of 433 S1 events are firms delisted today (corp_cls E). 7 nonzero docs (3 S1, 4 S2) dropped for blank stock_code, all delisted-today firms; at most ~0.7% of S1, cannot move S1 to the gate",
+  "not_kospi_638": "legitimate: 637 were KOSDAQ on rcept_dt in marcap, 1 was a KOSDAQ stock whose last marcap row was the day before rcept_dt (delisted). 22 of the 638 are KOSPI today but were KOSDAQ then (correct to drop)",
+  "sample": "seed-20261107 sample re-derived from the list files is identical to the 2500 used; list total_count equals rows in all 78 months; doc rows join to list rows with 0 mismatches; only bracket prefix present is [기재정정]",
+  "benchmark": "EW includes ~5.5% zero-volume rows and preferred shares; buy-and-hold EW of entry-day members gives S1 +0.525% t 0.71; excluding the event stock and preferred shares +0.556% t 0.75"
+ },
+ "bugs_found": [],
+ "observations_not_bugs": [
+  "S1 mean rests on one event: a +225% 21-day excess (2008-04 filing, genuine price path, share count constant, daily limits hit). Without it S1 mean = -0.02%, t -0.04.",
+  "Same firm-date multiple reporters are separate events (433 events, 425 firm-dates); de-duplicated S1 +0.41%, t 0.55.",
+  "Context only (not gate inputs): entry lag 1/3 days gives S1 +0.29%/+0.50%, dating by rcept_no date +0.49%; 1%-winsorized S1 +0.18%.",
+  "t >= 2.24 would need S1 mean >= +1.67% at the observed sd 15.5%.",
+  "Hygiene: a raw document.xml probe file (run/A/probe/20030331001788.xml) sits in the session scratchpad; it may contain names and should be deleted. It is not used by any result."
+ ],
+ "verdict_changes": false,
+ "final_verdict": "CLOSE (stage 1). All three close conditions hold under the audit: mean +0.50% < +1.0%, t 0.67 < 2.24, 2002-07..2005-12 mean -0.16% < 0."
+}

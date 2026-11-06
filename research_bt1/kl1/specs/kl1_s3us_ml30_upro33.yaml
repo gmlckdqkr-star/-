@@ -1,0 +1,14 @@
+# KL1 S3-US static proxy: 67% ex-loser sleeve (drop bottom 30% 12-1 momentum) + 33% UPRO, quarterly sleeve.
+name: kl1_s3us_ml30_upro33
+family: kl1_s3us
+known: 1
+idea: ex-loser S&P EW sleeve 0.67 + UPRO 0.33 (beta about 1.67)
+universe: sp500
+stock:
+  rebalance: quarter
+  score: "ret(231, 21)"
+  top_pct: 0.7
+  weight: equal
+  exposure: "0.67"
+  exposure_every: rebalance
+  else: {UPRO: 1.0}

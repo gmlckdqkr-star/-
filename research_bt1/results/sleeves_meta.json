@@ -1,0 +1,127 @@
+{
+ "EW": {
+  "first": "1970-02-04",
+  "avg_names": 498.3395176252319,
+  "avg_turnover": 0.0062976849277654925
+ },
+ "MOM12_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.3856877323420074
+ },
+ "MOM12_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.3333952912019827
+ },
+ "MOM6_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.5301115241635688
+ },
+ "MOM6_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.4765179677819083
+ },
+ "REV1_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.929925650557621
+ },
+ "REV1_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.8841387856257746
+ },
+ "LOWVOL63_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.41189591078066917
+ },
+ "LOWVOL63_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.3098513011152417
+ },
+ "LOWVOL252_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.14944237918215614
+ },
+ "LOWVOL252_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.101363073110285
+ },
+ "HIVOL63_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.34628252788104086
+ },
+ "HIVOL63_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.2707558859975217
+ },
+ "HI52_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.8678438661710037
+ },
+ "HI52_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.7675340768277571
+ },
+ "LOWMAX21_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.8656133828996283
+ },
+ "LOWMAX21_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.7930607187112765
+ },
+ "LOWBETA_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.20539033457249073
+ },
+ "LOWBETA_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.16158612143742257
+ },
+ "HIBETA_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.18996282527881042
+ },
+ "HIBETA_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.13723667905824039
+ },
+ "TREND200_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.487360594795539
+ },
+ "TREND200_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.4306071871127633
+ },
+ "LOSER12_K10": {
+  "first": "1970-02-04",
+  "avg_names": 10.0,
+  "avg_turnover": 0.34386617100371747
+ },
+ "LOSER12_K30": {
+  "first": "1970-02-04",
+  "avg_names": 30.0,
+  "avg_turnover": 0.3017348203221809
+ }
+}

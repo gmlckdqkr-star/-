@@ -1,0 +1,11 @@
+# KL1 S1-US frozen #3: drop the 30% with the worst average rank of (low 12-1 momentum, high 252d vol), EW, quarterly.
+name: kl1_s1us_mlv30_q
+family: kl1_s1us
+known: 1
+idea: market ex-losers (drop worst 30% of mean rank of low momentum and high 1y vol), EW, quarterly
+universe: sp500
+stock:
+  rebalance: quarter
+  score: "rank(ret(231, 21)) + rank(-vol(252))"
+  top_pct: 0.7
+  weight: equal

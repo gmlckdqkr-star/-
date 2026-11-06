@@ -1,0 +1,45 @@
+{
+ "N_generated": 104000000,
+ "shards": 52,
+ "forms": {
+  "BOOL": 32442378,
+  "SWITCH": 17613126,
+  "VOTE": 21575025,
+  "LADDER": 14354590,
+  "VOTELADDER": 18014881
+ },
+ "N_unique": 72826320,
+ "N_never_diff_or_flat": 22180759,
+ "N_good": 81819241,
+ "months": 348,
+ "spa": {
+  "T": 348,
+  "N": 104000000,
+  "Tspa": 4.139348494434911,
+  "p_c": 0.94,
+  "p_l": 0.887,
+  "p_u": 0.964,
+  "maxnull_q50": 4.87667964944044,
+  "maxnull_q95": 6.017416313605567,
+  "rw_capped": false,
+  "rw_n": 0,
+  "rw_crit": [
+   6.017416381835937
+  ]
+ },
+ "neff_lij": 527.7508677276346,
+ "neff_lij_note": "Li-Ji from a T x T Gram is bounded by 2T (= 696) when N >> T; not a usable N for DSR at this scale",
+ "sr_var": 0.015251040678401492,
+ "sqrt2lnN": 6.076166794469297,
+ "secs": 136.13317155838013
+}
+1 0.732 t2.58 q50 -0.112 DSR 0.009 VOTELADDER [sur_HOUST.S200>@q0.7; sur_PAYEMS.Z252<=@q0.3; ew_spx.C63>@q0.5; skew.Z756<=@q0.1; c3sig.c3onon; core_yoy.C63<=@q0.9; gwz_rdsp.C21<=@q0.5] 
+2 0.701 t2.84 q50 -0.087 DSR 0.022 VOTE >=1 of [own_px.S21>@q0.5; c3sig.c3onoff; skew.Z756<=@q0.9] -> 3x / STK:TREND200_K10, hold 21
+3 0.686 t2.85 q50 -0.085 DSR 0.036 VOTE >=1 of [c3sig.c3anyoff; f_wml.Z756<=@q0.2; vix.Z756<=@q0.8; sur_CPIAUCNS.S200<=@q0.2; own_px.S200<=@q0.9; macro.csjon; gwz_svar.S200>@q0.7] -> 3x
+4 0.686 t2.90 q50 -0.081 DSR 0.021 (ew_spx.C63<=@q0.1 AND vix.Z756>@q0.7) -> STK:REV1_K10 / 3x, hold 5
+5 0.679 t2.92 q50 -0.079 DSR 0.038 VOTELADDER [gwz_ndrbl.L<=@q0.1; inf63.SL50<=; vrp.Z756>@q0.9; gwz_svar.Z756>@q0.2; ipo_ret6.S200<=@q0.8] >=5 STK:LOSER12_K10 / >=4 STK:HI52_K10 / else
+6 0.659 t2.64 q50 -0.097 DSR 0.022 (ener_rs.S100>@q0.1 OR vix.Z756<=@q0.8) -> 3x / STK:MOM12_K30, hold 21
+7 0.658 t2.75 q50 -0.088 DSR 0.016 IF skew.Z756>@q0.1 THEN gp_ratio.C63<=@q0.1 ELSE small_rs.S200<=@q0.1 -> STK:EW / 3x, hold 5
+8 0.655 t2.59 q50 -0.101 DSR 0.009 ((rev_HOUST.Z756<=@q0.2 OR rev_INDPRO.C63<=@q0.2) AND skew.Z756>@q0.8) -> STK:LOWVOL252_K30 / 3x, hold 5
+9 0.652 t2.64 q50 -0.095 DSR 0.014 VOTELADDER [skew.Z756>@q0.2; philly_no.L>@q0.1; c3sig.c3onoff; ew_spx.C63>@q0.5; c_sb63.S200<=@q0.7; gwz_dtoat.C252>@q0.7; gwz_dfr.C21<=@q0.7] >=6 2x 
+10 0.651 t2.41 q50 -0.116 DSR 0.007 VOTELADDER [sur_INDPRO.S200<=@q0.8; msi21.S50>@q0.8; agg_max21.S21<=@q0.8; agg_ivar63.S100<=@q0.5; cpi_yoy.C21<=@q0.1; vix.Z756<=@q0.7; macro.shock3mo

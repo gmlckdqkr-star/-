@@ -1,0 +1,12 @@
+{
+ "months_with_total_count_ne_rows": [],
+ "rows_outside_window": 0,
+ "insider_rows": 41596,
+ "sample_identical": true,
+ "sample_overlap": 2500,
+ "join_mismatch": 0,
+ "rcept_dt_ne_rcept_no_date": 184,
+ "bracket_prefixes_other_than_correction": [
+  "[기재정정]"
+ ]
+}

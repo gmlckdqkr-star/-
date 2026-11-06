@@ -1,0 +1,83 @@
+{
+ "main_lag2_decision_end_m": {
+  "primary": {
+   "n": 348,
+   "mean": 0.01222,
+   "t": 1.404
+  },
+  "p1": {
+   "n": 168,
+   "mean": 0.01787,
+   "t": 1.558
+  },
+  "p2": {
+   "n": 180,
+   "mean": 0.00695,
+   "t": 0.535
+  },
+  "all": {
+   "n": 528,
+   "mean": 0.01439,
+   "t": 2.179
+  },
+  "first": "1971-01",
+  "last": "2014-12",
+  "high_share_primary": 0.5201,
+  "gate_keep": false,
+  "coverage": {
+   "avg_n": 476.2,
+   "min_n": 445,
+   "share_scored": 0.9524,
+   "avg_cyc": 97.8,
+   "avg_def": 100.3,
+   "delist_rows": 280,
+   "exec_always_in_m1": true,
+   "end_always_m1": true,
+   "industry_share": {
+    "Other": 0.1798,
+    "Finan": 0.1465,
+    "Utils": 0.0996,
+    "Trans": 0.0686,
+    "Machn": 0.0673,
+    "Rtail": 0.0638,
+    "Food": 0.0568,
+    "Oil": 0.056,
+    "Cnsum": 0.0541,
+    "Cnstr": 0.0399,
+    "Chems": 0.0388,
+    "Durbl": 0.035,
+    "FabPr": 0.0272,
+    "Clths": 0.0215,
+    "Steel": 0.0214,
+    "Cars": 0.0145,
+    "Mines": 0.009
+   }
+  }
+ },
+ "sens_lag1_tighter": {
+  "primary": {
+   "n": 348,
+   "mean": 0.01569,
+   "t": 1.807
+  },
+  "p1": {
+   "n": 168,
+   "mean": 0.01663,
+   "t": 1.448
+  },
+  "p2": {
+   "n": 180,
+   "mean": 0.01482,
+   "t": 1.144
+  },
+  "all": {
+   "n": 528,
+   "mean": 0.01508,
+   "t": 2.285
+  },
+  "first": "1971-01",
+  "last": "2014-12",
+  "high_share_primary": 0.5201,
+  "gate_keep": false
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "time_utc": "2026-11-04T13:44:17Z",
+ "seed": 20261141,
+ "counts": {
+  "S1KR": 30756,
+  "S1US": 15144,
+  "S2KR": 236288,
+  "S2US": 235280,
+  "S3KR": 20000,
+  "S3US": 20000
+ },
+ "N_total": 557468,
+ "n_atoms": {
+  "KR": 2016,
+  "US": 1680
+ },
+ "n_feats": {
+  "KR": 72,
+  "US": 60
+ },
+ "code_sha256": {
+  "kl_blk.py": "d0cd83dfc970e49227c4053a4b6e5989281a5adabff2764208bc081b719a36a2",
+  "kl_engine.py": "ac446cb5df4decb14256ac10959965cb62a84d2cc95ef5cd384d9982e511221d",
+  "kl_gen.py": "acef6230a1ede2661e19653a52f7a6db9f32a5d5e5005c8484fdaf7866fb4c6d",
+  "kl_make_gen.py": "575518b83feb910f1e3c7132a11418d2785a466ebda701bf27857db6344bcb21",
+  "kl_prep.py": "dd25a8e15dd4b93226c97019b164eabaa4de2d9880884ad833fa16d2c79d7abf",
+  "kl_run_blk.py": "96c524f8610c0a6c50ac2b3f9c27d01eb63c68ddefc3d903fbf18aa2968fe75e",
+  "kl_run_s2.py": "dd449ad372182194632cad63a6d73240e20ef3f4ca609e5e3de90a32a44ab82d",
+  "kl_sig.py": "5d2a4a10b6a379c350f6f49d79d74676503b3b74a9c2f071a97ddf29b7abb761",
+  "kl_stats.py": "c9d8be36ff19b364fa0c0d9547aa8e83af0942f90acede21a9dbba5ac6e7aa26",
+  "wsdata.py": "36c06cec5365f257207969cfff202e8bb84aabaf0fc1bfad5fe908c52a3391b0",
+  "wsstk.py": "2a415086db37fa10e6340912ab2f360b3b1d1c0781a48f26c2b48adcb939e6d2"
+ },
+ "precommit_sha256": "63eed9a179c756b832538b8f2af79332791cfbb3bbd1465a24dcc93ac4fe9a08"
+}
