@@ -1,0 +1,184 @@
+{
+ "verdict": "The numerical conclusions stand: every value I recomputed from the folder matched the stored results with max abs difference 0.0, the report tables are byte-identical to what `make_tables.py` generates, the v1 parity prints 0.31081 / 0.16159 with diff 0, and \"0 of 12 pass, keep v1\" holds under both the as-run and the corrected measurement. The sha256 of PRECOMMIT_ONF1.md matches the .sha256 file and the reports, and the runner code uses exactly the registered candidates and parameters (tau, phi, gates, vc 0.09, fee x2 0.000166). I found no reference to any forbidden file, by grep over all 286 files and by tracing every file the engines open at run time.\n\nThe folder is not ready to hand to a design chat as it stands on the mount. `code/report_full.tmpl.md` carries the whole post-2014 report outside holdout/ and must move; the working copy already has it under holdout/, but the mirror has not been re-synced. PROGRAM_SPEC_ONF1_KO.md lines 17-18 contain post-2014 event counts and a 2020 return, and line 5 quotes the upload's full-period returns. RESULT_ONF1_KO.md itself and results/ are clean, and data_cut/ ends 2014-12-31 (US) and 2014-12-30 (KR).\n\nTwo procedural statements need correcting before the report is final. The holdout was opened at 13:56Z, before the corrected T/F measurement (14:03Z, 14:05Z) and the steelman lane (14:00Z) finished, so \"after the checks ended\" is inexact. The pre-registration was not blind for the P group, whose MS1 and 1999-2026 numbers were computed before it. Neither changes the verdict. The rest is hygiene (absolute paths, wrong file references, unguarded holdout branches) and readability.",
+ "checked": "All work was read-only on /mnt/project-files/research/onf1/ (286 files before and after; `find -newer` shows nothing written). Scratch is /home/user/onv/wf3/compliance/ (driver.py, out/driver.log, out/tab_*.md).\n\n**Reproduction**\n- `python -B code/make_tables.py ms1|dev|holdout`: the ms1 and dev tables are byte-identical substrings of both reports, and the holdout table of the full report. Both reports equal their templates with the generated tables filled in (8,037 and 14,069 characters).\n- `python -B code/ntilt.py`: real_ndx_86_14 0.31081 vs 0.31081 and dev250_path 0.16159 vs 0.16159, max abs fin 0.00e+00 and EE 0.00e+00. The futures implementation vs mfeng mode 1 is 0.29910 / 0.14258, diff 0.\n- driver.py, in memory, 63 engine runs:\n  - Corrected measurement, seeds 11, 7, 23, for P3 A-US (ded 0.25, bdel 0 and 2), T5 and F1, modes C and M, both bases: 48 comparisons of per_seed_cagr and per_seed_d against fix_{P,T,F}_le2014.json, max abs diff 0.0.\n  - As-run values for T5 and P3 under C on the two judging bases (cagr, d, mdd, pw, dd80, ref_v1) against pre_{T,P}_le2014.json: max abs diff 0.0. The other three stored bases were not rerun.\n  - hist_dev.json rows for v1, T5 and \"P3 A-US d2\" in three windows: max abs diff 0.0, windows identical.\n- About 72 engine runs in total including parity, an open-trace run and one v1 reference run.\n\n**Pre-registration**\n- `sha256sum -c PRECOMMIT_ONF1.sha256` is OK; the hash bea675cd…7b45 equals the one in RESULT_ONF1_KO.md line 122 and the prefix in the full report line 177.\n- Working-copy mtimes: PRECOMMIT 12:54:36Z; pre_T 12:55:26, pre_F 12:56:09, pre_P 12:58:22; hist_holdout.json 13:56:34; fix_P 13:57:56, fix_T 14:03:01, fix_F 14:05:36; steelman.json 14:00:09.\n- The 12 candidates and their parameters were read line by line in run_pre.py, run_fix.py, hist_windows.py, ntilt.py and ms1f.py against PRECOMMIT. The eng.py presets V9, V10 and PRESET_A match the uploaded v9_strategy.py, v11_strategy.py and portfolio_v13.py.\n- Pass rules applied to the stored JSON: as-run 0/12; corrected 0/12 under C.\n\n**Leak and forbidden-file checks**\n- Grep for 2015-2029 and for performance tokens over every file outside holdout/, each hit read.\n- data_cut: us_le2014.csv last row 2014-12-31, kr_le2014.csv 2014-12-30, zero rows after 2014; both are exact truncations of holdout/data/{us,kr}.csv (max abs diff 0).\n- Forbidden names: grep over the whole folder gave 0 hits. A Python audit hook on `open` during an engine run showed no forbidden path and no write-mode open under the mount.\n\n**Other**\n- sha256 prefixes of the 6 uploaded .py and 5 .md files all match the full report line 186; plan.py line 52 is the single per-row `b`.\n- Spot checks from the data files: alpha 11.82%/yr and beta 0.220; 54 nights at or below -2.75% over 1999-03 to 2026-10, worst -9.46% on 2020-03-16 (31 nights and -8.36% on 2001-09-17 up to 2014); the section 1 table of the full report against holdout/real_table.log.\n- Hygiene: extension census, sha256 duplicate scan (none), no caches, pyc, pkl or npz, no empty files, largest file 2.4 MB, absolute-path grep, existence of every path referenced in the md files.\n- X40 exists in tools/idea_check/closed_axes.json, and the ONF1 entry there (X42) has only numbers up to 2014.",
+ "issues": [
+  {
+   "severity": "critical",
+   "where": "code/report_full.tmpl.md (mirror at /mnt/project-files/research/onf1/), lines 10, 12, 21-32, 51-57, 75-78, 83; code/build_report.py line 9",
+   "claim": "RESULT_ONF1_KO.md line 3: the full report with post-2014 numbers is in research/onf1/holdout/ and design threads do not open it",
+   "problem": "The template of the holdout report sits in code/, which a design thread is allowed to read. It contains every post-2014 number of the full report. The file should move under holdout/.",
+   "evidence": "Lines include 'v10 34.9% / -60%' for 2010-03~2026-10, 'T5 ... 2015~2026 +1.8%p', '54회, 최악 -9.46%' and the recent-month drawdowns. Filling the template reproduces holdout/RESULT_ONF1_FULL_KO.md exactly. `diff -rq /home/user/onv/code <mirror>/code` at 14:34Z: the working copy already has holdout/report_full.tmpl.md, a changed build_report.py and a holdout/README.md; the mirror (14:08) has none of these.",
+   "suggested_fix": "Delete code/report_full.tmpl.md from the mirror and place it at holdout/report_full.tmpl.md. Set build_report.py line 9 to open(H + 'holdout/report_full.tmpl.md'). Re-run build_report.py, because the working copy's report_le2014.tmpl.md (14:17) is newer than RESULT_ONF1_KO.md (14:11). Then re-sync the mirror, including holdout/README.md."
+  },
+  {
+   "severity": "major",
+   "where": "PROGRAM_SPEC_ONF1_KO.md line 17",
+   "claim": "1999-03~2026-10 밤 사이 −2.75% 이하 54회(연 2.0회), 최악 −9.46%(2020-03-16)",
+   "problem": "This is an event count measured through 2026 plus a 2020 return, in a file outside holdout/.",
+   "evidence": "Recomputed from holdout/data/us.csv r_on: 54 nights, worst -9.46% on 2020-03-16. From data_cut/us_le2014.csv: 31 nights over 15.8 years (1.96 per year), worst -8.36% on 2001-09-17.",
+   "suggested_fix": "Replace with '1999-03~2014-12 밤 사이 −2.75% 이하 31회(연 2.0회), 최악 −8.36%(2001-09-17)'. Keep the 2026 figure only in the full report, where it already is at line 152."
+  },
+  {
+   "severity": "major",
+   "where": "PROGRAM_SPEC_ONF1_KO.md line 18",
+   "claim": "과거 규칙 배율 그대로였다면: 시가에 유지증거금 미달 19회, 정산 추가증거금 61회 (27.6년)",
+   "problem": "These are event counts for the uploaded strategy over 1999-03 to 2026-10 (27.6 years), in a file outside holdout/.",
+   "evidence": "holdout/audit/wf1/_results/verify_execution.json: 'below maintenance at the open 19 times in 27.6 years ... 61 times (2.2/yr)'. I did not recompute the counts.",
+   "suggested_fix": "Remove the line from PROGRAM_SPEC and keep it in the full report, or recompute with holdout/audit/wf1/execution/margin_calc.py on rows up to 2014-12-31 and state the 15.8-year counts."
+  },
+  {
+   "severity": "major",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 164 and line 103; RESULT_ONF1_KO.md line 12",
+   "claim": "2015년 이후 자료는 점검이 끝난 뒤 한 번만 계산했고 선택에 쓰지 않았습니다",
+   "problem": "The holdout was opened before the corrected T/F measurement and the steelman lane had finished. The designation of T5 as the single conditional candidate in the report for design threads was therefore written after the holdout, where T5 was the only candidate above v1, had been seen. The verdict of 0/12 is unaffected.",
+   "evidence": "Working-copy mtimes: holdout/hist_holdout.json 13:56:34Z; fix_P 13:57:56Z, fix_T 14:03:01Z, fix_F 14:05:36Z; wf2/_results/steelman.json 14:00:09Z. CHECKPOINT item 22 (holdout done) precedes 'fix_T / fix_F 결과 읽기, steelman 결과 읽기'. Mitigating: the steelman lane used only data up to 2014 and independently named T5.",
+   "suggested_fix": "Rewrite line 164 as: '2015년 이후 자료는 등록 당시 측정(통과 0/12)과 엔진 점검 2건이 끝난 뒤(13:56Z) 한 번 계산했습니다. 보정 측정 T·F 군(14:03Z, 14:05Z)과 반대 논증(14:00Z)은 그 뒤에 끝났습니다. 후보·규칙·보정 방법은 그 전에 정해졌고 선택에 쓰지 않았습니다.' Add one sentence to RESULT_ONF1_KO.md conclusion 3 saying the T5 designation rests on the steelman analysis of data up to 2014 and was written after the one-time holdout look."
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_KO.md line 12; holdout/RESULT_ONF1_FULL_KO.md lines 12 and 144",
+   "claim": "조건부 후보 1개: T5 ... 규칙 4에 따라 \"가정 의존(조건부)\"",
+   "problem": "Applied mechanically to the corrected numbers, the registered rules do not single out T5. T5 meets only rule 1 under M and fails fee x2, so it is not an M-only pass in the sense of rule 4. P3 PRESET_A US-only, as registered with same-close brake, meets rule 1 under both C and M and scores above T5. P3 is set aside because of the bd2 variant, which was added after registration.",
+   "evidence": "fix_*_le2014.json 30-seed means: T5 C -1.0/-1.9, M +1.2/+0.5 (26/30 seeds), M fee x2 -2.2/-3.1. P3 C +0.5/+1.2 (14/30), M +2.5/+3.3 (27/30), M fee x2 -1.2/-1.4. In hist_dev.json, T6 and 'P1 v9-US d2' also beat v1 in all three windows up to 2014.",
+   "suggested_fix": "Reword: 'M 기준에서 규칙 1(수수료 1배)만 충족한 후보는 P3(등록대로 브레이크 당일 반영)와 T5 둘이며, 둘 다 수수료 2배에서 미달. P3 는 브레이크를 v1 처럼 2일 지연하면 −5.7/−12.0%p 로 무너져 제외. 남는 것은 T5 이며 통과가 아님.'"
+  },
+  {
+   "severity": "minor",
+   "where": "PRECOMMIT_ONF1.md line 1; both reports where they say 사전 등록",
+   "claim": "ONF1 사전 등록 (2026-11-10, 결과를 보기 전에 고정)",
+   "problem": "This is accurate for the T and F groups only. For P1-P3, MS1 values under C, Z and H and the US-only 1999-2026 real-history values had been computed before the registration, so their registration was not blind and their holdout was not unseen. The outcome is unaffected because P fails.",
+   "evidence": "holdout/CHECKPOINT.md, 12:50Z block, items 2-4: 'v9 미국만 1999-03~2026-10 = 34.6%', 'C: v9 5.4 / v10 11.5 / A 14.8 (v1 16.2)'. PRECOMMIT mtime is 12:54:36Z; pre_T 12:55:26Z and pre_F 12:56:09Z come after it.",
+   "suggested_fix": "Leave PRECOMMIT untouched because of the hash. Add to both reports: 'P 군(업로드 프리셋)은 등록 전에 MS1 C·Z·H 값과 1999~2026 실제 수치를 이미 계산해 본 상태였습니다. 결과를 보지 않고 등록한 것은 T·F 군 9개입니다.'"
+  },
+  {
+   "severity": "minor",
+   "where": "PRECOMMIT_ONF1.md lines 12 and 30; RESULT_ONF1_KO.md line 96; both report tables",
+   "claim": "후보 (N = 12, 이 밖의 시도는 하지 않음) ... 8천만 계약 단위(1 MNQ = 7,600만), S&P 시대 ... 를 함께 적는다",
+   "problem": "Two registered reporting commitments are not met. Neither report shows the S&P-era bases, and no runner uses contract granularity. Extra attempts beyond the 12 were made (two extra ideas, fee 0.30 and 0.60bp, bd2); they are disclosed but not labelled as deviations. The MNQ notional also differs across files.",
+   "evidence": "pre_*_le2014.json holds real_spx_55_85 and real_spx_70_85 under C, all negative (T5 -7.1/-7.1%p, P3 -9.2/-8.4%p). `grep notional code/*.py` finds only the default notional=0.0 in ntilt.run. MNQ notional: 7,600만 in PRECOMMIT, 8,700만 in CHECKPOINT line 49, 8,355만 in the reports.",
+   "suggested_fix": "Add a short '사전 등록 대비 차이' paragraph to both reports. State the S&P-era range from pre_*.json. Either run T5 with W0=8e7 and notional=83.55e6, or state that it gives zero contracts below about 8,400만 and was not run. Label the extra attempts as outside the registration."
+  },
+  {
+   "severity": "minor",
+   "where": "code/run_fix.py lines 54-56 and 61-64; RESULT_ONF1_KO.md lines 41-47; full report lines 58-64",
+   "claim": "M 기준 수수료 2배 ..., 규칙 1+2 통과 seed: P3 PRESET_A 미국만: -1.2 / -1.4, 0/30",
+   "problem": "The per-seed flag for fee x2 requires both CAGR > v1 and d > 0, which is stricter than registered rule 2 (d > 0 only). All counts under C are unchanged.",
+   "evidence": "Recounted from per_seed_cagr and per_seed_d in fix_P_le2014.json with the registered wording: P3 under M is 2/30, stored 0/30. All 15 rows under C are 0/30 either way.",
+   "suggested_fix": "For the fee x2 flag use only d > 0 on both bases, then regenerate the table. Alternatively rename the column to '규칙 1 을 수수료 1배와 2배 모두에서 충족한 seed'."
+  },
+  {
+   "severity": "minor",
+   "where": "PROGRAM_SPEC_ONF1_KO.md line 5",
+   "claim": "업로드 연구의 대표 수치(62%, 77.6%, 48.9%)",
+   "problem": "These are the upload's claimed returns over periods ending 2026. They are refuted claims, not project measurements, but read strictly they are post-2014 performance numbers outside holdout/.",
+   "evidence": "Upload reports: v12 md line 12 '1986~2026 | 62.0%'; v11 md line 11 '77.6% / −63.5%'; v10 md line 17 '1999-03~2026-11 ... 48.9% / −65.6%'.",
+   "suggested_fix": "Write '업로드 연구의 대표 수치(전체 보고서 1절 참조)는 ...' and keep the three numbers in the holdout report only."
+  },
+  {
+   "severity": "minor",
+   "where": "data_cut/us_le2014.csv, columns qqq_adj, tqqq_adj, spy_adj, tlt_adj, ief_adj",
+   "claim": "data_cut/ holds data up to 2014 only",
+   "problem": "The row dates are clean, but the adjusted-close columns are back-adjusted with post-2014 dividends and splits, so their levels encode later information. The engines do not use these columns, and the return columns are ratios and unaffected.",
+   "evidence": "On 2014-12-31, qqq_adj/qqq_close = 0.9176 and spy_adj/spy_close = 0.824. tqqq_adj is 1.93, far below any unadjusted 2014 TQQQ price, so later splits are folded in. ms1f._qqq_split reads only ndx, qqq_open and qqq_close.",
+   "suggested_fix": "Drop the five *_adj columns from data_cut/us_le2014.csv, or rescale each so its last value equals the raw close. Add a two-line data_cut/README.md. Re-run make_tables.py and ntilt.py afterwards; results should not change."
+  },
+  {
+   "severity": "minor",
+   "where": "code/hist_windows.py lines 20-26; code/make_tables.py lines 34-35; code/eng.py lines 285-291; code/real_table.py; code/extend_us.py",
+   "claim": "RESULT_ONF1_KO.md line 120 tells the reader to run `python -B code/hist_windows.py dev` and `make_tables.py ms1|dev`",
+   "problem": "Any argument other than 'dev' falls into the holdout branch and prints post-2014 numbers; a typo is enough. Running eng.py, real_table.py or extend_us.py directly also prints 1999-2026 performance, and all sit in the design-readable code/ folder.",
+   "evidence": "hist_windows.py: `if which == 'dev': ... else:` holdout windows. make_tables.py line 35: `... if which == 'dev' else paths.HOLD + 'hist_holdout.json'`. eng.py `__main__` loads the full us.csv and prints CAGR for 1999-03 onward.",
+   "suggested_fix": "hist_windows.py: use `elif which == 'holdout' and os.environ.get('ONF1_ALLOW_HOLDOUT') == '1':` and otherwise `sys.exit('usage: dev | holdout')`. make_tables.py: `elif which in ('dev', 'holdout'):` with a usage exit otherwise. Move real_table.py, extend_us.py, build_data.py and load_panel.py to holdout/code/. Remove or guard the eng.py `__main__` block."
+  },
+  {
+   "severity": "minor",
+   "where": "code/build_data.py lines 12 and 15; code/load_panel.py line 2; code/ms1f.py line 22; code/ntilt.py lines 15 and 265; holdout/audit/**; holdout/data/README.md line 2",
+   "claim": "code/paths.py is the intended path mechanism",
+   "problem": "Several scripts bypass paths.py. build_data.py points at the original session folder and would fail or write outside the deliverable. The engines hard-code the mount point. About 380 references to /home/user/onv/ in the audit scripts mean those scripts cannot be re-run. The engines also need project modules outside the folder, which RESULT_ONF1_KO.md does not mention.",
+   "evidence": "build_data.py: sys.path.insert(0, '/home/user/onv/code') and OUT = '/home/user/onv/data/'. ms1f.py: sys.path.insert(0, '/mnt/project-files/research/measure_std'). The run-time trace shows imports from c3_brake, c3_combo, c3_integrated, c3_invent, c3_multi, c3_relax/code/rx.py and crash_overlay, plus research/data/panel_f32.npz.xz.",
+   "suggested_fix": "In paths.py add PROJ = os.environ.get('ONF1_PROJECT_ROOT', '/mnt/project-files') and use it in ms1f.py, ntilt.py and load_panel.py. In build_data.py import paths and set OUT = paths.DATA. Add one line to holdout/audit saying the scripts are archival and refer to /home/user/onv. Add the dependency line to RESULT_ONF1_KO.md 재현."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 27; holdout/CHECKPOINT.md lines 44, 47, 75; holdout/data/README.md; RESULT_ONF1_KO.md line 10",
+   "claim": "출처 `results/real_table.log`",
+   "problem": "Several references point to files that are not where they are said to be. The mirror also lacks the holdout/README.md warning that exists in the working copy.",
+   "evidence": "The path check finds no results/real_table.log; the file is holdout/real_table.log. CHECKPOINT cites results/real_table_presets.csv and results/sens_le2014.json; the actual files are holdout/real_table_presets.csv and holdout/audit/sens_le2014_seed11_asrun.json. The README says data/us.csv; the file is holdout/data/us.csv. `plan.py` 52행 is cited, but plan.py is not in the folder.",
+   "suggested_fix": "Change line 27 to `holdout/real_table.log`. Add a note at the top of CHECKPOINT that paths are those of the working session, with the mapping. Fix the README paths. Copy plan.py to holdout/upload/ or quote line 52 in the report."
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_KO.md line 85; code/report_le2014.tmpl.md line 33 (mirror)",
+   "claim": "Sharpe 0.57 (1999~2014), 0.22 (2001~2014), 0.39 (2005~2014) → 새 수익원 관문(같은 기준 0.55) 미달",
+   "problem": "0.57 is above 0.55, so 'fails the gate' contradicts the first window. No script outside holdout/ produces these Sharpe values.",
+   "evidence": "The text itself. My quick recomputation from data_cut (f_on − 0.4%·dt_on − 2×0.83bp) gives 0.61 / 0.26 / 0.46, the same picture under a different definition. The working copy's template (14:17Z) already rewrites the sentence, but RESULT_ONF1_KO.md has not been rebuilt.",
+   "suggested_fix": "Rebuild and re-sync. Wording: '전체(1999~2014) 0.57 은 관문 0.55 를 넘지만 1999~2000 을 뺀 2001~2014 는 0.22, 2005~2014 는 0.39 로 미달'. Name the source script or add a small one to code/."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/audit/wf1/challenge_timing-logic/peek.py lines 3-4; holdout/audit/wf1/replicate/peek_pkl.py line 4; holdout/audit/wf1/codeaudit/live_sandbox/; holdout/audit/wf1/execution/dl/yuanta.txt",
+   "claim": "Audit records and scripts are kept in holdout/",
+   "problem": "Two archived scripts unpickle the untrusted uploaded pickles. live_sandbox/ holds verbatim copies of the uploaded live-trading code, which fetches from Yahoo when run. A 67 KB third-party web page dump is included. None of this should be re-run by a later chat.",
+   "evidence": "peek.py: pd.read_pickle('/home/user/onv/uploads_ro/'+f). v11_live.py lines 88-89: requests.get('https://query1.finance.yahoo.com/...'). `cmp` shows the three live_sandbox files are identical to the upload.",
+   "suggested_fix": "Delete the two peek scripts, or add a holdout/audit/README.md saying: archival, do not execute; the peek scripts unpickle untrusted files; live_sandbox is the user's uploaded code with known defects."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md lines 6, 10, 11, 12",
+   "claim": "기준값: MS1 대표(dev250_path) 16.16%, 실제 나스닥100 1986~2014 31.08% ... v10 은 연 32~37% ... PRESET_A ... (같은 계산 방식이면 70~88%) ... 사전 등록한 후보 12개 ... 보수 기준",
+   "problem": "The opening uses internal labels before they are defined: MS1 and dev250_path (explained only at line 68), v9/v10/PRESET_A (never introduced as versions of the uploaded strategy), 보수 기준 (defined at line 36), 후보 12개. '같은 계산 방식' has no clear referent, and 't 5.1' is jargon.",
+   "evidence": "The first definition of 대표 is at line 68 and of C/M/H/Z at line 36. A lay reader cannot tell why v1 has two returns, 16% and 31%.",
+   "suggested_fix": "Line 6: 'v1 의 기준값은 두 가지입니다. ① 과거 수익률을 섞어 만든 가상 30년 500개의 중앙값(이하 \"대표\") 연 16.16%, ② 실제 나스닥100 1986~2014(이하 \"실제\") 연 31.08%.' Line 10: introduce 'v9·v10·PRESET_A = 올리신 전략의 세 가지 설정' and write '미래 정보를 쓰는 원본 계산 방식이면 70~88%'. Line 12: '1999년 이전에는 밤 프리미엄이 없었다고 보는 보수적 가정에서는'; drop the t value or write '통계적으로 뚜렷'."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md lines 40, 66, 77-101, 105-129, 131",
+   "claim": "| 후보 | 등록 당시 C (대표/실제) | 보정 C ... | 둘 다 v1 초과 seed | ... 규칙 1+2 통과 seed | ... ; P3 A-US -76.1% / 0.17, T5 -84.2% / 0.75",
+   "problem": "Table headers and row labels use labels explained only afterwards or never: seed, 규칙 1+2 (rules are not numbered in this report), hold 1x, v1 via futures (MF1), d2, bd2, fee x2, pkg-assump. Line 66 gives ratios as 0.17 and 0.75 and no v1 baseline, so T5 looks far riskier than v1 when it is not.",
+   "evidence": "The legend for d2/bd2/pkg-assump is at line 131, after both tables. v1 on dev250_path, computed with ntilt.ref: median MDD -82.9%, share of paths at or below -80% is 0.73, against T5's -84.2% and 0.75.",
+   "suggested_fix": "Put a four-line legend before each table. Rename rows in Korean (v9 미국만·지연 2일, 브레이크도 2일 지연, 수수료 2배, 업로드 가정). State the two rules above the table. Rewrite line 66 as 'v1 −82.9% / 73%, T5 −84.2% / 75%, T6 −82.1% / 64%, PRESET_A 미국만 −76.1% / 17%, F1 −87.7% / 91%'."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md lines 12, 139-143, 144",
+   "claim": "실제 밤 자료가 있는 4개 구간 모두에서 v1 을 연 +1.5~+3.8%p 앞섰고 ... 따라서 1986~92 는 C, 1993~98 은 M 이 근거에 맞습니다 ... 기대 개선은 연 +1~+2.5%p",
+   "problem": "Three statements are ambiguous for the owner. The '4 windows' are three nested windows up to 2014 plus one holdout window, not four independent tests. Line 143 says M fits the evidence while the verdict uses C, without saying which one decides. '+1~+2.5%p' is given without its conditions.",
+   "evidence": "Windows: 1999-03~2014-12, 2001-01~2014-12, 2005-01~2014-12, 2015-01~2026-08. The steelman lane gives T5 +3.6/+2.4 at 0.30bp and +2.3/+1.0 at 0.60bp under M. hist_dev d values are +3.85, +1.47, +1.61, so '+3.8' should round to +3.9.",
+   "suggested_fix": "Line 12: '서로 겹치는 2014년 이전 3개 구간에서 +1.5~+3.9%p, 따로 떼어 둔 2015~2026 에서 +1.8%p'. Line 143: add '판정은 사전 등록대로 C 로 했고(통과 0), M 은 현실에 더 가까울 수 있는 가정이라 T5 를 \"조건부\"로만 적었습니다'. Line 144: '(1993년부터 프리미엄이 있었고 실제 수수료가 0.3~0.6bp 일 때의 값)'."
+  },
+  {
+   "severity": "info",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md lines 27-32, 153, 160-162",
+   "claim": "코드 점검 패치 적용 후 ... 일치하지 않는 지문 하나 ... 초과분 −0.37bp/일, t −0.6 ... 켈리 최적 ... 2.2e-16 이내 일치 ... 1e-14 일치",
+   "problem": "Specialist jargon and notation are used without explanation: bp (never defined), t values, 지문, 켈리, e-notation.",
+   "evidence": "'bp' first appears at line 32 without a definition.",
+   "suggested_fix": "Define once '1bp = 0.01%'. Replace 지문 with '보고서 수치와 맞춰 본 항목'. Replace the e-notation with '소수점 14자리까지 일치'. Replace 켈리 최적 with '장기 성장률이 가장 높아지는 배율(이론값)'. Drop t values from the main text or put them in parentheses as '통계적 유의성'."
+  },
+  {
+   "severity": "info",
+   "where": "PROGRAM_SPEC_ONF1_KO.md line 12; RESULT_ONF1_KO.md line 100; RESULT_ONF1_KO.md line 94; holdout/RESULT_ONF1_FULL_KO.md line 12",
+   "claim": "MNQ 1계약 명목 ≈ 8,355만 원 (NDX 31,160 × $2 × 1,340.68) ... QQQ α 23.0 → 12.6 → 4.9%/년 ... (1999~2026 연 12.5%, t 5.1)",
+   "problem": "Three small points. The contract-size fact is allowed, but the explicit NDX level reveals the 2026 index level against 4,236 at end-2014. I could not reproduce '23.0'. The 12.5% figure is paired with an HAC t value, which is not said.",
+   "evidence": "31,160 × 2 × 1,340.68 = 83.55M KRW, arithmetic correct. Alpha by sub-period from data_cut (1999-03~2002, 2003~07, 2008~14): 25.2 / 12.6 / 4.9 %/yr; CHECKPOINT line 29 says 25%. f_on 1999-03 to 2026-10: mean 12.5%/yr with simple t 4.6; verify_stats.json reports HAC t 5.1.",
+   "suggested_fix": "Keep only the KRW notional outside holdout/ if strictness is wanted. Check 23.0 against 25. Write 'HAC t 5.1'."
+  },
+  {
+   "severity": "info",
+   "where": "data_cut/; code/; holdout/data/",
+   "claim": "The folder reproduces its own inputs",
+   "problem": "No script in the folder creates data_cut/*.csv. us.csv and us_ext.csv are near-duplicates (us_ext is us plus 23 rows, 2.4 MB each). The .log files exist only through shell redirection that is not documented.",
+   "evidence": "build_data.py writes only us.csv and kr.csv. data_cut equals the truncation of holdout/data at 2014-12-31 with max abs diff 0. real_table.py prints to stdout and has no log write.",
+   "suggested_fix": "Add a three-line cut script under holdout/code/, or a README line giving the command. Optionally store only the 23 extension rows. Document the redirections, for example `> holdout/real_table.log`."
+  }
+ ],
+ "open_points": [
+  "The sha256 prefixes of the three uploaded pickles (full.pkl, plan.pkl, windows.pkl) in the full report line 186 were not checked, because the rule limited me to text and py files. The 11 py and md prefixes all match.",
+  "The numbers in RESULT_ONF1_KO.md section 3 (fee 0.30 and 0.60bp, break-even fees, Z at 0.30bp) and the night-only Sharpe values were not recomputed. Their backing files are under holdout/audit/wf2/steelman/ and no script outside holdout/ produces them.",
+  "Whether the corrected-measurement settings in run_fix.py (30 seeds, mean removal, ded 0.25, bdel) were frozen before the holdout was opened at 13:56:34Z cannot be proven from timestamps; all code files carry mtime 14:06:32Z. Supporting evidence: fix_P finished at 13:57:56Z, so that run started before the holdout, and the wf2 audits that prompted the correction finished at 13:50:37Z.",
+  "The margin-event counts (19 and 61 over 27.6 years) and the contract and margin facts (mini KOSPI200 notional 5,283만, 21% margin, KIS fee tiers) were not re-derived; no web access was used.",
+  "The engines depend on project modules outside the folder (measure_std/std.py and its import chain, plus research/data/panel_f32.npz.xz). I ran them and traced which files they open, but did not read modules outside the paths I was allowed to touch.",
+  "The mirror was at its 14:08 state while the working copy was still changing at 14:17-14:18Z. All findings refer to the mirror; the leak and readability checks should be repeated on the changed files after the re-sync.",
+  "As-run values were recomputed on the two judging bases only; dev250_glued and the two S&P-era bases stored in pre_*.json were not rerun.",
+  "I used about 72 engine runs in total, slightly above the guideline of about 60; each took under a second."
+ ]
+}

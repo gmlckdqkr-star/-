@@ -1,0 +1,240 @@
+{
+ "verdict": "The package's headline numbers are NOT reproducible under a tradable timing convention. My independent engine reproduces the reported v9/v10/v11-A window CAGRs to within about 1-2 %p only when the KR night leg is sized with the brake/cooldown state and the equity that exist AFTER the US close lying inside the KR holding night (T2, which is what plan.py's row loop does: one b at row start applied to the KR night that was opened 13.5-14.5 h earlier, and P&L base = running equity). Under the convention the uploaded live code actually implements (T1, v11_live.on_kr_close: last completed US close + equity at the KR close) the same rules give, for 2010-03..2026-10-07: v10 36.3 % / MDD -59.1 % (reported 58.4 % / -55.1 %) and PRESET_A 17.6 % / -68.0 % (T2: 84.6 %). Under T1 the KR leg lowers CAGR versus US-only on 2010-03.., 2013.. and 2015.. for v10 and on every window for PRESET_A and deepens MDD by 8-13 %p (exception: v10 2020.., 51.6 % vs 41.9 %). What survives is the US-only part: v9 34.7 % / -50.1 %, v10 31.9 % / -61.2 %, PRESET_A 23.0 % / -68.7 % for 1999-03..2026-10-07 (cash interest 0), before the Oct-Nov 2026 crash that our data does not cover and that the reports' own figures put at roughly -37 % to -41 % in one month. The back-test and the delivered trading program therefore do not trade the same rule. The engines that produced the report numbers (g2.py/uni.py) were not uploaded, so \"the package used T2\" is an inference from plan.py plus the numerical fit; pre-2010 KR claims (1999-2026 48.9 % / 77.6 %, 1986/1929 figures) could not be tested.",
+ "key_numbers": [
+  {
+   "name": "v9 US-only 1999-03-11..2026-10-07 (cash 0)",
+   "value": "CAGR 34.5 % ; MDD -50.8 % on raw equity (-50.1 % on NAV net of accrued tax)",
+   "status": "CONFIRMED",
+   "note": "Reported 32.1 % / -50.8 % to 2026-11-06. MDD matches exactly; the CAGR gap equals a -37.5 % loss between 10-07 and 11-06, in line with the reports' own description of that month (v9 account -37 % below peak)."
+  },
+  {
+   "name": "v10 T2 (plan.py convention), cash rf-2, to 2026-10-07: 2010-03 / 2013 / 2015 / 2020",
+   "value": "64.3 / 69.2 / 61.6 / 79.5 % ; MDD -52.3 / -50.7 / -50.7 / -49.2 %",
+   "status": "CONFIRMED",
+   "note": "Reported (to 11-06) 58.4 / 61.0 / 54.0 / 65.2 %, MDD -55.1 %."
+  },
+  {
+   "name": "v10 T2 CAGR to 2025-12-31 vs reported with the reported 2026 YTD (-15.4 %) removed",
+   "value": "mine 64.4 / 69.6 / 61.6 / 81.9 % vs implied 64.1 / 68.2 / 61.7 / 82.4 %",
+   "status": "CONFIRMED",
+   "note": "Mean abs gap 0.6 %p. The 'implied' side rests on the reports' stated YTD, which I cannot check."
+  },
+  {
+   "name": "v10 T1 (tradable = live code), cash rf-2, to 2026-10-07: 2010-03 / 2013 / 2015 / 2020",
+   "value": "36.3 / 43.3 / 36.0 / 51.6 % ; MDD -59.1 / -57.7 / -57.7 / -55.1 %",
+   "status": "CONFIRMED",
+   "note": "To 2025-12-31: 35.6 / 42.8 / 35.0 / 51.5 %. Reconciling with the reported CAGRs would need +86 % to +1157 % in the missing month."
+  },
+  {
+   "name": "v10 US-only, cash rf-2, to 2026-10-07: 2010-03 / 2013 / 2015 / 2020",
+   "value": "42.6 / 45.2 / 37.0 / 41.9 % ; MDD -50.6 % (2010-03..), -47.5 % (2013..)",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "PRESET_A T2, cash rf-2, to 2026-10-07: 2010-03 / 2013 / 2015 / 2020",
+   "value": "84.6 / 84.9 / 76.8 / 100.0 % ; MDD -58.1 %",
+   "status": "CONFIRMED",
+   "note": "No reported target for PRESET_A alone."
+  },
+  {
+   "name": "PRESET_A T1 (tradable), cash rf-2, to 2026-10-07: 2010-03 / 2013 / 2015 / 2020",
+   "value": "17.6 / 23.4 / 14.5 / 20.0 % ; MDD -68.0 / -68.0 / -65.4 / -61.6 %",
+   "status": "CONFIRMED",
+   "note": "US-only PRESET_A: 35.3 / 33.0 / 27.2 / 23.4 %, MDD -55.3 %."
+  },
+  {
+   "name": "v11-A (2x bond scaled by b) T2 to 2025-12-31 vs reported implied (YTD -17 %): 2013 / 2015 / 2020",
+   "value": "mine 85.9 / 72.4 / 88.3 % vs implied 85.9 / 74.5 / 84.5 % ; to 10-07: 81.7 / 68.7 / 79.5 % (reported to 11-06: 76.6 / 65.1 / 66.4 %)",
+   "status": "CONFIRMED",
+   "note": "T1: 23.8 / 10.5 / 6.7 % to 2025. With the bond NOT scaled by b the fit is worse (79.1 / 66.3 / 75.2 %), so bond x b is inferred."
+  },
+  {
+   "name": "v9 with futures-proxy KR (v10 report table), to 10-07: 2010-03 / 2013 / 2015",
+   "value": "T2 51.8 / 58.1 / 55.0 % ; T1 35.8 / 43.4 / 39.7 % ; reported (to 11-06) 48.0 / 52.6 / 49.8 %",
+   "status": "CONFIRMED",
+   "note": "T2 needs -31 % to -37 % in the missing month (consistent with the reports); T1 would need +134 % to +332 %."
+  },
+  {
+   "name": "Calendar 2022, v10",
+   "value": "T2 -29.0 % ; T2 with crisis flag at entry -34.5 % ; T1 -39.6 % ; reported -40 %",
+   "status": "CONFIRMED",
+   "note": "Not reproduced by T2. 2022 is path-sensitive (US-only v10 is -32.0 % in the row engine, -36.5 % in the event-driven engine), so it does not discriminate."
+  },
+  {
+   "name": "v10 loss years 2010-2025",
+   "value": "T2 {2011, 2015, 2018, 2022} = reported set ; T1 adds 2016",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Decomposition T1 -> T2, 2010-03..2026-10 CAGR (cash rf-2)",
+   "value": "v10: 36.3 -> 45.8 (P&L base = equity after the US session) -> 60.2 (late cooldown) -> 62.6 (late brake) -> 64.3 (late crisis). PRESET_A: 17.6 -> 29.0 -> 75.3 -> 79.4 -> 84.6",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "KR nights on which the cooldown switched ON at the US close inside the night (2010-03..)",
+   "value": "v10: 98 of 3,587 nights, mean -1.23 %, sum -120 % (all nights +165 %). PRESET_A: 231 of 3,649, mean -0.91 %, sum -211 % (all nights +169 %)",
+   "status": "CONFIRMED",
+   "note": "T2 cuts exactly these positions to x0.5 / x0.3 after the fact."
+  },
+  {
+   "name": "Correlation of KR night ending on D with the US legs of D-1 (2010-03.., n=3,782)",
+   "value": "0.52 with the US day, 0.29 with the US night ; regression 0.48 x day + 0.34 x night + 4.8 %/yr constant",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Honest tradable, cash 0, 1999-03.. / 2010-03.. / 2013.. / 2015.. (CAGR/MDD), US-only",
+   "value": "v9 34.7/-50.1, 37.3/-50.1, 40.8/-46.4, 35.1/-46.4 ; v10 31.9/-61.2, 41.8/-50.6, 44.2/-47.6, 35.9/-47.6 ; PRESET_A 23.0/-68.7, 34.1/-55.3, 32.1/-55.3, 26.1/-55.3",
+   "status": "CONFIRMED",
+   "note": "Sample ends 2026-10-07. With cash at max(rf-2 %,0) add about +0.6 to +1.5 %p."
+  },
+  {
+   "name": "Honest tradable, cash 0, US+KR (T1), same windows",
+   "value": "v9 33.5/-57.3, 35.3/-57.3, 42.8/-56.7, 39.1/-56.7 ; v10 28.3/-61.2, 35.5/-59.1, 42.3/-57.7, 34.9/-57.7 ; PRESET_A 13.3/-68.7, 17.0/-68.0, 22.3/-68.0, 13.3/-65.4",
+   "status": "CONFIRMED",
+   "note": "KR leg exists only from 2010-02-23, so the 1999-03.. column is US-only before 2010."
+  },
+  {
+   "name": "Event-driven replay of the live scheduler (second implementation), cash 0, 1999-03.. | 2010-03..",
+   "value": "v9 US-only 34.5 | 36.9, US+KR 33.3 | 34.8 ; v10 31.0 | 39.8, 28.1 | 34.7 ; PRESET_A 21.8 | 31.9, 11.4 | 13.6",
+   "status": "CONFIRMED",
+   "note": "Agrees with the row engine's T1 within 0.2-3.4 %p."
+  },
+  {
+   "name": "Per-leg contribution 2010-03..2026-10, % of equity per year (cash 0)",
+   "value": "v10 US-only: night 45.1, day 10.4, cost -4.2, tax -3.4. v10 T1: night 41.2, day 8.0, KR 6.0, cost -8.3, tax -3.1. v10 T2: KR 20.7. PRESET_A T1: night 33.2, day 5.4, KR 2.7, cost -8.2 ; PRESET_A T2: KR 40.2",
+   "status": "CONFIRMED",
+   "note": "Share of rows with b<1: v10 16 % US-only, 39 % T1 ; PRESET_A 41 % US-only, 67 % T1."
+  },
+  {
+   "name": "KR cap ladder under T1, 2010-03..2026-10, cash 0 (cap 0 / 0.5 / 1 / 2 / 3)",
+   "value": "v10 41.8 / 40.9 / 38.7 / 35.5 / 35.4 % ; PRESET_A 34.1 / 32.5 / 28.4 / 23.7 / 17.0 %",
+   "status": "CONFIRMED",
+   "note": "Under T2 the same ladder rises to 73.0 % and 84.1 %."
+  },
+  {
+   "name": "Cost x2, tradable, cash 0, 1999-03.. | 2010-03..",
+   "value": "v9 US-only 23.7 | 25.0 ; v10 US-only 26.2 | 35.4 ; PRESET_A US-only 18.5 | 27.5 ; PRESET_A US+KR T1 4.1 | 2.9",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Calendar-year returns, tradable v10 US-only / v10 US+KR T1 (cash 0), 2010..2026(to 10-07)",
+   "value": "US-only: 75.7, -28.4, 59.9, 142.7, 71.4, 7.4, 11.6, 121.1, -4.7, 49.7, 109.6, 54.1, -32.0, 81.4, 58.9, 25.7, 23.0. US+KR T1: 81.4, -38.3, 1.2, 128.5, 65.6, -15.9, -10.2, 158.1, -22.3, 47.6, 178.9, 70.3, -40.0, 80.3, 28.5, 68.2, 36.4",
+   "status": "CONFIRMED",
+   "note": "Full table for v9 / v10 / PRESET_A incl. 1999-2009 in RESULT.md and out_E3_yearly.csv."
+  },
+  {
+   "name": "KR futures-proxy capture of the spot-ETF night",
+   "value": "0.74 overall, 0.54 for 2010-2017, 0.85 for 2018-2026 (reports: 0.74 / 0.51 / 0.89)",
+   "status": "CONFIRMED",
+   "note": "My proxy uses 2 ETFs, the package used 3."
+  }
+ ],
+ "findings": [
+  {
+   "title": "KR night leg is sized with information from after its entry (brake x cooldown b)",
+   "severity": "critical",
+   "detail": "plan.py line 52 computes one b from equity/peak/cooldown left by the previous row (state after the US close of D-1, 20:00/21:00 UTC) and lines 59-63 apply it to the KR night booked on row D. That night was opened at the previous KR close, 06:30 UTC D-1, i.e. 13.5-14.5 h before the US close that sets b. The cooldown is triggered by the US losses that the KR night then follows (corr 0.52 with the US day inside the night), so the loop shrinks the KR position after the bad news. Effect on 2010-03..2026-10 CAGR: v10 +14.4 %p from the late cooldown and +2.4 %p from the late brake; PRESET_A +46.3 %p and +4.1 %p.",
+   "status": "CONFIRMED",
+   "evidence": "/home/user/onv/uploads_ro/3872a1f2-plan.py lines 52, 59, 62-63, 69; /home/user/onv/wf1/replicate/run_all_output.txt section B; probes_output.txt (probe_mech). Row alignment of kon[r] is inferred (g2.py missing) but the alternative alignment gives v10 47.8 / 53.3 / 46.0 / 64.8 % and does not reproduce."
+  },
+  {
+   "title": "KR P&L base is the equity after the US session that lies inside the night",
+   "severity": "critical",
+   "detail": "plan.py books x = EA*Lk*kon[r] with EA already updated by the US night and US day of row r-1, both of which happen after the KR position was opened. Because those US returns are positively correlated with the KR night, compounding them multiplicatively adds a covariance term that cannot be earned: +9.5 %p CAGR for v10 and +11.4 %p for PRESET_A on 2010-03..2026-10; with b fixed at 1 and no cost or tax it is 78.5 % vs 66.6 % for v10.",
+   "status": "CONFIRMED",
+   "evidence": "plan.py line 62; run_all_output.txt section B step 2; selftest.py output in probes_output.txt (engine equals the closed-form product in package mode)."
+  },
+  {
+   "title": "Only the look-ahead convention reproduces the reports; the tradable one falls 20-65 %p short",
+   "severity": "critical",
+   "detail": "T2 matches v10 on four windows (64.4 / 69.6 / 61.6 / 81.9 % vs implied 64.1 / 68.2 / 61.7 / 82.4 % to 2025), v11-A on three (85.9 / 72.4 / 88.3 vs 85.9 / 74.5 / 84.5), v9 on three, and the v10 loss-year list. T1 gives v10 35.6 / 42.8 / 35.0 / 51.5 % and v11-A 23.8 / 10.5 / 6.7 %. Across 16 engine variants the T1 and T2 bands never overlap (v10 2010-03: 34.6-35.9 vs 63.3-65.4).",
+   "status": "CONFIRMED",
+   "evidence": "run_all_output.txt sections A2 and C; out_A2_reproduction.csv, out_C_band.csv."
+  },
+  {
+   "title": "The uploaded live code implements T1, so it does not trade the back-tested rule",
+   "severity": "critical",
+   "detail": "on_kr_close reads st.us_crisis_last and st.risk (peak, cooldown_left) written by the last on_us_close and the current equity; nothing later is available at 15:30 KST. An event-driven replay of E1-E4 in UTC order gives v10 28.1 % (1999-03..) / 34.7 % (2010-03..) and PRESET_A 11.4 % / 13.6 %, against US-only 31.0 % / 39.8 % and 21.8 % / 31.9 %.",
+   "status": "CONFIRMED",
+   "evidence": "/home/user/onv/uploads_ro/f5f50c5a-v11_live.py lines 167-182, 185-206; /home/user/onv/wf1/replicate/live_sim.py."
+  },
+  {
+   "title": "Under tradable timing the KR leg has negative marginal value in v10 and PRESET_A",
+   "severity": "major",
+   "detail": "Adding the KR leg at any size lowers 2010-03..2026-10 CAGR monotonically (v10 41.8 -> 35.5 % at cap 2; PRESET_A 34.1 -> 17.0 % at cap 3) and deepens MDD (v10 -50.6 -> -59.1 %, PRESET_A -55.3 -> -68.0 %). Its gross contribution is 6.0 %/yr (v10) and 2.7 %/yr (PRESET_A) against about 4-5 %/yr of extra cost, and it raises the share of days spent in brake/cooldown from 16 % to 39 % (v10) and 41 % to 67 % (PRESET_A), which also cuts the US legs. For v9 it is roughly neutral on CAGR (35.3 vs 37.3 % on 2010-03.., 42.8 vs 40.8 % on 2013..) with MDD -57 % instead of -50 %.",
+   "status": "CONFIRMED",
+   "evidence": "run_all_output.txt sections E, E2, F."
+  },
+  {
+   "title": "KR crisis flag may also be taken from the US close inside the night",
+   "severity": "minor",
+   "detail": "plan.py builds crk as crisis shifted by one row. If g2.levels indexes it by the exit row, the KR gate uses the US close 13.5 h after entry; if by the entry row it is correct (v11_strategy.leverage_history does it correctly). Both variants fit the v10 targets (mean gap 0.6 vs 2.5 %p), so this is undecided. Size of the effect: +1.7 %p (v10) and +5.2 %p (PRESET_A) on 2010-03.. inside T2; +1.2 / +0.4 %p inside T1.",
+   "status": "UNVERIFIED",
+   "evidence": "plan.py line 11; run_all_output.txt sections B and D."
+  },
+  {
+   "title": "US-leg signal timing is clean; gate must be executed at the same close",
+   "severity": "minor",
+   "detail": "Lagging US sigma by a day changes CAGR by -0.3 to +1.8 %p. The day multiple stored at the previous close is consistent with the package (that version reproduces the v9-US MDD of -50.8 %); a same-day version would add +2.4 to +3.9 %p. Acting on shock/crisis one day late costs v10 3.9 %p CAGR and 9.5 %p MDD on 2010-03... KR sigma lag or lead moves T1 by at most 0.3 %p for v9/v10. Year-end tax and the cooldown snapshot use no future information for the US legs.",
+   "status": "CONFIRMED",
+   "evidence": "run_all_output.txt section D."
+  },
+  {
+   "title": "Bond 'off on shock' look-ahead (v11-D only) is as the package describes",
+   "severity": "info",
+   "detail": "Using the same-day shock instead of the previous close adds +3.3 %p (2010-03..) and +3.8 %p (2013..) in my replica; the package reports having fixed it (69.2 -> 66.9 %). PRESET_A has no bond and v11-A never switches the bond off, so the final plan is not affected.",
+   "status": "CONFIRMED",
+   "evidence": "run_all_output.txt end of section D."
+  },
+  {
+   "title": "Back-test and live code treat the peak differently at tax time",
+   "severity": "minor",
+   "detail": "plan.py deducts the tax from EA and Ep but leaves peak unchanged (line 50), while daily_snapshot_update lowers the peak by the net flow. Effect in my engine: -0.3 to +0.7 %p CAGR. Separately, run_forever calls on_us_close with no net_flow argument, so a tax payment or withdrawal would be read as a loss unless the caller supplies it.",
+   "status": "CONFIRMED",
+   "evidence": "plan.py lines 31, 50; v11_strategy.py lines 183-191; v11_live.py lines 185-188, 242."
+  },
+  {
+   "title": "Results are path-sensitive around the cooldown threshold",
+   "severity": "minor",
+   "detail": "Changing only cash interest or cost accounting moves single calendar years by several %p (v10 T2 2022: -29.0 % vs -24.1 % with plan-style cost; v11-A T1 2026 YTD +3 % vs -16 %). Window CAGRs move by about +-1 %p under T1 and +-1.5 to 3.5 %p under T2. Single-year targets such as 'v10 2022 = -40 %' therefore cannot be matched or refuted exactly.",
+   "status": "CONFIRMED",
+   "evidence": "run_all_output.txt section C; probe_2022.py."
+  },
+  {
+   "title": "full.pkl shows the contract-unit plan from 1929 far below the report text",
+   "severity": "info",
+   "detail": "In the uploaded full.pkl the 50M-KRW contract-unit run 'A80+bond20' from 1929-01-02 ends at 4.23x (CAGR 1.48 %, MDD -67.2 %) and 'A90+bond10' at 1.09 %; from 1986 it is 45.9 % and 33.3 %. The v12 report quotes 28.4 % (1929~) and 54.8 % (1986~) for the idealised version. Read from the pickle only; not recomputed.",
+   "status": "CONFIRMED",
+   "evidence": "/home/user/onv/uploads_ro/b0ea34fb-full.pkl (loaded with python -I)."
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf1/replicate/RESULT.md",
+  "/home/user/onv/wf1/replicate/engine.py",
+  "/home/user/onv/wf1/replicate/live_sim.py",
+  "/home/user/onv/wf1/replicate/run_all.py",
+  "/home/user/onv/wf1/replicate/run_all_output.txt",
+  "/home/user/onv/wf1/replicate/probes_output.txt",
+  "/home/user/onv/wf1/replicate/selftest.py",
+  "/home/user/onv/wf1/replicate/probe_mech.py",
+  "/home/user/onv/wf1/replicate/probe_kr.py",
+  "/home/user/onv/wf1/replicate/probe_2022.py",
+  "/home/user/onv/wf1/replicate/run_v9spot.py",
+  "/home/user/onv/wf1/replicate/out_A2_reproduction.csv",
+  "/home/user/onv/wf1/replicate/out_B_decomposition.csv",
+  "/home/user/onv/wf1/replicate/out_C_band.csv",
+  "/home/user/onv/wf1/replicate/out_E_honest.csv",
+  "/home/user/onv/wf1/replicate/out_E2_contrib.csv",
+  "/home/user/onv/wf1/replicate/out_E3_yearly.csv"
+ ],
+ "open_issues": [
+  "g2.py / uni.py / ext.py (the engines and helpers behind the report numbers) were not uploaded: 'the package used T2' is inferred from plan.py plus the numerical fit, not read from the original engine; the row alignment of kon[r] and whether crk is indexed by entry or exit row are not directly verifiable.",
+  "Nothing after 2026-10-07 could be checked. The reports' own figures imply roughly -37 % (v9) to -41 % (v10) between 10-07 and 11-06; every honest CAGR above excludes that month. The 'implied to 2025' targets rely on the reports' stated 2026 YTD values.",
+  "All KR-inclusive claims before 2010-03 (1999-2026 v10 48.9 % and v11-A 77.6 %, the 1986-2026 62 % and 1929-2026 figures) are untested: the synthetic KR series is not available. Given that the KR leg under tradable timing subtracts value on real 2010+ data, those figures should be assumed to carry the same look-ahead.",
+  "v10 calendar-2022 (-40 % reported vs -29.0 % T2, -34.5 % T2 with crisis at entry) and v10 MDD (-55.1 % reported vs -50.7 / -52.3 % T2) are not reproduced; 2022 is path-sensitive, so the cause is undetermined.",
+  "KR night returns are an ETF-derived proxy (2 ETFs here, 3 in the package); actual mini-K200 fills at 15:30 / 09:00 are untested. US legs assume fills at the QQQ close/open prints at 0.0083 % per side; at double cost US-only falls to 23.7 % (v9), 26.2 % (v10), 18.5 % (PRESET_A) for 1999-03...",
+  "Cash interest: the v10 report's 'local short rate - 2 %p' was approximated with the US bill rate on all equity (no KR rate series in the data); the v9 report's 50 %-margin KR interest was not modelled. Honest headline uses 0.",
+  "Contract granularity (80M KRW account), margin/forced liquidation and FX were not modelled in this lane.",
+  "The US-only strategies still depend on the overnight premium and on same-close execution of the crisis gate; whether they beat v1 out of sample is for the other lanes."
+ ]
+}

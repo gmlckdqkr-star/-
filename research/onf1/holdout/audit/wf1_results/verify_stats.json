@@ -1,0 +1,249 @@
+{
+ "verdict": "The US night edge itself is real and has not measurably decayed (QQQ night excess 12.5%/yr, Sharpe 0.87, HAC t 5.1 over 1999-2026; POST-2014 11.1%, t 3.1), but it does not support the package's sizing or its CAGR claims. PRESET_A holds the night leg at about full Kelly (5x against a point estimate of 4.7-6.1x, bootstrap 95% CI 3.3-9.2x) and the day leg at 1.5-3.6x Kelly where day Kelly is positive at all, so the day leg subtracts growth in every era except 2015-2020. The Korean night leg is not an independent return source: it correlates 0.52 with the US day session it spans, and its US-hedged premium was zero or negative in 2010-2020. In my own simplified simulation with live-consistent timing, after the package's costs and 11% tax, 1999-2026 CAGR is about 22% for PRESET_A (max drawdown -70%), 38% for v10 and 42% for v9; halving PRESET_A's leverage raises it to 30% with a -47% drawdown. The package's own figures (v10 48-49%, PRESET_A 60-70%) reappear only when the Korean leg's brake/cooldown multiplier is taken from the US close that happens after the Korean entry. That is what the row order in the uploaded plan.py does if each row's Korean night is the one ending that day; I could not confirm it because g2.py is missing, so it stands as a strong inference, not a proven bug. With a 30% haircut on the night mean, PRESET_A falls to about 3.5% CAGR.",
+ "key_numbers": [
+  {
+   "name": "QQQ night excess return, 1999-03..2026-10 (uses POST-2014)",
+   "value": "12.5%/yr, vol 14.3%, Sharpe 0.87, HAC t 5.07",
+   "status": "CONFIRMED",
+   "note": "PRE-2014: 13.5%, Sharpe 0.91, t 4.03. POST-2014: 11.1%, Sharpe 0.82, t 3.13. 2021-2026 (POST-2014): 8.3%, Sharpe 0.63, t 1.65."
+  },
+  {
+   "name": "QQQ day excess return, 1999-03..2026-10 (uses POST-2014)",
+   "value": "-0.4%/yr, vol 23.0%, Sharpe -0.02",
+   "status": "CONFIRMED",
+   "note": "1999-2007: -13.7%. 2008-2014: +4.2%. 2015-2020 (POST-2014): +6.9%. 2021-2026 (POST-2014): +6.9%."
+  },
+  {
+   "name": "Night-minus-day mean, 21-day block bootstrap 95% CI",
+   "value": "FULL +12.8% [3.9, 22.0]; PRE-2014 +19.3% [6.1, 32.8]; POST-2014 +4.2% [-7.0, 15.1]; 2021-2026 (POST-2014) +1.5% [-15.5, 17.5]",
+   "status": "CONFIRMED",
+   "note": "CI is stable for block lengths 5 to 126 days."
+  },
+  {
+   "name": "Share of excess log return earned at night",
+   "value": "FULL 136%; PRE-2014 406% (day negative); POST-2014 65%; 2021-2026 (POST-2014) 59%",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Decline tests (use POST-2014)",
+   "value": "Night leg: trend t -0.83, pre/post-2015 difference -2.3pp (t -0.48), supF p 0.49. Night-minus-day: trend t -2.25, split-2008 t -2.33, supF p 0.021 (break 2004-05)",
+   "status": "CONFIRMED",
+   "note": "The night leg shows no detectable decline, but a decline under about 10.7pp/yr could not be detected. The spread shrank because the day return turned positive."
+  },
+  {
+   "name": "SPY night Sharpe 1993-1998 vs later",
+   "value": "1.77 (mean 13.4%, vol 7.6%) vs 0.60 in 1999-2014 and 0.63 in 1999-2026 (POST-2014)",
+   "status": "CONFIRMED",
+   "note": "Marking every 1993-98 open down by half a 1/32 tick cuts the mean to 7.1%; a full tick cuts it to 0.7%. 14.2% of 1993 opens equal the previous close exactly."
+  },
+  {
+   "name": "Kelly leverage, night leg alone (empirical log-growth optimum)",
+   "value": "1999-2007 6.13; 2008-2014 5.69; 2015-2020 (POST-2014) 5.86; 2021-2026 (POST-2014) 4.67; FULL 5.75",
+   "status": "CONFIRMED",
+   "note": "Bootstrap 95% CI: FULL [3.3, 9.2], PRE-2014 [2.9, 9.9], 2021-2026 [-0.6, 10.8]. P(Kelly below 5): FULL 0.23, 2021-2026 0.52. Excluding 1999, PRE-2014 Kelly is 4.6."
+  },
+  {
+   "name": "Kelly leverage, day leg alone",
+   "value": "1999-2007 0; 2008-2014 1.11; 2015-2020 (POST-2014) 2.72; 2021-2026 (POST-2014) 2.04; FULL 0",
+   "status": "CONFIRMED",
+   "note": "On days when PRESET_A holds 4x (lagged sigma at or below 30%): FULL 0.87 [-1.6, 3.6], P(Kelly below 4) = 0.99; POST-2014 1.83, P = 0.86."
+  },
+  {
+   "name": "Excess log-growth at constant PRESET_A leverage (5 night, 4 day), pre-cost",
+   "value": "1999-2007 -0.820; 2008-2014 +0.125; 2015-2020 (POST-2014) +0.499; 2021-2026 (POST-2014) +0.200; FULL -0.080",
+   "status": "CONFIRMED",
+   "note": "v9 constant (4 night, 1.5 day): +0.145, +0.263, +0.462, +0.257; FULL +0.267."
+  },
+  {
+   "name": "PRESET_A rule path (sigma sizing, shock cap, gate; no brake or cooldown), excess log-growth by scenario",
+   "value": "FULL: own 0.395, night -30% 0.246, night -50% 0.146, zero night premium 0.320. PRE-2014: 0.363, 0.214, 0.115, 0.273. POST-2014: 0.437, 0.291, 0.193, 0.400",
+   "status": "CONFIRMED",
+   "note": "Night leg contributes +0.502/yr and day leg -0.107/yr (FULL). Without the gate: PRE-2014 0.162, POST-2014 0.456."
+  },
+  {
+   "name": "Volatility timing on the night leg (PRESET_A parameters, sigma lagged)",
+   "value": "Sharpe, constant vs rule: 1.03 to 1.44; 0.74 to 1.03; 0.99 to 1.21 (POST-2014); 0.63 to 0.75 (POST-2014)",
+   "status": "CONFIRMED",
+   "note": "Spanning alpha of uncapped c/sigma^2: PRE-2014 +9.8%/yr (t 3.47), POST-2014 +7.3% (t 2.30). Look-ahead sigma adds nothing. The 5x cap binds on 73% of PRE-2014 days and 90% of POST-2014 days."
+  },
+  {
+   "name": "KR night (futures proxy) excess return",
+   "value": "2010-2014 6.7%/yr (Sharpe 0.60, t 1.5); 2015-2020 (POST-2014) 6.7% (0.66, t 1.7); 2021-2026 (POST-2014) 23.0% (1.12, t 3.2); 2010-2024 6.7% (0.61, t 2.6); 2025-2026 (POST-2014) 59.2% at vol 32.5%",
+   "status": "CONFIRMED",
+   "note": "The spot-ETF night proxy gives 16.5% for 2010-2026 against 12.2% for the futures proxy, a 4.2pp/yr gap between proxies."
+  },
+  {
+   "name": "KR night correlation with overlapping US legs, 2010-2026 (uses POST-2014)",
+   "value": "US day session inside the KR night 0.52 (beta 0.48); US night ending inside 0.27; next US night 0.11",
+   "status": "CONFIRMED",
+   "note": "The package's '0.10 correlation, a different return source' matches only the 0.11 pairing."
+  },
+  {
+   "name": "US-hedged KR night premium (alpha, HAC t)",
+   "value": "2010-2014 -5.1% (t -1.78); 2015-2020 (POST-2014) -0.4% (t -0.15); 2021-2026 (POST-2014) +14.0% (t 2.36); FULL +2.9% (t 1.26)",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Covariance drag of 3x KR night on PRESET_A US legs",
+   "value": "Against 4x US day: -11.2%, -12.2%, -22.6%/yr by era (FULL -15.4%). Against 5x US night: FULL -11.5%. Net marginal growth: -4.8%, -3.4%, +11.6%; FULL +1.3%/yr",
+   "status": "CONFIRMED",
+   "note": "KR standalone growth at 3x is +28.2%/yr (FULL). Marginal Kelly for KR given the US legs: 0.23, 0.39, 2.38, against 3x held."
+  },
+  {
+   "name": "QQQ large down nights, 1999-2026 (uses POST-2014)",
+   "value": "Below -3%: 41 (1.49/yr); below -5%: 10; below -7%: 4. Worst -9.5% (2020-03-16)",
+   "status": "CONFIRMED",
+   "note": "Below -5%: 4 in PRE-2014 and 6 in POST-2014. Maximum constant night leverage without ruin is 10.6x; a -20% gap at 5x is -100%."
+  },
+  {
+   "name": "Leverage the PRESET_A rule carried into nights below -3%",
+   "value": "PRE-2014: median lagged sigma 47%, gate on for 68%, average 0.73x. POST-2014: median sigma 30%, gate on for 32%, average 3.13x, 58% entered at 4x or more",
+   "status": "CONFIRMED",
+   "note": "Worst single-night account loss under rule and gate: -39.9% (2015-08-24), -26.8% (2024-08-05), -21.0% (2020-03-09). With the cooldown already active these become -12.0%, -8.0%, -6.3%."
+  },
+  {
+   "name": "PRESET_A cooldown activity (simplified simulation, US legs only)",
+   "value": "Loss beyond -5% on 5.8% of days; multiplier below 1 on 44% of days; average multiplier 0.77",
+   "status": "INFERRED",
+   "note": "Effective average leverage is 3.0x night and 2.4x day, against 4.0x and 3.2x from the rule and gate alone. For v9 the multiplier is below 1 on 5% of days."
+  },
+  {
+   "name": "Simplified simulation CAGR 1999-2026, live-consistent timing, after package costs and 11% tax (uses POST-2014)",
+   "value": "PRESET_A 21.8% (max drawdown -70%); v10 37.8% (-59%); v9 42.1% (-57%); half-leverage PRESET_A 30.0% (-47%)",
+   "status": "INFERRED",
+   "note": "PRESET_A under scenarios: night -30% gives 3.5%, night -50% 1.2%, zero night premium 13.1%, double cost 12.2%. v10: 17.0%, 3.8%, 26.2%, 27.8%."
+  },
+  {
+   "name": "Same simulation with the KR multiplier taken from the later US close",
+   "value": "1999-2026: PRESET_A 54.3%, v10 47.0%, v9 47.5%. From 2006: v10 46.4-49.5%, PRESET_A 59.4-67.3%",
+   "status": "INFERRED",
+   "note": "Package claims: v10 48.9% (1999 start) and 48.4% (2006 start); A80+bond20 61.7%, A90+bond10 64.6%, v11-A with bond 71.3% (2006 start)."
+  },
+  {
+   "name": "KR night return conditional on the US session inside it (2010-2026, uses POST-2014)",
+   "value": "On the 10.5% of nights where that session costs the PRESET_A US legs more than 5%: mean -0.97% (sum -4.02). Other nights: +0.17% (sum +6.04). Total +2.02",
+   "status": "CONFIRMED",
+   "note": "This is the information a later-US-close multiplier would be using."
+  },
+  {
+   "name": "Night-minus-day mean per 1x per trading day vs switching cost",
+   "value": "FULL 5.10bp; POST-2014 1.67bp; 2021-2026 (POST-2014) 0.58bp; package round-trip cost 1.66bp",
+   "status": "CONFIRMED",
+   "note": "Turnover cost at the package's assumption: PRESET_A about 3.5%/yr, v9 about 8.8%/yr."
+  }
+ ],
+ "findings": [
+  {
+   "title": "Package CAGR is reproduced only when the Korean leg's risk multiplier uses a US close that happens after the Korean entry",
+   "severity": "critical",
+   "status": "INFERRED",
+   "detail": "In the uploaded plan.py loop, the brake/cooldown multiplier b is computed once at the top of each row from equity after the previous row's US day, then applied first to that row's Korean night. If that Korean night is the one ending on the row's date, it was entered at 15:30 KST the day before, about 13 hours before the US close that b already reflects. The live code (v11_live.on_kr_close) can only use the risk state from the US close before entry, so live trading could not reproduce the backtest.\n\nI could not confirm the row alignment because g2.py was not uploaded. Three things point the same way:\n- plan.py uses previous-row indices (pu, pk) for signals and applies legs in the order Korean night, US night, US day, which is chronological only for nights ending on the row date.\n- The package's reported 0.10 correlation between Korean night and US night equals my 0.11 for exactly that row pairing.\n- My simplified simulation matches the package's numbers only with the later-close timing.\n\n| 1999-2026 CAGR after cost and tax | Live-consistent | Later US close | Package claim |\n|---|---|---|---|\n| PRESET_A (no bond) | 21.8% | 54.3% | 60-70% range (2006 start) |\n| v10 | 37.8% | 47.0% | 48.9% |\n| v9 | 42.1% | 47.5% | not checked |\n\nThe later-close timing also reverses the ranking to match the package (PRESET_A best), and would explain why the 60,000-combination grid chose a -5%/x0.3 cooldown, 3x Korea and 4x day: each increases how much this timing pays. With honest timing, the -5%/x0.3 cooldown is worse than -7%/x0.5.",
+   "evidence": "s7_kr_lookahead.py, s8_claim_check.py, s9_kr_cond.py. Excess log-growth 2010-2026 for PRESET_A: 0.323 live-consistent vs 0.695-0.726 later-close; Korean leg contribution +0.07 vs +0.37/yr. From 2006: v10 34.7-37.1% vs 46.4-49.5% (claim 48.4%); PRESET_A 18.0-22.2% vs 59.4-67.3%. KR nights whose in-night US session triggers the cooldown: mean -0.97% vs +0.17% otherwise."
+  },
+  {
+   "title": "PRESET_A is sized at or beyond growth-optimal; the 4x day leg subtracts growth",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Night leg: 5x is 0.82-1.07 times the per-era Kelly point estimate, and the bootstrap lower bound is 3.3x (FULL). Half Kelly is about 2.3-3.1x.\n\nDay leg: 4x against a Kelly of 0 (1999-2007 and FULL), 1.11 (2008-2014), 2.72 (2015-2020, POST-2014) and 2.04 (2021-2026, POST-2014).\n\n| PRESET_A rule and gate, excess log-growth/yr | Night leg | Day leg |\n|---|---|---|\n| PRE-2014 | +0.536 | -0.173 |\n| POST-2014 | +0.455 | -0.018 |\n| FULL | +0.502 | -0.107 |\n\nThe v9 day leg (1.5x) contributes about zero (+0.002 FULL). At constant 5x/4x, PRE-2014 growth is -0.401/yr with a bootstrap probability of 0.90 that it is negative.\n\nIn the simplified simulation with honest timing, halving every PRESET_A leverage raises 1999-2026 CAGR from 21.8% to 30.0% and cuts max drawdown from -70% to -47%. Both v10 and v9 beat PRESET_A in every scenario I ran.",
+   "evidence": "s2_kelly.py (tables 2a-2d), s3e_legs.py, s6_lightsim.py, s11_haircut_sim.py. Day leg on days the rule holds 4x: FULL mean +2.1%/yr, vol 15.5%, Kelly 0.87, P(Kelly below 4) = 0.99."
+  },
+  {
+   "title": "The Korean night leg is mostly repackaged US exposure, and its premium comes from 2025-2026",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "The Korean night spans one full US day session. Correlation with that session is 0.52 (beta 0.48), and 0.27 with the US night ending inside it. The package's '0.10, a different return source' is the correlation with the next US night, which barely overlaps.\n\n| Era | Raw premium | US-hedged alpha (t) |\n|---|---|---|\n| 2010-2014 | 6.7% | -5.1% (-1.78) |\n| 2015-2020 (POST-2014) | 6.7% | -0.4% (-0.15) |\n| 2021-2026 (POST-2014) | 23.0% | +14.0% (2.36) |\n\nThe 2021-2026 figure is 2025-2026: 59.2%/yr at 32.5% vol, against 6.6% (t 1.1) for 2021-2024.\n\nAdding 3x Korea on top of PRESET_A's US legs costs 15.4%/yr in covariance against the 4x day and 11.5% against the 5x night (FULL). That leaves a net +1.3%/yr against +28.2% standalone, and it is negative in 2010-2014 (-4.8%) and 2015-2020 (-3.4%). The growth-optimal Korean leverage given the US legs is 0.2-0.4x in 2010-2020, not 3x.",
+   "evidence": "s4_kr.py (tables 4a-4e). Standalone Korean Kelly 5.6 [2.9, 8.9] FULL. Futures proxy captures 74% of the spot-ETF night return (12.2% vs 16.5%), matching the package's own 74%."
+  },
+  {
+   "title": "The night leg has not decayed, but its advantage over the day has, and is about zero in 2021-2026",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "| Era | Night mean / Sharpe | Day mean / Sharpe | Night minus day [95% CI] |\n|---|---|---|---|\n| 1999-2007 | 16.8% / 1.03 | -13.7% / -0.44 | +30.6% [9.7, 51.6] |\n| 2008-2014 | 9.2% / 0.74 | +4.2% / 0.22 | +5.1% [-8.5, 19.1] |\n| 2015-2020 (POST-2014) | 13.8% / 0.99 | +6.9% / 0.44 | +6.8% [-8.5, 21.3] |\n| 2021-2026 (POST-2014) | 8.3% / 0.63 | +6.9% / 0.37 | +1.5% [-15.5, 17.5] |\n\nNight was positive in 23 of 28 calendar years and beat day in 23 of 28 (8 of 12 in POST-2014). Tests on the night leg alone find no decline, but they could not detect one smaller than about 10.7pp/yr. The spread did shrink significantly (supF p 0.021, break 2004-05).\n\nSince 2008 the night's advantage is lower volatility (13% vs 17-19%), not a higher mean. Per 1x per day the mean spread is 1.67bp in POST-2014 and 0.58bp in 2021-2026, against the package's own 1.66bp round-trip switching cost.\n\nThe first ten months of QQQ data (1999: night +78%, Sharpe 5.5) carry a quarter of the PRE-2014 night mean; excluding 1999 it is 9.9% (t 2.98).",
+   "evidence": "s1_decomp.py (tables 1a-1e), s10_misc.py. Night Sharpe pre-2015 0.91 vs post-2014 0.82; bootstrap probability of no decline 0.42."
+  },
+  {
+   "title": "In the holdout, the worst nights arrived in calm markets with the gate off",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "PRE-2014 nights below -3% (22 of them) came at a median lagged sigma of 47% with the crisis gate on for 68%; the rule carried 0.73x on average. POST-2014 (19 of them) came at a median sigma of 30% (minimum 10%) with the gate on for 32%; the rule carried 3.13x on average and 58% were entered at 4x or more.\n\nWorst single-night account losses under the rule and gate alone: -39.9% (2015-08-24), -26.8% (2024-08-05), -21.0% (2020-03-09), -20.0% (2020-09-08). In my simulation the cooldown had already been triggered before each of these, which cut them to -12.0%, -8.0%, -6.3% and -6.0%. So tail protection in the holdout rests on a rule that fires on a 1.1% index move and is on 44% of the time.\n\nThe gate itself adds +0.20/yr of log-growth in PRE-2014 (2000-02 and 2008) and -0.02/yr in POST-2014.\n\nKorea: 38 nights below -3% in 2010-2026, of which 26 are in 2025-2026; worst -9.3% (2026-06-08).",
+   "evidence": "s5_tails.py (tables 5a-5g). QQQ nights below -5%: 4 in PRE-2014, 6 in POST-2014. 1987-10-19: shock and crisis flags were both on at the prior close, so the rule held 0x; 1997-10-27 (NDX -7.5%) would have been entered at 5x/4x."
+  },
+  {
+   "title": "Sizing by lagged volatility genuinely helps the night leg, but PRESET_A's caps leave it mostly switched off",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "Rule versus a constant at the same average leverage improves night Sharpe in all four eras (1.03 to 1.44, 0.74 to 1.03, 0.99 to 1.21, 0.63 to 0.75; the last two POST-2014). The uncapped version has a spanning alpha of +9.8%/yr (t 3.47) in PRE-2014 and +7.3% (t 2.30) in POST-2014. Using same-day sigma instead of lagged sigma adds nothing, so the sizing does not depend on look-ahead.\n\nThe mechanism is that the night mean does not rise with lagged sigma (slope t -0.06) while night volatility does (correlation 0.43).\n\nPRESET_A's night cap binds whenever sigma is at or below 31.6%: 73% of PRE-2014 days and 90% of POST-2014 days. In the states where it does cut, the remaining 3.4-3.8x is still above the conditional Kelly (1.2-1.8 in PRE-2014; negative for the 31.6-45% bucket in POST-2014).",
+   "evidence": "s3_voltiming.py (tables 3a-3d)."
+  },
+  {
+   "title": "Early SPY open prints cannot support the 1993-1998 night Sharpe of 1.77",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "The 1993-1998 SPY night shows 13.4%/yr at 7.6% vol. The mean gap is $0.048 on a $46-98 price quoted in 1/32 and 1/64. Marking each open down by half a 1/32 tick halves the mean (7.1%); a full tick removes it (0.7%).\n\nOther signs the opens are unreliable: 14.2% of 1993 opens and 9.1% of 1994 opens equal the previous close exactly (1% or less later); the night's share of variance is 19-24% against 34% in 1999-2026; and the day reverses the night (slope -0.19, t -2.3).\n\nThe sign of the premium is supported out of era; the magnitude is not. From 1999 on, SPY night Sharpe is 0.60 (1999-2014) and 0.63 (1999-2026, POST-2014), below QQQ's 0.91 and 0.87.",
+   "evidence": "s1b_spy.py. QQQ opens show none of these symptoms after 1999."
+  },
+  {
+   "title": "What the edge statistics imply for a realistic CAGR",
+   "severity": "info",
+   "status": "INFERRED",
+   "detail": "Simplified simulation, honest timing, package costs and 11% tax, 1999-2026 (uses POST-2014). Not a replica of the package engine: no contract granularity, margin, FX or bond overlay.\n\n| Config | Own means | Night -30% | Night -50% | Zero night premium | Double cost |\n|---|---|---|---|---|---|\n| PRESET_A | 21.8% | 3.5% | 1.2% | 13.1% | 12.2% |\n| v10 | 37.8% | 17.0% | 3.8% | 26.2% | 27.8% |\n| v9 | 42.1% | 21.1% | 7.6% | 17.8% | 26.2% |\n| Half PRESET_A | 30.0% | 18.0% | 9.1% | 25.5% | 25.2% |\n\nMax drawdowns are -57% to -74% for the first three and -47% to -57% for the half-leverage version. v9 is the most cost-sensitive (turnover cost about 8.8%/yr at the package's assumption). PRESET_A keeps 13.1% CAGR with no night premium at all, which shows it is mainly leveraged, timed Nasdaq exposure and not a night-premium strategy.",
+   "evidence": "s11_haircut_sim.py, s6_lightsim.py. Average cash yield 1999-2026: 2.0%."
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf1/stats/common.py",
+  "/home/user/onv/wf1/stats/s1_decomp.py",
+  "/home/user/onv/wf1/stats/s1b_spy.py",
+  "/home/user/onv/wf1/stats/s2_kelly.py",
+  "/home/user/onv/wf1/stats/s3_voltiming.py",
+  "/home/user/onv/wf1/stats/s3e_legs.py",
+  "/home/user/onv/wf1/stats/s4_kr.py",
+  "/home/user/onv/wf1/stats/s5_tails.py",
+  "/home/user/onv/wf1/stats/s6_lightsim.py",
+  "/home/user/onv/wf1/stats/s7_kr_lookahead.py",
+  "/home/user/onv/wf1/stats/s8_claim_check.py",
+  "/home/user/onv/wf1/stats/s9_kr_cond.py",
+  "/home/user/onv/wf1/stats/s10_misc.py",
+  "/home/user/onv/wf1/stats/s11_haircut_sim.py",
+  "/home/user/onv/wf1/stats/out_s1.txt",
+  "/home/user/onv/wf1/stats/out_s1b.txt",
+  "/home/user/onv/wf1/stats/out_s2.txt",
+  "/home/user/onv/wf1/stats/out_s3.txt",
+  "/home/user/onv/wf1/stats/out_s3e.txt",
+  "/home/user/onv/wf1/stats/out_s4.txt",
+  "/home/user/onv/wf1/stats/out_s5.txt",
+  "/home/user/onv/wf1/stats/out_s6.txt",
+  "/home/user/onv/wf1/stats/out_s7.txt",
+  "/home/user/onv/wf1/stats/out_s8.txt",
+  "/home/user/onv/wf1/stats/out_s9.txt",
+  "/home/user/onv/wf1/stats/out_s10.txt",
+  "/home/user/onv/wf1/stats/out_s11.txt",
+  "/home/user/onv/wf1/stats/out_1a_era.csv",
+  "/home/user/onv/wf1/stats/out_1c_year.csv",
+  "/home/user/onv/wf1/stats/out_1d_boot.csv",
+  "/home/user/onv/wf1/stats/out_2a_kelly.csv",
+  "/home/user/onv/wf1/stats/out_2b_kelly_boot.csv",
+  "/home/user/onv/wf1/stats/out_2c_scen.csv",
+  "/home/user/onv/wf1/stats/out_2d_rule.csv",
+  "/home/user/onv/wf1/stats/out_3a_voltiming.csv",
+  "/home/user/onv/wf1/stats/out_3e_legs.csv",
+  "/home/user/onv/wf1/stats/out_4a_kr_stats.csv",
+  "/home/user/onv/wf1/stats/out_4b_kr_reg.csv",
+  "/home/user/onv/wf1/stats/out_4b_kr_us_map.csv",
+  "/home/user/onv/wf1/stats/out_4c_drag.csv",
+  "/home/user/onv/wf1/stats/out_4d_sim.csv",
+  "/home/user/onv/wf1/stats/out_5a_worst_nights.csv",
+  "/home/user/onv/wf1/stats/out_6_lightsim.csv",
+  "/home/user/onv/wf1/stats/out_7_kr_lookahead.csv"
+ ],
+ "open_issues": [
+  "The Korean-leg look-ahead is inferred, not proven: g2.py and ext.py are missing, so I could not see whether each row's Korean night is the one ending on that row's date. The replication and code-audit lanes should run the engine with both timings (multiplier and crisis flag from the US close before Korean entry versus the one after) and compare against the claimed 48.9% and 77.6%.",
+  "My simulation is a simplified engine (no contract granularity, margin, FX or per-account split; bond overlay only as -8 x change in 10y yield plus carry; Korean leg absent before 2007 and spot-ETF night for 2007-2010). Its CAGR figures are for cross-checking and ranking, not a replica of the package.",
+  "The Korean night return rests on ETF proxies. The futures proxy and the spot-ETF night differ by 4.2pp/yr, and the inverse ETF's tick is about 10bp against a mean night return of about 5bp. Actual mini-KOSPI200 futures prices at 15:30 and 09:00 were not available.",
+  "The 2025-2026 Korean data is an extreme regime (2026 night vol 45.6%, annualised mean +91%, KODEX200 near 105,000) and drives every post-2020 Korean statistic. It should be checked against an independent source.",
+  "All US statistics use QQQ open and close prints as stand-ins for futures at 09:30 and 16:00 ET. I did not test tradability or slippage at those prints; 2015-08-24 (QQQ open -8.0%) was an ETF dislocation with futures limit-down.",
+  "No real night/day split exists before 1999-03: the NDX index open is not a tradable print and SPY's 1993-1998 opens are unreliable. The package's 1986-2026 and 1929-2026 figures therefore rest on synthetic night returns that the data here cannot check.",
+  "The crisis gate adds about +0.20/yr of log-growth in PRE-2014 and nothing in POST-2014. Whether its parameters were tuned on 2000-02 and 2008 could not be established from the files I had.",
+  "Costs use the package's own assumption (0.0083% one-way for MNQ, 0.006% for mini-K200) and were not validated; at double that cost PRESET_A falls to 12.2% and v9 to 26.2% CAGR in my simulation."
+ ]
+}

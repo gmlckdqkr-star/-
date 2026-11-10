@@ -1,0 +1,232 @@
+{
+ "verdict": "The revised deliverable is close to ready. I found no wrong headline number, all four conclusions survive attack from both sides, and \"apply nothing\" is the right decision, but it needs one more wording pass because seven places can still mislead a careful owner. Toward the upload it under-discloses: \"0 of 12\" depends on the registered fee (the same rule form at the report's own cost estimate, 0.30bp with 0.60bp stress, lets PRESET_A US-only pass under C in 21 of 30 seeds and makes T5 and F1 \"conditional\"), the stacked favourable case is about +8.1 / +8.6 %p with an MS1 headline of about 24%, not the +4.5 / +5.7 the conclusion shows, and the report never says that a same-close brake is technically feasible in a futures account. The verdict is still fair: in my own runs a one-day brake slip costs PRESET_A US-only -3.9 / -7.7 %p at registered conditions and leaves +2.1 / -0.9 even in the favourable stack, it is below v1 on real night data in 2001-2014 and by 13.4 %p in 2015-2026-08, and no stored or re-run configuration reaches the owner's 30% MS1 bar (maximum 23.0% stored, about 24% stacked). The registered 0.83bp and its 2x stress are defensible because both are the upload's own base and stress values, but they are not the central cost estimate and the report should say so in one sentence. Toward T5 the report is still too generous: it never states that T5 moves 15% of capital into a zero-interest futures account, so \"v1 unchanged\" and \"night exposure about 3.8x\" are wrong (about 2.55x by day and 3.5x by night); it leads with a blended 1999-2026 gross premium while the after-cost stand-alone Sharpe (0.57, or 0.22 without 1999-2000, against a 0.55 gate) appears only in the pre-2015 report; and it implies a forward record could re-judge T5 although the observed edge would need roughly 40 to 190 years to reach t = 2. Sections 1 and 3 also report the same US-only presets under different conventions (v9 from 2015: 33.2% against 26.8%) with no warning, which invites a wrong comparison with v1's 28.1%. Conclusion 1: STANDS WITH REWORDING, second sentence to read \"실제 주문 순서로 돌리면 2010-03~2026-10-07 구간에서 v10 은 연 32~37%(보고 58.4%), PRESET_A 는 연 11~19% 입니다. 보고 수치의 종료일(2026-11-06)까지 넣으면 미국 구간 기준 약 2~3%p 더 낮습니다.\" Conclusion 2: STANDS WITH REWORDING, \"v1 보다 압도적이지 않습니다. 등록 조건에서 PRESET_A 미국만은 v1 과 같은 수준(+0.5 / +1.2%p)이고 수수료 2배에서 탈락해 통과는 0개입니다. 같은 규칙을 수수료 0.30bp 에 적용하면 통과하고 유리한 가정을 모두 겹치면 약 +8%p 이지만, 실제 밤 자료가 있는 2001년 이후에는 v1 이하(2015~2026-08 -13.4%p)이고 브레이크가 하루만 늦어도 -3.9 / -7.7%p 이며 대표값은 최대 약 24% 로 30% 기준에 못 미칩니다\" (full text in issue E1 item 1). Conclusion 3: STANDS WITH REWORDING, \"살릴 수 있는 부분은 작고, 통과한 것은 없으며, 앞으로의 기록으로도 증명하기 어렵습니다. T5 는 총자산의 15% 를 이자 없는 선물 계좌로 옮기고 남은 85% 로 v1 을 운용하면서 v1 보유 중에만 밤 선물 1배를 더하는 형태로, 2001년 이후 실제 밤 자료에서 v1 대비 연 +1.5~+1.6%p(t 0.5)였고 등록 규칙은 통과하지 못했습니다\" (issues B1, B2, B3). Conclusion 4: STANDS, with the 30% bar and the US-only margin sentence added (issue D2) and the re-entry conditions added (issue D1).",
+ "checked": "Read in full: /mnt/project-files/research/onf1/holdout/RESULT_ONF1_FULL_KO.md (345 lines), /mnt/project-files/research/onf1/RESULT_ONF1_KO.md (204), PROGRAM_SPEC_ONF1_KO.md (43), PRECOMMIT_ONF1.md (35), holdout/CHECKPOINT.md, the three README files, code/eng.py, ms1f.py, ntilt.py, run_fix.py, run_sens.py, hist_windows.py, hist_extra.py, night_sharpe.py, paths.py, holdout/real_table.log, holdout/hist_holdout.json (2015+ block). Upload (text only, nothing executed, no pickle opened): plan.py all 119 lines, v11_live.py all, v11_strategy.py all, and a grep of the five md reports for the cost and quote lines the report cites (v11 report line 26, final plan line 34, v9 report lines 65 and 355, v10 report lines 57, 236, 266: all present as cited). Earlier audits: verdict fields of all 13 JSONs in holdout/audit/wf1-3/_results/, the full issue list of wf3 skeptic, and selected findings of wf2 steelman and wf1 execution. No forbidden file, no web, no paid API. Checks without the engine (stored JSON and CSV only): per-seed spread of the paired difference for all 12 candidates from results/fix_{P,T,F}_le2014.json; recount of rule 1 and the 2x-fee condition at 0.30 / 0.60bp from results/sens_A_le2014.json per-seed arrays using the run_fix.py definitions; maximum dev250_path CAGR over every results/*_le2014.json (22.98%); data_cut/us_le2014.csv: 31 nights at or below -2.75% in 1999-03~2014-12, worst -8.36% on 2001-09-17 (matches the spec), dividend credit omitted from price-based nights 0.548%/yr 1999-2014 (0.619% 2001-2014, 0.766% 2005-2014); holdout/data/us.csv f_on: 12.46%/yr, t 4.58 plain and 5.07 Newey-West for 1999-03~2026-10 (matches the report's 12.5%, t 4.6~5.0), split 13.46% (t 3.62 / 4.02) to 2014, 8.09% (t 2.21 / 2.61) for 2001-2014, 11.12% (t 2.80 / 3.10) for 2015~2026-10, 8.35% (t 1.51 / 1.69) from 2021. Engine runs (54 in total, one Python process at a time, scratch only, scripts and logs in /home/user/onv/wf4/referee4/: chk_bdel.py, chk_bdel.log, chk_bdel.json, chk_stack_bdel1.py, chk_stack_bdel1.log, chk_stack_bdel1.json): reproduction of the stored P3 seed-11 values on both bases (difference 0 at 6 decimals; v1 16.159 / 31.081); P3 with the brake delayed one day, mode C, 0.83bp, 12 seeds: -3.93 / -7.71 %p against v1, 0 of 12 seeds positive on either basis (same seeds stored: same-close +0.55 / +0.37, two-day -5.89 / -12.88); P3 with mode M plus futures-account cash interest plus 0.30bp, same-close brake, 6 seeds: CAGR 24.38% / 39.63%, +8.13 / +8.55 %p (per-seed range +6.36~+10.88 and +4.78~+12.30); the same stack with a one-day brake delay, 6 seeds: 18.14% / 30.19%, +2.12 / -0.89 %p. I did not repeat the table tracing of the other lanes, did not re-run eng.py real-order tables, and did not re-verify the phase-1 lane statistics (correlations, shuffles, Kelly estimates, margin event counts).",
+ "issues": [
+  {
+   "severity": "major",
+   "where": "[A1] RESULT_ONF1_FULL_KO.md line 148 (2절 '읽는 법' 마지막 문장), line 108, 결론 2 (line 18); the same sentence in RESULT_ONF1_KO.md line 93",
+   "claim": "어느 민감도에서도 \"두 기준 모두 v1 초과 + 수수료 2배에서도 플러스 + 브레이크 지연에 견딤\" 을 함께 만족하는 후보는 없습니다.",
+   "problem": "Unfair to the upload by omission. The sentence is true only because 'fee x2' stays at the registered 1.66bp and a third, unregistered criterion (brake delay) is added. Applying the registered rule form at the report's own cost estimate (base 0.30bp, stress 0.60bp): PRESET_A US-only meets rule 1 in 29 of 30 seeds and the stress in 21 of 30 under C (means +2.8 / +4.7 and +1.4 / +2.4), and T5 and F1 meet both under M in 30 of 30 seeds, which is 'conditional' under rule 4. So '0 of 12' depends on the registered fee level, and the owner is not told this in one plain sentence. The report also does not say that 0.83bp and its 2x stress are the upload's own base and stress values, which is the reason they are defensible.",
+   "evidence": "Recount from results/sens_A_le2014.json per_seed_cagr / per_seed_d with the run_fix.py definitions: P3 C rule 1 at 0.30bp 29/30, d>0 on both bases at 0.60bp 21/30, both 21/30; P3 M 29/30; T5 C 0/30; T5 M 30/30; F1 M 30/30. Upload v9 report line 355: 'MNQ 편도 0.0083%(수수료 $2 + 거래소 비용 + 반 틱 기준 0.0055%의 1.5배)'; v10 report line 236: '선물 비용이 2배(편도 약 0.017%)를 넘으면 보수 시나리오에서 v1과의 격차가 대부분 사라집니다'. Report 4절 line 293: estimated real cost 0.14~0.53bp.",
+   "suggested_fix": "Replace the sentence (both reports) with: \"등록한 수수료(0.83bp, 스트레스 1.66bp)에서는 등록 가정 C·M 어디에서도 규칙 1·2 를 함께 충족한 후보가 없습니다(등록 밖 가정까지 넣으면 PRESET_A 미국만에 계좌 현금 이자와 밤 금리 몫을 모두 인정한 경우만 +4.5 / +5.7 → 수수료 2배 +0.6 / +2.1%p 로 충족). 같은 규칙을 이 보고서의 추정 비용인 수수료 0.30bp(스트레스 0.60bp)에 적용하면 PRESET_A 미국만은 C 에서 규칙 1·2 를 충족하고(난수 30개 중 21개), T5 와 F1 은 M 에서만 충족해 등록 규칙 4의 '조건부' 가 됩니다(30개 중 30개). 즉 '통과 0' 은 등록한 수수료에 달려 있습니다. 0.83bp 와 그 2배는 올리신 보고서가 스스로 쓴 기준값(측정값 0.55bp 의 1.5배)과 스트레스 값(v10 보고서 236행)이라 판정에 그대로 썼고, 실제 편도 비용은 계좌에서 재 봐야 압니다. 다만 PRESET_A 미국만은 브레이크가 하루만 늦어도 떨어지고, 실제 밤 자료가 있는 2001년 이후에는 v1 이하입니다.\""
+  },
+  {
+   "severity": "major",
+   "where": "[A2] RESULT_ONF1_FULL_KO.md 결론 2 (line 18) '유리한 가정에서는 더 높게 나옵니다(…)' and 2절 민감도 표",
+   "claim": "PRESET_A 미국만은 수수료가 편도 0.60bp 면 +1.4 / +2.4%p, 0.30bp 면 +2.8 / +4.7%p 이고, 선물 계좌 현금 이자와 밤 금리 몫까지 인정하면 0.83bp 에서 +4.5 / +5.7%p 입니다.",
+   "problem": "The favourable cases are shown one lever at a time, so the upper end is understated. The largest figure anywhere in the report is +4.9 / +6.8 (M, 0.30bp). Stacking three levers that are each defensible on the report's own terms (premium from 1993, futures-account cash at T-bill minus 2%p which is what v1's own cash sleeve earns in MS1, fee 0.30bp, same-close brake) gives about +8.1 / +8.6 %p and an MS1 headline of about 24.4%. An owner who believed the upload should see the true upper end, together with the two facts that limit it: it is still below the 30% bar, and one day of brake slip reduces it to +2.1 / -0.9.",
+   "evidence": "/home/user/onv/wf4/referee4/chk_bdel.log: 'M + cash + fee0.30 dev250_path cagr 24.38% d +8.13 pp (min +6.36 max +10.88)', 'real_ndx_86_14 cagr 39.63% d +8.55 pp (min +4.78 max +12.30)' (6 seeds, ms1f.measure_one(replace(P3, c_us=0.00003), bn, 'M', 2, 0.004, 1, 0.25, 0)). chk_stack_bdel1.log: same stack with bdel=1: 18.14% / 30.19%, +2.12 / -0.89. Stored maximum for P3: sens_A 'P3 A-US|M|fee030' 21.12%, sens_D 'P3 A-US|Ccarry+cash|base' 20.56%.",
+   "suggested_fix": "Add after the +4.5 / +5.7 sentence: \"유리한 가정을 모두 겹치면(1993년부터 프리미엄 + 수수료 0.30bp + 선물 계좌 현금 이자, 브레이크 당일 반응) 약 +8 / +8.5%p, 대표값 약 24% 까지 나옵니다. 그래도 실전 기준 30% 에는 못 미치고, 같은 가정에서 브레이크가 하루만 늦으면 +2.1 / -0.9%p 로 줄어듭니다.\" My figures are from 6 seeds; re-run with the 30 seeds of run_sens.py before printing the second decimal."
+  },
+  {
+   "severity": "major",
+   "where": "[A3] RESULT_ONF1_FULL_KO.md line 110 (2절), line 109 item ③, 결론 2 (line 18)",
+   "claim": "PRESET_A 미국만은 브레이크가 당일 반응할 때만 v1 과 같은 수준이고, v1 과 같은 2일 지연을 주면 크게 떨어집니다. 성과가 \"손실 당일 즉시 축소\" 에 의존한다는 뜻입니다.",
+   "problem": "The report never tells the owner whether a same-close brake is possible, so 'v1 과 같은 2일 반응 지연' reads as if the registered row were unrealistic. It is feasible: the brake input is the account's own equity, CME index futures trade after the 16:00 ET cash close, and the uploaded on_us_close computes the brake from broker equity at 16:00:20 ET and orders at once. The registered row was therefore the right base, and the two-day row is a parity stress, not a registered rule. What the report can fairly say is stronger than what it says: one day of slip is already fatal. The report should also disclose that in the real-night windows the direction of the brake-delay effect is not stable.",
+   "evidence": "Upload v11_live.py lines 185-206 (daily_snapshot_update, risk_multiplier and order_to_target inside the same E3 event; EVENTS line 223 '16:00:20 ET'). wf1 verify_execution key numbers: Globex 18:00-17:00 ET, E3 cannot run on half days (not re-verified by me). My run chk_bdel.log: P3, C, 0.83bp, brake delayed one day, 12 seeds: -3.93 / -7.71 %p, 0/12 seeds positive (same seeds: same-close +0.55 / +0.37, two-day -5.89 / -12.88). Report 3절 first table at 0.83bp: PRESET_A US-only same-close vs two-day delay 26.5% vs 14.2% (1999-2014), 15.3% vs 10.2% (2001-2014), 19.0% vs 23.1% (2005-2014).",
+   "suggested_fix": "Replace line 110 with: \"PRESET_A 미국만의 MS1 성과는 브레이크가 손실 당일 종가 직후에 체결된다는 전제에 달려 있습니다. 이 전제 자체는 선물 계좌에서 가능합니다(선물은 미국 정규장 마감 뒤에도 거래되고, 업로드 실거래 코드도 16:00:20 ET 에 계좌 평가금으로 브레이크를 계산해 바로 주문합니다. 반일장은 예외). 그래서 판정 행은 당일 반응 그대로 두었습니다. 다만 한 번 늦을 때의 차이가 큽니다. 하루 늦으면 v1 대비 -3.9 / -7.7%p, 이틀 늦으면 -5.7 / -12.0%p 입니다. '브레이크 2일 지연' 행은 등록 규칙이 아니라 v1 과 같은 규약을 적용해 본 스트레스이고, 실제 밤 자료 구간에서는 방향이 일정하지 않습니다(0.83bp 기준 지연 시 1999~2014 -12.3%p, 2001~2014 -5.1%p, 2005~2014 +4.1%p). 반면 MDD 는 v1 보다 뚜렷하게 얕습니다(위 MDD 줄).\" The one-day figure is from 12 seeds; re-run with 30."
+  },
+  {
+   "severity": "minor",
+   "where": "[A4] RESULT_ONF1_FULL_KO.md 결론 2 (line 18), inside the parenthesis",
+   "claim": "그러나 브레이크를 2일 늦추면 0.30bp 에서도 −4.0 / −5.3%p 이고, 실제 밤 자료가 있는 2001~2014 구간에서는 0.30bp 로도 v1 보다 −0.9%p 낮습니다.",
+   "problem": "Selective pairing. The sentence uses the brake delay where it hurts (MS1) and the same-close brake where that hurts (2001-2014 real nights). In the same 2001-2014 window at 0.30bp the delayed brake is +1.6 %p above v1, and +3.4 in 2005-2014, so a reader is led to think both facts point the same way.",
+   "evidence": "Report 3절 table '업로드 프리셋(미국만) − v1': 'PRESET_A, 0.30bp' -0.9 (2001-2014), +0.6 (2005-2014); 'PRESET_A, 0.30bp + 브레이크 2일 지연' +1.6, +3.4.",
+   "suggested_fix": "Replace with: \"그러나 MS1 에서 브레이크를 2일 늦추면 0.30bp 에서도 −4.0 / −5.3%p 입니다. 실제 밤 자료가 있는 2001~2014 구간에서는 0.30bp 로도 v1 보다 −0.9%p 낮고, 같은 구간에서 브레이크를 2일 늦추면 +1.6%p 로 뒤집힙니다. 브레이크 시점에 따라 부호가 바뀔 만큼 불안정하다는 뜻입니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[A5] RESULT_ONF1_KO.md 결론 3 (line 11)",
+   "claim": "PRESET_A 미국만은 M 에서 +2.5 / +3.3%p 로 T5 보다 높지만 브레이크를 v1 처럼 2일 지연하면 −5.7 / −12.0%p 라 제외.",
+   "problem": "Two defects. The sentence mixes modes: +2.5 / +3.3 is mode M, while -5.7 / -12.0 is mode C with the delayed brake (mode M delayed is -4.1 / -9.6). And it excludes the candidate on a criterion added after registration without saying so; the registered reason it fails is the 2x fee.",
+   "evidence": "Same report, table rows 'P3 PRESET_A 미국만' (C +0.5 / +1.2, fee x2 -3.0 / -3.5, M +2.5 / +3.3) and 'P3 (브레이크 2일 지연)' (C -5.7 / -12.0, M -4.1 / -9.6); M list: P3 fee x2 -1.2 / -1.4.",
+   "suggested_fix": "Replace with: \"PRESET_A 미국만은 등록 조건(브레이크 당일 반응)에서 C +0.5 / +1.2%p, M +2.5 / +3.3%p 로 T5 보다 높지만 수수료 2배에서 탈락하고(C −3.0 / −3.5, M −1.2 / −1.4%p), 등록 뒤 추가한 스트레스에서 브레이크를 2일 늦추면 C −5.7 / −12.0%p, M −4.1 / −9.6%p 로 떨어져 '가장 방어할 만한 후보' 로 보지 않았음.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[A6] RESULT_ONF1_FULL_KO.md 2절, the list under the main table (near line 109); same place in RESULT_ONF1_KO.md",
+   "claim": "(omission) 측정 규약 중 후보에 불리하거나 v1 과 다른 세 가지가 보고서에 없음",
+   "problem": "Three conventions that a reader needs in order to judge fairness are not stated anywhere in the three documents. Dividends are ignored on both sides, but a futures position does not bear the ex-dividend drop that sits inside the price-based night return, which is mildly adverse to the candidates. v1's cash sleeve earns T-bill minus 2%p while futures-account cash earns 0. And almost half of the path-days on both judging bases are synthetic pre-1999 nights. None changes the verdict.",
+   "evidence": "ms1f.py line 37 (night = log(qqq_open / previous qqq_close), split-adjusted only). My computation on data_cut/us_le2014.csv: (1+r_on)/(1+price night)-1 averages 0.548%/yr for 1999-2014, 0.619% for 2001-2014, 0.766% for 2005-2014. wf2 steelman finding 3(g): with 0.55%/yr credited to both sides P3 +0.55 / +1.08, T1 +0.36 / +0.19; finding 3(h): 45.9% of path-days (47.7% on the real path) are pre-1999 synthetic. c3_brake/code/beng.py line 127 cspr=0.02 and ntilt.py line 79 (v1 cash earns max(rf - 2%p, 0)). grep '배당' in the three documents: no hit.",
+   "suggested_fix": "Add one bullet: \"측정 규약 중 알아 둘 것(판정은 그대로): ① 배당은 v1 과 후보 모두 넣지 않았습니다. 실제 선물은 배당락 하락을 지지 않으므로 밤 1배당 연 약 0.5~0.8% 가 빠져 있고, 배당을 양쪽에 모두 넣으면 PRESET_A 미국만 +0.55 / +1.08%p, 밤 1배 항상(T1) +0.36 / +0.19%p 입니다(2단계 반대 논증 계산). ② v1 의 현금 몫에는 금리−2%p 이자를 주지만 선물 계좌 현금은 0 입니다(프로젝트 규칙). ③ 두 기준 모두 날짜의 약 46~48% 가 자료 없이 만들어 넣은 1999-03 이전 밤입니다.\""
+  },
+  {
+   "severity": "major",
+   "where": "[B1] RESULT_ONF1_FULL_KO.md 결론 3 (line 20), 2절 후보 설명 (line 75), 4절 (line 298); 읽기 전에",
+   "claim": "이를 v1 을 건드리지 않고 쓰는 형태(T5: v1 이 TQQQ 를 보유 중일 때만 밤 사이 나스닥 선물 1배 추가) / 다만 밤사이 노출이 v1 의 3배에서 약 3.8배로 늘어나고(밤 포지션을 든 날 82~91%, 평균 0.8배)",
+   "problem": "Too generous to T5 and factually off. The full report never states that T5 moves 15% of total equity into a separate futures account that earns no interest, so v1 runs on 85% of the capital. 'v1 unchanged' is true of the rules only. The exposure figure is arithmetically wrong under that design: with v1 at 3x, day exposure falls from 3.0x to about 2.55x and night exposure is about 2.55 + 0.95 = 3.5x, not 3.8x. T5 is a shift of exposure from day to night as much as an add-on, and an owner would otherwise assume the futures margin comes on top of an untouched v1. The phase-2 audit put the cost of the idle 15% at -1.0 %p (path) and -3.6 %p (real) for the 1x tilt.",
+   "evidence": "PRECOMMIT_ONF1.md line 17 ('선물 계좌는 총자산의 φ, 연 1회 재배분') and line 19 (T5 φ=0.15). ntilt.py lines 84-85 (start: stock sleeve 1-phi, F = phi), lines 53-68 (yearly sweep back to phi), line 153 (tilt Y = g*Lt*E on total equity), line 186 (avg_tilt averaged over all days, so 0.78~0.87 over 82~91% of days is about 0.95~0.98 on tilt days). grep of the full report for '15%' and '총자산의': no mention for T5. wf2 audit_ntilt verdict: 'the idle 15% futures account (-1.0%p dev, -3.6%p real)'.",
+   "suggested_fix": "결론 3: replace the T5 parenthesis sentence with \"이 프리미엄을 v1 의 규칙을 바꾸지 않고 쓰는 형태가 T5 입니다. T5 는 총자산의 15% 를 선물 계좌(이자 0)로 옮기고 남은 85% 로 v1 을 그대로 운용하면서, v1 이 TQQQ 를 들고 있는 날에만 밤사이 나스닥 선물을 총자산의 1배만큼 더합니다. 그래서 v1 이 3배일 때 낮 노출은 3배에서 약 2.55배로 줄고 밤 노출은 약 3.5배로 늘어납니다.\" Line 75: \"T = 총자산의 일부(T5 는 15%)를 별도 선물 계좌로 옮기고 나머지로 v1(TQQQ) 을 그대로 운용 + 선물 계좌에서 밤에만 나스닥 선물\". Line 298: replace '밤사이 노출이 v1 의 3배에서 약 3.8배로 늘어나고(밤 포지션을 든 날 82~91%, 평균 0.8배)' with \"v1 몫이 85% 로 줄어 낮 노출은 약 2.55배, 밤 노출은 약 3.5배가 되고(밤 포지션을 든 날 82~91%, 든 날의 크기 약 0.95배)\"."
+  },
+  {
+   "severity": "major",
+   "where": "[B2] RESULT_ONF1_FULL_KO.md 결론 3 first sentence (line 20); compare RESULT_ONF1_KO.md line 166",
+   "claim": "미국 밤 프리미엄 자체는 있었습니다(1999-03~2026-10 수수료 전 연 12.5%, t 4.6~5.0, 확인됨. 편도 0.83bp 를 매일 내면 약 4.2%p 가 빠지고, 2021년 이후만 보면 연 8.4%, t 1.6).",
+   "problem": "Three defects in the sentence that carries conclusion 3. It blends pre-2015 and post-2014 data into one figure. It is gross of the fee and the financing spread while the after-cost number exists and is much weaker. And the full report omits the stand-alone result that the pre-2015 report gives: night-only 1x after fee and financing has Sharpe 0.57 for 1999-2014 and 0.22 without 1999-2000, against the project gate of 0.55, and 0.29 / -0.09 / 0.02 at double fee. The owner's final report is therefore more favourable to the premium than the design-side report. The sentence also has no table or file reference.",
+   "evidence": "My recomputation from holdout/data/us.csv f_on: 1999-03~2026-10 12.46%/yr (t 4.58, NW 5.07); 1999-03~2014 13.46% (t 3.62 / 4.02); 2001-2014 8.09% (t 2.21 / 2.61); 2015~2026-10 11.12% (t 2.80 / 3.10); 2021~ 8.35% (t 1.51 / 1.69). results/night_sharpe_le2014.json: net Sharpe 0.570 (t 2.26) 1999-2014, 0.217 (t 0.81) 2001-2014, 0.392 (t 1.24) 2005-2014; fee x2 0.286 for 1999-2014. tools/idea_check/idea_check.py checklist item 5: '비용 후 단독 Sharpe ≈1.1 (같은 기준 0.55)'. grep 'Sharpe' in the full report: only the reproduction line 338.",
+   "suggested_fix": "Replace with: \"미국 밤 프리미엄 자체는 있었습니다(금리 차감 후·수수료 전, 확인됨, `holdout/data/us.csv`). 2014년 이전(1999-03~2014) 연 13.5%(t 3.6~4.0)이고 그중 1999~2000 을 빼면 연 8.1%(t 2.2~2.6)입니다. 2015~2026-10 은 연 11.1%(t 2.8~3.1), 2021년 이후만은 연 8.4%(t 1.5~1.7)입니다. 그러나 매일 사고파는 비용(편도 0.83bp 면 연 약 4.2%p)과 금리 가산을 빼고 밤에만 1배를 든 단독 성과는 2014년 이전 Sharpe 0.57(t 2.3), 1999~2000 을 빼면 0.22(t 0.8)로, 프로젝트의 새 수익원 기준(0.55)을 1999~2000 없이는 넘지 못합니다(수수료 2배면 0.29 / −0.09 / 0.02, `results/night_sharpe_le2014.json`).\""
+  },
+  {
+   "severity": "minor",
+   "where": "[B3] RESULT_ONF1_FULL_KO.md 결론 3 (lines 20, 22, 25); RESULT_ONF1_KO.md 결론 3",
+   "claim": "v1 을 연 +1.5~+3.9%p 앞섰습니다 … 수수료 2배에서는 3개 구간 중 2개가 마이너스(+0.1 / −2.0 / −2.4%p)입니다.",
+   "problem": "Still generous in three small ways. The range leads with +3.9, which comes from 1999-2000, the period with the weakest data (QQQ close not a 16:00 print), so the conservative figure is +1.5~+1.6 (t 0.5). Right after listing four non-overlapping periods the text says '3개 구간 중 2개', which refers to the three overlapping windows; on the non-overlapping periods every period except 1999-2000 is negative at double fee. And two selection facts are missing: T5 was singled out among the nine T/F candidates after their results were seen, and the T/F idea was built knowing from the upload that the premium lasted to 2026, so 2015+ is not clean out-of-sample for the idea.",
+   "evidence": "Report table 'T5 − v1': 0.83bp +3.9 / +1.5 / +1.6 and +28.8 / -0.6 / +3.5 / +0.9; fee x2 +0.1 / -2.0 / -2.4 and +25.1 / -2.8 / -0.6 / -3.2; t 0.5 for 2001-2014 and 2005-2014. 남은 문제 5 (1999~2004 QQQ close). RESULT_ONF1_KO.md line 11 (T5 named by the steelman lane). Report line 151 (P group's 1999~2026 numbers computed before registration).",
+   "suggested_fix": "Sentence: \"T5 는 실제 밤 자료가 있는 2001~2014, 2005~2014 에서 v1 을 연 +1.5~+1.6%p 앞섰습니다(t 0.5, 우연과 구분되지 않음. 1999-03 부터 넣으면 +3.9%p 이지만 자료 품질이 가장 낮은 1999~2000 덕분).\" Second bullet: \"겹치지 않게 나누면 1999-03~2000 +28.8, 2001~04 −0.6, 2005~07 +3.5, 2008~14 +0.9%p 이고 어느 구간도 통계적으로 유의하지 않으며(t −0.2~1.4), 수수료 2배에서는 1999~2000 을 뺀 세 구간이 모두 마이너스입니다(+25.1 / −2.8 / −0.6 / −3.2%p). T5 는 T·F 후보 9개의 결과를 본 뒤 지목한 것이기도 합니다.\" Last bullet, append: \"T·F 후보는 밤 프리미엄이 2026년까지 있었다는 사실을 올리신 보고서에서 이미 본 뒤에 만든 것이라, 2015년 이후 구간도 이 아이디어에 대해서는 완전한 표본 외가 아닙니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[B4] RESULT_ONF1_FULL_KO.md 4절 line 298 and 결론 3 line 24",
+   "claim": "가장 방어할 만한 탈락 후보는 T5 입니다. v1 을 건드리지 않고, 난수에 가장 덜 민감하며 … / 가장 유리하게 본 개선 폭은 M 가정에 수수료 0.30bp 를 더한 +3.5 / +3.1%p",
+   "problem": "Two statements are not supported by the report's own results. T5 is not the least seed-sensitive candidate: its per-seed standard deviation is larger than that of T2, T4 and F3. And +3.5 / +3.1 is not the most favourable case, since the table already shows +3.6 / +3.2 under H at the registered fee.",
+   "evidence": "results/fix_T_le2014.json and fix_F_le2014.json, sd of per_seed_d under C (path / real, %p): T5 0.30 / 0.42; T2 0.16 / 0.17; T4 0.19 / 0.37; F3 0.23 / 0.40; F1 0.32 / 0.35. Seeds meeting rule 1 under M: T5 26/30, P3 27/30. Report main table, T5 row, H column: +3.6 / +3.2.",
+   "suggested_fix": "Line 298: \"v1 의 규칙을 바꾸지 않고, 1993년부터 프리미엄을 인정하면(M) 난수 30개 중 26개에서 두 기준 모두 v1 을 넘어 T·F 후보 가운데 가장 많으며, 실제 밤 자료 구간에서 플러스였기 때문입니다.\" Line 24: replace '가장 유리하게 본 개선 폭은' with \"근거를 댈 수 있는 가정 가운데 가장 유리한 경우의 개선 폭은\"."
+  },
+  {
+   "severity": "minor",
+   "where": "[B5] RESULT_ONF1_FULL_KO.md 결론 1 (line 16), 결론 3 last bullet (line 25), line 287",
+   "claim": "실제 주문 순서로 돌리면 2010-03~2026-10 구간에서 v10 은 연 32~37%(보고 58.4%), PRESET_A 는 연 11~19% 입니다. / 2015-01~2026-08 의 +1.8%p",
+   "problem": "Owner's rule is final conservative numbers that are never revised down. The conclusion-level figures end on 2026-10-07 and 2026-08-31, before the October-November fall that the upload's own figures include. The downward adjustments are known but sit only in section 1 and line 287, and the T5 one is an estimate, not a computation.",
+   "evidence": "holdout/real_table.log, 2010-03 rows, US-only to 11-09: v9 34.9 → 32.4, v10 37.5 → 34.3, PRESET_A 28.4 → 26.3 (project basis). Report line 50 ('2.5~3%p 더 낮아집니다') and line 287 ('약 0.2%p 줄어듭니다(추정)').",
+   "suggested_fix": "결론 1: use the wording given in the verdict (adds '2026-10-07' and '보고 수치의 종료일(2026-11-06)까지 넣으면 미국 구간 기준 약 2~3%p 더 낮습니다'). 결론 3 last bullet: \"2015-01~2026-08 의 +1.8%p(t 0.5, 수수료 2배면 −2.7%p. 2026년 9~11월을 넣으면 약 +1.6%p 로 추정)는 정보용 수치이며 판정과 선택에 쓰지 않았습니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[B6] RESULT_ONF1_FULL_KO.md 결론 3 third bullet (line 23), line 143; PROGRAM_SPEC_ONF1_KO.md line 8",
+   "claim": "8천만 원에서는 나스닥 마이크로 선물(MNQ) 1계약이 자본보다 커서 0계약으로 시작합니다(8천만 원에서 정수 계약만 쓰는 것으로 다시 재면 C −1.1 / −1.3%p, M −0.2 / +0.5%p).",
+   "problem": "Two things a reader will misread. The -1.1 / -1.3 is not the cost of the contract size alone: the engine keeps 15% of equity idle in the futures account even while zero contracts are held, which a sensible owner would not do. And '0 contracts' is date-dependent: the registration used 7,600만 원 per contract, under which one contract fits, and at 8,355만 원 a fall of about 4% in index times exchange rate makes it fit again.",
+   "evidence": "run_sens.py section F (W0 8e7, notional 83.55e6, T5 keeps phi=0.15); ntilt.py lines 84-85 and 156 (F = phi regardless of the contract count; floor to whole contracts). PRECOMMIT_ONF1.md line 31 ('1 MNQ = 7,600만'); report line 153. 8,000 / 8,355 = 0.957.",
+   "suggested_fix": "Replace the bullet with: \"8천만 원에서는 MNQ 1계약(8,355만 원, 2026-11-10 지수·환율 기준)이 자본보다 커서 0계약으로 시작합니다. 즉 지금 자본으로는 T5 를 실행할 수 없습니다(지수×환율이 약 4% 내리면 1계약이 들어가므로 날짜에 따라 달라집니다). 정수 계약만 쓰는 것으로 다시 재면 C −1.1 / −1.3%p, M −0.2 / +0.5%p 인데, 이 값에는 0계약인 동안에도 15% 를 선물 계좌에 묵혀 두는 손실이 들어 있습니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[B7] RESULT_ONF1_FULL_KO.md 4절 line 296 (last sentence)",
+   "claim": "판정은 사전 등록대로 C 로 했고(통과 0), M 은 현실에 더 가까울 수 있는 가정으로 참고만 했습니다.",
+   "problem": "Generous to mode M. M applies 11.8%/yr, estimated on QQQ 1999-03~2014, to 1993-1999. That is the top of the tick-adjusted SPY range the same paragraph gives (+6~12%), and the premium fell inside the estimation period (the report's own +21% → +15% → +8%). The report covers the start date and 'SPY is not the Nasdaq 100' but not the level, and the registration calls M 'central'.",
+   "evidence": "RESULT_ONF1_KO.md line 18 ('α 연 11.82%, QQQ 1999-03~2014 추정'); full report line 296 ('+6~12% 로 줄고') and line 297 ('1999~2002 연 +21%, 2003~07 +15%, 2008~14 +8%'); PRECOMMIT_ONF1.md line 12 ('M (중심)').",
+   "suggested_fix": "Replace with: \"판정은 사전 등록대로 C 로 했고(통과 0), M 은 참고만 했습니다. M 이 1993~1999 에 넣는 프리미엄 크기(연 11.8%)는 호가 단위를 조정한 SPY 관측값 +6~12% 의 위쪽 끝이고 QQQ 안에서도 프리미엄이 줄어 왔으므로, M 은 '중심' 이 아니라 유리한 쪽 가정입니다.\""
+  },
+  {
+   "severity": "major",
+   "where": "[C1] RESULT_ONF1_FULL_KO.md 1절 line 65 and the table notes (line 49) against 3절 (lines 188-217)",
+   "claim": "2015년 이후 v10 32.2% → 33.1%, v9 33.2% → 37.2%, 2020년 이후 v10 34.6% → 45.5%, v9 42.1% → 55.9% (1절) / v9 미국만 2015-01~2026-08 26.8%, v1 28.1% (3절)",
+   "problem": "A careful reader will misread this. The same US-only presets carry different numbers in sections 1 and 3 with no explanation, and the section 1 numbers invite a comparison with v1's 28.1% that makes v9 look 5 to 9 %p better than v1 after 2015 with real order timing. The two sections use different conventions: section 1 is the upload's (no signal delay, dividend credited to the night, no deduction, to 2026-10-07), section 3 is MS1 (two-day signal delay, price index, to 2026-08-31). v1 was never computed under the section 1 conventions.",
+   "evidence": "holdout/real_table.log project basis, 2015-01-02 rows: v9 US-only 33.2%, v10 32.2%, PRESET_A 22.4%. holdout/hist_holdout.json hold_2015_2026: 'P1 v9-US d2' 26.78%, 'd0' 29.90%; 'P2 v10-US d2' 25.31%, 'd0' 27.54%; 'P3 A-US d2' 14.64%, 'd0' 16.25%; v1 28.08%. eng.py Cfg.delay = 0 and f_on from us.csv (dividend credited); ms1f.py price-based night.",
+   "suggested_fix": "Add as a bullet under the section 1 table: \"이 절의 수치는 올리신 연구의 규약(신호 지연 없음, 배당 포함, 공제 없음, 2026-10-07 까지)으로 잰 것이고, 3절은 v1 과 같은 MS1 규약(신호 지연 2일, 가격지수, 2026-08-31 까지)입니다. 그래서 같은 '미국만' 수치가 다릅니다(2015년 이후 v9 33.2% 대 26.8%, v10 32.2% 대 25.3%, PRESET_A 22.4% 대 14.6%. 3절 규약에서 신호 지연만 없애면 29.9 / 27.5 / 16.2%). v1 은 이 절의 규약으로 재지 않았으므로 이 절의 수치를 3절의 v1(2015년 이후 28.1%)과 견주면 안 됩니다. v1 과의 비교는 3절만 쓰십시오.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[C2] RESULT_ONF1_FULL_KO.md 5절 line 307; 1절 line 41 last sentence; 결론 1 line 16",
+   "claim": "…낮 4배는 낮 구간의 이론 배율(0~2.7배)을 넘어 성장률을 깎습니다(확인됨). / …백테스트와 실거래가 서로 다른 규칙을 매매하게 됩니다. / 보고 수치에 가까운 값(v10 55~65%, PRESET_A 70~88%)",
+   "problem": "Label and logic slips. The Kelly statement is a statistical estimate on blended 1999-2026 data with a wide interval, so '확인됨' is too strong. The last sentence of the plan.py paragraph drops the conditional that the preceding sentences keep ('…이라면'), although it depends on the same inference. And 'close to the reported value' is said of PRESET_A although the table states that no stand-alone reported figure exists for that window.",
+   "evidence": "wf1 verify_stats verdict: night leg point estimate 4.7-6.1x, bootstrap 95% CI 3.3-9.2x, day leg 'subtracts growth in every era except 2015-2020'. Report line 41 ('…이라면') and table line 46 ('(단독 수치 없음)').",
+   "suggested_fix": "Line 307: \"배율이 지나칩니다(추정, 1999~2026 자료 기준). 장기 수익률이 가장 커지는 배율을 과거 자료로 추정하면 밤 구간은 4.7~6.1배(95% 구간 3.3~9.2배)라 PRESET_A 의 밤 5배는 그 한계선에 있고, 낮 구간은 0~2.7배인데 PRESET_A 는 4배를 써서 2015~2020 을 뺀 모든 구간에서 장기 수익률을 깎았습니다.\" Line 41: \"…진입 시점 정보만 쓰므로, 위 추론이 맞다면 백테스트와 실거래가 서로 다른 규칙을 매매하게 됩니다.\" Line 16: \"보고 수치에 가까운 값(v10 55~65%)과 PRESET_A 의 70~88% 는 …\"."
+  },
+  {
+   "severity": "minor",
+   "where": "[C3] RESULT_ONF1_FULL_KO.md 2절 line 71; RESULT_ONF1_KO.md line 19",
+   "claim": "이 가정에서는 밤 선물 1배의 금리 차감 후 수익이 1986~92 연 −1.8%, 1993~1999-03 연 +2.9%(수수료 전)로, 밤 구간이 금리 비용도 다 벌지 못합니다.",
+   "problem": "The sentence contradicts itself: +2.9% after financing in 1993-1999 means the night did earn its financing cost in that period. Only 1986-92 fits the closing clause.",
+   "evidence": "The sentence itself; ms1f.py line 114 (night excess = night return minus 0.8132 x (rf + spread)).",
+   "suggested_fix": "\"이 가정에서 밤 선물 1배의 금리 차감 후 수익(수수료 전)은 1986~92 연 −1.8% 로 금리 비용도 벌지 못하고, 지수가 크게 오른 1993~1999-03 에도 연 +2.9% 에 그칩니다(실제 자료가 있는 1999-03~2014 는 연 +13.5%).\""
+  },
+  {
+   "severity": "minor",
+   "where": "[C4] RESULT_ONF1_FULL_KO.md '사전 등록 대비 차이' list (lines 150-154)",
+   "claim": "2015년 이후 자료를 연 시점은 \"검증\" 절에 적었습니다.",
+   "problem": "PRECOMMIT rule 5 says the post-2014 numbers are computed once. Phase 3 added fee and sub-period calculations on post-2014 data (the last tables of section 3). The 검증 section says so, but the deviation list, where a reader looks for departures from the registration, does not.",
+   "evidence": "PRECOMMIT_ONF1.md line 30 ('1회 계산'); report line 319 ('이후 3단계 검증에서 수수료별·구간별 정보용 계산이 추가로 있었습니다'); hist_extra.py holdout branch.",
+   "suggested_fix": "Replace the bullet with: \"등록 규칙 5 는 2015년 이후 수치를 1회만 계산한다고 했지만, 3단계 검증에서 수수료별·구간별 계산을 한 번 더 했습니다(3절 마지막 표). 모두 정보용이고 후보 선택에 쓰지 않았습니다. 자료를 연 시점은 '검증' 절에 적었습니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[C5] RESULT_ONF1_FULL_KO.md 4절 line 299",
+   "claim": "추가로 시험한 생각 2개(하락한 날 뒤에만 밤 포지션, v1 매도를 다음 날 시가로 미루기)는 채택할 만한 개선이 아니었습니다.",
+   "problem": "The dismissal has no number in the same report, and the second idea was positive on both bases under C, so a reader cannot see why it was dropped.",
+   "evidence": "wf2 steelman finding 6 and key_numbers[16]: N1 -2.01 / -4.34 at corrected C 0.83bp; N2 +0.43 / +0.75 (C), +0.37 / +0.52 with no premium at all, about 0 on the S&P-era bases, -1.6 %p on the 2005-14 and 2008-14 windows.",
+   "suggested_fix": "\"추가로 시험한 생각 2개는 채택할 만한 개선이 아니었습니다. ① 하락한 날 뒤에만 밤 포지션: v1 대비 −2.0 / −4.3%p(C). ② v1 매도를 다음 날 시가로 미루기: +0.4 / +0.8%p(C)이지만 프리미엄이 전혀 없다고 해도 +0.4 / +0.5%p 가 나오고 S&P 시대에서는 0 안팎, 2005~14·2008~14 구간에서는 −1.6%p 라, 밤 프리미엄이 아니라 매도 다음 날 반등에서 나온 값입니다. 이미 닫힌 축(OV1-B)과 같은 결과입니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[C6] RESULT_ONF1_FULL_KO.md 3절 line 216",
+   "claim": "2001년 이후로는 v1 22.6% 대 v9 23.9%, 2015년 이후로는 v1 28.1% 대 v9 26.8% 입니다.",
+   "problem": "'2001년 이후로는 22.6% 대 23.9%' is the 2001~2026-08 window, a blend of pre-2015 and post-2014 data given as one figure in the text. The unblended figures are in the tables.",
+   "evidence": "Report 3절 tables: 2001-01~2014-12 v1 18.9%, v9 미국만 21.7%; 2015-01~2026-08 v1 28.1%, v9 26.8%; 2001-01~2026-08 v1 22.6%, v9 23.9%.",
+   "suggested_fix": "\"2001~2014 는 v1 18.9% 대 v9 21.7%, 2015~2026-08 은 v1 28.1% 대 v9 26.8% 입니다(두 구간을 합친 2001~2026-08 은 22.6% 대 23.9%).\""
+  },
+  {
+   "severity": "minor",
+   "where": "[C7] PROGRAM_SPEC_ONF1_KO.md line 6",
+   "claim": "사전 등록 후보 12개 중 \"v1 을 실제 역사와 MS1 둘 다에서 비용·세금·지연 뒤 이김\" 을 만족한 것이 없음 (PRECOMMIT_ONF1.md 규칙 1+2).",
+   "problem": "'실제 역사' here means the MS1 real basis (Nasdaq 100 1986-2014, with synthetic nights before 1999-03), not the windows with real night data. Read literally it contradicts the full report, where T5 and v9 US-only are above v1 at the registered fee on the 1999-2014 real-night windows (in-sample, not significant).",
+   "evidence": "PRECOMMIT_ONF1.md line 26 (bases dev250_path and real_ndx_86_14). Full report 3절: T5 +3.9 / +1.5 / +1.6, v9 미국만 +10.2 / +2.8 / +0.9.",
+   "suggested_fix": "Append: \"(여기서 '실제 역사' 는 MS1 의 실제 기준인 나스닥100 1986~2014 한 경로이고 1999-03 이전 밤은 합성임. 실제 밤 자료만 있는 1999~2014 구간에서는 T5 와 v9 미국만이 등록 수수료에서 v1 을 앞섰으나 표본 내이고 통계적으로 유의하지 않음.)\""
+  },
+  {
+   "severity": "major",
+   "where": "[D1] RESULT_ONF1_FULL_KO.md 남은 문제 6 (line 329) and 3 (line 326); PROGRAM_SPEC_ONF1_KO.md '앞으로 후보가 통과할 경우 필요한 것'",
+   "claim": "T5 류 후보를 다시 판정하려면 새 사전 등록과 앞으로 쌓일 자료(전진 모의 기록 또는 실계좌 소액 기록)가 필요합니다.",
+   "problem": "The owner cannot act on this, and it implies a forward record could settle T5. At the observed effect size it cannot: t is 0.5 over 11.7 years (2015~2026-08) and 14 years (2001-2014), so reaching t = 2 needs about 16 times as long, roughly 190 to 220 years; even the 1999-2014 window (t 1.1~1.3) implies about 40 to 50 years. What can be checked cheaply is cost only, and the report does not give the thresholds in a usable form. From the stored break-evens: T5 equals v1 under C at 0.40bp, needs 0.20bp or less to survive a doubling under C, and 0.47bp or less under M; PRESET_A US-only 0.95bp and 0.47bp, which is moot because it fails on real night data after 2000.",
+   "evidence": "Report tables: t 0.5 / 0.5 for 2015~2026-08 and for 2001~2014, 1.1 / 1.3 for 1999~2014. Break-even line 137: T5 C 0.40, M 0.95; P3 C 0.95, M 1.39. MNQ notional 8,355만 원: 0.40bp = 3,342원, 0.20bp = 1,671원, 0.47bp = 3,927원 per contract per side. Report line 293: estimated cost 0.14~0.53bp.",
+   "suggested_fix": "Replace item 6 with: \"6. 2015년 이후 자료는 이 12개 후보에 대해 이미 열어 보았습니다. T5 를 다시 검토하려면 아래가 필요합니다.\\n   - 비용(싸게 확인 가능): 계좌 화면에서 MNQ 1계약 편도 총비용(수수료 + 거래소 비용 + 호가 반 틱)을 확인합니다. 보수 가정(C)에서 T5 가 v1 과 같아지는 한계가 편도 0.40bp(1계약 약 3,300원)이고, 비용이 2배로 늘어도 버티려면 0.20bp(약 1,700원) 이하여야 합니다. 이 보고서의 추정 범위 0.14~0.53bp 의 아래쪽 끝에서만 충족됩니다. 1993년부터 프리미엄을 인정하는 M 에서는 한계가 0.95bp, 2배 여유를 두면 0.47bp(약 3,900원)입니다.\\n   - 체결(싸게 확인 가능): 주문 없이 20거래일 동안 16:00:20 ET 와 09:30:05 ET 의 MNQ 호가를 기록해 QQQ 종가·시가와의 차이를 잽니다.\\n   - 자본: 총자산 약 8,400만 원부터 MNQ 1계약이 들어갑니다.\\n   - 확인할 수 없는 것: 프리미엄이 앞으로도 이어지는지는 전진 기록으로 가릴 수 없습니다. T5 의 우위(2001년 이후 연 +1.5~+1.8%p, t 0.5)가 우연이 아님을 t 2 로 확인하려면 같은 우위가 약 190년 넘게, 1999~2000 을 포함한 구간(t 1.1~1.3) 기준으로도 40~50년 이어져야 합니다. 따라서 T5 는 '증명한 뒤 적용' 할 수 있는 후보가 아니고, 새 사전 등록을 하더라도 판정 근거는 비용 실측과 과거 자료뿐입니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[D2] RESULT_ONF1_FULL_KO.md 결론 4 (line 27)",
+   "claim": "통과한 후보가 없고, 8천만 원으로는 설계 배율을 들 수 없으며(상한을 그대로 채우면 위탁증거금 약 8,228만 원, 계약 수를 내림해도 약 7,100만 원으로 자본의 89%, 추론), 업로드된 실거래 코드에는 … 치명 결함이 있습니다(확인됨).",
+   "problem": "Two gaps and one hard sentence. The owner's own go-live bar (MS1 headline of at least 30%) appears only in the program spec, although it is the strongest single argument: no candidate under any assumption reaches it. The margin reason applies to the uploaded US plus Korea design; the US-only variants, the only ones near v1, do fit the margin, and the reason for not applying them is the rules. And 'cannot hold' followed by '89% of capital' reads as a contradiction.",
+   "evidence": "Maximum dev250_path CAGR across results/*_le2014.json: 22.98% (fix_P 'P1 v9-US|H|base'); P3 21.12% stored, 24.38% in my stacked run; T5 19.75% (H) and 19.71% (M, 0.30bp); v1 16.16%. PROGRAM_SPEC line 6 (30% bar) and line 17 (MNQ 4계약 2,664만 원).",
+   "suggested_fix": "\"4. **프로그램 적용: 하지 않았습니다.** ① 사전 등록 후보 12개 중 통과가 없습니다. ② 사용자 실전 기준(MS1 대표값 30% 이상)에는 어떤 후보도 어떤 가정에서도 닿지 않습니다(v1 16.2%, 저장된 계산의 최대 23.0%, 유리한 가정을 모두 겹친 PRESET_A 미국만 약 24%, T5 최대 19.8%). ③ 올리신 설계(미국 5배 + 한국 3배)는 8천만 원으로 그대로 들 수 없습니다. 상한을 그대로 채우면 위탁증거금이 약 8,228만 원으로 자본보다 많고, 계약 수를 내림해도 약 7,100만 원(자본의 89%)이 증거금으로 묶여 추가증거금을 낼 여유가 없으며, 한국 3천만 원 계좌에는 미니 2계약까지만 들어갑니다(추론: 공개 증거금률 기준, 계좌 화면 미확인). 미국만 변형은 증거금으로는 들 수 있지만(MNQ 4계약, 위탁증거금 약 2,664만 원) ①②에 걸립니다. ④ 업로드된 실거래 코드에는 중단 스위치가 위험 증가를 막지 못하는 등 치명 결함이 있습니다(확인됨). 상세는 `PROGRAM_SPEC_ONF1_KO.md`.\""
+  },
+  {
+   "severity": "minor",
+   "where": "[E1] Readability for the owner: eight places in RESULT_ONF1_FULL_KO.md (lines 7-12, 18, 21, 27, 50, 71, 306, 307)",
+   "claim": "(1) 결론 2 전체 문단. (2) '읽기 전에' 에 없는 표기: '+0.5 / +1.2%p', '난수 30개 중 14개', '브레이크', 'MDD', '표본 내'. (3) 결론 3 첫 항목의 '조건부'. (4) 결론 4 증거금 문장. (5) 2절 C 정의. (6) 1절 line 50 '즉 이 엔진의 미래 정보 방식도 원본에 약 6%p 못 미치지만, 실제 주문 순서나 호의적 해석과는 20%p 이상 벌어집니다.' (7) 5절 '과도한 배율' 문장. (8) 5절 '시가에 유지증거금 미달 19회, 정산 추가증거금 61회'.",
+   "problem": "Conclusion 2 is one paragraph of about twelve lines with some twenty numbers and a nested parenthesis, and it uses the slash pair, '난수' and '브레이크' before any definition; the slash pair is defined only in section 2. '조건부' is a registration term used in the conclusion without its meaning. Items 4, 5 and 7 are covered by issues D2, C3 and C2. Items 6 and 8 are jargon-heavy single sentences.",
+   "evidence": "Report lines as listed; '읽기 전에' (lines 7-12) defines 대표, 실제, 밤/낮, bp, t 값 and the three labels only.",
+   "suggested_fix": "(1) Replace conclusion 2 with:\\n\"2. **v1 보다 \\\"압도적\\\"이지 않습니다 (계산은 확인됨. 1999-03 이전 밤 수익은 자료가 없어 가정).** 올리신 설정 중 v1 에 가장 가까운 것은 PRESET_A 의 미국 구간이고, v1 과의 차이는 가정에 따라 약 −12%p 에서 +8%p 까지 움직입니다. 사전 등록한 후보 12개 중 통과는 0개입니다.\\n   - 등록 조건(수수료 편도 0.83bp, 1999-03 이전 밤 프리미엄 없음, 선물 계좌 이자 0): v9·v10 미국만은 v1 보다 연 −2~−15%p 낮습니다. PRESET_A 미국만은 v1 과 같은 수준입니다(대표 +0.5 / 실제 +1.2%p. 1999-03 이전 밤을 무작위로 30번 만들어 보면 14번만 두 기준 모두 v1 초과). 수수료를 2배로 올리는 등록 스트레스에서는 −3.0 / −3.5%p 라 탈락입니다.\\n   - 유리하게 보면: 수수료가 0.30bp 면 +2.8 / +4.7%p, 0.60bp 면 +1.4 / +2.4%p 이고, 등록 규칙을 수수료 0.30bp·스트레스 0.60bp 에 그대로 적용하면 PRESET_A 미국만은 통과합니다(30번 중 21번). 1993년부터 프리미엄과 선물 계좌 이자까지 모두 인정하면 약 +8 / +8.5%p(대표값 약 24%)입니다. 즉 \\\"통과 0\\\" 은 등록한 수수료에 달려 있습니다. 0.83bp 와 그 2배는 올리신 보고서가 쓴 기준값과 스트레스 값이고, 실제 비용은 계좌에서 재 봐야 압니다.\\n   - 그래도 판정을 바꾸지 않는 이유: ① 이 우위는 자료가 없어 만들어 넣은 1999-03 이전과 1999~2000 에서 나옵니다. 실제 밤 자료가 있는 2001~2014 에서는 v1 보다 −3.6%p(0.30bp 로도 −0.9%p), 2015~2026-08 에서는 −13.4%p(0.30bp 로도 −10.0%p)입니다. ② 브레이크가 손실 당일 종가 직후에 매번 체결돼야 합니다(선물 계좌에서 가능은 합니다). 하루 늦으면 −3.9 / −7.7%p, 이틀 늦으면 −5.7 / −12.0%p 입니다. ③ 가장 유리한 경우에도 대표값은 약 24% 로 실전 기준 30% 에 못 미칩니다.\\n   - v9 미국만은 실제 밤 자료 구간에서 편도 0.83bp 로 2014년까지 v1 을 연 +1~+10%p 앞섰고 MDD 가 16~20%p 얕았습니다. 그러나 원본이 설정을 맞춘 구간(표본 내)이고, 2015~2026-08 은 −1.3%p(0.30bp 면 +6.2%p, 수수료 2배면 −12.2%p)로 비용에 따라 부호가 바뀝니다.\"\\n(2) Add to '읽기 전에':\\n\"- **+0.5 / +1.2%p** 처럼 빗금으로 나눈 두 수는 v1 과의 차이를 대표 / 실제 순서로 적은 것입니다(플러스면 v1 보다 높음).\\n- **브레이크** = 자산이 고점에서 많이 줄거나 하루 손실이 크면 배율을 자동으로 낮추는 장치. **MDD** = 고점 대비 가장 크게 줄었던 폭.\\n- **난수 30개** = 1999-03 이전에는 밤과 낮을 가른 자료가 없어 밤 수익을 무작위로 만들어 넣었고, 그 무작위 값을 30번 바꿔 평균했다는 뜻입니다. \\\"30개 중 14개\\\" 는 30번 중 14번만 그 조건을 만족했다는 뜻입니다.\\n- **표본 내** = 설정을 맞출 때 이미 본 구간이라 좋게 나오기 쉬운 수치.\"\\n(3) \"사전에 정한 통과 규칙을 넘지 못했습니다. 1999-03 이전에 프리미엄이 없었다고 보면(C) v1 보다 −1.0 / −1.9%p 낮습니다. 1993년부터 있었다고 보면(M) +1.2 / +0.5%p 이지만 수수료를 2배로 올리면 −2.2 / −3.1%p 입니다. 등록 규칙은 C 에서 떨어져도 M 에서 수수료 2배까지 견디면 '조건부' 로 적기로 했는데, 그 조건부에도 들지 못합니다.\"\\n(4) See D2. (5) See C3.\\n(6) \"종료일을 맞춰도 원본 수치(약 64%)에 가장 가까운 것은 미래 정보를 쓰는 방식(57.6%, 차이 약 6%p)이고, 실제 주문 순서(34.1%)와 가장 호의적인 해석(42.1%)은 원본보다 22~30%p 낮습니다.\"\\n(7) See C2.\\n(8) \"규칙이 정한 배율을 그대로 들었다면 27.6년 동안 밤사이 하락으로 아침 개장 때 계좌가 유지증거금 아래로 내려간 날이 19번, 장 마감 정산에서 추가증거금을 요구받은 날이 61번(연 2.2번)이었습니다(추론: 지금의 증거금률을 과거에 적용).\"\\nThe figures 'about +8 / +8.5', 'about 24%' and '−3.9 / −7.7' in item 1 come from my 6- and 12-seed runs and should be re-run with 30 seeds before printing."
+  },
+  {
+   "severity": "info",
+   "where": "[I1] RESULT_ONF1_FULL_KO.md 결론 1 and 1절 (lines 16, 35-41, 59-64) against the upload",
+   "claim": "원본 plan.py 52행은 행마다 위험 배수 b 하나를 계산하고 59~66행에서 세 구간에 똑같이 곱합니다. 업로드된 실거래 코드(on_kr_close)는 진입 시점 정보만 씁니다. 원본이 그렇게 계산했다는 점은 추론.",
+   "problem": "None. This part is fine. The quoted line 52 is verbatim, lines 59-66 apply the same b to kon, uon and uid of the row, and the cooldown that feeds the next row's b is set on line 69 after the row's US intraday P&L. on_kr_close uses the risk state saved at the last completed US close and the equity at the Korean close. Whether kon[r] is the night ending on row r cannot be read from plan.py because g2.py is missing, so the '추론' label is used correctly, and the upload's own regression line supports the inference.",
+   "evidence": "Upload plan.py lines 52, 59-66, 68-69; v11_live.py lines 167-182; v9 report line 65 ('한국 밤 수익 ≈ 0.47 × 전날 미국 장중 수익 + 연 약 14% 상수').",
+   "suggested_fix": "No change needed beyond the small label edit in C2."
+  },
+  {
+   "severity": "info",
+   "where": "[I2] PRECOMMIT_ONF1.md line 9 and RESULT_ONF1_FULL_KO.md 4절 line 293 (registered fee 0.83bp, stress 1.66bp)",
+   "claim": "밤 포지션 수수료·미끄러짐: 편도 0.83bp (업로드 연구의 가정). 스트레스 2배(1.66bp).",
+   "problem": "Defensible as registered, and not the central estimate. Both values are the upload's own: 0.83bp is its measured 0.55bp times 1.5, about 1.7bp is the stress its v10 report uses, and its go-live threshold is 1.2bp. v1 is likewise measured with a conservative 0.3% per trade. The per-contract commission is fixed in dollars, so the cost in bp was several times higher at past index levels, and slippage at the open and close has never been measured. The remedy is the disclosure in A1, not a different verdict.",
+   "evidence": "Upload v9 report line 355, v10 report lines 236 and 266, final plan line 146. beng.py line 127 (v1 cost 0.003). wf1 verify_execution finding 5: MNQ 0.16-0.48bp 'at today's index level', fill slippage not measured by anyone.",
+   "suggested_fix": "No change to the registration. Add the origin of the two values as in A1."
+  },
+  {
+   "severity": "info",
+   "where": "[I3] PROGRAM_SPEC_ONF1_KO.md lines 19 and 22; RESULT_ONF1_FULL_KO.md 결론 (line 29)",
+   "claim": "1999-03~2014-12 에 밤 사이 −2.75% 이하가 31회(연 2.0회), 최악 −8.36%(2001-09-17). / KILL/HALT 가 미국 종가 주문(E3)의 위험 증가를 막지 못함. HALT 는 해제 코드가 없어 영구. / 올리신 보고서들 스스로도 \"현실적 기대치는 연 15~40%\"",
+   "problem": "None. Verified as stated.",
+   "evidence": "data_cut/us_le2014.csv: 31 nights at or below -2.75% over 15.79 years, minimum -8.36% on 2001-09-17. v11_live.py lines 198-203 (in KILL state the night multiple is only capped at the day multiple and the order is still sent) and line 245 (halted set, never cleared). v11 report line 26 and final plan line 34.",
+   "suggested_fix": "No change needed."
+  },
+  {
+   "severity": "info",
+   "where": "[I4] Three documents compared with each other",
+   "claim": "(consistency) full report, pre-2015 report and program spec",
+   "problem": "No contradiction in numbers between the three. The differences are the ones listed above: the mode mix in the pre-2015 conclusion 3 (A5), the stand-alone Sharpe result present only in the pre-2015 report (B2), the 30% bar present only in the spec (D2), and the wording of 'real history' in the spec (C7). The spec contains no post-2014 performance figure.",
+   "evidence": "Side-by-side reading of the three files; contract and margin figures (8,355만, 5,283만, 8,228만, 7,100만, 89%) identical in the full report section 5 and the spec.",
+   "suggested_fix": "No change beyond A5, B2, C7 and D2."
+  }
+ ],
+ "open_points": [
+  "The original engines g2.py, uni.py and ext.py are not in the upload, so 'the original sized the Korean night after the fact' stays an inference. plan.py alone cannot settle which row holds the Korean night.",
+  "My three engine results use 12 and 6 seeds, not 30: one-day brake delay -3.93 / -7.71, stacked favourable case +8.13 / +8.55 (CAGR 24.38% / 39.63%), stacked with one-day delay +2.12 / -0.89. Signs are stable across the seeds I ran; the author should re-run with the 30 seeds of run_fix.py before printing them (ms1f.measure_one(P3, bn, 'C', 2, 0.004, 0, 0.25, 1) and measure_one(replace(P3, c_us=0.00003), bn, 'M', 2, 0.004, 1, 0.25, 0 or 1)).",
+  "Whether the same-close brake fills near the 16:00 ET reference price on large loss days is unmeasured. The backtest books the reduction at the close price with only the per-side fee, and the event cannot run on CME half days.",
+  "PRESET_A US-only with whole MNQ contracts at 80M KRW was not measured on the MS1 bases (the contract-size check covers T5 and T1 only), so its near-parity with v1 is for fractional contracts.",
+  "The real all-in MNQ cost per side, including slippage against the QQQ open and close prints, is unmeasured. The 0.14~0.53bp range is commission plus ticks at today's index level and was several times higher in bp at past index levels.",
+  "T5 was not measured with interest on the 15% futures account or with the dividend credit. My arithmetic, not a run: roughly +0.1~0.3 and +0.4~0.6 %p a year in its favour, which does not change its failure at the registered double fee.",
+  "v1 was never computed under the upload's conventions (no signal delay, dividends credited), so the section 1 figures cannot be compared with v1 at all; only the section 3 comparison is like for like.",
+  "Not re-verified by me: the phase-1 lane statistics quoted in section 1 (correlations, shuffle and placebo tests, the -6% shock test), the Kelly estimates, the margin event counts for 1999-2026, the last-month losses, and the eng.py real-order tables."
+ ]
+}

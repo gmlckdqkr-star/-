@@ -1,0 +1,198 @@
+{
+ "verdict": "The numbers in the three files are sound: I found no critical error and no headline number or verdict that is wrong. All three generated tables re-create verbatim from the result files, both RESULT reports are byte-identical to template plus regenerated tables, and 46 engine re-runs reproduced the stored values with zero difference (largest gap 4e-6, CSV rounding). The pre-registration hash and all 14 upload hash prefixes match, and every \"reported\" figure (58.4% / -55.1%, 48.0%, 62.0%, 77.6%, 48.9%, v10 2022 -40%) is in the uploaded reports. Two major wording problems must be fixed before the report is final. First, conclusion 2 of the full report calls PRESET_A's +0.5~+1.2%p the \"most favourable condition\", while the report's own sections show up to +4.1/+4.6 (M, 0.30bp) and +4.7/+5.9 (H). Second, the program spec states as fact that 62%, 77.6% and 48.9% come from the look-ahead calculation, although the verification lanes marked exactly those figures as untested. The rest are minor: two rounding slips, a wrong window count for T5, a wrong file path, one misattributed figure, summary ranges that leave out lane variants, status labels stronger than the lane's, and a few caveats the lanes raised that the reports drop.",
+ "checked": "Scope: every numeric claim in holdout/RESULT_ONF1_FULL_KO.md, RESULT_ONF1_KO.md and PROGRAM_SPEC_ONF1_KO.md, top to bottom. Nothing in /mnt/project-files/ was modified; no web, no paid API, no pickle opened. Scratch: /home/user/onv/wf3/numbers/.\n\nCounts (approximate):\n- Table cells: about 940 (full report 538, <=2014 report 400). All matched.\n- Prose numbers: about 320 (full about 185, <=2014 about 83, program spec about 55). About 300 matched; 13 mismatched or mislabelled (all listed as issues); 6 numbers with no result file (listed in open points).\n\nWhat I ran:\n1. `code/make_tables.py ms1|dev|holdout` from the research folder. All three outputs are contained verbatim in the reports (holdout table only in the full report). Template plus regenerated tables equals both RESULT files byte for byte. Output: /home/user/onv/wf3/numbers/tab_ms1.txt, tab_dev.txt, tab_holdout.txt.\n2. Result-file consistency without the engine: 180 cells of fix_{P,T,F}_le2014.json (mean of 30 per-seed values, seeds_pass_both, rule1and2) with 0 inconsistencies; 90 lines of fix_*.log against the JSON with 0 mismatches; pre_* JSON gives 0/12 passing under C and M.\n3. Engine spot re-runs, 30 runs (/home/user/onv/wf3/numbers/spot1.py, spot1.out): v1 reference 16.1593% / 31.0815%; ntilt with tau=0 equals std.engine (difference 0.0); T5 C and M for seeds 11, 1, 2; P3 C for seeds 11, 1; P3 bd2; P3 fee x2; F1 C; pre-registered T5 and P3. All equal the stored values, max difference 0.0. Split model alpha 11.82%/yr, beta 0.2201.\n4. Engine spot re-runs, 16 runs (/home/user/onv/wf3/numbers/spot2.py, spot2.out): hist_dev 2001~2014 and hist_holdout 2015~2026-08 for v1, T5, P1 (difference 0.0); 7 rows of real_table_presets.csv (max difference 4e-6); the last-month figures for v9, v10, PRESET_A.\n5. Data-level recomputation with pandas:\n   - Nights at or below -2.75%: 54 (1.96 per year over 27.6 years); worst -9.457% on 2020-03-16.\n   - QQQ night excess 12.46%/yr, plain t 4.58, Newey-West t about 5.0.\n   - SPY night 1993-01-29..1999-03-09: +16.0%/yr, t 5.06.\n   - KR night share of 2025-06 onward: 49.5%.\n   - Correlation of KR night with the US day inside it 0.524, with US close-to-close inside it 0.592, with the last US return known at entry -0.056.\n   - QQQ tracking error 1.03% / 0.49% / 0.12% by era.\n   - QQQ 10-07 to 11-05: -14.607%.\n   - MNQ notional 83,551,392 KRW (1.044x of 80M).\n   - Night-only 1x Sharpe 0.570 / 0.217 / 0.392.\n   - Standard calendar ends 2026-08-31.\n6. Uploaded package, text and hashes only: sha256 of all 14 files matches the 16-hex prefixes in the report; PRECOMMIT sha256 bea675cd...427b45 matches. Confirmed plan.py line 52, on_kr_close in v11_live.py, PRESET_A bond_lev=0.0 (portfolio_v13.py line 51), margin_buffer 1.6, max_age_days 4, 3-minute window, paper margins 8% / 12%.\n7. All 10 lane JSONs (wf1 x7, wf2 x3) read in full and each quoted figure matched to a key_number or finding. code/eng.py equals the audited eng_patched.py except the data-path lines. The 0.55 gate is in tools/idea_check/idea_check.py line 26; closed axis X40 (OV1-B) is in closed_axes.json.",
+ "issues": [
+  {
+   "severity": "major",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md, 결론 2 (line 11)",
+   "claim": "\"v9·v10 은 v1 보다 낮고, PRESET_A 는 가장 유리한 조건에서 v1 과 같은 수준(+0.5~+1.2%p)\"",
+   "problem": "+0.5/+1.2 is the pre-registered judging case (C, 0.83bp, same-day brake, 30-seed mean), not the most favourable condition. The same report shows larger margins for PRESET_A US-only. The v9/v10 statement is true on the two MS1 judging bases but section 3 of the same report shows v9 US-only above v1 in five of six real-night windows. The 0/12 verdict is unaffected, but the sentence understates the favourable cases.",
+   "evidence": "fix_P_le2014.json P3 A-US: C +0.49/+1.16 (14/30 seeds both), M +2.54/+3.32 (27/30), H +4.71/+5.88. steelman.json: C+0.30bp +2.20/+2.69, M+0.30bp +4.13/+4.63. hist_dev.json / hist_holdout.json, P1 v9-US d2 minus v1: +10.2, +2.8, +0.9 (<=2014 windows), +6.2 (1999~2026-08), +1.4 (2001~2026-08), -1.3 (2015~2026-08).",
+   "suggested_fix": "Reword to: \"사전 등록 판정 기준(C, 0.83bp, 난수 30개)에서는 v9·v10 은 v1 아래, PRESET_A 는 +0.5/+1.2%p(브레이크 당일 반응일 때만). 유리한 가정(M·H 또는 수수료 0.30bp)에서는 +2~+6%p, 수수료 2배나 브레이크 2일 지연에서는 v1 아래.\" Add that on real-night windows v9 US-only is above v1 before 2015 and below it in 2015~2026-08."
+  },
+  {
+   "severity": "major",
+   "where": "PROGRAM_SPEC_ONF1_KO.md, 판정 item 2 (line 5)",
+   "claim": "\"업로드 연구의 대표 수치(62%, 77.6%, 48.9%)는 한국 야간 포지션을 '진입 뒤에 열리는 미국 장 결과' 로 줄이는 계산에서 나온 것이라 실제 주문으로는 만들 수 없음\"",
+   "problem": "Stated as fact for three figures that no lane could test. What was tested are the 2010-03+ windows (58.4% and others). The pre-2010 KR-inclusive figures rely on a synthetic KR series that was not uploaded, and the look-ahead mode does not reproduce 77.6% either. The full report tags this as inference; the spec does not.",
+   "evidence": "verify_replicate.json open_issues: \"All KR-inclusive claims before 2010-03 (1999-2026 v10 48.9% and v11-A 77.6%, the 1986-2026 62% ...) are untested\". verify_codeaudit.json: PRESET_A + bond 2x 1999-03~ kr_sync 51.06% vs claimed 77.6%; engine does not reproduce the full.pkl multiples in either mode. Both challenge lanes list the same open issue.",
+   "suggested_fix": "Reword to: \"2010-03 이후 창의 보고 수치(v10 58.4% 등)는 미래참조 방식에서만 재현되고 실제 주문 순서로는 32~37% (확인됨). 62%, 77.6%, 48.9% 는 합성 한국 자료가 없어 직접 검증하지 못했고 같은 방식으로 계산됐다고 추론.\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md 결론 3 (line 12); RESULT_ONF1_KO.md 결론 3 (line 12)",
+   "claim": "\"실제 밤 자료가 있는 4개 구간 모두에서 v1 을 연 +1.5~+3.8%p 앞섰고 2015~2026 에서도 +1.8%p\" (full); \"2014년 이전 실제 밤 구간 3개에서 +1.5~+3.8%p\" (<=2014 report)",
+   "problem": "The window count disagrees between the two reports (4 vs 3). If the 4 includes 2015~, the +1.8 is counted twice; if it means the steelman's four windows, the lower bound is wrong (+0.93 for 2008~2014). The tables hold six windows and the lowest is +1.4. The upper bound is also mis-rounded. \"2015~2026\" ends 2026-08-31, before the Oct-Nov fall.",
+   "evidence": "T5 minus v1 from hist_dev.json: +3.851, +1.467, +1.614. From hist_holdout.json: +1.835 (2015-01~2026-08), +3.058 (1999-03~2026-08), +1.433 (2001-01~2026-08). 3.851 rounds to +3.9; \"+3.8\" comes from subtracting rounded 25.9 - 22.1.",
+   "suggested_fix": "Write: \"2014년 이전 3개 구간 +1.5~+3.9%p, 2015-01~2026-08 +1.8%p (전체 기간 창 포함 6개 모두 +1.4~+3.9%p)\". Use \"3개\" consistently."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 5, 최근 한 달 (line 154)",
+   "claim": "\"11-05 기준 고점 대비 −33%, −38%, −45%\"",
+   "problem": "The v10 figure is a rounding of an already rounded log value (-37.5%).",
+   "evidence": "Re-run (spot2.out): v10 US-only [S] drawdown from peak at 11-05 = -37.470%; v9 -33.167%; PRESET_A -45.219%.",
+   "suggested_fix": "Change -38% to -37% (or print one decimal: -33.2 / -37.5 / -45.2)."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 3 (line 133)",
+   "claim": "\"2015년 이후 v1 을 넘은 것은 T5 하나(+1.8%p)입니다. 업로드 프리셋 셋은 모두 v1 아래입니다.\"",
+   "problem": "True only for candidates under the d2 project convention. The same table shows hold 3x above v1, and the result file holds two v9 variants above v1 that the table does not print.",
+   "evidence": "hist_holdout.json hold_2015_2026: v1 28.08%; hold 3x 30.27% (+2.19); T5 +1.84; P1 v9-US d0 +1.82; P1 v9-US d2 pkg-assump +1.16.",
+   "suggested_fix": "Write: \"후보 가운데(신호 지연 2일, 프로젝트 기준) v1 을 넘은 것은 T5 하나. 참고: 3배 보유 30.3%, v9 미국만은 업로드 가정이면 +1.2%p, 신호 지연이 없으면 +1.8%p.\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 1 (line 27)",
+   "claim": "\"출처 `results/real_table.log`\"",
+   "problem": "Wrong path. The file is in holdout/, and the reproduction section of the same report says so.",
+   "evidence": "results/ has no real_table.log; holdout/real_table.log and holdout/real_table_presets.csv exist.",
+   "suggested_fix": "Change to `holdout/real_table.log`."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 1 (line 29)",
+   "claim": "\"최종 계획서의 62% 와 77.6% 는 채권 2배 오버레이를 포함한 수치\"",
+   "problem": "77.6% is not in the final plan document. It is in the v11 report. The substance (both include the 2x bond; PRESET_A has bond 0) is correct.",
+   "evidence": "Upload 52856404 (final plan): \"55~62%\" and \"62.0% / −64%\", no 77.6. Upload e8ede704 (v11 report) line 11: v11-A, 10-year bond futures 2x, \"77.6% / −63.5%\". portfolio_v13.py line 51: PRESET_A bond_lev=0.0.",
+   "suggested_fix": "Write: \"최종 계획서의 62% 와 v11 보고서의 77.6% 는 ...\"."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 1 (line 28)",
+   "claim": "\"독립 재구현들의 ... 미래참조 방식 값: v10 56~65%, PRESET_A 72~88%\"",
+   "problem": "The lower bounds 56 and 72 are not from independent reimplementations. They are the project's own eng.py before the audit patch, as quoted in the code-audit lane, and are superseded by 57.7 / 77.1 in the table above.",
+   "evidence": "verify_codeaudit.json: kr_sync PRESET_A 2010~ 72.5, v10 56.0 (audited snapshot of eng.py). Independent lanes: v10 64.3 / 61.0 / 65.0; PRESET_A 84.6 / 78.4 / 87.6.",
+   "suggested_fix": "Write \"독립 재구현 v10 61~65%, PRESET_A 78~88%\"; the own-engine values are already in the table. The tradable ranges 34.2~37.2 and 11.9~19.2 are correct."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 1 (line 31)",
+   "claim": "\"수치 일치(평균 오차 0.6~1.4%p)\" and \"v10 2022년: 보고 −40%, 미래참조 방식 −25~−29%\"",
+   "problem": "Both ranges leave out lane variants. The fit error of the second challenge lane's base look-ahead run is larger, and some look-ahead variants come much closer to the reported 2022 figure.",
+   "evidence": "challenge_numbers.json: mean gap 0.8pp with the crisis flag inside the night, 3.6pp with the entry-time flag; 2022 = -34% / -39% by variant. verify_replicate.json: -29.0%, -34.5% with crisis flag at entry. challenge_timing-logic.json: -24.6%, -30.3%.",
+   "suggested_fix": "Write \"평균 오차 0.6~1.4%p (변형에 따라 최대 3.6%p)\" and \"2022년 −25~−29% (위기 신호를 진입 시점으로 읽는 변형은 −30~−39%)\"."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 1 (line 30)",
+   "claim": "\"프리미엄이 0 인 가짜 한국 구간을 넣어도 원본 방식은 +4.7%p 를 만들어 냅니다\"; \"상관은 0.52~0.59\"",
+   "problem": "The +4.7%p holds for PRESET_A only; for v10 the placebo leg is below US-only. The correlation range mixes two definitions.",
+   "evidence": "challenge_numbers.json placebo: PRESET_A look-ahead +4.7 vs US-only; v10 look-ahead -10.6 vs US-only (gap between the two timings persists: 19.5pp v10, 42pp PRESET_A). My recomputation: 0.524 with the US day session inside the night, 0.592 with the US close-to-close inside it, -0.056 with the last one known at entry.",
+   "suggested_fix": "Write \"PRESET_A 는 +4.7%p (v10 은 −10.6%p 이지만 두 방식의 차이는 19.5%p 로 남음)\" and \"미국 낮 장과 0.52, 종가-종가 수익과 0.59\"."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 1 (line 32)",
+   "claim": "\"v9·v10 은 2015년 이후 구간에서 소폭 플러스(v10 2015~ 32.2% → 33.1%)\"",
+   "problem": "\"소폭\" fits the quoted v10 2015~ example only. The other cells in the same log are much larger, and drawdown is deeper in every case.",
+   "evidence": "holdout/real_table.log [S]: v9 2015~ 33.2 → 37.2 (MDD -50 → -58); v10 2020~ 34.6 → 45.5; v9 2020~ 42.1 → 55.9; v10 2015~ MDD -55 → -59.",
+   "suggested_fix": "Write: \"v10 2015~ 는 +0.9%p, v9 2015~ 는 +4.0%p, 2020~ 는 +11~+14%p (MDD 는 4~8%p 깊어짐); 그 대부분이 마지막 16개월에서 나옴\"."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md 결론 1 and the section 1 table (lines 10, 21-25)",
+   "claim": "Table header \"2010-03~2026-10\" with the column \"보고\" 58.4% / 48.0% beside the reproduction columns",
+   "problem": "The reported figures run to 2026-11-06 (after the fall); the reproduction columns end 2026-10-08. The 57.7% vs 58.4% match therefore compares different end dates. The direction is conservative for the main conclusion, since tradable figures to November would be lower.",
+   "evidence": "v10 report table header \"전체 99.03~26.11\"; verify_replicate.json: \"Reported (to 11-06)\". real_table.log: v10 US-only [S] 2010-03~ is 37.5% to 10-07 and 34.3% to 11-09.",
+   "suggested_fix": "Add a footnote: \"보고 수치는 2026-11-06 까지, 재계산은 2026-10-08 까지. 11월 초까지 연장하면 미국만 기준 약 2.5~3%p 더 낮아짐.\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md 결론 1 (line 10)",
+   "claim": "\"서로 모르는 독립 재구현 4건이 같은 결론이고, 반박 시도 2건은 모두 실패\"",
+   "problem": "No file states the count 4. The lanes with their own engine are replicate and the two challenge lanes, plus either the simplified simulation in the stats lane (status INFERRED) or the reference simulator in the code audit. The two challenge lanes are then counted again as the two failed refutations. \"서로 모르는\" overstates: the challenge lanes quote the replication lane's results.",
+   "evidence": "challenge_timing-logic.json: \"Replication lane had 36.3 % / -59.1 %\". challenge_numbers.json: \"Replication lane reported 34.7% and 13.6%\" and a finding titled \"Nuance against the replication verdict\".",
+   "suggested_fix": "Write: \"코드를 공유하지 않은 독립 엔진 3개(재구현 1, 반박 시도 2)와 단순화 시뮬레이션 1개가 같은 결론; 반박 시도 2건은 반박 실패\"."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md section 5, 강제청산 (line 152)",
+   "claim": "\"지수 −2.75% 에서 추가증거금, −8.4% 에서 강제청산입니다 ... (확인됨)\"",
+   "problem": "The label covers the whole bullet, but only the frequency count is confirmed. The two thresholds are inferred in the lane, because the MNQ margin came from a US broker page. The program spec labels the same numbers correctly as inference.",
+   "evidence": "verify_execution.json: \"US 40M account, 5x generic ... margin call at NDX -2.754%; 80%-risk liquidation at -8.406%\" status INFERRED; \"NDX close-to-open frequency ... <= -2.75%: 54 (1.96/yr) ... worst -9.46%\" status CONFIRMED.",
+   "suggested_fix": "Tag the thresholds \"(추론: 증거금 추정치 기준)\" and keep \"(확인됨)\" for the 54 nights and the -9.46%."
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_KO.md section 2 (line 85)",
+   "claim": "\"Sharpe 0.57 (1999~2014), 0.22 (2001~2014), 0.39 (2005~2014) → 새 수익원 관문(같은 기준 0.55) 미달\"",
+   "problem": "0.57 is above the 0.55 gate, so \"미달\" is wrong for the first window. The three Sharpe values exist only in CHECKPOINT.md; no result file or script in the folder produces them.",
+   "evidence": "My recomputation from data_cut/us_le2014.csv (price-based QQQ night, minus T-bill, minus 0.4% spread, minus 2 x 0.83bp): 0.570 / 0.217 / 0.392. Gate: tools/idea_check/idea_check.py line 26, \"단독 Sharpe ≈1.1 (같은 기준 0.55)\".",
+   "suggested_fix": "Write: \"1999~2014 는 0.57 로 관문(0.55)을 겨우 넘지만 1999~2000 을 빼면 0.22~0.39 로 미달\". Add the small script and its output to results/."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md 검증 (line 159)",
+   "claim": "\"QQQ 시가·종가는 실제 체결가, 다른 공급자와 44/44 일치\"",
+   "problem": "The lane that produced 44/44 says it is probably the same upstream feed and not independent. The one independent vendor disagreed on the open on more than half of the sampled days in 2005-2017.",
+   "evidence": "verify_data.json: \"Identical down to float artefacts, so probably the same upstream vendor; not independent\"; Alpha Vantage 2005-2017: 57% of opens differ by 1-2 cents, dataset +0.41bp higher (t 1.8).",
+   "suggested_fix": "Write: \"두 번째 공급자와 44/44 일치(같은 원천일 가능성). 독립 공급자와는 2005~2017 시가의 57% 가 1~2센트 달랐고 평균 +0.41bp.\""
+  },
+  {
+   "severity": "minor",
+   "where": "All three files: full report 결론 4 and section 5; RESULT_ONF1_KO.md section 4; PROGRAM_SPEC line 15",
+   "claim": "\"설계 상한(미국 5배 + 한국 3배)에 필요한 위탁증거금 8,228만 원 > 자본 8,000만 원\"",
+   "problem": "The arithmetic is right for exact 5.0x + 3.0x notional (fractional contracts). The spec's own previous line says the caps mean 4 MNQ + 4 mini; for those whole contracts the initial margin is below total capital. The plan is still infeasible, but through the per-account limit, not the total.",
+   "evidence": "verify_execution.json: 5.0x + 3.0x gives 31.88M + 50.40M = 82.28M. 4 MNQ initial 26.64M; 4 mini 44.37M; sum 71.0M. The KR account holds 30M, at most 2 mini (1.32x).",
+   "suggested_fix": "Add: \"계약 단위(MNQ 4 + 미니 4)로는 7,101만 원으로 총자본 안이지만 한국 계좌 3천만에는 미니 2계약(1.32배)만 들어감.\""
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_KO.md 결론 3 (line 12); holdout/RESULT_ONF1_FULL_KO.md 결론 3",
+   "claim": "\"조건부 후보 1개: T5\"",
+   "problem": "The count of one is a judgement, not something the table gives. PRESET_A US-only meets the same numerical condition under M, and under C on the 30-seed mean. It is excluded because it depends on the same-day brake, which the conclusion does not say. Read strictly, rule 4 gives no conditional candidate, since nothing passes rule 1+2 under M.",
+   "evidence": "fix JSON: T5 M +1.18/+0.53 (26/30 seeds both), fee x2 -2.2/-3.1. P3 M +2.54/+3.32 (27/30), C +0.49/+1.16 (14/30); P3 bd2 C -5.7/-12.0. rule1and2_M = 0 for all 12.",
+   "suggested_fix": "Add one sentence: \"PRESET_A 미국만도 M 에서 두 기준 모두 v1 초과(+2.5/+3.3)지만 브레이크 2일 지연 시 −5.7/−12.0 이라 제외. 수수료 2배까지 넣으면 M 에서도 통과 0.\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md 결론 3 and section 4; 남은 문제 3",
+   "claim": "\"기대할 수 있는 개선은 연 +1~+2.5%p\"; \"T5 의 손익분기는 보수 기준 0.36bp\"; \"1999~2026 연 12.5%, t 5.1\"; \"SPY 실제 시가로 연 +16%(t 5.1)\"",
+   "problem": "All four numbers match their sources, but the conclusion omits conditions the lanes attach. The +1~+2.5 needs both the M assumption and a 0.30-0.60bp fee (post hoc, single seed). The 0.36bp is an interpolation the lane marks as inferred. The 12.5% is the full-sample figure. The SPY evidence is the reason M is preferred, and another lane doubts its size.",
+   "evidence": "steelman.json: T5 M +3.57/+2.36 at 0.30bp, +2.27/+1.01 at 0.60bp; break-even status INFERRED. fix_T (30 seeds, 0.83bp): T5 M +1.2/+0.5. verify_data.json: 2001-2026 9.5%/yr (t 3.5); 1999-2000 is 29% of the premium; 2021-2026 t 1.5. verify_stats.json: SPY 1993-98 mean 13.4%; half a tick on the open cuts it to 7.1%.",
+   "suggested_fix": "Add to conclusion 3: \"(M 가정 + 실제 수수료 0.3~0.6bp 일 때; 사전 등록 수수료 0.83bp 면 +0.5~+1.2%p)\". Tag 0.36bp as 추론. Add \"1999~2000 제외 시 연 9.5%, 2021~2026 단독은 유의하지 않음\" and the SPY print caveat."
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_KO.md and holdout/RESULT_ONF1_FULL_KO.md against PRECOMMIT_ONF1.md line 31",
+   "claim": "PRECOMMIT: \"M·H·Z, 8천만 계약 단위(1 MNQ = 7,600만), S&P 시대(밤 프리미엄 증거 없음, 참고) 를 함께 적는다\"",
+   "problem": "M, H and Z are reported. The two other pre-registered reporting items are not in either report, although the numbers exist. The reports also use 8,355만 per MNQ, not the pre-registered 7,600만, without saying so.",
+   "evidence": "pre_*_le2014.json contain real_spx_55_85 and real_spx_70_85 (for example P3 C -9.2 / -8.4 vs v1). steelman.json: S&P-era T5 -4.32/-4.67. audit_ntilt.json: whole contracts at 80M, T1 -2.19/-2.84.",
+   "suggested_fix": "Add a short line or table with the S&P-era values and the whole-contract results, or state why they were dropped. Note the notional update from 7,600만 to 8,355만."
+  },
+  {
+   "severity": "minor",
+   "where": "PROGRAM_SPEC_ONF1_KO.md lines 5, 17, 18 (file is outside holdout/)",
+   "claim": "\"1999-03~2026-10 밤 사이 −2.75% 이하 54회(연 2.0회), 최악 −9.46%(2020-03-16)\"; \"유지증거금 미달 19회, 정산 추가증거금 61회 (27.6년)\"; \"62%, 77.6%, 48.9%\"",
+   "problem": "The numbers are correct, but they are post-2014 statistics in a file that sits outside holdout/. RESULT_ONF1_KO.md itself is clean. They are risk and quoted figures, not candidate performance, so this is a hygiene point.",
+   "evidence": "A scan of PROGRAM_SPEC finds 2020-03-16 and 2026-10. A scan of RESULT_ONF1_KO.md finds only \"2015\" (in the phrase 2015년 이후), 2026-11-02 (margin date) and the document date.",
+   "suggested_fix": "Move those two bullets and the reported CAGRs to the holdout copy, or mark them \"2015년 이후 자료 포함, 설계에 쓰지 않음\"."
+  },
+  {
+   "severity": "minor",
+   "where": "PROGRAM_SPEC_ONF1_KO.md line 32",
+   "claim": "\"분기 롤(만기 전주)\"",
+   "problem": "No source for \"the week before expiry\". The lane only says the roll must come before the broker's forced close.",
+   "evidence": "verify_execution.json: KIS force-closes cash-settled overseas contracts at 16:00 KST the day before the last trading day, \"so the MNQ roll must be earlier\".",
+   "suggested_fix": "Write \"분기 롤(증권사 강제청산 시점인 최종거래일 전날 16:00 KST 이전)\" or drop the timing."
+  },
+  {
+   "severity": "info",
+   "where": "All three files, tables and code references",
+   "claim": "Tables, hashes, engine entry points, v1 reference",
+   "problem": "None. Recorded so the clean parts are explicit.",
+   "evidence": "Tables verbatim from make_tables.py; reports byte-identical to template plus tables; 46 engine re-runs with difference 0.0 (CSV rows within 4e-6); PRECOMMIT sha256 and 14 upload hash prefixes match; the signatures of ntilt.run, ms1f.measure_one and ms1f.SPLIT.update match the text; eng.py equals the audited patched engine except for the data path.",
+   "suggested_fix": "None."
+  }
+ ],
+ "open_points": [
+  "\"2015년 이후 자료는 한 번만 계산했고 선택에 쓰지 않았다\" cannot be verified from the files. I can only confirm that hist_holdout.json reproduces exactly and that the candidate list equals the pre-registration.",
+  "Numbers with no result file: the count \"독립 재구현 4건\"; night-only Sharpe 0.57 / 0.22 / 0.39 (CHECKPOINT.md only; I reproduced 0.570 / 0.217 / 0.392); \"사용자 실전 기준 MS1 30% 이상\" (CHECKPOINT.md only, a user statement); \"분기 롤(만기 전주)\".",
+  "Web-sourced facts in the execution and data lanes were checked only against the lane JSONs, not re-fetched: KRX 21% / 14% margin, MNQ margin, broker fees 0.00185% / 0.009811%, CME settlement window, half-day close 13:15 ET.",
+  "Lane figures I did not recompute: the roughly 231 KR nights with mean -0.92% (three lanes agree: 230-232 nights, -0.91 to -0.92%), the KR alpha -0.37bp (t -0.6), Kelly 4.7~6.1 / 0~2.7, the 2.2e-16 and 1e-14 parity figures, the 12.25% vs 12.26% live replay, and the single-seed steelman numbers (matched to steelman.json only, not to the underlying res_stage files).",
+  "The uploaded pickles were not opened, as instructed. No number in the three files depends on them.",
+  "The break-even fees (0.59 / 0.36 / 0.32bp under C, 0.83~0.87bp under M) are single-seed linear interpolations. A 30-seed fee sweep would be needed to quote them as measured."
+ ]
+}

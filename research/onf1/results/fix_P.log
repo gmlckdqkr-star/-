@@ -1,0 +1,42 @@
+P1 v9-US|C|base        dev 10.37% (d -5.51, 0/30 pos, dd80 0.01) | real 15.86% (d -15.22, 0/30 pos) | both>v1 0/30
+P1 v9-US|M|base        dev 16.44% (d +0.27, 16/30 pos, dd80 0.00) | real 22.55% (d -8.53, 0/30 pos) | both>v1 0/30
+P1 v9-US|H|base        dev 22.98% (d +6.61, 30/30 pos, dd80 0.00) | real 30.05% (d -1.04, 6/30 pos) | both>v1 6/30
+P1 v9-US|Z|base        dev -0.23% (d -15.92, 0/30 pos, dd80 0.11) | real 1.39% (d -29.69, 0/30 pos) | both>v1 0/30
+P1 v9-US|C|fee2        dev 3.30% (d -12.17, 0/30 pos, dd80 0.05) | real 7.90% (d -23.18, 0/30 pos) | both>v1 0/30
+P1 v9-US|M|fee2        dev 7.91% (d -7.80, 0/30 pos, dd80 0.02) | real 13.07% (d -18.01, 0/30 pos) | both>v1 0/30
+   P1 v9-US: seeds passing rule 1+2 under C: 0/30, under M: 0/30
+P1 v9-US bd2|C|base    dev 9.53% (d -6.30, 0/30 pos, dd80 0.01) | real 14.74% (d -16.35, 0/30 pos) | both>v1 0/30
+P1 v9-US bd2|M|base    dev 15.42% (d -0.63, 9/30 pos, dd80 0.00) | real 21.21% (d -9.87, 0/30 pos) | both>v1 0/30
+P1 v9-US bd2|H|base    dev 21.83% (d +5.52, 30/30 pos, dd80 0.00) | real 28.87% (d -2.22, 3/30 pos) | both>v1 3/30
+P1 v9-US bd2|Z|base    dev -0.28% (d -15.93, 0/30 pos, dd80 0.11) | real 1.27% (d -29.81, 0/30 pos) | both>v1 0/30
+P1 v9-US bd2|C|fee2    dev 2.69% (d -12.76, 0/30 pos, dd80 0.06) | real 6.28% (d -24.80, 0/30 pos) | both>v1 0/30
+P1 v9-US bd2|M|fee2    dev 7.11% (d -8.60, 0/30 pos, dd80 0.02) | real 11.50% (d -19.58, 0/30 pos) | both>v1 0/30
+   P1 v9-US bd2: seeds passing rule 1+2 under C: 0/30, under M: 0/30
+P2 v10-US|C|base       dev 13.85% (d -2.27, 0/30 pos, dd80 0.01) | real 22.32% (d -8.76, 0/30 pos) | both>v1 0/30
+P2 v10-US|M|base       dev 16.60% (d +0.40, 19/30 pos, dd80 0.01) | real 25.50% (d -5.58, 0/30 pos) | both>v1 0/30
+P2 v10-US|H|base       dev 19.27% (d +2.91, 30/30 pos, dd80 0.01) | real 28.89% (d -2.19, 2/30 pos) | both>v1 2/30
+P2 v10-US|Z|base       dev 7.29% (d -8.72, 0/30 pos, dd80 0.05) | real 14.57% (d -16.51, 0/30 pos) | both>v1 0/30
+P2 v10-US|C|fee2       dev 10.08% (d -5.92, 0/30 pos, dd80 0.03) | real 17.38% (d -13.70, 0/30 pos) | both>v1 0/30
+P2 v10-US|M|fee2       dev 12.61% (d -3.33, 0/30 pos, dd80 0.02) | real 20.43% (d -10.65, 0/30 pos) | both>v1 0/30
+   P2 v10-US: seeds passing rule 1+2 under C: 0/30, under M: 0/30
+P2 v10-US bd2|C|base   dev 12.09% (d -4.17, 0/30 pos, dd80 0.02) | real 19.99% (d -11.09, 0/30 pos) | both>v1 0/30
+P2 v10-US bd2|M|base   dev 14.68% (d -1.43, 1/30 pos, dd80 0.02) | real 23.00% (d -8.08, 0/30 pos) | both>v1 0/30
+P2 v10-US bd2|H|base   dev 17.21% (d +1.00, 27/30 pos, dd80 0.01) | real 26.36% (d -4.72, 0/30 pos) | both>v1 0/30
+P2 v10-US bd2|Z|base   dev 6.44% (d -9.58, 0/30 pos, dd80 0.05) | real 12.70% (d -18.38, 0/30 pos) | both>v1 0/30
+P2 v10-US bd2|C|fee2   dev 8.69% (d -7.45, 0/30 pos, dd80 0.04) | real 15.56% (d -15.52, 0/30 pos) | both>v1 0/30
+P2 v10-US bd2|M|fee2   dev 11.07% (d -5.01, 0/30 pos, dd80 0.03) | real 18.46% (d -12.62, 0/30 pos) | both>v1 0/30
+   P2 v10-US bd2: seeds passing rule 1+2 under C: 0/30, under M: 0/30
+P3 A-US|C|base         dev 16.54% (d +0.49, 19/30 pos, dd80 0.17) | real 32.24% (d +1.16, 21/30 pos) | both>v1 14/30
+P3 A-US|M|base         dev 18.59% (d +2.54, 30/30 pos, dd80 0.15) | real 34.41% (d +3.32, 27/30 pos) | both>v1 27/30
+P3 A-US|H|base         dev 20.75% (d +4.71, 30/30 pos, dd80 0.13) | real 36.96% (d +5.88, 30/30 pos) | both>v1 30/30
+P3 A-US|Z|base         dev 10.91% (d -5.05, 0/30 pos, dd80 0.23) | real 23.53% (d -7.55, 1/30 pos) | both>v1 0/30
+P3 A-US|C|fee2         dev 13.00% (d -2.96, 0/30 pos, dd80 0.21) | real 27.61% (d -3.47, 1/30 pos) | both>v1 0/30
+P3 A-US|M|fee2         dev 14.75% (d -1.20, 4/30 pos, dd80 0.19) | real 29.70% (d -1.38, 9/30 pos) | both>v1 0/30
+   P3 A-US: seeds passing rule 1+2 under C: 0/30, under M: 2/30
+P3 A-US bd2|C|base     dev 10.20% (d -5.70, 0/30 pos, dd80 0.25) | real 19.11% (d -11.97, 0/30 pos) | both>v1 0/30
+P3 A-US bd2|M|base     dev 11.69% (d -4.12, 0/30 pos, dd80 0.23) | real 21.48% (d -9.60, 0/30 pos) | both>v1 0/30
+P3 A-US bd2|H|base     dev 13.30% (d -2.57, 0/30 pos, dd80 0.20) | real 23.44% (d -7.64, 0/30 pos) | both>v1 0/30
+P3 A-US bd2|Z|base     dev 6.91% (d -8.87, 0/30 pos, dd80 0.29) | real 17.54% (d -13.54, 0/30 pos) | both>v1 0/30
+P3 A-US bd2|C|fee2     dev 7.61% (d -8.27, 0/30 pos, dd80 0.30) | real 16.23% (d -14.85, 0/30 pos) | both>v1 0/30
+P3 A-US bd2|M|fee2     dev 8.96% (d -6.80, 0/30 pos, dd80 0.28) | real 18.31% (d -12.77, 0/30 pos) | both>v1 0/30
+   P3 A-US bd2: seeds passing rule 1+2 under C: 0/30, under M: 0/30

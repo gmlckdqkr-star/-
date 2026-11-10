@@ -1,0 +1,9 @@
+v1 at W0 80M {'dev250_path': 0.15869076516892955, 'real_ndx_86_14': 0.3073086694001206}
+T5|C|unit80M                       dev250_path 14.33% (d -1.11, 0/30 pos) | real_ndx_86_14 29.48% (d -1.26, 0/30 pos)
+T5|C|frac80M                       dev250_path 14.41% (d -1.21, 0/30 pos) | real_ndx_86_14 28.64% (d -2.09, 0/30 pos)
+T5|M|unit80M                       dev250_path 15.32% (d -0.16, 5/30 pos) | real_ndx_86_14 31.25% (d +0.52, 25/30 pos)
+T5|M|frac80M                       dev250_path 16.68% (d +1.02, 30/30 pos) | real_ndx_86_14 31.02% (d +0.29, 19/30 pos)
+T1|C|unit80M                       dev250_path 14.23% (d -1.22, 0/30 pos) | real_ndx_86_14 28.00% (d -2.73, 0/30 pos)
+T1|C|frac80M                       dev250_path 13.93% (d -1.59, 0/30 pos) | real_ndx_86_14 27.12% (d -3.61, 0/30 pos)
+T1|M|unit80M                       dev250_path 15.27% (d -0.20, 6/30 pos) | real_ndx_86_14 29.95% (d -0.78, 2/30 pos)
+T1|M|frac80M                       dev250_path 16.46% (d +0.87, 30/30 pos) | real_ndx_86_14 29.68% (d -1.05, 0/30 pos)

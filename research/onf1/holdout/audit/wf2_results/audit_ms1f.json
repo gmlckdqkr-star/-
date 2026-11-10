@@ -1,0 +1,186 @@
+{
+ "verdict": "ms1f.py is arithmetically correct and free of look-ahead: an independent plain-Python engine reproduces it to 1e-14 on the real path and on all 500 dev250_path paths, and all 336 numbers in pre_P_le2014.json recompute exactly. The levels of the P1-P3 numbers are nevertheless not reliable, because every pre-1999 night comes from one random draw (seed 11) of the synthetic residual that does not average out across the 500 paths. On the dev pool that draw has a drift of -8.5%/yr, lower than 199 of 200 other seeds, so the as-run \"C\" is really a negative night premium, and \"H\" is +3.3%/yr instead of +11.8%/yr. Over 30 seeds with a drift-free residual, C on dev250_path is 9.9% for P1 (stored 4.5%), 13.4% for P2 (stored 10.5%) and 16.1% for P3 (stored 13.2%), against v1 at 16.16%. The formal verdict holds: 0 of 30 seeds pass rule 1 plus rule 2 (fee x2) for any P preset, and P1/P2 fail rule 1 in every seed. But \"P3 is below v1 under C\" is not robust: on rule 1 alone P3 ties v1 and passes in 5 of 30 seeds as-is, 10 of 30 drift-free. Against that, P is favoured by a brake/cool-down that reacts the same close while v1's brake waits 2 days; with the same delay P3 falls 5.1%p on dev250_path and from 28.2% to 12.3% on the real path. The same seed-11 split feeds T and F: T1/T2/T6 still fail C in all 10 seeds tested, but their dev250_path numbers are understated by 1.4 to 2.9%p.",
+ "key_numbers": [
+  {
+   "name": "Independent engine vs ms1f, real_ndx_86_14, mode C, delay 2, s 0.004",
+   "value": "PRESET_A-US CAGR 0.281708650981, MDD -0.656255616837 (diff 0.0); V9-US CAGR 0.120366185501, MDD -0.735297521863 (diff 2e-16)",
+   "status": "CONFIRMED",
+   "note": "First attempt differed by 4e-7 to 1.5e-6 because I used the exact financing share 0.813218; ms1f hard-codes 0.8132/0.1868. Neither side is wrong."
+  },
+  {
+   "name": "Independent engine vs ms1f, dev250_path",
+   "value": "paths 3/137/421: max |d CAGR| 2.0e-15, max |d MDD| 1.8e-15; all 500 paths x P1,P2,P3: max |d CAGR| 8.2e-15, max |d MDD| 1.5e-14",
+   "status": "CONFIRMED",
+   "note": "Path macro flags recomputed independently for all 500 paths: 0 mismatching cells."
+  },
+  {
+   "name": "pre_P_le2014.json reproduction",
+   "value": "336 numbers in 48 cells, max abs difference 0.0",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Split model",
+   "value": "alpha 0.000469/day (11.82%/yr), beta 0.2201, z pool n 3959, mean -0.0046, sd 0.466",
+   "status": "CONFIRMED",
+   "note": "The non-zero pool mean gives a built-in residual drift of about -1.5%/yr on pre-1999 days."
+  },
+  {
+   "name": "Drift of the drawn residual on pre-1999 days (effective alpha of mode C)",
+   "value": "dev pool seed 11: -8.49%/yr (200 seeds: mean -1.74, sd 3.02; only 1 of 200 lower); real basis seed 11: -2.93%/yr",
+   "status": "CONFIRMED",
+   "note": "As-run dev pool: C -8.5%/yr, M -7.4%/yr (1986-92) and +2.0%/yr (1993-99), H +3.3%/yr. Documented: 0, 0 then 11.8, 11.8. Pre-1999 days are 45.9% of path days."
+  },
+  {
+   "name": "P1 v9-US, C, dev250_path median CAGR",
+   "value": "stored 4.53% (d -11.13%p); 30 seeds as-is mean 8.04% (sd 3.05); drift-free residual mean 9.90% (sd 1.45), d -5.99%p, 0/30 seeds d>0",
+   "status": "CONFIRMED",
+   "note": "Real path: stored 12.04%; 30-seed mean 13.94% as-is, 15.37% drift-free; v1 31.08%."
+  },
+  {
+   "name": "P2 v10-US, C, dev250_path median CAGR",
+   "value": "stored 10.48% (d -5.67%p); 30 seeds as-is mean 12.45% (sd 1.82); drift-free mean 13.42% (sd 0.92), d -2.71%p, 0/30 seeds d>0",
+   "status": "CONFIRMED",
+   "note": "Real path: stored 18.95%; 30-seed mean 21.04% as-is, 21.95% drift-free."
+  },
+  {
+   "name": "P3 A-US, C, dev250_path median CAGR",
+   "value": "stored 13.16% (d -2.67%p; 2nd lowest of 30 seeds); as-is mean 15.39% (sd 1.59), d -0.77%p, 27% of seeds d>0; drift-free mean 16.13% (sd 1.16), d -0.00%p, 50% of seeds d>0",
+   "status": "CONFIRMED",
+   "note": "Real path: stored 28.17% (d -2.91%p); as-is mean 31.30% (sd 3.04), d +0.21%p; drift-free 32.03% (sd 2.63), d +0.94%p."
+  },
+  {
+   "name": "P3 pass counts over 30 seeds",
+   "value": "rule 1 (C, both bases): 5/30 as-is, 10/30 drift-free; rule 1 + rule 2 (fee x2): 0/30 both ways; fee x2 d on dev250_path: mean -4.1%p, best -1.5%p (as-is); M rule 1: 18/30 as-is, 26/30 drift-free",
+   "status": "CONFIRMED",
+   "note": "P1 and P2: 0/30 on rule 1 under C; under M they fail the real path in every seed."
+  },
+  {
+   "name": "Brake/cool-down delayed 2 days like v1 (paired median change, dev250_path, C)",
+   "value": "P1 -0.64%p, P2 -1.63%p, P3 -5.12%p; real path P3 28.17% -> 12.35%, P2 18.95% -> 16.62%, P1 12.04% -> 10.53%",
+   "status": "CONFIRMED",
+   "note": "Run with the independent engine; ms1f applies the multiplier at the same close."
+  },
+  {
+   "name": "Missing 2.5M KRW yearly deduction in the P engine (paired median gain if added)",
+   "value": "P1 +0.46%p, P2 +0.40%p, P3 +0.32%p on dev250_path; real path +0.60, +0.49, +0.29%p",
+   "status": "CONFIRMED",
+   "note": "Pre-registration lists the deduction; ntilt and v1 apply D = 0.25 of start equity."
+  },
+  {
+   "name": "Synthetic vs real night shape",
+   "value": "real 1999-2014: var share 0.232, corr with cc 0.457, excess kurtosis 9.3, worst night -8.7%; synthetic pre-1999 (real basis, seed 11): 0.244, 0.445, 5.0, -4.7%; 20-seed mean: 0.258, 0.427, 9.1, -6.2%",
+   "status": "CONFIRMED",
+   "note": "In-sample generator check on 1999-2014 (20 seeds): var share 0.264 vs 0.232, worst night -9.4% vs -8.7%. Dev pool seed 11: worst night -6.6% = -4.6 daily sd; real -4.5 sd."
+  },
+  {
+   "name": "Alpha and beta by sub-period (QQQ night on NDX cc)",
+   "value": "1999-03..2002: alpha 25.2%/yr (t 2.4), beta 0.202; 2003-07: 12.6%/yr (t 3.6), 0.188; 2008-14: 4.9%/yr (t 1.2), 0.276",
+   "status": "CONFIRMED",
+   "note": "1999-03..2000-03 alone: alpha 73.8%/yr (t 5.0). SPY 1993-02..1999-03: alpha 12.25%/yr (t 4.2), beta 0.214, var share 0.264."
+  },
+  {
+   "name": "Invariants",
+   "value": "1x/1x no-friction run equals buy-and-hold of the future: max |d CAGR| 3.8e-15 (12 configs); delay 0/1/2/3/5/10 at constant leverage: difference exactly 0.0; fee and s medians strictly decreasing for P1-P3",
+   "status": "CONFIRMED",
+   "note": "Fee 0/0.415/0.83/1.66/3.32bp: P1 12.2/8.0/4.5/-0.5/-5.0%, P3 16.3/15.2/13.2/9.8/3.9%. s 0/0.2/0.4/0.8/1.2%: P3 14.8/13.8/13.2/12.2/10.9%."
+  },
+  {
+   "name": "Zero cash interest in the futures account (pre-registered rule), cost to P",
+   "value": "paired +2.03%p (P1), +2.25%p (P2), +2.41%p (P3) on dev250_path if cash earned rf-2% like v1's cash; real path +2.8 to +3.4%p",
+   "status": "CONFIRMED",
+   "note": "Information only; the rule is pre-registered, not an error."
+  },
+  {
+   "name": "Spill-over to T tilts (same seed-11 split), d vs v1 on dev250_path under C",
+   "value": "T1 stored -3.58%p, drift-free 10-seed mean -1.40%p; T2 -1.61 -> -0.50%p; T6 -2.77 -> -0.56%p; d>0 on both bases: 0/10 seeds for all three",
+   "status": "CONFIRMED",
+   "note": "Under M, both bases positive in 0/10 (T1), 2/10 (T2), 1/10 (T6) seeds. T3-T5 and F1-F3 not run."
+  }
+ ],
+ "findings": [
+  {
+   "title": "One random draw (seed 11) sets the night premium on all synthetic days and is an extreme draw on the dev pool",
+   "severity": "critical",
+   "status": "CONFIRMED",
+   "detail": "split_source draws the residual z*sigma once per source day with seed 11. All 500 bootstrap paths reuse the same source days, so the sampling error of the 13 synthetic years does not average out. The z pool also has mean -0.0046, a built-in -1.5%/yr. On the dev pool the realised pre-1999 drift is -8.49%/yr, so as-run C is not 'alpha = 0' and H is +3.3%/yr, not an upper bound of +11.8%/yr. The real basis uses a different draw (source length differs) with -2.93%/yr, so C is not even the same assumption on the two judging bases. Stored P levels on dev250_path are too low by 2 to 5%p. P1 and P2 still fail rule 1 in 30/30 seeds and nothing passes rule 1 + rule 2, but P3 on rule 1 alone is a tie with v1. Fix: remove the mean of the drawn residual on synthetic days or average at least 30 seeds, then re-run P, T and F.",
+   "evidence": "extra.json (drift_dist_dev, eff_alpha), sens2.json (30 seeds, base vs demeaned), sens.json (10 seeds, pool variants). Correlation of the draw's drift with P1's dev250_path CAGR across seeds: 0.91."
+  },
+  {
+   "title": "Brake and cool-down multiplier are not delayed, while v1's brake goes through the 2-day queue",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "In ms1f the vol target, shock cap and crisis gate use index t-2, but the brake/cool-down multiplier is computed from equity at close t and applied at that same close. In beng.run1 / ntilt.run1N the brake output enters the delay queue. This favours P, P3 most (about 10 cool-downs per year). With the multiplier taken from close t-2, the dev250_path median falls to 3.8% (P1), 9.0% (P2), 8.1% (P3). P3's closeness to v1 depends on this.",
+   "evidence": "full500.json (med_brake_delay2, d_bdelay_paired_med), extra.json (real path). std.engine -> ce.runPE source was not read (outside permitted paths); the v1 semantics were read in beng.run1 and ntilt.run1N."
+  },
+  {
+   "title": "Engine logic is correct and has no look-ahead",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "Checked by reading, by independent re-implementation and by black-box perturbation. Sigma, 200-day MA, crisis latch, shock flag and stored day leverage use data up to close t-2 for the trade at close t. Perturbing sigma/crisis/shock at t7-1 or later, or returns/rf at t7+1 or later, leaves equity at t7 unchanged to 0.0; sigma at t7-2 only moves it through the trade cost at close t7. Scrambling the whole future changes nothing. Source-day to path-day mapping is right (c.r = src_r[ii], rf, level, trailing SMA; flags equal the eng.py definitions: 378-day inversion, 126-day +1.0pp shock). Reduce-only cut at the open, cost on both daily trades, yearly tax on positive P&L without carry-forward plus final liquidation, and cool-down/brake order all match the rule text. No variable shadowing remains (latch is local `s`, spread is `fs`, and s changes results as expected). The parallel loop is deterministic and equals the serial engine on all 500 paths.",
+   "evidence": "cmp1.json, full500.json, invariants.json (causality_w7, future_scramble, determinism), explore2.py output."
+  },
+  {
+   "title": "P engine omits the 2.5M KRW yearly tax deduction that the pre-registration lists",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "_paths taxes 11% of max(pnl, 0) with no deduction; ntilt and v1 use D = 0.25 of start equity. Unfair to P by +0.3 to +0.5%p. Does not change any verdict.",
+   "evidence": "full500.json (med_deduct, d_deduct_paired_med), extra.json."
+  },
+  {
+   "title": "Synthetic nights are realistic in shape; night-specific risk is slightly overstated, not understated",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "Variance share, correlation with cc, kurtosis and tails are close to the real 1999-2014 nights. The residual scale uses the 20-day sigma lagged one day, so there is no look-ahead; only the first 5 source rows are back-filled. Because the real standardised residual shrinks as sigma rises (z sd 0.54 in the lowest sigma quintile, 0.42 in the highest), random re-pairing overstates the residual sd by 9.5% unlevered and 3 to 4% for (Ln-Ld)*residual under the presets' vol targets. Big-day night share is in line with beta (down days over 4%: 0.20). The synthetic residual is independent of same-day |cc|, while in real data corr(|z|, |cc|/sigma) is 0.19. Night + day equals the source log return to 3e-17. M-C and H-C equal alpha exactly on the documented dates (1,543 and 3,838 days; 1999-03-10 itself is synthetic). Z differs from C by replacing the real 1999-2014 nights with synthetic ones, as documented, not only in alpha.",
+   "evidence": "split_audit.out, split_stats.csv, extra.json (lev_resid)."
+  },
+  {
+   "title": "Alpha is unstable across sub-periods, so M and H are scenarios rather than estimates",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "The 11.8%/yr intercept is an average of 25.2%, 12.6% and 4.9%/yr; the last is not distinguishable from zero and the 12 months to 2000-03 contribute about 40% of it. Beta rose to 0.276 in 2008-14 from about 0.19 to 0.20. SPY's real opening prints support a premium of M's size for 1993-98 (12.25%/yr, t 4.2) and a beta/variance share like the model's (0.214 / 0.264). Nothing can be observed for 1986-92: NDX index opens are stale (87% zero nights). So C is conservative for 1993-98 and unverifiable before; H's alpha on 1986-92 has no evidence.",
+   "evidence": "split_audit.out section (d)."
+  },
+  {
+   "title": "Other items that tilt the comparison",
+   "severity": "info",
+   "status": "INFERRED",
+   "detail": "Unfair to candidates: the seed-11 drift and z-pool mean, the missing deduction, overstated residual variance, and the pre-registered zero cash interest (+2.0 to +2.4%p if cash earned rf-2%; measured). Unfair to v1: the undelayed brake (measured); a flat 0.83bp cost applied back to 1986 (not assessed; each extra 0.83bp costs P3 3.3%p and P1 5.0%p); drawdown measured at closes only although P trades at the open too (not measured); brake peak reduced by tax paid, whereas v1's is not (not measured); the 1999-2014 nights are in-sample. Neutral: financing constants 0.8132/0.1868 are rounded (effect about 1e-6 CAGR); the last night position is never charged an exit cost; QQQ's close differs from the NDX close in 1999-2002 (0.83%/day sd, 142 days over 1%), which moves noise between night and day with no measurable mean bias (-0.17%/yr).",
+   "evidence": "extra2.json (cint), invariants.json (mono), split_audit.out."
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf2/audit_ms1f/indep.py",
+  "/home/user/onv/wf2/audit_ms1f/cmp1.py",
+  "/home/user/onv/wf2/audit_ms1f/cmp1.json",
+  "/home/user/onv/wf2/audit_ms1f/full500.py",
+  "/home/user/onv/wf2/audit_ms1f/full500.json",
+  "/home/user/onv/wf2/audit_ms1f/invariants.py",
+  "/home/user/onv/wf2/audit_ms1f/invariants.json",
+  "/home/user/onv/wf2/audit_ms1f/split_audit.py",
+  "/home/user/onv/wf2/audit_ms1f/split_audit.out",
+  "/home/user/onv/wf2/audit_ms1f/split_stats.csv",
+  "/home/user/onv/wf2/audit_ms1f/sens.py",
+  "/home/user/onv/wf2/audit_ms1f/sens.json",
+  "/home/user/onv/wf2/audit_ms1f/sens2.py",
+  "/home/user/onv/wf2/audit_ms1f/sens2.json",
+  "/home/user/onv/wf2/audit_ms1f/extra.py",
+  "/home/user/onv/wf2/audit_ms1f/extra.json",
+  "/home/user/onv/wf2/audit_ms1f/extra2.py",
+  "/home/user/onv/wf2/audit_ms1f/extra2.json",
+  "/home/user/onv/wf2/audit_ms1f/spill_T.py",
+  "/home/user/onv/wf2/audit_ms1f/spill_T.json",
+  "/home/user/onv/wf2/audit_ms1f/repro_json.py",
+  "/home/user/onv/code/ms1f.py",
+  "/home/user/onv/results/pre_P_le2014.json"
+ ],
+ "open_issues": [
+  "T3-T5 and F1-F3 were not re-run with a drift-free split. By linear scaling of their H-minus-C gaps they stay below v1 under C, but that is inferred, not run; all stored T/F dev250_path numbers under C/M/H carry the same seed-11 bias.",
+  "The statement 'under H the best is about +1.4%p' was computed with an effective pre-1999 alpha of +3.3%/yr on the dev pool, not 11.8%/yr; a true H would be higher. Not re-run.",
+  "Decision needed on whether P's brake/cool-down should carry the same 2-day delay as v1's. With it, P3 is far below v1; without it, P3 ties v1 on rule 1 once the seed bias is removed.",
+  "Fixing the split (drift-free residual or seed averaging) and adding the deduction are measurement corrections made after pre-registration and should be labelled as such. With both, P3's rule-1 d on dev250_path is about +0.3%p on average, and it still fails the fee x2 rule in every seed.",
+  "std.engine -> ce.runPE source was not read (outside the permitted paths). v1's delay and brake handling were confirmed only in beng.run1 and ntilt.run1N, which is documented to reproduce std.engine at tau=0.",
+  "Pre-1999 Nasdaq-100 night behaviour cannot be verified with data up to 2014; SPY 1993-98 is the only cross-check, and 1986-92 has none.",
+  "The flat 0.83bp cost on 1986-2014 history, close-only drawdown for P and the tax-adjusted brake peak were noted but not measured.",
+  "Side effect: importing ms1f/ntilt wrote numba cache files under /home/user/onv/nbcache (the modules set that directory themselves). No other file outside /home/user/onv/wf2/audit_ms1f/ was changed."
+ ]
+}
