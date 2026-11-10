@@ -1,0 +1,321 @@
+{
+ "data": {
+  "panel_sha256": "fa2c35b295642ddf27924e1125a50c823ea464a0f6b47e54c0b3b254fd35242c",
+  "panel_sha_matches_precommit": true,
+  "panel_rows_le2014": 7376,
+  "panel_first": "1985-10-01",
+  "panel_last": "2014-12-31",
+  "ts_hours_utc": [
+   13,
+   14
+  ],
+  "dup_dates": 0,
+  "csv_rows": 7376,
+  "csv_first": "1985-10-01",
+  "csv_last": "2014-12-31",
+  "csv_rows_after_2014": 0,
+  "gspc_csv_rows_after_2014": 0,
+  "gspc_csv_last": "2014-12-31",
+  "csv_sha256": "bc71c03df615034667e5af736083d945fa9bdc9316884ad160c9d52669abc6d8",
+  "csv_sha_matches_manifest": true,
+  "csv_dates_equal_panel": true,
+  "csv_close_max_rel_diff": 5.720313844825853e-08,
+  "csv_volume_max_rel_diff": 5.9579218225636055e-08,
+  "volume_nonpositive_or_nan": 0,
+  "volume_equal_prev_day": 2,
+  "volume_median_by_year_1985_1999": {
+   "1985": 180530000.0,
+   "1986": 225600000.0,
+   "1987": 295000000.0,
+   "1988": 243020000.0,
+   "1989": 266140000.0,
+   "1990": 261480000.0,
+   "1991": 318960000.0,
+   "1992": 374050000.0,
+   "1993": 520160000.0,
+   "1994": 298630000.0,
+   "1995": 398300000.0,
+   "1996": 546315008.0,
+   "1997": 637480000.0,
+   "1998": 777649984.0,
+   "1999": 1012635008.0
+  }
+ },
+ "early_1986_1999": {
+  "days": 3539,
+  "rsi_le30_days": 78,
+  "vr_ge2_days": 2,
+  "vr_ge2p5_days": 0,
+  "CAP1_trigger_days": 0,
+  "CAP2_trigger_days": 0,
+  "CAP1_dates": [],
+  "CAP2_dates": [],
+  "max_vr": 2.232,
+  "max_vr_date": "1987-01-23",
+  "max_vr_on_rsi_le30": 1.937,
+  "max_vr_on_rsi_le30_date": "1987-10-21",
+  "vr_ge2_dates": [
+   {
+    "t": "1987-01-23",
+    "vr": 2.232,
+    "rsi": 74.1
+   },
+   {
+    "t": "1991-03-06",
+    "vr": 2.016,
+    "rsi": 79.1
+   }
+  ],
+  "vr_quantiles": {
+   "0.5": 1.018,
+   "0.9": 1.238,
+   "0.99": 1.513,
+   "0.999": 1.952
+  },
+  "vr_on_rsi_le30_quantiles": {
+   "0.5": 1.064,
+   "0.9": 1.339,
+   "0.99": 1.928
+  },
+  "min_rsi": 12.03,
+  "min_rsi_date": "1987-10-20",
+  "oct1987": {
+   "1987-10-16": {
+    "rsi": 25.03,
+    "vr": 1.33
+   },
+   "1987-10-19": {
+    "rsi": 14.37,
+    "vr": 1.51
+   },
+   "1987-10-20": {
+    "rsi": 12.03,
+    "vr": 1.92
+   },
+   "1987-10-21": {
+    "rsi": 28.01,
+    "vr": 1.94
+   },
+   "1987-10-22": {
+    "rsi": 25.09,
+    "vr": 1.66
+   }
+  }
+ },
+ "unseen_2000_2014_SIGNAL_COUNTS_ONLY": {
+  "days": 3773,
+  "rsi_le30_days": 61,
+  "vr_ge2_days": 5,
+  "vr_ge2p5_days": 0,
+  "CAP1_trigger_days": 1,
+  "CAP2_trigger_days": 0,
+  "CAP1_dates": [
+   {
+    "t": "2011-08-08",
+    "rsi": 22.76,
+    "vr": 2.118
+   }
+  ],
+  "CAP2_dates": []
+ },
+ "false_negative_probes_early_signal_only": {
+  "wilder|median_prev60": {
+   "rsi_le30": 78,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "wilder|mean_prev60": {
+   "rsi_le30": 78,
+   "vr_ge2": 1,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "wilder|median_incl_today60": {
+   "rsi_le30": 78,
+   "vr_ge2": 1,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "wilder|median_prev60_volume_shifted_+1d": {
+   "rsi_le30": 78,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "wilder|median_prev60_volume_shifted_-1d": {
+   "rsi_le30": 78,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "cutler_sma|median_prev60": {
+   "rsi_le30": 241,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "cutler_sma|mean_prev60": {
+   "rsi_le30": 241,
+   "vr_ge2": 1,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "cutler_sma|median_incl_today60": {
+   "rsi_le30": 241,
+   "vr_ge2": 1,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "cutler_sma|median_prev60_volume_shifted_+1d": {
+   "rsi_le30": 241,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "cutler_sma|median_prev60_volume_shifted_-1d": {
+   "rsi_le30": 241,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "ema_span14|median_prev60": {
+   "rsi_le30": 248,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "ema_span14|mean_prev60": {
+   "rsi_le30": 248,
+   "vr_ge2": 1,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "ema_span14|median_incl_today60": {
+   "rsi_le30": 248,
+   "vr_ge2": 1,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "ema_span14|median_prev60_volume_shifted_+1d": {
+   "rsi_le30": 248,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  },
+  "ema_span14|median_prev60_volume_shifted_-1d": {
+   "rsi_le30": 248,
+   "vr_ge2": 2,
+   "vr_ge2p5": 0,
+   "CAP1": 0,
+   "CAP2": 0
+  }
+ },
+ "upper_bound": {
+  "vr_ge2_days_any_rsi": 2,
+  "max_on_blocks_CAP1_if_rsi_ignored": 4,
+  "vr_ge2p5_days_any_rsi": 0,
+  "max_on_blocks_CAP2_if_rsi_ignored": 0,
+  "needed": 8
+ },
+ "compare_mine_vs_builder": {
+  "early_CAP1_trigger_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "early_CAP2_trigger_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "early_n_days": {
+   "mine": 3539,
+   "builder": 3539,
+   "equal": true
+  },
+  "unseen_CAP1_trigger_days": {
+   "mine": 1,
+   "builder": 1,
+   "equal": true
+  },
+  "unseen_CAP2_trigger_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "unseen_n_days": {
+   "mine": 3773,
+   "builder": 3773,
+   "equal": true
+  },
+  "early_rsi_le30_days": {
+   "mine": 78,
+   "builder": 78,
+   "equal": true
+  },
+  "early_vr_ge2_days": {
+   "mine": 2,
+   "builder": 2,
+   "equal": true
+  },
+  "early_vr_ge2p5_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "early_max_vr_on_rsi_le30": {
+   "mine": 1.937,
+   "builder": 1.937,
+   "equal": true
+  }
+ },
+ "unseen_file_keys": [
+  "0.0",
+  "1.0",
+  "CAP1",
+  "CAP2",
+  "N",
+  "early_window",
+  "lane",
+  "n_blocks",
+  "n_days",
+  "n_on",
+  "n_on_any_v1_state",
+  "n_universe",
+  "on_block_dates",
+  "on_days",
+  "on_days_v1_below3",
+  "on_episodes",
+  "precommit_sha256",
+  "rsi",
+  "signal",
+  "spx_1955_85",
+  "t",
+  "trigger_dates",
+  "trigger_days",
+  "trigger_days_v1_below3",
+  "universe_v1B_counts",
+  "v1B",
+  "v1_below3_days",
+  "variant",
+  "variants",
+  "vr",
+  "window"
+ ],
+ "unseen_file_outcome_keys": []
+}

@@ -1,0 +1,68 @@
+{
+ "lane": "CAPIT",
+ "window": "counts_unseen",
+ "precommit_sha256": "ec06110c92bf9bc4558749738a01fd28d54a15634abef9e7ae6dc92f20084186",
+ "N": 2,
+ "variants": {
+  "CAP1": {
+   "variant": "CAP1",
+   "window": "counts_unseen",
+   "signal": {
+    "n_days": 3773,
+    "trigger_days": 1,
+    "trigger_days_v1_below3": 0,
+    "on_days": 42,
+    "on_days_v1_below3": 18,
+    "on_episodes": 1,
+    "v1_below3_days": 1042,
+    "trigger_dates": [
+     {
+      "t": "2011-08-08",
+      "rsi": 22.76,
+      "vr": 2.12,
+      "v1B": 3.0
+     }
+    ]
+   },
+   "n_blocks": 179,
+   "n_universe": 50,
+   "universe_v1B_counts": {
+    "0.0": 37,
+    "1.0": 13
+   },
+   "n_on": 1,
+   "n_on_any_v1_state": 2,
+   "on_block_dates": [
+    {
+     "t": "2011-08-24",
+     "v1B": 1.0
+    }
+   ]
+  },
+  "CAP2": {
+   "variant": "CAP2",
+   "window": "counts_unseen",
+   "signal": {
+    "n_days": 3773,
+    "trigger_days": 0,
+    "trigger_days_v1_below3": 0,
+    "on_days": 0,
+    "on_days_v1_below3": 0,
+    "on_episodes": 0,
+    "v1_below3_days": 1042,
+    "trigger_dates": []
+   },
+   "n_blocks": 179,
+   "n_universe": 50,
+   "universe_v1B_counts": {
+    "0.0": 37,
+    "1.0": 13
+   },
+   "n_on": 0,
+   "n_on_any_v1_state": 0,
+   "on_block_dates": []
+  }
+ },
+ "early_window": "1986-01-02..1999-12-31 (volume valid from 1985-10-01; ratio defined from the 61st row, 1985-12-26)",
+ "spx_1955_85": "not covered (no Nasdaq volume)"
+}

@@ -1,0 +1,596 @@
+{
+ "meta": {
+  "what": "FINAL1 wildcard round + verification + judge outputs (workflow wf_f6168f19-63e, 2026-11-10 14:07Z-15:27Z). Data <= 2014 only. Scouts/court computed no backtest. Priors are judgment, not measurement.",
+  "agents": 10,
+  "logs": [
+   "scouts returned 1 ideas; near misses 18",
+   "court selected 0 lanes: none"
+  ]
+ },
+ "scouts": [
+  {
+   "lens": "ADDITIVE MECHANICS (idle-cash uses, product mechanics, tax-book mechanics, leveraged-ETF structure)",
+   "ideas": [],
+   "considered_and_dropped": [
+    "Hedge instead of sell for tax deferral (on 3x->cash/1x sell only half the TQQQ and buy equal SQQQ so net exposure is 0/1x, same overseas-stock tax book): idea_check verdict '판정: 자동 거절 — [X41]와 일치'. Already measured in research/tax_min/RESULT_TAX_MIN_KO.md: inverse-3x-ETF hedge deferral +0.07 ~ -0.76pp path (rejected, half the TQQQ must be sold anyway), futures-hedge deferral 0 with dd80 up to 74-78%, and even a frictionless never-sell hedge is capped at +1.0~1.2pp.",
+    "Year-end gain harvest against losses that cannot be carried forward (basis step-up) and its mirror loss harvest: already inside v1's locked engine (beng.F1 harvest=3 realises losses or gains up to the deduction at each tax-year end; worth +0.31pp and already in the 16.16%). No increment exists.",
+    "Two same-owner general accounts as separate cost pools so partial sells come from the higher-basis pool (HIFO-style lot choice): idea_check verdict '판정: 새 축 후보'. Dropped on size and conditions, not on overlap: lot choice exists only on partial moves because every full exit to cash realises everything; measured FIFO-vs-average sensitivity is about 0.13pp and intra-year loss realisation measured 0.0, so my estimate is <= +0.1~0.15pp (inference), far under the type-F door of +0.5pp; X01 records account splitting as barred by the user's fixed account condition; whether the program can move cash between the two accounts is unverified. Prior of a both-bases PASS about 1%.",
+    "Fully-paid lending of the held TQQQ through the broker's overseas-stock lending service: idea_check verdict '판정: 자동 거절 — [X01]와 일치'. No free borrow-fee history ending <= 2014 exists (TQQQ listed 2010, fee data are paid vendors), income is fee x utilisation x broker split x other-income tax = a few bp (inference), and it needs a one-time manual opt-in. Cannot reach +0.5pp.",
+    "USD RP auto-sweep or any zero-switch-cost T-bill-yield parking for idle USD: idea_check verdict '판정: 자동 거절 — [E02]와 일치' (X38 also matched). Bounded by existing measurements: cash haircut 2pp->1pp +0.2pp, SGOV at zero switch cost +0.47pp, box-spread ETF +0.13pp. The whole cash-yield family tops out below the +0.5pp door; it is a real-account setting, not a PASS candidate.",
+    "Order-type execution on v1 trade days (limit first then MOC/LOC fallback, resting stop during the 2-day delay, splitting fills over t+1..t+3): idea_check verdict '판정: 자동 거절 — [X42]와 일치' (keyword match); in substance it is X40/X38: v1 is insensitive to fill timing (delay 1 -> 16.0%, delay 3 -> 16.3%, open-fill of decreases rejected), the locked 0.3%/side cost cannot be credited down, and there is no free intraday data <= 2014.",
+    "Extended-hours or Korean daytime-session fills: either the same delay family (X38) or an overnight fill, which belongs to the parallel ONF1 thread and is off limits for this round.",
+    "Long Nasdaq-100 calls bought with idle cash while v1 is in cash (defined-risk rebound participation): idea_check verdict '판정: 자동 거절 — [L02]와 일치'. No free option prices <= 2014; LEAPS were measured at -3.9 ~ -4.5pp once spreads are included.",
+    "Last-30-minute leveraged-ETF rebalancing-flow day trade with idle cash (TQQQ/SQQQ by sign of the day's return): idea_check verdict '판정: 자동 거절 — [X41]와 일치'. The flow did not exist before 2006 so it adds nothing on real NDX 1986-2005, there is no free intraday data, and the locked 0.6% round trip per day exceeds the effect.",
+    "Unrebalanced TQQQ+SQQQ pair held in the cash state as an option-free straddle: zero expectancy under a random walk (it pays realised variance, about 3 sigma^2 and 6 sigma^2 on the two legs), so its P&L is only multi-day trendiness (T01 family) plus extra variance that lowers the median CAGR. Same X41 match as the hedge idea.",
+    "Buying KR-listed Nasdaq-100 ETFs at a discount to iNAV with idle cash: idea_check verdict '판정: 막힘 (사용자 문 필요) — [E08]와 일치'. KR-listed Nasdaq ETFs start 2010-10 and no free NAV history exists.",
+    "Safe-haven currency (JPY/CHF) or any other asset as the cash-state fill: a ticker change inside the closed idle-cash-fill family (E03/E06/X41), barred by rule 4; idea_check not run for it.",
+    "KR-listed leveraged Nasdaq products as vehicle, or KR-listed USD SOFR ETFs as the cash leg: vehicle already measured at -3.0 ~ -7.9pp (15.4% per-trade tax, no loss netting, comprehensive taxation); the cash leg needs an FX round trip on every switch.",
+    "Futures 11% tax book (MNQ as vehicle or as hedge): closed in X31 and tax_min; one contract is about 7x a 10M KRW account, the representative gain is 0 at that size and the S&P bases are negative.",
+    "Spousal gift for basis step-up or avoiding the final-liquidation tax: manual filing, a 1-year carry-over rule applies to gifts from 2025, and the final-liquidation tax is only 0.17~0.19pp of the headline.",
+    "Distribution-date mechanics (selling TQQQ or a T-bill ETF before ex-date to shift income between the 15% dividend book and the 22% gains book): helps only in net-loss years, a few bp (inference).",
+    "US closed-end-fund discount capture with idle cash: E08 family (blocked, no free NAV history before the 2000s) and it carries credit/bond beta in exactly the crisis states where v1 is in cash; idea_check not run for it."
+   ],
+   "note": "Zero ideas from this lens. I read the brief, the full idea_check list, the detail rows for the nearest closed axes (X01, X11, X31, X34-X36, X38, X40, X41, E03, E08, T18), research/tax_min/RESULT_TAX_MIN_KO.md and the engine source (research/c3_brake/code/beng.py). No backtest was run and no external host was contacted (no idea reached the data-source stage).\n\nWhy nothing qualifies:\n- The mechanics ceiling is already measured: zero fee +1.1pp, tax deferred to the very end +2.4pp, both together +3.4pp (v1 pre-tax 19.6% path / 36.8% real NDX). Perfect mechanics therefore cannot reach 30%, and every piece that Korean tax law and a 10M KRW account actually allow has measured below the type-F door of +0.5pp.\n- Each mechanic in my lens that I could name is either already measured (tax deferral by futures or inverse-ETF hedge, box-spread cash, lot method, year-straddled sells, KR-listed vehicles, LEAPS, gift step-up) or already inside v1's baseline (two-way year-end harvest).\n- Only two mechanics are genuinely unmeasured: same-owner two-account lot selection (my estimate <= +0.15pp, and account splitting is recorded as barred by the user's account condition) and TQQQ share lending (a few bp, no free history <= 2014). Neither can pass the kill test, so listing them as ideas would be padding.\n\nOne thing the orchestrator may want outside the PASS criteria: a zero-switch-cost cash sweep is the largest unrealised real-account item in this lens (bounded at +0.47pp by the zero-cost SGOV measurement), but it is an account setting inside the closed X38/X41 family, not a candidate.\n\nidea_check is a keyword matcher: three of its auto-reject matches (X41 for the hedge, X42 for order types, E02 for the cash sweep) hit on shared words rather than substance; in each case I confirmed the substantive closure from the result files or registry rows quoted above."
+  },
+  {
+   "lens": "DERIVATIVES ACCOUNT, NOT OVERNIGHT (KIS overseas futures/options add-on books, free daily data <= 2014)",
+   "ideas": [],
+   "considered_and_dropped": [
+    "NEAREST MISS - equity month-end liquidity cycle via MNQ/MES (short T-(s+5)..T-(s+1), long T-s..T+3, s = US settlement lag: 5 until 1995-06, then 3; Etula-Rinne-Suominen-Vaittinen, sample 1980-2013). idea_check: '판정: 자동 거절 — [X42]와 일치' with T04 listed second; a reworded check gave '판정: 전진 기록만 — [T10]와 일치' (both lexical). Closest closed axis T04 (TOM is named there); new parts are the settlement-anchored pre-month-end short leg and futures cost. Dropped: published S&P 500 window means (since 1995: -0.04%/day pressure, +0.11 to +0.13%/day recovery; since 1980: -0.01 / +0.11 to +0.13) imply a stand-alone stream Sharpe of only about 0.7 (inference, not measured), below the D gate 1.1/0.8. At that size a 15% futures account levered 3.3x compounds about 22%/yr after 11% tax: path about +1.6pp but real NDX about -0.6pp (inference), so criterion 6 fails. Also: live US settlement is shorter than any <=2014 regime (live window untestable), and Oct-1987 sits inside the T+5-era pressure window (single-event risk).",
+    "Classic TOM (-1..+3), pre-holiday, option-expiry-week long MNQ add-ons on top of 3x: T04 same family (idea_check auto-reject). Pre-holiday is about 9 days/yr and expiry week about 5bp/day, which is at or below the vol-drag bar of extra exposure on top of 3x (about 5bp/day at 1.3% daily vol, inference); classic TOM is the long leg of the nearest miss.",
+    "Macro-announcement-day MNQ add-on (employment, CPI, PPI; Savor-Wilson 1958-2009): idea_check '판정: 자동 거절 — [T20]와 일치'; T09 already scored 18 release types with a ceiling under 0.5pp; about 24 one-day holds/yr at about 10bp cannot make a parked futures account outgrow v1; entry at the prior close overlaps the ONF1 night leg.",
+    "Treasury auction cycle in ZN/ZF/ZT (Lou-Yan-Zhang 1980-2008; short before note auctions, long after): idea_check '판정: 자동 거절 — [T18]와 일치'. Auction dates are free and reachable (fiscaldata auctions API, earliest 1979-10-31), but the month-end 2y/5y auctions overlap T18's window (sibling scored Sharpe .64-.95 and was closed) and the non-overlapping mid-month refundings were only about 4-8 events/yr before 2008. Sibling of T18, too few independent events.",
+    "One-day mean reversion / internal bar strength at the close in MNQ: idea_check '판정: 자동 거절 — [T27]와 일치' (also T13, T39). Daily index autocorrelation was positive before about 1999 and negative after, so one sign cannot pass both windows; free actual futures OHLC before 1999 does not exist (data.nasdaq.com continuous futures: robots disallow the API, HTTP 403).",
+    "January small-cap spread (long M2K / short MES mid-Dec to mid-Jan) and Russell reconstitution spread: idea_check '판정: 자동 거절 — [S05]와 일치' (also M03, S14). One trade per year (about 29 observations) while margin sits idle all year.",
+    "FOMC-cycle even weeks (post-2014 paper, concept only; sample starts 1994): T20/T09 family; no effect before 1994 by mechanism so the early window is mostly empty; 50% time in market on top of 3x is mostly L01 leverage beta.",
+    "Short VIX futures roll-down / micro VIX: L02 and T32 family; VIX futures exist only from 2004 so there is no early window (any reconstruction is NON-ACTUAL); not defined-risk.",
+    "Defined-risk long weekly index calls for the month-end recovery window, and other long-option add-ons: no free option prices <= 2014 (only VXO/VXN index levels, so pricing would be NON-ACTUAL); variance premium plus spread removes roughly half of the drift captured; L02 family.",
+    "Box-spread or T-bill substitute for idle futures-account cash: long option value is not margin-eligible at Korean brokers (unverified) and it needs inter-broker transfers (manual, rejected); sibling of X41; ceiling about +0.4pp.",
+    "Short-MNQ hedge instead of selling TQQQ at v1 exits (saves 0.3% per side and defers the 22% tax): needs short notional of 3x wealth, so about 24% of capital parked as margin at 0%; futures losses cannot offset TQQQ gains; X01/X31/X40 families.",
+    "Always-on, vol-conditional or trend-conditional MNQ add-on above 3x: L01/T02 (4x measured below 3x on path).",
+    "Static long Treasury futures overlay (return stacking on top of v1): E02/E06 family; bond excess return in 1986-99 was small and E06 attributed the gain to the bond bull market (null p .10); a 12-13% bond-futures drawdown needs a large idle buffer.",
+    "Commodity index roll front-running in micro crude calendar spreads (Mou, 2000-2010): effect absent before commodity-index money (1986-99), so it fails the early window; E04 family.",
+    "Gold PM-fix to AM-fix hold in micro gold, and month-end FX hedging-flow trades: the first is an overnight/time-of-day tilt (excluded by this lens, X42 family); the second cannot be isolated with daily noon-rate data and its main paper is post-2014 (E04/X34)."
+   ],
+   "note": "RESULT: zero qualifying ideas for this lens. On <=2014 evidence, opening a KIS overseas futures/options account is not supported as a way to beat v1 on both bases. No backtest was computed; numbers below are registry values, published <=2013 sample values, or my inferences (labelled).\n\nWHY (structural, inference): futures-account cash earns 0 and inter-broker transfers are manual (not allowed), so the futures account is a separate compounding pot. It raises total CAGR on a basis only if its own after-tax CAGR exceeds v1's on that basis: 16.16% (path), 31.08% (real NDX; about 52%/yr in 1986-99). For a stream with Sharpe S levered at fraction f of Kelly, log growth is about S^2(f - f^2/2). After 11% tax, real NDX needs S >= about 0.9 at half Kelly (0.78 at full Kelly); path needs only about 0.67 at half Kelly. That is why margin-light futures streams win path and lose real NDX, and why the D gate (1.1 early / 0.8 unseen) is the right yardstick. If the stream is worthless the loss is bounded by the account (a 15% slice is about -0.55pp/yr CAGR over 30 years).\n\nKnown stream Sharpes in this lens (<=2014): Treasury month-end futures .64-.95 (T18, about 0 in 1962-85), night-only 1x .22-.57 (X42), FOMC day .28 (T20), equity month-end liquidity cycle about .7 (my inference from published window means, not measured). None reaches 0.9 stand-alone.\n\nONE DECISION FOR THE ORCHESTRATOR (not listed as an idea because it repeats T18, which my task forbids): a month-end futures basket = T18's Treasury stream + the equity month-end liquidity cycle. If the two legs are uncorrelated the basket Sharpe would be about 1.0-1.1 (inference, unverified), the only arithmetic route in this lens that could reach the real-NDX bar. T18's own result file (research/c3_create/r9b/RESULT_R9B_KO.md, line 10) left a user decision open: whether to apply G1 to a margin-light Treasury calendar overlay and whether to allow total exposure above 3x. The user's new willingness to open a futures account may be that decision. My rough prior for a both-bases PASS of such a basket is about 5% (inference); it belongs with E05/X20 (other threads). Whole-contract sizing: 1 MNQ is about 70-84M KRW notional; at 3.3x leverage that needs about 23-25M KRW in the futures account, i.e. total capital of about 155-170M KRW at a 15% slice (MES is roughly two-thirds of an MNQ, so about 105-115M KRW; unverified live sizes). At the MS1 10M KRW start the book holds zero contracts and equals v1.\n\nDATA REACH (2026-11-10, generic UA): fred.stlouisfed.org fredgraph.csv DGS10 1986 window HTTP 200 (135 B); api.fiscaldata.treasury.gov auctions_query HTTP 200, returned 1986 note auctions, earliest auction_date 1979-10-31, 6,367 rows, no robots file (404), parent site robots Allow; Ken French daily factors zip HTTP 200 (178,326 B, not opened); federalreserve.gov fomchistorical1994 HTTP 200; Dash-for-Cash paper PDF (acris.aalto.fi) fetched, sample 1980-2013. Not usable: data.nasdaq.com (robots disallow /api/*.json and *.csv, HTTP 403), treasurydirect.gov (robots Disallow: /, HTTP 500). Automation: the official KIS open-trading-api README lists overseas_futureoption (existence confirmed); MNQ fees, margin and close-order types at KIS are unverified.\n\nCOMPLIANCE DISCLOSURES: (1) My reach-test batch fetched robots.txt and the test URL in the same command, so one request each went to data.nasdaq.com and treasurydirect.gov before I had read their robots rules; both returned errors and no data, and neither host should be used. (2) I grepped research/onf1/RESULT_ONF1_KO.md for futures cost lines (its header says <=2014 numbers only and idea_check cites it as evidence); if the brief's onf1 clause covers that file, disregard the 84M KRW MNQ figure, which is the only thing taken from it. No forbidden folder was opened, no sub-agent, no message to the user, no file written."
+  },
+  {
+   "lens": "LITERATURE AND EXTREME COMBINATION (2015-2026 academic/practitioner sweep + new combination structures)",
+   "ideas": [
+    {
+     "id": "LIT1_MGR_TONE",
+     "title_ko": "경영자 심리(10-K·10-Q 공시 어조 월별 집계)가 과도하게 낙관적일 때 v1 3배를 1배로 깎기 (A형 CUT)",
+     "mechanism": "Jiang-Lee-Martin-Zhou (JFE 2019, sample 2003:01-2014:12): the cross-firm average tone of corporate disclosures (Loughran-McDonald positive minus negative words / total words, monthly equal-weight mean, 4-month moving average) NEGATIVELY predicts next-month market excess return. Published, all inside <=2014: combined index in-sample monthly R2 9.75%, out-of-sample 8.38% (evaluation 2007:01-2014:12), slope -1.26%/month per 1 sd. The 10-K/10-Q component alone (the free part) is the stronger one: in-sample R2 8.10%, OOS 6.85%; the conference-call component (not free) 4.05% / 1.77%. Channel: over-optimistic managers -> over-investment and negative earnings surprises over the following quarters. R2 8% corresponds to corr about .28, i.e. the only item in this sweep whose PUBLISHED strength sits in the .25-.30 zone of the brief's ceiling table. Information type is new for this project: text that managers themselves file, exact public time stamp (EDGAR filing date), never revised. Use: when the real-time standardized tone is high, v1 3x -> 1x for the following month; nothing else changes.",
+     "closest_closed_axis": "T05 (investor sentiment: put/call, SKEW, AAII, Baker-Wurgler; 9 SENT signals) and S06 (EDGAR events / 10-K sentences for single-stock selection); T10 (news text, forward-only) is the third neighbour",
+     "why_not_closed": "T05's nine signals (checked in research/alt_patent/r2_sent/RESULT_SENT_KO.md) are issuance share, BW composite, closed-end fund discount, household/flow items - none is text and none comes from corporate filings. S06 used 10-K text cross-sectionally (stock IC <= .01), never as a market-level time series. T10 is forward-only because LLM judgments of old news are contaminated; a fixed word-count dictionary is deterministic, so that reason does not apply (but the LM word list dates from 2011, see risks). grep of RESULT_BT1_KO, RESULT_NI1_KO, RESULT_NL1_KO, RESULT_SENT_KO and OV1-G for tone / Loughran / manager / 10-K returned no hit, so the mass searches T08/T23/T24/T25/T28 did not contain this source. The paper reports corr .53 with Baker-Wurgler sentiment, so it is a neighbour of T05, not independent of it.",
+     "idea_check_verdict": "판정: 자동 거절 — [T05]와 일치. 새 정보 종류가 아니면 시작하지 않는다. (keyword match on the single word 'sentiment', score 3.5; S06 matched on '10-k'. The tool is a keyword matcher; T05's re-open condition is '없음', so the orchestrator must decide whether aggregated filing text counts as a new information type. I think it does, but this is a judgment call, not a clean 'new axis' verdict.)",
+     "kill_type": "A (CUT overlay), early window first; unseen opened once only if early passes",
+     "prereg_sketch": "N=2 fixed variants, no tuning. Data: all original 10-Q/10-QSB and 10-K/10-K405/10-KSB main documents (no amendments, no exhibits) filed 1994-01..2014-12, rows after 2014-12-31 dropped at read time. Tone_i = (pos - neg)/words with the LM 2011 positive/negative lists. Because the HF data stores token ids, pre-register a token-level count (tokens whose decoded string is in the LM list, via numpy isin) and validate it once against full decoding on a fixed 2% sample (corr >= .95 required, else full decode). Monthly index = equal-weight mean over filings filed in month m, 4-month moving average (as in the paper), then z-score against the trailing 60 months (min 24) - real time, no full-sample standardization. Usable from the first trading day of month m+1, plus v1's 2-day delay. V1 (primary): z >= +0.5 -> v1 3x becomes 1x for month m+1. V2: same rule with tone computed only from filers with SIC 357x/367x/737x/48xx/283x (Nasdaq-like mix). Kill test A in 21-day blocks where v1 is at 3x: P(3x beats deposit | on) >= 10pp below the v1-3x base rate, >= 8 on-blocks, early window 1996-01..1999-12 (first usable month after burn-in) and unseen 2000-01-03..2014-12-31. No SPX 1955-85 coverage exists. Only a survivor goes to L.measure2 (FINAL PASS rule of the brief, N=2 deflation). First lane step before anything else: confirm monthly filing counts 2011-2014 in the data repo (the separate small index repo is thin there), stop if the unseen window is degraded.",
+     "non_dilution_argument": "(1) No data before 1994 and a 24-month burn-in, so 1986-1995 is bit-identical to v1. (2) The only part of the 52%/yr era that can be touched is 1996-1999, and that is exactly the early kill window: the lane survives only if the flagged v1-3x blocks there had a hit rate at least 10pp below base. If optimistic tone coincided with the 1996-99 run-up (my expectation), the lane dies at the first test without ever reaching measure2. (3) The overlay cuts to 1x, not cash, and acts only in flagged months (target about 30% of v1-3x months), so the worst case is bounded and visible in the real-NDX row of measure2, which must be > 31.08% for a PASS. (4) No capital is moved to another sleeve; it is a pure state overlay on v1's own instruments. Remaining honest worry: a hit-rate pass with a magnitude loss (a few very large up-blocks cut) - measure2 real NDX is the guard.",
+     "expected_path_gain_pp": 0.02,
+     "prior_pass_prob": 0.015,
+     "data_sources": [
+      {
+       "name": "Hugging Face alea-institute/kl3m-data-edgar-10-q (10-Q/10-QSB documents with filing_date, form, ciks, token ids; cc-by-4.0, not gated, 29.2 GB in 80 parquet shards)",
+       "url": "https://huggingface.co/datasets/alea-institute/kl3m-data-edgar-10-q",
+       "start_year": "1993 (thin 1993-95; README: 216,491 filings in filing years 1993-2000, 276,408 in 2001-2008)",
+       "reach_test": "huggingface.co/robots.txt = 'User-agent: * Allow: /'. API metadata HTTP 200 (gated False, 82 files, 29.21 GB). README says every filing in the SEC quarterly full indexes from 1993. Not downloaded (large)."
+      },
+      {
+       "name": "Hugging Face alea-institute/kl3m-data-edgar-10-k (10-K family, same schema, 31.0 GB in 94 files, not gated)",
+       "url": "https://huggingface.co/datasets/alea-institute/kl3m-data-edgar-10-k",
+       "start_year": "1993",
+       "reach_test": "API metadata HTTP 200, gated False, 31.04 GB. Not downloaded."
+      },
+      {
+       "name": "Hugging Face alea-institute/kl3m-index-edgar-filings-10-q (34 MB index: filingDate, form, cik, sic) - for SIC mapping only",
+       "url": "https://huggingface.co/datasets/alea-institute/kl3m-index-edgar-filings-10-q",
+       "start_year": "1993",
+       "reach_test": "Downloaded the 34.1 MB parquet (HTTP 200), read it, deleted it. Rows <= 2014-12-31: 488,454; min filingDate 1993 (one stray 1980 row); 10-Q filings per year 1994: 5,221, 1995: 14,086, 1996: 29,681, 1997-2001: about 34-37 thousand, 2010: 22,769, but only 12,067 / 3,075 / 1,877 / 1,507 in 2011-2014 -> this INDEX repo is incomplete after 2010; use the data repo (rebuilt, complete) for the series and verify its 2011-14 counts first. SIC missing 1.3%."
+      },
+      {
+       "name": "kl3m tokenizer (to decode token ids)",
+       "url": "https://huggingface.co/alea-institute/kl3m-004-128k-cased",
+       "reach_test": "HEAD on resolve/main/tokenizer.json returned 302 (redirect to file storage), i.e. present."
+      },
+      {
+       "name": "BLOCKED alternative: Loughran-McDonald 10X Summaries 1993-2025 csv (188 MB, per-filing word counts) - the natural source",
+       "url": "https://sraf.nd.edu/sec-edgar-data/lm_10x_summaries/",
+       "start_year": "1993",
+       "reach_test": "sraf.nd.edu robots allows the page; page HTTP 200 and lists the file. But the file sits on Google Drive: drive.google.com/file is allowed, the actual download host drive.usercontent.google.com has robots 'User-agent: * Disallow: /' -> not fetchable under the house rule. sec.gov re-tested today: HTTP 403. So HF is the only compliant route."
+      }
+     ],
+     "automation": "Fully automatic. Live signal: a daily job reads the EDGAR daily form index and the day's 10-K/10-Q main documents from sec.gov (free, no login; SEC asks automated clients for a declared user agent - a configuration choice for the user's program, proposal only), counts LM words, updates the monthly index on the first trading day of each month. Orders: the same TQQQ <-> 1x (QQQ) switch v1 already uses for its 1x state, through the Kiwoom REST US spot API. No manual step, no margin, no short, no options.",
+     "min_capital_krw": "v1과 동일 (기준 1,000만원), 추가 자본·증거금 없음",
+     "risks": "Honest view: this will most likely fail. (a) The published result rests on 144 months and essentially one cycle (2007-09), with a persistent regressor; 9-month-horizon R2 of 27.1% shows it is a slow level signal. (b) v1 already sidesteps 2008 through its macro alarms, so the incremental value inside v1-3x blocks in 2000-14 may be near zero. (c) 1996-99 is the natural enemy of any contrarian sentiment signal; I put the early-window pass at about 12% (and with 8-12 on-blocks a pass can be luck), unseen pass given early about 25%, measure2 both-bases given kill-test pass about 40% -> about 1.5% overall. If it did pass, a path gain of roughly +1 to +2pp is plausible after switch costs and tax; probability-weighted that is about +0.02pp. (d) The LM word list was built in 2011 from 1994-2008 filings, so pre-2011 signals use an ex-post instrument: label NON-ACTUAL (instrument look-ahead). (e) Secular drift in filing language (risk-factor sections added mid-2000s) can fake a trend; the trailing 60-month z-score is the only defence. (f) Token-level counting is a proxy for the paper's measure. (g) Cost: about 60 GB streamed and scanned on shared 4 cores, several hours in 20-minute jobs; nothing may be left on disk with post-2014 rows. (h) The low-tone ADD side is deliberately excluded: pessimistic filings cluster mid-bear (2001-02, 2008), the same failure as T38."
+    }
+   ],
+   "considered_and_dropped": [
+    "Monetary momentum (Neuhierl-Weber, sample 1994-2009: 15-day drift in the direction of the fed-funds-futures surprise) - idea_check: '자동 거절 — [T20]와 일치'. ADD side reuses the events of closed T38 (the big dovish surprises ARE the 2001/2008 off-meeting cuts; OV1-G unseen 4 wins of 10). CUT side cannot reach 8 on-blocks in v1-3x state: material hawkish surprises <=2014 are few and mostly fall while v1 is already in cash.",
+    "Lagged long-short anomaly portfolio returns as market predictor (Dong-Li-Rapach-Zhou) - idea_check: '자동 거절 — [S20]와 일치'. Paper sample runs past 2014 (numbers unusable), expected corr about .1 < v1's .165, it only adds more weak predictors to the T24/T25 family, and the anomaly set carries publication look-ahead before 2000.",
+    "WSJ topic attention (Bybee-Kelly-Manela-Xiu) - idea_check: '자동 거절 — [X37]와 일치' (real family T10 news). Topics are estimated on the full 1984-2017 sample (look-ahead); news family is forward-only.",
+    "Market intraday momentum, first vs last half-hour (Gao-Han-Li-Zhou; Baltussen et al.) as a day-session futures sleeve - idea_check: '자동 거절 — [T01]와 일치'. No free intraday index data with an early window <= 1999; free sets start about 2010.",
+    "Semiconductor book-to-bill / WSTS chip billings 3-month change - idea_check said '새 축 후보' but that is a keyword miss: it is T31 (tech industry cycle, re-open 'none', even revised data failed G1) plus the X37 flaw (no free first-release vintages <= 2014).",
+    "Put-write / buy-write only in v1's 1x state (vol > 40%) - idea_check: '자동 거절 — [L02]와 일치'. 1x state is 9% of days so the ceiling is about +0.3pp; no free NDX option prices (BXN index from 1994 is only a proxy); rebounds from high-vol states are capped by short calls.",
+    "Pension / balanced-fund rebalancing pressure (Harvey-Mazzoleni-Melone) - idea_check auto-reject (keyword S15; real family T04/T18 month-end). Effect is a few bp per day against 0.4% switch cost and a 2-day delay; sample extends past 2014.",
+    "FOMC-cycle even weeks (Cieslak-Morse-Vissing-Jorgensen) - calendar anchored on FOMC dates = T04/T09/T20; documented only from 1994; leaving 3x in odd weeks dilutes 1986-99.",
+    "Gold/platinum ratio (Huang-Kilic) - metal-ratio level, same family as copper/gold in T22; slow level signal; no free daily platinum history confirmed.",
+    "Excess bond premium / NFCI changes - T03 credit family; series are re-estimated and have no <=2014 vintages.",
+    "Sahm rule and unemployment-trend x price-trend (growth-trend timing) - a macro raw signal x transform x AND pair already inside T23 (8,004 atoms, pair/triple AND/OR) and inside the C3-variant ban.",
+    "Fed policy-direction regime (Jensen-Mercer-Johnson: last rate change was a hike/cut) - T38/T34/T03 family; the restrictive regime covers 1999, so a cut there removes v1's 3x in its best year.",
+    "Taiwan export orders / TSMC monthly revenue - T31/T16 family; free history starts about 1999-2001 (no early window) and no first-release vintages.",
+    "News-implied volatility NVIX (Manela-Moreira) - T10 family; model trained on 1996-2009 VIX (look-ahead); works at 6-24 months, too slow for the path rebuild.",
+    "Commodity index roll front-running (Mou) - E04 family; no free per-contract futures history without a login; a stand-alone sleeve takes capital from v1.",
+    "Re-using closed weak signals conditional on v1's state - records show the non-3x-state form WAS tested where it mattered (T20 pre-FOMC overlay: path -0.2pp; T33; T38 unseen 4/10; X41 state products), the non-3x state is only 23% of days (ceiling < +0.5pp), and no closed signal has a documented edge in both windows to condition on. No candidate.",
+    "Manager-sentiment ADD side (pessimistic tone -> 3x while v1 is in 1x/cash) and the conference-call tone component - ADD fails for the T38 reason (pessimism peaks mid-bear in 2001-02 and 2008); call transcripts are not free."
+   ],
+   "note": "One idea returned, and it is a long shot: about 1.5% chance of a both-bases PASS, probability-weighted path gain about +0.02pp. Returning zero would be equally defensible; I list it only because it is the single item in the 2015-2026 sweep that (a) has a sample ending in 2014, (b) reports a monthly R2 (8.1% for the free 10-K/10-Q component) in the corr .25-.30 zone the brief says is needed, (c) uses an information type no closed axis contains, and (d) has a true out-of-sample early window (1996-99) the paper never looked at, so it dies cheaply at the first kill test if it is wrong. Its idea_check verdict is an auto-reject on the keyword 'sentiment' against T05 (re-open: none), so the orchestrator has to rule on whether aggregated filing text is a new information type before spending a lane. Data facts: the natural source (Loughran-McDonald summaries, 188 MB) is on Google Drive whose download host disallows robots, and sec.gov still returns 403; the compliant route is two Hugging Face datasets (about 60 GB together) that must be streamed and cut at 2014-12-31, several hours of shared CPU. No backtest was computed; the only data read was a 34 MB filing index (filing counts by year <= 2014), downloaded to scratch and deleted. Everything else in the sweep either maps onto a closed axis, has no free pre-2015 data with an early window, or would take capital from v1 at 3x. No new combination structure survived: the conditional-on-v1-state forms that could matter were already tested and the non-3x state is too small to carry more than +0.5pp. Tool calls used: 20."
+  }
+ ],
+ "false_negative_audit": {
+  "near_misses": [
+   {
+    "source_lane": "OV1-B (OV1 thread)",
+    "candidate": "v1 exposure cuts only are filled at the next US open (keeps the overnight leg). Path 16.84% vs 16.16%, paired median d +0.35pp, win ratio .736, dd80 71.8%; real NDX 31.81% vs 31.08%; SPX bases not covered (no open data, equal to v1).",
+    "kind": "additive (execution)",
+    "path_d_pp": 0.35,
+    "real_d_pp": 0.73,
+    "rejected_by": "Materiality bar: type-F needs paired path d > +0.5pp (got +0.35). Also shrinks under stress: +0.1pp/side at the open gives +0.16 path / +0.37 real; 1999 nights zeroed (post-hoc) gives +0.19 / +0.27. Sub-period sign: S +0.116 in 2000-07, -0.097 in 2008-14; mean next-night return on the 45 cut days of 2000-14 was 0.00%. The file notes it clears the FINAL numbers but FINAL was not judged because the F gate comes first.",
+    "n_tries_in_lane": "1 (thread N = 7 lanes, one variant each)",
+    "evidence_file": "/mnt/project-files/research/ov1/lanes/OV1-B/RESULT_OV1-B_KO.md",
+    "recheck_worth": true,
+    "recheck_sketch": "The edge cannot be re-tested honestly. The single pre-registered run already used every v1 cut event that has open data (30 to 1999, 45 in 2000-14), so a re-run returns the same number, and passing would mean lowering the +0.5pp bar after seeing the result. What is honest: (a) report it unchanged as the best below-bar additive candidate; (b) before reporting, one pre-registered caveat measurement on data the lane never used: actual TQQQ open prints 2010-02..2014-12 (does the TQQQ open equal 3x the QQQ overnight move, what is the open spread), plus market-on-open availability at the broker as a fact. This can only lower the number. The verdict stays FAIL unless paired path d exceeds +0.5pp. No new variants: it draws on the overnight premium that ONF1 is testing, and the lane itself lists no reopen condition."
+   },
+   {
+    "source_lane": "WX1-M3 (a)",
+    "candidate": "v1 idle share filled with synthetic TMF, gated by curve slope above its expanding median (SLmed, on 68% of the time). Path 20.40%, d +4.06pp (94%), dd80 56%; real NDX +4.23; SPX 55-85 +0.97, 70-85 +1.48; 1986-99 +1.29; 2000-14 +7.22; cost x2 +3.05.",
+    "kind": "additive (use of v1 idle cash; NON-ACTUAL synthetic 3x bond)",
+    "path_d_pp": 4.06,
+    "real_d_pp": 4.23,
+    "rejected_by": "Regime side rules: drift0 (bond mean excess return set to zero) path d -0.05 (needed >= 0), though real NDX drift0 is +1.05; time-shift nulls p .065 (N3) and .244 (N2), needed < .05. Called the closest in the file.",
+    "n_tries_in_lane": "7 in M3 (5 point-in-time gates + 2 ACM sensitivities); bond-fill family also measured in E06 and ETX1",
+    "evidence_file": "/mnt/project-files/research/wx1/m3/RESULT_M3_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest on <=2014 US data. Every bond year 1962-2014 was already used by E06, ETX1 and M3, the thresholds have been seen, and SLmed is the best of 5 gates (N2 says the gate is no better than a random gate with the same on-ratio). The objection is the bond regime, which no in-sample re-test resolves. It would be honest only on a sample never used (non-US, or pre-1962 with a synthetic bond leg labelled NON-ACTUAL), with the rule frozen as coded, drift0 >= 0 and null p < .05 unchanged, and the whole family's N counted. The lane's own reopen condition (new information that predicts bond excess return or the stock-bond correlation sign) is not met."
+   },
+   {
+    "source_lane": "WX1-M3 (a), row quoted from E06",
+    "candidate": "v1 idle share filled with synthetic TMF, no gate. Path 21.65%, d +5.22pp (96%), dd80 56%; real NDX +4.35; SPX 55-85 +0.00, 70-85 +0.16; 1986-99 +0.21; 2000-14 +8.29; cost x2 +4.21; leverage cost +1% +4.46.",
+    "kind": "additive (use of v1 idle cash; NON-ACTUAL synthetic 3x bond)",
+    "path_d_pp": 5.22,
+    "real_d_pp": 4.35,
+    "rejected_by": "Regime side rules: drift0 path d -1.05; drift 1.5%/yr only +0.48; gain concentrated in 2000-14; time-shift null p .10-.75 as summarised in VN1 (E06 and E10 closed).",
+    "n_tries_in_lane": "Reference row in M3 (N = 7); original E06 try count is not in the files read",
+    "evidence_file": "/mnt/project-files/research/wx1/m3/RESULT_M3_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest on <=2014 data, for the same reason as SLmed. On the numbers written, this row would clear the FINAL1 type-F and FINAL PASS letters (path d > +0.5, real d > 0, win ratio .96, SPX 55-85 not worse). It is closed only by the regime side rules. Whether to treat drift0 as binding is a policy decision for the orchestrator and user; a re-check cannot settle it. The era split is already measured and is non-negative in every era but near zero outside 2000-14."
+   },
+   {
+    "source_lane": "WX1-M3 (a)",
+    "candidate": "TMF fill gated by Fama-Bliss forward spread above its expanding median (FBmed, on 65%). Path 19.97%, d +3.80pp (93%), dd80 59%; real NDX +3.96; SPX 55-85 +1.42, 70-85 +2.29; 1986-99 +1.27; 2000-14 +6.45.",
+    "kind": "additive (use of v1 idle cash; NON-ACTUAL synthetic 3x bond)",
+    "path_d_pp": 3.8,
+    "real_d_pp": 3.96,
+    "rejected_by": "Selection haircut rule (d - 3pp >= 1 gives +0.80) and drift0 path -0.29 (real NDX drift0 +0.79). Nulls were not computed for this gate.",
+    "n_tries_in_lane": "7",
+    "evidence_file": "/mnt/project-files/research/wx1/m3/RESULT_M3_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest on <=2014 US data; same family and same reasons as SLmed. One of 5 gates picked after seeing all bases."
+   },
+   {
+    "source_lane": "WX1-M3 (a)",
+    "candidate": "TMF fill gated by Fama-Bliss forward spread > 0 (FB0, on 89%). Path 20.20%, d +4.14pp (93%), dd80 58%; real NDX +3.38; SPX 55-85 +0.59, 70-85 +0.28; 1986-99 +0.45; 2000-14 +7.63.",
+    "kind": "additive (use of v1 idle cash; NON-ACTUAL synthetic 3x bond)",
+    "path_d_pp": 4.14,
+    "real_d_pp": 3.38,
+    "rejected_by": "Time-shift nulls p .114 (N3) and .751 (N2); drift0 path -1.04 (real NDX drift0 -0.47).",
+    "n_tries_in_lane": "7",
+    "evidence_file": "/mnt/project-files/research/wx1/m3/RESULT_M3_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest. With the gate on 89% of the time it is nearly the ungated fill, and the nulls show the gate carries no information."
+   },
+   {
+    "source_lane": "WX1-M3 (a)",
+    "candidate": "TMF fill gated by expanding-window Cochrane-Piazzesi factor above its median (CPmed, on 26%). Path 17.57%, d +1.26pp (83%), dd80 72%; real NDX +0.50; SPX 55-85 +1.21, 70-85 +2.09; 1986-99 -0.45.",
+    "kind": "additive (use of v1 idle cash; NON-ACTUAL synthetic 3x bond)",
+    "path_d_pp": 1.26,
+    "real_d_pp": 0.5,
+    "rejected_by": "Selection haircut (-1.74 after 3pp), drift0 -0.34, 1986-99 sub-period negative.",
+    "n_tries_in_lane": "7",
+    "evidence_file": "/mnt/project-files/research/wx1/m3/RESULT_M3_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest: the early sub-period is negative and the CP gate is indistinguishable from a random gate (see CP0)."
+   },
+   {
+    "source_lane": "WX1-M3 (a)",
+    "candidate": "TMF fill gated by Cochrane-Piazzesi factor > 0 (CP0, on 36%). Path 17.19%, d +1.25pp (80%), dd80 72.4%; real NDX +0.21; SPX 55-85 +1.31, 70-85 +2.33; 1986-99 -0.17.",
+    "kind": "additive (use of v1 idle cash; NON-ACTUAL synthetic 3x bond)",
+    "path_d_pp": 1.25,
+    "real_d_pp": 0.21,
+    "rejected_by": "Selection haircut (-1.75), nulls p .184 / .463 (the +1.25 equals the random-gate mean +1.23), drift0 -0.75 (real NDX drift0 -1.37), 1986-99 negative.",
+    "n_tries_in_lane": "7",
+    "evidence_file": "/mnt/project-files/research/wx1/m3/RESULT_M3_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest: the measured gain equals that of a random gate with the same on-ratio."
+   },
+   {
+    "source_lane": "VS1",
+    "candidate": "B1: v1 cash moved to SGOV with zero switching cost. Path 16.69%, d +0.47pp (100%); real NDX 31.48%, +0.40. With real trading at 0.3%/side: path 15.84% (all) or 16.03% (long-wait cash only), d -0.31 / -0.20; real 30.54 / 30.62.",
+    "kind": "additive (idle cash)",
+    "path_d_pp": 0.47,
+    "real_d_pp": 0.4,
+    "rejected_by": "Conservative cost check: the locked 0.3%/side fee on frequent small brake-driven trades turns it negative. Its baseline is the MS1 cash rate (rf - 2pp), which the live program does not earn according to AG1 (cash at 0%: v1 16.2% to 15.5%).",
+    "n_tries_in_lane": "11 (9 pre-registered + 2 post-hoc)",
+    "evidence_file": "/mnt/project-files/research/v1_states/RESULT_VS1_KO.md",
+    "recheck_worth": true,
+    "recheck_sketch": "Honest as a fact-driven terms measurement, because the sign is mechanical (carry minus fee) and not estimated from returns, so earlier use of <=2014 data does not bias it. Conditions: (1) take from the broker's published terms, before measuring, the rate actually credited on idle USD and the fee of the cheapest sweep vehicle the program can order by API (the lane's reopen condition is a confirmed fee <= 0.1%/side); (2) one variant only, long-wait idle cash, no fee grid; (3) re-measure v1 under the same true cash rate so both sides share the baseline; (4) keep the +0.5pp F bar; (5) report it as an implementation-terms line, not a strategy PASS, since the locked MS1 reference may not be changed. If the fact is not confirmed, it stays closed."
+   },
+   {
+    "source_lane": "NX1 (K1b)",
+    "candidate": "Cash credited at rf - 1pp instead of rf - 2pp. Path 16.4 vs 16.2, real NDX 31.3 vs 31.1 (levels from the one-decimal table), SPX 55-85 12.1 vs 11.9, 70-85 12.8 vs 12.6, dd80 71%.",
+    "kind": "additive (account terms)",
+    "path_d_pp": 0.2,
+    "real_d_pp": 0.2,
+    "rejected_by": "Materiality bar: lane gate was +1pp; the representative value was left unchanged.",
+    "n_tries_in_lane": "7 (K1 3, K2 4)",
+    "evidence_file": "/mnt/project-files/research/nx1/RESULT_NX1_KO.md",
+    "recheck_worth": true,
+    "recheck_sketch": "Same check as VS1 B1 (one job, not two). Honest only if the cash rate is taken from published account terms before measuring and reported as a terms line. No re-test is needed for the sign; it is mechanical."
+   },
+   {
+    "source_lane": "tax_min",
+    "candidate": "Idle cash moved slowly into a box-spread ETF. 10M KRW: path d +0.13, real NDX +0.02; 100M KRW: +0.12.",
+    "kind": "additive (idle cash; model value, product did not exist before 2014)",
+    "path_d_pp": 0.13,
+    "real_d_pp": 0.02,
+    "rejected_by": "Materiality (called small) and NON-ACTUAL product model.",
+    "n_tries_in_lane": "about 276 in the lane (product exploration 78)",
+    "evidence_file": "/mnt/project-files/research/tax_min/RESULT_TAX_MIN_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be made honest as a separate test: same family as SGOV, real +0.02 is noise, and it is one of about 276 tries. Fold it into the single cash-terms fact check under VS1 B1."
+   },
+   {
+    "source_lane": "tax_min",
+    "candidate": "Family accounts, each with its own 2.5M KRW deduction. Two accounts: path d +0.30, real NDX +0.37; four accounts: +0.67 / +0.82 (10M KRW). All five bases positive, dd80 unchanged.",
+    "kind": "additive (account terms)",
+    "path_d_pp": 0.3,
+    "real_d_pp": 0.37,
+    "rejected_by": "Not a statistical rule: needs family members' own money (substance-over-form taxation) and user action, so proposal only.",
+    "n_tries_in_lane": "about 276 in the lane; this effect is mechanical (deduction divided by n), no selection bias",
+    "evidence_file": "/mnt/project-files/research/tax_min/RESULT_TAX_MIN_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Nothing to re-check: the number is mechanical and stands. It is excluded by the user's rule against methods needing manual or legal action, not by evidence."
+   },
+   {
+    "source_lane": "tax_min",
+    "candidate": "Lower commission. One-way 0.15%: path d +0.56; 0.10%: +0.75 (10M KRW); +0.54 / +0.72 at 100M. Ceiling row at zero fee: path 17.7% (+1.1pp), real NDX 32.2% vs 31.1%. M3 (d) re-measured the fee cut alone at +0.53pp.",
+    "kind": "additive (account terms)",
+    "path_d_pp": 0.56,
+    "rejected_by": "Locked-reference rule: MS1 cost of 0.3%/side is not changed; information row only. Real NDX d for the 0.15% and 0.10% rows is not written in the file.",
+    "n_tries_in_lane": "about 276 in the lane; mechanical effect",
+    "evidence_file": "/mnt/project-files/research/tax_min/RESULT_TAX_MIN_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Nothing statistical to re-check. It becomes usable only when the fee actually charged is a confirmed fact, and it must be reported as a terms line because the locked reference may not be changed. Event conditions are unverified."
+   },
+   {
+    "source_lane": "RNG1",
+    "candidate": "R1: C3 volatility input = max(close-based 20-day vol, range-based 20-day vol). Path 16.67%, d +0.45pp (74%), dd80 72.0%; real NDX 31.11%, +0.03.",
+    "kind": "signal change (C3 volatility input); neither additive nor dilutive",
+    "path_d_pp": 0.45,
+    "real_d_pp": 0.03,
+    "rejected_by": "Passed the pre-registered rule, then failed the conservative checks. Delay sensitivity: at 3-day delay path d -0.04 (47%), real -0.15. Sub-period: 1986-99 only -0.14 (10%), 2000-14 only +0.01 (51%). Changes v1's decision on about 7 days in 29 years.",
+    "n_tries_in_lane": "5 (+1 control)",
+    "evidence_file": "/mnt/project-files/research/rng1/RESULT_RNG1_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest. The real-history effect rests on about 7 days, it was the best of 5, the gain disappears in each era taken alone, and it is a C3 variant, which is closed by user decision."
+   },
+   {
+    "source_lane": "RC1",
+    "candidate": "S5: asymmetric re-entry on the C3 chassis without brake. Std engine levels: path 17.0% vs 16.2%, real NDX 32.0% vs 31.1%, SPX 55-85 12.1% vs 11.9%; delay 3: 17.3 vs 16.3; delay 5: 18.1 vs 16.2; cost x2: 15.9 vs 15.1. Lab dd80 89% vs 73%. Paired d versus v1 is not written.",
+    "kind": "signal-structure change on the raw chassis (drops the brake); neither additive nor dilutive",
+    "path_d_pp": 0.8,
+    "real_d_pp": 0.9,
+    "rejected_by": "Baseline and bar: it was judged against C3 raw (not v1) with a +1pp-on-every-basis rule, and it is below C3 raw on SPX 55-85 (12.1 vs 12.8) and on path (17.0 vs 17.1). Tail risk: dd80 89%. Post-hoc pick from 6 structures.",
+    "n_tries_in_lane": "lab 13 + 6, std decomposition 10, stress 16",
+    "evidence_file": "/mnt/project-files/research/raw_core/RESULT_RC1_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest. All <=2014 bases were seen after it was picked. Its path gain over v1 is the no-brake effect (C3 raw alone is +0.9 path, -0.4 real, dd80 91%); the re-entry tweak adds nothing on path and only helps the single real history. The file puts the project's selection premium at 3-8pp, larger than the effect. C3 variants are closed by user decision."
+   },
+   {
+    "source_lane": "DV (DV1)",
+    "candidate": "CAPE-timed 3x stream at a fixed 10% next to v1 (rank 5 by the pre-registered early-era score). Path 17.17%, d +0.65pp (74%), dd80 30%; real NDX 31.14, written as (+-0); 2000-14 +1.1; SPX 55-85 11.8, 70-85 12.7; cost x2 +0.70.",
+    "kind": "dilutive (10% of capital taken from v1)",
+    "path_d_pp": 0.65,
+    "real_d_pp": 0.06,
+    "rejected_by": "Post-hoc pick: the pre-registered rule selected rank 1 (TQQQ 10%), which failed; this one is an after-the-fact observation that cleared all four confirmations.",
+    "n_tries_in_lane": "323 (quick scan 48, DV1 183, DV2 76, leverage 16)",
+    "evidence_file": "/mnt/project-files/research/diversifier/RESULT_DV_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest here. It is one of 183 after all bases were seen, with a real-NDX gain of zero. The component was already carried into another thread's pre-registered mix (v002: path 17.63%, real NDX 28.97% as quoted in AW), so testing it again would be double use. Static mixes are closed."
+   },
+   {
+    "source_lane": "W1 (MC1)",
+    "candidate": "H4c: brake order step 0.25 on v1. Path 16.21%, d +0.13pp (59%), dd80 73%; real NDX 31.20, +0.11; SPX 55-85 -0.12, 70-85 -0.11.",
+    "kind": "additive (execution, order unit)",
+    "path_d_pp": 0.13,
+    "real_d_pp": 0.11,
+    "rejected_by": "Materiality bar (d >= +1.0pp, win ratio >= 60%); called noise level.",
+    "n_tries_in_lane": "28 (H4 3)",
+    "evidence_file": "/mnt/project-files/research/multi_cand/w1_c3fam/RESULT_W1_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest and not worth it: tax_min measured the same lever (0.25 / 0.5 order units) at -0.0 path / -0.1 real, so the sign depends on implementation. One of 28."
+   },
+   {
+    "source_lane": "W1 (MC1)",
+    "candidate": "H5a: v1 brake corrected so that tax payments do not count as drawdown. Path 16.28%, d +0.05pp (53%), dd80 75%; real NDX 31.39, +0.31; SPX 55-85 +0.07, 70-85 -0.02.",
+    "kind": "brake variant (effectively more leverage); neither additive nor dilutive",
+    "path_d_pp": 0.05,
+    "real_d_pp": 0.31,
+    "rejected_by": "Materiality bar, win ratio 53%, and dd80 rises from 73% to 75%.",
+    "n_tries_in_lane": "28 (H5 2)",
+    "evidence_file": "/mnt/project-files/research/multi_cand/w1_c3fam/RESULT_W1_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest. tax_min's version of the same idea gave +0.31 path / -0.06 real with dd80 85%, so sign and size depend on implementation. It is a brake (C3) variant, closed by user decision."
+   },
+   {
+    "source_lane": "MF1",
+    "candidate": "Optimistic row: v1 run through MNQ futures at 3x, 100M KRW capital, futures-account cash credited at rf - 2pp. Path 16.0% (same-capital v1 15.9%), d +0.9pp, dd80 70%; real NDX +2.2; SPX 55-85 -1.0, 70-85 -0.8.",
+    "kind": "vehicle and account terms (no capital taken from v1)",
+    "path_d_pp": 0.9,
+    "real_d_pp": 2.2,
+    "rejected_by": "Not the base assumption (base is zero interest: -1.5 path / -0.8 real); loses on both SPX eras; sign flips with a +0.8pp financing spread (-0.2 path / +0.4 real); needs 100M KRW or more (one contract is too large below that).",
+    "n_tries_in_lane": "120 (48 + 72 after amendment A1)",
+    "evidence_file": "/mnt/project-files/research/mf1/RESULT_MF1_KO.md",
+    "recheck_worth": false,
+    "recheck_sketch": "Cannot be honest as a data re-test. The row hinges on one unverified fact (interest on USD in the overseas-futures account), and it is infeasible at the locked 10M KRW start. Even if the fact were confirmed, the lane expects about +1pp on path with losses in the eras not used for design. Futures as the v1 vehicle is a closed axis."
+   }
+  ],
+  "measurement_artifacts": [
+   "VERIFY_WX1 F1: the SPA recentering in M2's mtest.py is reversed, so the test cannot detect any edge (a planted t = 8 was detected 0/30 times). The reported p = 0.999 is invalid; the corrected p is 0.877. The verdict stands because the Romano-Wolf step is coded correctly and rejects nothing. Whether another lane copied this code is unverified.",
+   "VERIFY_WX1 F2: the master convention 'representative value = 16.2 + d_stream' cuts timing-free candidates by about 12-14pp (NDX 1x hold comes out at -2.6% against a known 11.6%). M1 and M2 verdicts are unaffected. The verifier says near-threshold candidates in M3 and M4 could flip. M3 (a) used the path engine directly, so it is unaffected; M4's result file was not on my reading list and is unaudited here.",
+   "VERIFY_WX1 F3: M1's SPA detection threshold is t of about 5.0-5.5, and sparse rules inflate the null tail, so power against a 30%-class edge was about even. The best t found (3.35-3.39) is below the null median, so the verdict stands.",
+   "VERIFY_WX1 F4 and BT1: the dd80 condition is read on different bases across lanes. M1 uses 73.2% (path), M2 uses 9.6% (73% of the stream value), and BT1 quotes s0.85 dd80 as 13% (stream) while most files use 73% (path). BT1 also sets a rule's own-stream resample (15.2%) against s0.85's path value 16.16%. This does not hide an advantage (s0.85's own stream resample is 28.3% per VERIFY), but the bases are mixed.",
+   "RC1: the six alternative structures (S1-S6) were screened on lab values, which differ from the locked std engine (C3 raw 17.6 vs 17.1; vol-only 15.7 vs 13.9). Only S5 and S3 were re-measured on std, and all were compared against C3 raw rather than v1. The S1, S2, S4 and S6 rejections rest on the screening engine. The family is closed by user decision.",
+   "AG1 section 2: the MS1 reference credits idle cash with (rf - 2pp), but the program holds cash at 0%, which lowers v1 from 16.2% to 15.5% in the program thread's recalculation. Every idle-cash verdict (for example SGOV traded at 0.3%/side: 15.84% / 16.03% in VS1) was judged against a baseline the live program does not earn.",
+   "AC3 and M3 (d): rows labelled 'real product cost' (the TQQQ and Korean 2x ETF tracking rows and the stacked total) use product tracking measured on post-2014 data. They cannot be cited under the <=2014 rule. The conservative-model rows are the clean ones (ISA 75/25: path 16.3%, real NDX 27.2%), and ISA is not positive on both bases under either.",
+   "tax_min: two engine bugs in the futures and hedge rows were found and fixed by the audit; results/t2_cands.json and t3_hedge.json still hold the bug values for those rows. Separately, if the broker uses FIFO cost basis, the MS1 base may be about 0.13pp optimistic (not re-measured).",
+   "Two lanes measured the same lever with opposite small signs: order step 0.25 (W1 H4c +0.13 / +0.11 vs tax_min -0.0 / -0.1) and a brake that ignores tax payments (W1 H5a +0.05 / +0.31 with dd80 75% vs tax_min +0.31 / -0.06 with dd80 85%). These results are implementation-dependent and at noise level.",
+   "OV1-B: the SPX bases are 'not covered' and set equal to v1; the QQQ open-price cross-check is probably not independent (same source); the assumptions that the TQQQ open equals 3x the QQQ overnight move, the open spread, and market-on-open availability were not measured. The F bar was judged on the paired median d (+0.35) while the headline levels differ by more (16.84 vs 16.16); the paired d was the pre-registered metric.",
+   "MF1: the rejection of futures as the v1 vehicle depends on one unverified fact, the interest paid on USD in the overseas-futures account (base assumption zero).",
+   "VS1: the B-group runs reuse v1's own-path brake multipliers (an approximation), so the SGOV zero-cost figure (+0.47, 100% win ratio) is approximate.",
+   "M3 (a): the d values in the fill table are raw (selection bias included) and criterion 1 subtracts a flat 3pp; the ACM rows use full-sample estimates (look-ahead, upper bound only); drift0 is a counterfactual with bond mean excess return set to zero, not an observed-data result. The engine cache was built through library code located in a forbidden folder (disclosed in the file; the file was not opened).",
+   "HY1 verification: 237 of the 300 warm-up days in the NDX base are zero-filled, which enters the VOL80 and CHOP percentiles (common to all lanes including the v1 reference). Bond data before 1970 are monthly steps. Neither changes a verdict.",
+   "VP1: option prices are reconstructed (NON-ACTUAL), and the reconstruction error favours the option candidates, so those rejections are robust.",
+   "RNG1 R1: the path gain (+0.45) vanishes when blocks are drawn from either era alone (1986-99 -0.14, 2000-14 +0.01), which suggests it arises at block joins. This points to a false positive, not a false negative.",
+   "VN1: an earlier both-positive calendar label (midterm-election year) was a date-label leak; with an honest label the path d is -0.25. Also a false positive."
+  ],
+  "summary": "All 21 listed result files exist and were read, plus /mnt/project-files/research/bottleneck/RESULT_TB_KO.md. Nothing was computed and no forbidden file was opened. 18 candidates were positive versus v1 on both dev250_path and real NDX 1986-2014 at their own measurement and were rejected by a side rule. None is a clean false negative that can be honestly re-tested on <=2014 data.\n\nThree findings matter:\n\n1. OV1-B (cuts filled at the next open) is the only strategy change that was pre-registered with N = 1 and is positive on both: path 16.84% vs 16.16% (paired d +0.35pp, win ratio .736), real NDX 31.81% vs 31.08%. It failed only the +0.5pp type-F bar. It stays positive under the +0.1pp/side stress (+0.16 / +0.37), but its 2008-14 contribution is negative and the cut-day night return in 2000-14 averaged 0.00%. It is the best honest below-bar candidate. A re-test cannot lift it; before it is reported, its unmeasured caveat (actual TQQQ open prints 2010-2014) should be measured.\n\n2. The bond fill of v1's idle cash is the largest both-positive result: path d +3.8 to +5.2pp and real NDX +3.4 to +4.4pp for the ungated, FB0, FBmed and SLmed rows, with dd80 falling from 73% to 56-59%. On the written numbers the ungated row would clear the FINAL1 type-F and FINAL PASS letters. It was closed by regime side rules: drift0 path d of -1.05 (ungated) and -0.05 (SLmed), and time-shift null p of .065 to .75. The ungated gain is +8.29 in 2000-14 but only +0.21 in 1986-99 and +0.00 / +0.16 in the two SPX eras. This is a bet on the bond regime, not a measurement error. No <=2014 re-check can settle it; whether drift0 is binding is a policy decision.\n\n3. Cash terms: MS1 credits idle cash with rf - 2pp, but the program holds cash at 0% (v1 16.2% to 15.5% per AG1). SGOV was therefore rejected against a baseline the program does not earn. A fact check of the real cash rate and sweep fee, followed by one mechanical measurement, is honest, but it must be reported as a terms line, not a PASS.\n\nThe other entries are noise-level or post-hoc: RNG1 R1, RC1 S5, DV CAPE 10%, W1 H4c and H5a, the box-spread ETF, and the MF1 optimistic futures row. Family accounts and a lower commission are mechanical gains that depend on user-side conditions.\n\nExcluded because they are not positive on both bases:\n- Bottleneck sleeves at 10% and 20%: path +1.0 / +1.6, real NDX -0.2 / -0.4.\n- W1 sub-accounts H2c and H2h: path +0.48 / +0.72, real -0.20 / -0.35.\n- C3 raw without brake: path +0.9, real -0.4.\n- Value+profitability 3x at 30%: path 20.4, real 30.9, no buyable product.\n- ISA mixes: real NDX 27-29%.\n- PSQ in cash state: real +1.30, path -1.49.\n- One-day delay: real 31.5, path 16.0.\n- All option-selling variants.\n\nKill-test near misses that never reached an MS1 measurement were not confirmed by their own unseen windows or audits: OV1-C (8.2pp drop against a 10pp bar) and VN2 S2 / S3 (fewer than 8 on-blocks).\n\nNo measurement artifact found here flips a verdict. One item is unaudited: the verifier's warning that the stream-conversion convention could change near-threshold verdicts in WX1-M4, whose file was not on my list."
+ },
+ "court": {
+  "lanes": [],
+  "rejected": [
+   {
+    "id": "LIT1_MGR_TONE",
+    "reason": "REJECT. Judged prior of a both-bases PASS 0.015 (inference), below the 0.05 door. idea_check re-run by the court: English wording -> '자동 거절 — [E10]와 일치' (a false keyword hit on 'GSW'; T05 matched second on 'sentiment', S06 third on '10-k'); Korean wording without the word sentiment -> '자동 거절 — [S06]와 일치'. Closed-axis ruling: the source is new at file level (confirmed: T05's nine signals in research/alt_patent/r2_sent/RESULT_SENT_KO.md are issuance share, a 4-item composite, closed-end fund discount, household equity share, foreign flows and SKEW; none is filing text; no hit for tone/Loughran/10-K in the T05, T22 or T23 result files). It is still not a clean new axis: the paper itself reports correlation .53 with the Baker-Wurgler index, whose contrarian forms scored .53-.57 against an always-in rate of .555 (confirmed, T05, re-open 'none'); T23's re-open condition asks for data covering at least all of 1986-99 and this source starts in 1994; T32 already closed the same shape (short-history input used to cut v1's 3x, 0 of 4 passed). Data claim: reachable (court test today: huggingface.co robots 'Allow: /'; API metadata HTTP 200 for both datasets, not gated, cc-by-4.0, 82 and 94 files, fields include tokens, form, filing_date, ciks). Open data problems: (1) API 'usedStorage' reads 71.8 GB and 81.1 GB against the scout's 29.2 and 31.0 GB, so the scan may cost more than stated (unverified); (2) no compliant source for the Loughran-McDonald word list itself was reach-tested (its home site serves files from a download host whose robots file disallows everything); (3) 2011-14 filing counts in the data repo are unverified. Why the prior is low: (a) the early window is 1996-99 only, and electronic filing was still being phased in until 1996 (scout's own counts: 5,221 quarterly filings in 1994, 14,086 in 1995, 29,681 in 1996), so the trailing 24-60 month baseline for 1996-97 compares a full universe with a large-firm-only one; the clean part is about 2 years, about 24 blocks, likely fewer than 8 'on' blocks; (b) with 8-16 'on' blocks a signal with no information clears the 10-point gap about 17-35% of the time (court binomial illustration, base rate 70-75% assumed), so an early pass would be weak evidence; (c) the unseen window 2003-14 is the paper's own discovery sample and its effect is concentrated in 2007-09, when v1 is already capped at 1x or in cash by its macro alarms, so little is left inside v1-3x blocks; (d) 1996-99 is where v1 earns about 52%/yr, so even a hit-rate pass can lose real NDX on magnitude; (e) the word list was built in 2011 from 1994-2008 filings, so every signal before 2011 uses an after-the-fact instrument and any PASS would carry a NON-ACTUAL label. Stage estimate (inference): early pass about .22, unseen pass given early about .18, both bases given kill-test pass about .35."
+   },
+   {
+    "id": "DERIV_MONTH_END_FUTURES_BASKET",
+    "reason": "REJECT (raised by the derivatives scout as a decision, not as an idea). Judged prior below 0.01 (inference). idea_check re-run: '자동 거절' (keyword hit S22; substantive matches T18 and X42). Reasons from the records: (1) T18 is closed with re-open 'none' and its Treasury month-end futures stream scored Sharpe .64-.95 in 1986-2014 and about 0 in 1962-85 (confirmed, research/c3_create/r9b/RESULT_R9B_KO.md), so the type D early gate of 1.1 fails wherever pre-1986 data exists; the long leg of the equity side is the turn-of-the-month effect, closed in T04; (2) the only new part, the settlement-anchored short leg before month-end, is a short futures position, which is neither long-only nor defined-risk as type D requires, and its Sharpe of about .7 is the scout's inference from published window means, not a measurement; (3) at the locked reference (10M KRW start) the book holds zero contracts: R9B states the contribution at 10M KRW is 0 because of contract size, and a futures account can only be funded by a transfer the program cannot make, so the lane equals v1 at the headline and cannot beat it; (4) it needs total exposure above 3x and a margin account, which the R9B file left as an open USER decision. That stays a proposal for the user, not a lane."
+   },
+   {
+    "id": "DERIV_LENS_OTHER_DROPS",
+    "reason": "Court agrees with all other drops of the derivatives lens (classic turn-of-month, pre-holiday and expiry-week add-ons = T04; macro-announcement days = T09/T20; Treasury auction cycle = T18 sibling; one-day reversal = T13/T27/T39; January small-cap and reconstitution spreads = S05/S14; FOMC even weeks = T09/T20; short volatility futures and long options = L02/T32 with no free option prices before 2015; always-on or conditional add-ons above 3x = L01/T02; bond-futures stacking = E02/E06; commodity roll and metals/FX time-of-day = E04/X42). None has a free pre-2015 early window plus a stand-alone Sharpe near the type D gate. No lane."
+   },
+   {
+    "id": "ADDITIVE_LENS_NONE",
+    "reason": "Zero ideas from this lens; the court confirms the zero. The two mechanics not yet measured cannot reach the type F door of +0.5pp on path: same-owner two-account lot selection (scout estimate at most +0.1 to +0.15pp, inference; X01 records account splitting as barred by the user's fixed account condition) and lending of held TQQQ shares (a few basis points, no free fee history before 2015, needs a manual opt-in). Everything else in the lens is either already measured (hedge-instead-of-sell deferral, box-spread cash, lot method, LEAPS, Korea-listed vehicles, futures tax book) or already inside v1's baseline (two-way year-end harvest). The cash-sweep and fee items are account terms and are already measured in the main session's STACK lane."
+   },
+   {
+    "id": "RECHECK_OV1-B_OPEN_FILL",
+    "reason": "NO re-check lane. The main session's STACK lane already re-measured it as rows S6 and S7 under a rule fixed before computing, and the rule said 'not adopted' (confirmed, research/final1/RESULT_MAIN_LANES_KO.md: path +0.35pp, real 31.81%; overnight return sum on v1 decrease days +0.227 in 1999-2007 and -0.097 in 2008-2014; +0.16 / +0.37pp after +0.1%/side). A second lane would use the same cut events again (30 to 1999, 45 in 2000-14, all already used), the caveat measurement on TQQQ open prints 2010-14 can only lower the number, and the edge is the overnight leg that belongs to the parallel ONF1 thread. Prior of an honest PASS: 0. Reporting duty: rows S6 and S7 must keep the label that 'TQQQ open = 3x the QQQ overnight move', the open spread and market-on-open availability are unverified."
+   },
+   {
+    "id": "RECHECK_CASH_TERMS_AND_FEE (VS1 B1, NX1 K1b, box-spread ETF, lower commission)",
+    "reason": "NO separate lane: this is exactly the main session's STACK lane (rows S1-S5, S8) plus its facts lane. Confirmed results on file: idle USD at 0% gives path 15.18% / real 30.53%; a no-commission sweep at rf-0.5pp gives +0.37pp / 31.23%; fee 0.12%/side gives +0.67pp / 31.66%; both together 17.48% (+1.06pp, win ratio 95%) / 31.84%. These are account terms, valid only if the broker terms are confirmed, and are not a trading-rule PASS. Running them again as a court lane would double count."
+   },
+   {
+    "id": "RECHECK_BOND_FILL (E06 ungated; E10 gates SLmed, FBmed, FB0, CPmed, CP0)",
+    "reason": "NO re-check lane; not honest on any design the court could write. idea_check re-run: '자동 거절' (E06 matched; E06 and E10 re-open conditions ask for new information that predicts bond excess return or the stock-bond correlation sign, which nobody has supplied). Facts (confirmed from research/wx1/m3/RESULT_M3_KO.md): ungated fill path +5.22pp, real NDX +4.35, 1986-99 +0.21, 1970-85 +0.16, 1955-85 +0.00, 2000-14 +8.29; with bond mean excess return set to zero the path difference is -1.05pp; at 1.5%/yr it is +0.48pp; gates are not better than random gates with the same on-ratio (p .24-.75). The row clears the FINAL1 type F letters only because FINAL1 has no bond-regime rule; using that to pass it now would be choosing the rule after seeing the result. The failed side rule (zero-drift result >= 0 on the headline path) is a fixed measured number that no new window can change, so an honest PASS probability is 0. A 1928-54 or non-US window could only show that a bond premium existed in another era; it cannot remove the fact that the gain is a bet on future bond excess return. This is a policy decision for the user and belongs in the final report as such (see note)."
+   },
+   {
+    "id": "RECHECK_RNG1_R1",
+    "reason": "NO. The path gain of +0.45pp disappears when blocks come from either era alone (1986-99 -0.14, 2000-14 +0.01) and at a 3-day delay (-0.04); it changes v1's decision on about 7 days in 29 years; best of 5; it is a C3 variant, closed by user decision. This is a false positive, not a false negative."
+   },
+   {
+    "id": "RECHECK_RC1_S5",
+    "reason": "NO. Picked after the fact from 6 structures, dd80 89% against v1's 73%, its path gain over v1 is the no-brake effect, and all bases were seen after the pick. C3 variant, closed by user decision."
+   },
+   {
+    "id": "RECHECK_DV_CAPE10",
+    "reason": "NO. One of 183 tries seen after all bases, real NDX gain 0 (31.14 vs 31.08), takes 10% of capital from v1 (static mixes are closed), and the component is already used in another thread's pre-registered mix, so a re-test would be double use."
+   },
+   {
+    "id": "RECHECK_W1_H4c_H5a",
+    "reason": "NO. Noise level and implementation-dependent: the same two levers were measured with opposite small signs in another lane (order step 0.25: +0.13/+0.11 vs -0.0/-0.1; brake that ignores tax payments: +0.05/+0.31 with dd80 75% vs +0.31/-0.06 with dd80 85%). H5a is a brake variant, closed by user decision."
+   },
+   {
+    "id": "RECHECK_MF1_FUTURES_VEHICLE",
+    "reason": "NO. The optimistic row rests on one unverified fact (interest on USD in the overseas-futures account; base assumption zero gives -1.5 path / -0.8 real), loses on both S&P eras, flips sign with a +0.8pp financing spread, and is infeasible at the locked 10M KRW start (one contract is too large). Futures as the v1 vehicle is a closed axis."
+   },
+   {
+    "id": "RECHECK_FAMILY_ACCOUNTS",
+    "reason": "NO. The gain is mechanical (extra deductions: +0.30 path / +0.37 real with two accounts) and needs no re-test; it is excluded because it needs family members' own money and manual, legal action by the user, which the user's rule forbids. Proposal only."
+   },
+   {
+    "id": "ARTIFACT_WX1_M4_STREAM_CONVENTION",
+    "reason": "Checked by the court because the auditor left it unaudited; no re-check needed. The multi-asset mass search (E11) compared its top 20 rules with v1 directly on real NDX 1986-2014 through the tax-and-cost kernel: all 20 are 14.6 to 28.4pp below v1, and on the convention most favourable to the candidates (own path vs the true v1 path) the best is -1.4pp (confirmed, research/wx1/m4/RESULT_M4_KO.md lines 71 and 93). The stream-conversion convention therefore cannot flip that verdict."
+   }
+  ],
+  "note": "COURT VERDICT: no lane is selected (0 new lanes, 0 re-check lanes). Nothing reaches a judged prior of 0.05 for a both-bases PASS, so nothing should be built from the wildcard round. Under PRECOMMIT_FINAL1 section 6 the conclusion stands as 'v1 stays', with the STACK account-term table as the only confirmed improvement path.\n\nWhat the court did (no backtest computed, no project file written):\n- Read BRIEF_FINAL1.md in full, CLOSED_REGISTRY_DETAIL.txt in full, the idea_check list (108 rows incl. T33-T39, X40-X42), PRECOMMIT_FINAL1.md and RESULT_MAIN_LANES_KO.md (to see what STACK already covers), the T05 result file, and targeted lines of the T18 (r9b), E10 (wx1/m3) and E11 (wx1/m4) result files. No forbidden file or folder was opened.\n- Re-ran idea_check on the one scout idea in two wordings, on the month-end futures basket, and on three re-check candidates. All six returns were '자동 거절'. Three of the top matches were keyword accidents (E10 on 'GSW', S22 on 'basket', L01 on 'exposure'); the substantive matches are the ones named in the rejected list.\n- One reachability test, for the only idea with a data claim: huggingface.co robots.txt read first ('User-agent: * Allow: /'), then dataset API metadata for the two filing-text datasets (HTTP 200 each, not gated, cc-by-4.0). Metadata only; no data downloaded; the temporary file was deleted. No other host was contacted and no personal data was sent.\n\nJudged priors (all inference): LIT1_MGR_TONE 0.015; month-end futures basket below 0.01; every re-check candidate 0 for an honest PASS (reasons in the rejected list).\n\nWhy no re-check lane: the two candidates the auditor marked worth a re-check (open-fill of cuts, cash terms) are already measured inside the main session's STACK lane under rules fixed before computing: open-fill was 'not adopted' (overnight sum on cut days +0.227 in 1999-2007, -0.097 in 2008-2014) and cash/fee rows are account terms. The bond fill cannot be re-checked honestly: its failed side rule is a fixed measured number.\n\nItems the final report should carry (not lanes):\n1. Bond fill of v1's idle cash is the largest both-positive result on record and is a USER POLICY decision, not a test result. Numbers (confirmed, <=2014, synthetic 3x bond = NON-ACTUAL): path +5.22pp, real NDX +4.35pp, dd80 73% -> 56%; but +8.29 in 2000-14 against +0.21 in 1986-99 and +0.00 / +0.16 in the two S&P eras; if future bond excess return is zero it costs 1.05pp, at 1.5%/yr it adds 0.48pp. It is a bet that long Treasuries keep paying a premium and keep rising when stocks fall.\n2. Live-program caveat that lowers the headline: with idle USD at 0% v1 measures 15.18% path / 30.53% real (STACK S1), below the 16.16% / 31.08% reference. The cash rate actually credited in the program account is unverified.\n3. STACK rows S6 and S7 (open-fill) should stay labelled 'not adopted', with the TQQQ-open assumptions unverified.\n4. Cost-basis caveat for the facts lane: if the broker uses first-in-first-out instead of average cost, the reference may be about 0.13pp optimistic (recorded in tax_min, not re-measured).\n5. Futures account: the open user decision from R9B remains (margin account, total exposure above 3x, capital of roughly 105-170M KRW by the scout's unverified sizing). At the 10M KRW reference it holds zero contracts.\n6. The auditor's one unaudited item (WX1-M4) was checked: no verdict flips.\n\nData-claim discrepancy to pass on: the API reports 71.8 GB and 81.1 GB of storage for the two filing-text datasets, against 29.2 GB and 31.0 GB in the scout's note (possibly older revisions counted; unverified)."
+ },
+ "verify_main": {
+  "target": "Main session lanes STACK, NBR and MEGA (PRECOMMIT_FINAL1 sections 1-3; results/stack.json, nbr.json, mega.json)",
+  "verdict": "CONFIRMED",
+  "reproduced": true,
+  "leak_found": false,
+  "max_abs_diff_pp": 2.3e-14,
+  "findings": [
+   "All three result files exist and every number in them reproduces. Largest difference across all compared fields is 2.2e-14 percentage points (tolerances were 0.05pp for STACK and 0.1pp for NBR). The verdict flags also match: OPENFILL adopt = false, NBR5 / NBR9 PASS = false, Hi 10 / Hi 20 PASS = false.",
+   "STACK S0-S5 and S8: my own measure2 calls, with engine_kw written from the PRECOMMIT text, equal stack.json on all five bases. Path / real NDX CAGR: S0 16.159 / 31.081, S1 15.181 / 30.526, S2 16.806 / 31.226, S3 16.965 / 31.659, S4 17.481 / 31.837, S5 15.883 / 31.013, S8 17.125 / 32.435.",
+   "STACK arithmetic check that does not go through the engine code: a plain-Python restatement of the account rules matches the engine to 2e-14pp on real NDX, SPX 55-85 and SPX 70-85 for all seven rows, and to 7e-16 per path on the first 100 dev250_path paths for S0 and S4. Cash yield was written out explicitly (zero for S1/S5, (rf - 0.5pp) x (1 - 15.4%) for S2/S4) and the brake was called as a black box. So cspr = 10 really is zero interest, and cost and delay act as labelled.",
+   "STACK S6 / S6x / S7 / S7x: re-run through the OV1-B engine with an explicit term list gives the same values as stack.json. S6 path 16.842% (d +0.352pp, pw .736), real 31.807% (d +0.726pp); S6x d +0.162 / +0.367pp; S7 18.047% / 32.657%; S7x 17.927% / 32.554%. Mode 0 equals std.engine exactly on all five bases. The main session produced S7 by temporarily overwriting the shared default terms (beng.F1) and restoring them; no engine code was changed. S8 is a plain measure2 row with delay = 1.",
+   "The section 1 adoption rule was applied as written. Path d +0.352pp >= +0.3pp: true. Real d > 0: true. Both stay positive with +0.1%/side: true (+0.162 / +0.367pp). Both halves positive: false (1999-03-11..2007 S = +0.2269 over 37 events; 2008..2014 S = -0.0969 over 18 events). Result: not adopted. My own event detection from the std engine record finds the same 71 level decreases as the engine log, and the second half is negative under every reading: exposure-weighted with tax sales +0.227 / -0.097, level decreases only +0.225 / -0.098, plain unweighted sum +0.100 / -0.046.",
+   "Process note on OPENFILL (does not change the conclusion): S6 is the already closed registry row X40 (OV1-B, closed 11-05 at path d +0.35pp against the type-F bar of +0.5pp). The FINAL1 rule uses a +0.3pp bar, which is lower, and all of its inputs (+0.35 / +0.73, stress +0.16 / +0.37, 2008-14 S = -0.097) were already printed in the OV1-B result file before PRECOMMIT_FINAL1 was written. It was therefore not a blind test. The outcome (not adopted) agrees with the registry, so nothing is inflated.",
+   "NBR: my own signal builder (pandas rolling SMA and volatility, own hysteresis loop) equals the library fam4 on every cell from the engine start, for all 9 parameter points on all 5 bases, and the centre point equals v1 per path. NBR5 path 15.754% (d -0.209pp, pw .346), real 30.473% (d -0.609pp). NBR9 path 15.476% (d -0.375pp, pw .324), real 30.078% (d -1.003pp). The delay-3 and cost-x2 rows and all sub-account medians also match nbr.json.",
+   "NBR caveat measured (it works in NBR's favour and cannot rescue it): 'own tax book' ignores that one person's yearly gains and losses net across sub-accounts. With one shared book and one deduction, real NDX moves by +0.07pp (NBR5) and -0.02pp (NBR9). On the first 100 dev250_path paths the median moves by +0.04pp, and the paired d against v1 stays negative (NBR5 -0.05pp, pw .46; NBR9 -0.26pp, pw .36). Also, the brake reads the 200-day trend flag in every sub-account; only the base signal's SMA length and vol cap move. That is as pre-registered.",
+   "MEGA: I downloaded both Ken French files myself (robots.txt read first); their sha256 equal the values recorded in mega.json. The table used is 'Average Value Weight Returns -- Monthly', rows <= 2014-12 only (1,062 months from 1926-07), with no missing codes. Market = Mkt-RF + RF. Hi 10 minus market, 1963-07..2014-12: -0.796pp/yr, t -1.657 (Newey-West -1.53); halves -1.138 / -0.461; 1986-2014 -0.300. Hi 20: -0.517, t -1.461; halves -0.877 / -0.164; 1986-2014 -0.053. Cross-check of the market definition: the cap-weighted sum of the ten deciles has correlation 0.9996 with Mkt-RF + RF and a mean gap of 0.10pp/yr.",
+   "MEGA caveats: Hi 10 holds 120 to 200 firms and 48% to 70% of total market value at the dates checked (1963-07, 1986-01, 2000-01, 2014-12), so it is a proxy for 'the top 10-30 stocks', as the result file says. The file is the current CRSP vintage (2026-09), not a 2014 vintage. The pass rule is a custom mean-difference test, not the BRIEF type D or E thresholds; the sign is negative, so the outcome does not depend on that choice.",
+   "Look-ahead: none found. Truncation test on real NDX with history cut at 1995-06, 2001-03, 2008-10 and 2012-07: macro flags, all nine NBR base signals, and v1 engine equity and level are identical on the overlap. OPENFILL fills use only the next open after an unchanged decision. Ken French portfolios are formed each June.",
+   "Post-2014 rows: none used. All five basis calendars end 2014-12-31. The two QQQ open-price files have 0 rows after 2014. Ken French rows after 2014-12 are dropped at parse. The result files hold no post-2014 data. Housekeeping: the main session's uncut raw Ken French zips, which contain later rows, are still at /tmp/final1_main/kf/ (BRIEF section 5 says to remove them; their sha256 is recorded). I deleted my own copies.",
+   "Reporting slips in RESULT_MAIN_LANES_KO.md (numbers in the JSON are right): (a) the NBR text gives the other six sub-accounts as 26.6-29.6% on real NDX, but 220-day / 45% is 31.07%, still below the centre's 31.08%; (b) the MEGA table omits the pre-registered 1986-2014 row and shows 1986-1999 and 2000-2014, which were not pre-registered; (c) 'idle interest 0% is 1.0pp lower on path' is the difference of medians (0.98pp), while the paired median in the table is -0.70pp; (d) the PRECOMMIT header says 'written 14:35Z' but the file time is 14:04:28Z. By file time the order pre-registration, code, results holds (results 14:09-14:11Z), and the sha256 file matches."
+  ],
+  "summary": "CONFIRMED: STACK, NBR and MEGA all reproduce to machine precision (largest difference 2.2e-14pp), with no look-ahead and no post-2014 row used. The STACK rows were also checked with a plain-Python restatement of the account rules, NBR with my own signal builder, and MEGA with my own parser on files I downloaded (same sha256).\n\nThe conclusions stand as reported:\n- **STACK:** S4 (RP-type cash plus 0.12% fee) gives path 17.48% and real NDX 31.84%, as account terms only. OPENFILL is not adopted because the 2008-2014 half is negative (-0.097) under every reading.\n- **NBR:** both variants fail (NBR5 path d -0.21pp, real -0.61pp; NBR9 -0.37pp, -1.00pp). A shared tax book moves this by at most about +/-0.07pp.\n- **MEGA:** both variants fail (Hi 10 -0.80pp/yr, t -1.66; Hi 20 -0.52pp/yr, t -1.46).\n\nNotes that do not change any conclusion:\n- OPENFILL is a re-run of closed registry row X40 with a +0.3pp bar, lower than the type-F +0.5pp bar that closed it, and its inputs were already known, so it was not a blind test.\n- RESULT_MAIN_LANES_KO.md has four small reporting slips (listed in the findings).\n- The main session's uncut raw Ken French zips are still in /tmp/final1_main/kf/.\n\nVerifier files are in /mnt/project-files/research/final1/verify_main/: code/ (v_stack.py, v_openfill.py, v_nbr.py, v_mega.py, v_replay.py, v_replay_lib.py, v_replay_path.py, v_lookahead.py, v_compare.py, kf_peek.py), results/ (v_stack.json, v_openfill.json, v_nbr.json, v_mega.json, v_replay.json, v_replay_path.json, v_lookahead.json, v_compare.json) and MANIFEST.json."
+ },
+ "verify_capit": {
+  "target": "Lane CAPIT (RSI(14) + abnormal Nasdaq volume, type-B ADD overlay, N=2: CAP1, CAP2) - builder status FAIL at kill_B_early, plus the descriptive DEPTH table",
+  "verdict": "CONFIRMED",
+  "reproduced": true,
+  "leak_found": false,
+  "max_abs_diff_pp": 1.07e-11,
+  "findings": [
+   "TRIGGERS (own code, own Wilder RSI and own volume ratio, read straight from the panel cut by timestamp): early 1986-01-02..1999-12-31 has 3,539 days, CAP1 trigger days 0, CAP2 trigger days 0. Builder: 0 / 0. Identical.",
+   "KILL TEST B early (own 21-day grid and own label by plain compounding on a frame that ends 1999-12-31): 168 blocks, universe (v1 below 3x) 31 = 14 cash + 17 at 1x, base rate 18/31 = 58.06%, always-in 96/168 = 57.14%, on-blocks 0 for both variants, conditional rate undefined, pass_B false. Every one of the 20 early fields compared equals the builder's; my labels equal gate._frame on all 168 blocks and do not change when built from the vendor close.",
+   "FAIL IS NOT A BUG: 15 definitional readings (RSI Wilder / simple-average / EMA x ratio vs median of previous 60, mean of previous 60, median including today, volume shifted +1 day, shifted -1 day) all give CAP1 = 0 and CAP2 = 0 in the early window. Only 2 early days have ratio >= 2.0 (1987-01-23 ratio 2.23 RSI 74; 1991-03-06 ratio 2.02 RSI 79) and none has >= 2.5, so even with the RSI condition removed CAP1 could reach at most 4 on-blocks and CAP2 0, against the required 8.",
+   "INTERPRETATION CAVEAT (not a builder error): this is a no-sample fail, not a measured negative. The registered thresholds are about 4 sigma for index-level volume: early ratio percentiles are 99% = 1.51 and 99.9% = 1.95; on the 78 RSI<=30 days the maximum is 1.94. The 1987 crash missed CAP1 by 3-4% (1987-10-20 RSI 12.0 ratio 1.92; 1987-10-21 RSI 28.0 ratio 1.94). The conditional hit rate of 'RSI bottom + volume spike' was therefore never measured. The proposed registry line 'reopen condition: none' is stronger than the evidence; it should read 'untestable at the registered 2.0x / 2.5x thresholds (0 on-blocks)'. I ran no lower-threshold test (that would be a threshold change after the result).",
+   "VOLUME DATA CUT: panel sha256 matches the PRECOMMIT; 7,376 rows 1985-10-01..2014-12-31, 0 rows after 2014 in ndx_close_volume_le2014.csv and in gspc_close_le2014.csv; CSV sha matches MANIFEST; CSV dates equal the panel cut, values equal to 6e-8 relative; 0 invalid volumes; panel dates and MS1 calendar match with 0 missing either way; it is the same file, key and column (_NDX column 5) that RNG1 registered. No 2015+ value appears in any lane result file.",
+   "DATA-QUALITY NOTE missing from the builder report: the vendor volume has one abrupt level break, 1993-12-31 -> 1994-01-03 (about -45%), which depresses the ratio for about 30 trading days (monthly median ratio 0.55 in 1994-01, 0.77 in 1994-02). There is no RSI<=30 day in 1994-01-03..1994-03-15 (minimum RSI 39.4), so it does not change any trigger count.",
+   "UNSEEN WINDOW: not opened for outcomes. results/ has no killB_unseen.json, measure2 was not run, and signal_counts_unseen.json holds no outcome field (key scan: no base, cond, wins, hit, label or return). s1_killB.py refuses 'unseen' unless a variant has early_pass. Process note: after the early fail the builder did run a signal-count-only pass over 2000-2014 (trigger dates and on-block dates printed). That is signal-side information only, but it is a partial look at the unseen window; I re-counted the same signal-only numbers (no label touched) and they match: CAP1 1 trigger day (2011-08-08, RSI 22.76, ratio 2.12, v1 at 3x), 42 on-days of which 18 with v1 below 3x, 1 on-block (2011-08-24) of 50 universe blocks (37 cash, 13 at 1x) out of 179; CAP2 0 / 0.",
+   "Also noted: s1_killB.py calls gate._frame on the full 1984-2014 frame, so 2000-2014 labels exist in memory in every mode, but only blocks ending <= 1999-12-31 are read, printed or saved.",
+   "DEPTH TABLE recomputed with a different single-pass algorithm for all three series (NDX from the vendor close; S&P total-return frame; S&P price index from my own panel cut): 462 values compared, max abs difference 1.1e-13 (1.1e-11 pp), episode counts, peak / trough / recovery dates and all crossing dates identical. NDX rows: -30% crossed in 3 cycles (1987-10-20, 1990-10-10, 2000-04-14), synthetic 3x after 3 years -40%, +510%, -99.8%; -40/-50/-60/-70% are the single 2000 cycle (2000-11-20, 2000-12-20, 2001-03-02, 2001-04-03) with 3x 3-year returns -98%, -97%, -93%, -78%. S&P TR: -30% 6 cycles (3x 3y positive 2), -40% 4 cycles (positive 2); S&P price 1970-2014: -30% 4 cycles (positive 0). The Markdown tables A-D match the JSON.",
+   "DEPTH caveats: the MS1 frame's NDX return is bit-identical to the vendor panel return, so the NDX recheck is independent in algorithm, not in data source (spot closes 4704.73 on 2000-03-27, 804.64 on 2002-10-07, 4236.28 on 2014-12-31 agree with the published index). The S&P total-return series is a reconstruction with no second local source (the builder labels it NON-ACTUAL and unverified). Cosmetic: the 1987 NDX trough is shown as -40% but is -39.9%, which is why that cycle has no -40% crossing.",
+   "PRE-REGISTRATION INTEGRITY: PRECOMMIT.md sha256 ec06110c... matches PRECOMMIT.sha256; its section 4 is byte-identical to PRECOMMIT_FINAL1.md (parent sha e8b6610f... matches); CODE_FREEZE hashes match the current cap.py, s1_killB.py and s0_data.py. File times are in order: PRECOMMIT 14:09:43 -> data cut 14:12:34 -> cap.py 14:13:00 -> freeze 14:14:29 -> killB_early 14:14:31 -> unseen counts 14:15:05. cap.py was finalised 26 seconds after the volume file was cut, but the 15-reading probe shows the result does not depend on those implementation choices.",
+   "Builder's quoted facts all reproduce: 78 early days with RSI<=30, max ratio on them 1.937 (1987-10-21), 1987-10-19/20/21 ratios 1.51 / 1.92 / 1.94, v1 below 3x on 680 early days, builder-context RSI vs mine differs by at most 0.17 points (on 1986-01-02, seed effect) and 8.4e-05 after 1986-06, builder ratio vs mine 1.3e-07. v1 state shares 1986-2014 are 76.5% / 9.3% / 14.2%, in line with the brief."
+  ],
+  "summary": "The builder's FAIL for CAPIT is confirmed and reproduced exactly. With my own RSI, volume ratio, block grid and labels, both variants have 0 trigger days and 0 on-blocks in 1986-1999 against the required 8; the 168 blocks, 31 universe blocks (14 cash, 17 at 1x), base rate 58.06% and always-in 57.14% all equal the builder's values.\n\nThe failure is not a bug. Fifteen alternative readings of the RSI and volume-ratio definitions all give 0 triggers, and only 2 early days have a ratio of 2.0 or more (both at RSI above 70), so at most 4 on-blocks were possible even without the RSI condition.\n\nIt is, however, a no-sample fail rather than a measured negative. The registered 2.0x / 2.5x thresholds sit beyond the 99.9th percentile (1.95) of index-level volume ratios, and the 1987 crash missed by 3-4%. The conditional hit rate was never measured, so the registry line should say \"untestable at these thresholds\", not \"no reopen condition\".\n\nNo leak was found:\n- **Data cut:** the volume and S&P files have no rows after 2014 and match the registered panel, key and column.\n- **Unseen window:** no outcome for 2000-2014 was computed or saved, and measure2 was not run. The builder did count signals only in 2000-2014 after the early fail (CAP1 1 trigger day, 1 on-block; CAP2 0), which I reproduced without touching labels; this is a minor process note.\n- **Pre-registration:** the hashes match and the file times are in the right order.\n\nThe DEPTH table is right. All 462 values across the NDX, S&P total-return and S&P price series recompute to within 1e-13, with identical episode counts and crossing dates. One unreported data caveat: the vendor volume has a -45% level break on 1994-01-03, which does not affect any trigger count.\n\nVerifier code and outputs are in /mnt/project-files/research/final1/lanes/CAPIT/verify/ (v1_signals, v2_killB, v3_depth, each as .py and .json)."
+ },
+ "judge": {
+  "final_verdict": "V1 STAYS. No candidate meets PRECOMMIT_FINAL1 section 6 (pre-registered variant, FINAL PASS, verifier within 0.1pp, delay 3 and cost x2 keep the sign, selection stated).\n\nTrading-rule variants pre-registered this round: 6, passed: 0.\n- NBR5 / NBR9 (account split across neighbouring parameters): FAIL. Path paired d -0.21 / -0.37pp (win ratio .35 / .32), real NDX -0.61 / -1.00pp. Cost x2 negative on both bases; delay 3 path still negative.\n- MEGA Hi 10 / Hi 20 (largest stocks minus market, 1963-07..2014-12): FAIL. -0.80pp/yr (t -1.66) and -0.52pp/yr (t -1.46); both halves negative.\n- CAP1 / CAP2 (RSI bottom + volume spike): FAIL at the early kill test with 0 trigger days and 0 on-blocks (8 needed). This is a no-sample fail, not a measured negative. measure2 was not run and the 2000-2014 outcomes were not opened.\n- OPENFILL (STACK S6, re-run of closed row X40): \"not adopted\" by its pre-registered rule, because the summed overnight return on cut days is +0.227 in 1999-2007 and -0.097 in 2008-2014.\n- Wildcard round: the court selected 0 new lanes and 0 re-check lanes (no judged prior reached 0.05), so nothing was built.\n\nSTACK rows S2, S3, S4 and S8 are numerically above v1 on both bases and reproduce exactly, but the pre-registration fixed them as account terms, not a trading-rule improvement. They also have no delay-3 or cost-x2 rows, and every broker term they rest on is still unverified. They are a conditional table, not a PASS.\n\nBoth verifiers returned CONFIRMED (largest difference 2.2e-14pp for STACK/NBR/MEGA, 1.1e-11pp for CAPIT), with no look-ahead and no post-2014 row. I re-checked the two pre-registration hashes (e8b6610f..., ec06110c...) and the file times (pre-registration 14:04:28Z, results 14:09-14:11Z); they hold. The 2015+ holdout was not opened, as the rule requires when nothing passes.\n\nThe user's wish of 30% or more on the simulated-path basis was not reached: the reference is 16.16% and the best conditional row is 17.48%.",
+  "best_candidate": "None as a trading rule: v1 (s0.85) unchanged, 16.16% simulated-path median / 31.08% real NDX 1986-2014.\n\nBest honest non-rule improvement: STACK S4 account terms (idle USD in a no-commission RP-type vehicle at rf - 0.5pp, plus 0.12%/side cost). Path 17.48% (paired d +1.06pp, 95% of paths), real NDX 31.84% (+0.76pp), S&P 1955-85 +0.61pp, 1970-85 +1.74pp, share of paths reaching -80% 69% against 73%.\n\nIt is conditional on broker terms that are all still unverified, and it is not a trading-rule PASS. The same table has a downside: with 0% interest on idle USD, v1 is 15.18% / 30.53%, and with the fee discount but 0% interest it is 15.88% / 31.01%, both below the reference.",
+  "passes": [
+   "TRADING-RULE PASSES: none. 0 of 6 pre-registered rule variants passed (NBR5, NBR9, MEGA Hi 10, MEGA Hi 20, CAP1, CAP2); OPENFILL was not adopted; the court built 0 lanes.",
+   "MEASUREMENT CONFIRMED, NOT A RULE PASS: STACK rows S0-S5 and S8 reproduce on all five bases (verifier max difference 2.2e-14pp). A plain-Python restatement of the account rules matches the engine on real NDX, both S&P bases and the first 100 simulated paths for S0 and S4.",
+   "ACCOUNT TERM S3 (cost 0.12%/side = 0.07% commission + 0.05% spread): path 16.96% (paired d +0.67pp, 92%), real NDX 31.66% (+0.58pp). CONDITIONAL on: the Kiwoom 0.07% event (inferred from one secondary blog; 24 months per account, by application); the event applying to REST API orders (unverified); the 0.05% spread (assumed, not measured). KIS fees are unverified. The row assumes the low fee for all 30 years.",
+   "ACCOUNT TERM S2 (idle USD at rf - 0.5pp, no commission, taxed 15.4%): path 16.81% (+0.37pp, 89%), real NDX 31.23% (+0.14pp). CONDITIONAL on a USD RP or similar vehicle that pays about that rate, costs nothing to enter and leave, is available at once for purchases, and can be run by the program. KIS USD RP and an automatic RP service exist by page title only (inferred); yield, minimum amount, API trading and any Kiwoom RP are unverified.",
+   "ACCOUNT TERM S4 (S2 + S3): path 17.48% (+1.06pp, 95%), real NDX 31.84% (+0.76pp), all five bases above v1. CONDITIONAL on both sets of terms above; neither is confirmed.",
+   "DOWNSIDE ROWS S1 and S5 (idle USD at 0%): S1 15.18% path (paired d -0.70pp, 5%) / 30.53% real; S5 with the 0.12% fee 15.88% / 31.01%. Which applies is unverified: press-reported deposit rates are Kiwoom 2%/yr and KIS 0.7%/yr (inferred, one secondary source), and the rate on the program account is not confirmed. The v1 reference itself is therefore conditional on idle cash earning about rf - 2pp.",
+   "NOT ADOPTED: S6 open-fill of cuts (path +0.35pp, real +0.73pp; +0.16 / +0.37pp after +0.1%/side) fails the pre-registered half-period rule. S7 (S6 + S4: 18.05% / 32.66%) contains S6 and must not be quoted as attainable.",
+   "REPORT ONLY: S8 (S4 terms + 1-day delay): 17.12% path (paired d +1.15pp, 78%), 32.44% real. Pre-registered as report-only; delay sensitivity is closed row X38; its path median is below S4's.",
+   "PROCESS CHECKS THAT HOLD: both pre-registration hashes match; pre-registration precedes code and results by file time; truncation tests at four dates show no look-ahead; all calendars end 2014-12-31; the CAPIT unseen-window outcomes were not computed; the 2015+ holdout was not opened."
+  ],
+  "concerns": [
+   "REFERENCE, idle-cash rate: v1's 16.16% / 31.08% assumes idle USD earns max(rf - 2pp, 0) x (1 - 15.4%). At 0% it is 15.18% / 30.53% (paired path d -0.70pp; the medians differ by 0.98pp; S&P 1955-85 -1.61pp, 1970-85 -2.83pp). The rate credited in the program account is unverified.",
+   "REFERENCE, cost basis: if the broker uses first-in-first-out (the legal default) instead of average cost, the reference may be about 0.13pp optimistic (tax lane measurement of 2026-10-15, not re-measured).",
+   "REFERENCE, start capital: the reference is a 10M KRW start, where the 2.5M KRW deduction is large relative to capital. The futures-vehicle lane's table gives the same v1 at 16.0% / 30.8% for a 30M KRW start and 15.9% / 30.7% for 100M KRW. The facts lane reports a 30M KRW cash deposit rule for leveraged products from 2026-08-19 (inferred); whether it covers TQQQ or index leveraged ETFs is unverified. If it does, the 10M KRW reference cannot be run.",
+   "REFERENCE, in-sample: v1 was chosen on data to 2014 and no out-of-sample check exists in this round. Real NDX 31.08% is one history, with about 52%/yr in 1986-99, and it falls to 12.5% with the macro alarms off. On the simulated paths 73% reach a -80% drawdown and the 10th-percentile CAGR is 5.2%.",
+   "REFERENCE, product: the 3x product before 2010 is synthetic (NON-ACTUAL). The TQQQ fee-waiver question does not lower the number: the locked engine charges 0.95%/yr expense plus 1.5%/yr financing, at or above TQQQ's stated gross 0.94%.",
+   "REFERENCE, tax in KRW: Korean tax on overseas shares is computed in KRW at transaction-date exchange rates. Nothing in this round's files examines that effect (not measured, direction unknown).",
+   "S3 fee row: the Kiwoom base fee of 0.25% plus the assumed 0.05% spread equals the locked 0.3%/side. The 0.07% event is reported as lasting 24 months, so the measured +0.67pp path / +0.58pp real holds only while a discount is renewed for the whole horizon. Application to API orders is unverified.",
+   "S2 cash row: the yield (rf - 0.5pp), zero entry and exit cost, same-day availability and automated operation are all assumptions. If the vehicle needs a manual step it is excluded by the user's rule. Its real-NDX gain is only +0.14pp.",
+   "S4 is the top of a range, not a point estimate: depending on terms v1 lies between 15.18% (S1) and 17.48% (S4) on path, and between 30.53% and 31.84% on real NDX.",
+   "stack.json carries BEATS_V1_BOTH = true for S2, S3, S4 and S8. That flag is mechanical; under the pre-registered rule those rows are not passes. Any report built from the JSON must not read it as a PASS.",
+   "STACK has no delay-3 or cost-x2 rows, so even apart from the account-term rule no STACK row meets section 6.",
+   "OPENFILL (S6/S7) was not a blind test: it re-runs closed row X40 with a +0.3pp bar, lower than the +0.5pp bar that closed it, and every input was already printed before the pre-registration. The outcome is 'not adopted', so nothing is inflated. Still unverified: that the TQQQ open equals 3x the QQQ overnight move, the spread at the open, and market-on-open availability. The S&P bases are not covered and are set equal to v1.",
+   "NBR: fails on both Nasdaq bases, but is +0.75 to +1.5pp better on the two S&P eras and positive on real NDX at a 3-day delay (+0.21 / +0.29pp). It must not be reported as 'helps' without the Nasdaq result. The 220-day / 40% neighbour (16.23% / 32.94%) is a post-hoc observation, 1 of 8, with a path gain of 0.07pp.",
+   "NBR text slip in RESULT_MAIN_LANES_KO.md: the other six sub-accounts are given as 26.6-29.6% on real NDX, but 220-day / 45% is 31.07%.",
+   "MEGA: the largest decile holds 120-200 firms (48-70% of market value), so it is a proxy for 'top 10-30 stocks', not a direct measurement. The file is the current data vintage, not a 2014 vintage. The '+leverage' part cannot be tested (no single-stock leveraged product before 2014).",
+   "MEGA table slip: the Markdown table omits the pre-registered 1986-2014 row (-0.30 and -0.05pp/yr) and shows 1986-1999 and 2000-2014, which were not pre-registered. mega.py's file time is 0.3 s before mega.json, so I cannot rule out an edit between runs; the outcome is negative, so nothing is inflated.",
+   "CAPIT is a no-sample fail: the registered 2.0x / 2.5x thresholds sit beyond the 99.9th percentile (1.95) of the volume ratio, and the 1987 crash missed by 3-4%. The idea was never measured, so it must not be reported as 'tested and negative'. The builder's proposed registry line 'reopen: none' is stronger than the evidence.",
+   "CAPIT process: after the early fail the builder counted signals in 2000-2014 (CAP1 1 day, CAP2 0), with no outcome opened. That is a partial look at the unseen window, so any later lower-threshold variant would be contaminated on the count side.",
+   "CAPIT data: the volume series has a -45% level break on 1994-01-03, missing from the builder's report; it changes no trigger count. The claim that the 1987 volume ratios match contemporary records is from memory (unverified).",
+   "DEPTH table: descriptive only, 1-6 episodes per cell. All 3x values are synthetic, before costs and tax. The S&P total-return series has no second source (unverified). The 1987 Nasdaq-100 trough shown as -40% is -39.9%. SOX was not built.",
+   "Wildcard round: the court's priors (0.015, below 0.01, 0) are judgment, not measurement. The court wrote no project file, so its rejections exist only in the workflow output and should be saved before registry rows cite them.",
+   "Bond fill of idle cash is the largest both-positive number on record (path +5.22pp, real NDX +4.35pp, synthetic 3x bond = NON-ACTUAL). It is +8.29 in 2000-14 against +0.21 in 1986-99, and -1.05pp if bond excess return is zero. It is a user policy choice and must not be presented as a test result.",
+   "Futures: the month-end basket holds zero contracts at the 10M KRW reference and needs a margin account and exposure above 3x. This remains an open user decision, not a result.",
+   "COMPLETENESS GAP: PRECOMMIT section 0 promises a desk-ceiling note on leveraged-ETF close-rebalancing flow in the final report. No measurement or note exists in the round's files; the report must say 'not measured' or label any figure as inference.",
+   "COMPLETENESS GAP: Korean investor-flow data was blocked (login or identity needed). That lane is untested, not negative.",
+   "FACTS lane: only 2 of 20 items are confirmed (TQQQ fee display; existence of the 2026 ISA proposal). Official broker pages were blocked or not read; every KIS item is unverified; the 22% / 2.5M KRW tax rule was not re-read this time.",
+   "Housekeeping: the main session's uncut Ken French zips, which contain rows after 2014, are still in /tmp/final1_main/kf/ (me.zip, ff.zip; I saw them at judging time and did not touch them). The brief says to remove them.",
+   "Record slips: the PRECOMMIT header says 'written 14:35Z' but the file time is 14:04:28Z. RESULT_MAIN_LANES_KO.md still says independent verification is pending. '1.0pp lower on path' for 0% interest is the difference of medians; the paired figure is -0.70pp. The folder lanes/MEGA/ is empty."
+  ],
+  "summary_ko": "결론: 이번 마지막 시도에서도 현재 전략(v1)을 두 기준 모두에서 정직하게 이긴 새 매매 규칙은 없습니다. v1을 그대로 씁니다.\n결론: 확인된 개선 여지는 매매 규칙이 아니라 계좌 조건(쉬는 달러 이자, 수수료)뿐이며, 증권사에서 그 조건을 실제로 받을 때만 유효합니다.\n결과: 쉬는 달러에 이자(단기 금리 − 0.5%p)가 붙고 수수료가 편도 0.12%이면, 세후 연 수익률이 모의 30년 경로 중앙값 16.16% → 17.48%, 실제 나스닥 1986~2014년 31.08% → 31.84%입니다.\n결과: 반대로 쉬는 달러 이자가 0%이면 15.18% / 30.53%로 낮아지고, 수수료 할인만 받아도 15.88% / 31.01%로 기준값에 못 미칩니다.\n결과: 계좌를 이웃 설정값으로 나누는 방법은 두 변형 모두 탈락했습니다(모의 −0.21, −0.37%p / 실제 −0.61, −1.00%p).\n결과: 시가총액 최상위 종목 집중도 탈락했습니다(1963~2014년 시장보다 연 0.5~0.8%p 덜 벌었음). 과매도 + 거래량 급증 매수는 1986~99년에 신호가 한 번도 없어 시험이 성립하지 않았습니다.\n결과: 새 아이디어 탐색에서는 통과 가능성이 5% 이상으로 평가된 것이 없어 새로 시험한 것은 0건입니다.\n검증: 독립 검증자가 위 수치를 다른 코드로 다시 계산해 모두 일치했고, 미래 정보나 2015년 이후 자료를 쓴 흔적은 없었습니다.\n남은 문제: 증권사 조건이 대부분 미확인입니다. 수수료 0.07% 행사가 자동 주문에도 적용되는지와 24개월 뒤에도 이어지는지, 달러 단기 상품(환매조건부채권)의 금리와 자동 매매 가능 여부, 프로그램 계좌에 실제 붙는 달러 이자를 확인해야 합니다.\n남은 문제: 줄이는 주문을 다음 날 시가에 체결하는 방법은 2008~2014년에 효과가 뒤집혀 채택하지 않았습니다.\n남은 문제: 쉬는 현금을 장기 국채 3배 상품으로 채우는 방법은 수치가 가장 크지만(+5.2%p / +4.4%p, 합성 자료) 이득이 2000~2014년에 몰려 있고 채권이 계속 오른다는 데 거는 것이어서, 시험 결과가 아니라 사용자가 정할 일입니다.\n남은 문제: 연 31.08%는 과거 한 번의 역사이고, 모의 경로의 73%가 도중에 −80% 손실을 겪습니다. 목표였던 모의 기준 30%에는 닿지 못했습니다.",
+  "registry_rows": [
+   {
+    "id_suggestion": "T40",
+    "area": "시점",
+    "name": "RSI(14) ≤ 30 + 나스닥 거래량 ≥ 직전 60일 중앙값의 2.0배/2.5배 동시 신호 뒤 42/63거래일 동안 v1 1배·현금 → 3배 (B형 ADD, CAPIT, N=2)",
+    "result": "1986~99 신호일 0, 켜진 블록 0(필요 8) → 초기 탈락. 측정된 음수가 아니라 표본 없음: 문턱이 거래량 비율 99.9% 분위(1.95배) 밖이고 1987-10 최대 1.94배. 2000~14 성과는 열지 않았고 신호 개수만 CAP1 1일, CAP2 0일. measure2 미실행. 검증자가 다른 코드로 재현해 일치. [kw: RSI 거래량 급증 과매도 바닥 투매 capitulation; verdict: 자동 거절]",
+    "evidence": "research/final1/lanes/CAPIT/RESULT_CAPIT_KO.md; research/final1/lanes/CAPIT/verify/",
+    "reopen": "등록 문턱(2.0배/2.5배)에서는 시험 불가(켜진 블록 0). 문턱을 낮춘 재시험은 결과와 2000~14 신호 개수를 본 뒤의 변경이고 T13·T39 계열이라 불가. 지수 거래량이 아닌, 1986~99를 덮는 새 자료가 있을 때만."
+   },
+   {
+    "id_suggestion": "X43",
+    "area": "구조",
+    "name": "v1 계좌를 이웃 파라미터(200일선 180/200/220일 × 변동성 상한 35/40/45%)로 나눠 따로 운용 (F형, NBR5·NBR9, N=2)",
+    "result": "NBR5: 경로 15.75%(짝 차이 −0.21%p, 이긴 비율 35%), 실제 나스닥 30.47%(−0.61). NBR9: 15.48%(−0.37, 32%), 30.08%(−1.00). 비용 2배 둘 다 음수, 지연 3일 경로 −0.04/−0.10·실제 +0.21/+0.29. S&P 55~85·70~85는 +0.75~+1.5%p. 세금 장부를 합쳐도 ±0.07%p. 탈락. 220일·40% 한 점(16.23/32.94)은 사후 관찰이라 채택 안 함. [kw: 계좌 분할 이웃 파라미터 앙상블 분산; verdict: 자동 거절]",
+    "evidence": "research/final1/RESULT_MAIN_LANES_KO.md; research/final1/results/nbr.json; research/final1/verify_main/results/v_nbr.json",
+    "reopen": "없음 (파라미터 변경은 같은 계열, C3 변형)."
+   },
+   {
+    "id_suggestion": "S27",
+    "area": "종목",
+    "name": "시가총액 최상위 종목 집중: Ken French 규모 최상위 10%·20% 포트폴리오 − 시장 (MEGA, N=2)",
+    "result": "1963-07~2014-12: 최상위 10% −0.80%p/년(t −1.66), 최상위 20% −0.52(t −1.46). 절반 −1.14/−0.46, −0.88/−0.16. 1986~2014 −0.30, −0.05. 기준(+1.0%p/년, t ≥ 2, 두 절반 양수) 미달 → 탈락. 최상위 10%는 120~200종목(시가총액의 48~70%)이라 '상위 10~30개'의 대용. 개별 종목 레버리지 상품은 2014년 이전 이력이 없어 시험 불가. [kw: 대형주 메가캡 시가총액 상위 집중 규모; verdict: 자동 거절]",
+    "evidence": "research/final1/RESULT_MAIN_LANES_KO.md; research/final1/results/mega.json; research/final1/verify_main/results/v_mega.json",
+    "reopen": "없음 (종목 수·가중 변경은 같은 계열). 개별 종목 레버리지 부분은 시험 불가로 남음."
+   },
+   {
+    "id_suggestion": "X44",
+    "area": "실행",
+    "name": "v1 계좌 조건 표 STACK: 쉬는 달러 이자 0% / RP형(금리 − 0.5%p) / 편도 비용 0.12% / 체결 지연 1일 (F형, 9행 전부 보고, 선택 없음)",
+    "result": "경로 / 실제 나스닥. S1 이자 0%: 15.18 / 30.53. S2 RP형: 16.81(+0.37%p) / 31.23. S3 편도 0.12%: 16.96(+0.67) / 31.66. S4 둘 다: 17.48(+1.06, 95%) / 31.84. S5 이자 0% + 0.12%: 15.88 / 31.01. S8 S4 + 지연 1일(참고): 17.12 / 32.44. 매매 규칙 통과가 아니라 계좌 조건이며 증권사 조건은 미검증. 검증자가 계좌 규칙을 따로 풀어 써서 재현, 일치. [kw: 예탁금 이용료 외화 RP 수수료 이벤트 계좌 조건 현금 이자; verdict: 자동 거절]",
+    "evidence": "research/final1/results/stack.json; research/final1/verify_main/results/v_stack.json, v_replay.json; research/final1/lanes/FACTS/FACTS_KO.md",
+    "reopen": "증권사 조건이 사실로 확인되면 조건부 표를 확정값으로 올림(재시험 불필요): 수수료 행사의 API 적용과 기간, 외화 RP 금리·무수수료·API 매매, 프로그램 계좌의 예탁금 이용료."
+   },
+   {
+    "id_suggestion": "X40 (기존 행 갱신, 새 행 아님)",
+    "area": "실행",
+    "name": "방향별 체결 시각: v1 노출 감소만 다음 날 시가 체결, FINAL1 재측정 (STACK S6·S7)",
+    "result": "사전 채택 규칙으로 '채택 안 함'. 경로 +0.35%p, 실제 +0.73; 추가 비용 편도 0.1% 뒤 +0.16 / +0.37. 줄인 날 밤 수익 합은 1999~2007 +0.227, 2008~2014 −0.097로 뒤 절반이 음수. 입력값이 OV1-B에서 이미 공개된 재실행이고 기준도 +0.5 → +0.3%p로 낮았음. S7(18.05 / 32.66)은 달성 가능한 값으로 인용 금지. [verdict: 자동 거절 유지]",
+    "evidence": "research/final1/results/stack.json (OPENFILL_rule); research/final1/verify_main/results/v_openfill.json; research/ov1/lanes/OV1-B/RESULT_OV1-B_KO.md",
+    "reopen": "없음. TQQQ 실제 시가, 시가 호가 폭, 시가 시장가 주문 가능 여부는 미검증."
+   },
+   {
+    "id_suggestion": "T41",
+    "area": "시점",
+    "name": "10-K/10-Q 경영진 어조(Loughran-McDonald 부정어 비중 집계)로 v1 3배 깎기 (LIT1, 법정 기각, 시험 안 함)",
+    "result": "두 기준 통과 사전 확률 0.015(추론)로 문턱 0.05 미달. 자료가 1994년 시작이고 전자공시가 1996년까지 단계 도입이라 깨끗한 초기 구간이 약 2년. Baker-Wurgler 지수와 상관 .53(그 지수는 T05에서 닫힘). 낱말 목록이 2011년 작성이라 그 전 신호는 사후 도구(NON-ACTUAL). 효과가 v1이 이미 1배·현금인 2007~09에 집중. [kw: 공시 어조 텍스트 10-K 부정어 Loughran McDonald; verdict: 자동 거절]",
+    "evidence": "FINAL1 법정 판정(2026-11-10 워크플로 출력, 프로젝트 파일 없음); research/alt_patent/r2_sent/RESULT_SENT_KO.md",
+    "reopen": "1986~99 전체를 덮는 공시 본문 자료와 그 시점에 존재한 낱말 목록이 있을 때만(현재 없음)."
+   },
+   {
+    "id_suggestion": "X45",
+    "area": "수익원",
+    "name": "월말 선물 바구니(국채·주가지수 선물 월말 효과 + 결제 기준 월말 전 매도 다리)를 v1 위에 가산 (파생 렌즈, 법정 기각, 시험 안 함)",
+    "result": "사전 확률 0.01 미만(추론). 국채 월말 선물(T18)은 Sharpe 1986~2014 .64~.95, 1962~85 약 0이라 D형 초기 관문 1.1 미달. 매도 다리는 D형 조건(매수 전용 또는 손실 한정) 위반. 기준 1,000만원에서는 계약 0. 증거금 계좌와 총노출 3배 초과가 필요. [kw: 월말 선물 바구니 결제 매도 다리 turn of month; verdict: 자동 거절]",
+    "evidence": "FINAL1 법정 판정(2026-11-10 워크플로 출력); research/c3_create/r9b/RESULT_R9B_KO.md",
+    "reopen": "사용자가 선물 증거금 계좌와 총노출 3배 초과를 허용하기로 정한 뒤에만. 그때도 D형 관문은 그대로."
+   },
+   {
+    "id_suggestion": "X46",
+    "area": "기타",
+    "name": "FINAL1 찾기에서 법정으로 제외(시험 안 함): 파생 렌즈 나머지(월초·휴일 전·만기 주 가산, 거시 발표일, 국채 입찰 주기, 1일 반전, 1월 소형주·지수 재편, FOMC 짝수 주, 변동성 선물 매도·옵션 매수, 3배 초과 가산, 채권 선물 얹기, 원자재 롤·시간대) + 가산 렌즈(같은 명의 두 계좌 로트 선택, TQQQ 주식 대여)",
+    "result": "모두 닫힌 축과 같은 계열(T04, T09/T20, T18, T13/T27/T39, S05/S14, L02/T32, L01/T02, E02/E06, E04/X42)이거나 F형 문턱 +0.5%p에 못 미침. 로트 선택 최대 +0.1~+0.15%p, 주식 대여 수 bp(모두 추론). 시험 0건. [verdict: 자동 거절]",
+    "evidence": "FINAL1 법정 판정(2026-11-10 워크플로 출력, 프로젝트 파일 없음)",
+    "reopen": "없음."
+   },
+   {
+    "id_suggestion": "X47",
+    "area": "구조",
+    "name": "FINAL1 거짓 음성 감사: 닫힌 레인에서 두 기준 모두 양수였으나 보조 규칙으로 탈락한 후보 18개 재점검",
+    "result": "정직하게 재시험할 수 있는 후보 0. 시가 체결(X40)과 현금·수수료 조건은 STACK에서 측정 완료. 국채 채우기(E06/E10: 경로 +5.22, 실제 +4.35, 채권 초과수익 0 가정 시 −1.05, 합성 자료)는 채권 국면에 거는 것이라 사용자 정책 결정. RNG1 R1, RC1 S5, DV CAPE 10%, W1 H4c/H5a, MF1 낙관 행은 사후 선택·잡음·미검증 사실 의존. 가족 계좌는 사용자 행위 필요. 측정 오류로 판정이 뒤집히는 항목 없음(WX1-M4 포함). [verdict: 자동 거절]",
+    "evidence": "FINAL1 감사·법정 출력(2026-11-10); research/ov1/lanes/OV1-B/RESULT_OV1-B_KO.md; research/wx1/m3/RESULT_M3_KO.md; research/v1_states/RESULT_VS1_KO.md; research/tax_min/RESULT_TAX_MIN_KO.md; research/mf1/RESULT_MF1_KO.md",
+    "reopen": "없음. 국채 채우기는 사용자가 정책으로 정할 때만(시험으로는 열 수 없음)."
+   }
+  ]
+ }
+}
