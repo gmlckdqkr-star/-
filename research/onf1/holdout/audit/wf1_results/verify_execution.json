@@ -1,0 +1,267 @@
+{
+ "verdict": "The instruments, hours and order events exist and are tradable, and the package's commission-plus-tick cost assumptions hold on the right account type (MNQ 0.16-0.48 bp vs 0.83 assumed; mini K200 0.28-0.49 bp vs 0.6 at KIS BanKIS or Kiwoom, but 1.08-1.17 bp on a KIS branch-type account). The package is NOT executable as specified on margin grounds. At current margins (KRX mini K200 21% initial / 14% maintenance since 2026-11-02; MNQ maintenance about $4,516 = 7.25% of notional) the cap position needs 82.3M KRW of initial margin against 80M of capital. The 30M domestic account can open only 2 mini contracts (1.32x), or 3 (1.98x) with the 10M reserve, not 3x. The package's own margin_ok (x1.6 buffer) would cut to 3 MNQ + 1 mini. For the US leg at 5x in a 40M account, a margin call comes at NDX -2.75% and real-time forced liquidation (risk 80% at both Kiwoom and KIS, charged at offline rates) at -8.4%. Applying today's margin to history with the raw rule leverage, the US account falls below maintenance at the open 19 times in 27.6 years and gets a settlement margin call 61 times (2.2/yr). The backtest excluded forced liquidation, margin limits and FX, so its 5x/3x results do not transfer to live trading without re-simulation under margin constraints. Only KIS REST covers both legs by API; Kiwoom futures need the Windows-only OCX. Fill slippage at the four order times was not measured by anyone.",
+ "key_numbers": [
+  {
+   "name": "MNQ contract spec",
+   "value": "$2 x Nasdaq-100; tick 0.25 pt = $0.50; Globex Sun-Fri 18:00-17:00 ET with daily 17:00-18:00 ET break",
+   "status": "CONFIRMED",
+   "note": "CME contract specs page (primary)"
+  },
+  {
+   "name": "CME equity daily settlement window",
+   "value": "14:59:30-15:00:00 CT (15:59:30-16:00:00 ET) since trade date 2020-10-26",
+   "status": "CONFIRMED",
+   "note": "CME Submission 20-018 at cftc.gov; the E3 order at 16:00:20 ET is 20 s after settlement"
+  },
+  {
+   "name": "CME half days 2026",
+   "value": "Nov 27 and Dec 24 equity index close 12:15 CT (13:15 ET); Thanksgiving Nov 26 halt 12:00 CT",
+   "status": "INFERRED",
+   "note": "CME trading-hours page plus secondary summary; E3 at 16:00:20 ET cannot execute on these days"
+  },
+  {
+   "name": "MNQ margin now (per contract)",
+   "value": "maintenance $4,516 (7.246% of $62,320 notional); Korean-broker initial about x1.1 = $4,968 (7.971%)",
+   "status": "INFERRED",
+   "note": "AMP Futures page fetched 2026-11-10 (secondary, undated); Samsung Futures page shows 4,797/4,361; US brokers Oct 2026 show $4.1k-4.3k. Exact Kiwoom/KIS figure not obtained"
+  },
+  {
+   "name": "MNQ margin history (initial/maintenance)",
+   "value": "2019-04: $836/$760 (4.9%); 2020-03-18: about $1,650/$1,500 (10.5% maint); 2025-04-09: $2,442/$2,220 (5.8%); 2025-04-23: $3,410/$3,100 (8.3%); 2022: not found",
+   "status": "INFERRED",
+   "note": "2019 CME FAQ and 2020-03-13 CME advisory are primary; 2020-03-18 and 2025 figures from broker notices; 2022 UNVERIFIED"
+  },
+  {
+   "name": "KRX mini K200 spec",
+   "value": "multiplier 50,000 KRW; tick 0.02 pt = 1,000 KRW; regular 08:45-15:45 (closing auction 15:35-15:45), night 18:00-06:00; limits +/-8/15/20%; last trading day 2nd Thursday (to 15:20)",
+   "status": "CONFIRMED",
+   "note": "open.krx.co.kr product page (primary)"
+  },
+  {
+   "name": "KRX mini K200 margin rates",
+   "value": "2026-11-02: initial 21.0% / maintenance 14.0%. 2026-05: 19.2/12.8. 2025-10: 9.30/6.20. 2025-09: 9.15/6.10. 2025-04-23 stress: 11.55/7.70",
+   "status": "CONFIRMED",
+   "note": "Yuanta margin_rate.pdf, KB notice 2026-10-29, Kiwoom-hosted KRX notice, Yuanta notices; initial margin up 2.3x in 13 months"
+  },
+  {
+   "name": "Per-contract notional at project data prices",
+   "value": "MNQ 83,551,398 KRW (1.044x of 80M); mini K200 52,825,000 KRW (0.660x)",
+   "status": "INFERRED",
+   "note": "NDX 31,160.08 (2026-10-07), USDKRW 1,340.68, K200 proxy 1,056.5; plan document says 76M / 39.5M (stale)"
+  },
+  {
+   "name": "Contracts implied by caps",
+   "value": "5x US = 4 MNQ (4.18x); 4x day = 3 MNQ; 3x KR = 4 mini (2.64x). Not 5 MNQ + 6 mini",
+   "status": "INFERRED",
+   "note": "floor(L x 80M / notional); 5 MNQ would be 5.22x"
+  },
+  {
+   "name": "Initial margin needed at caps (5.0x + 3.0x of 80M)",
+   "value": "US 31.88M + KR 50.40M = 82.28M KRW > 80M capital; maintenance 28.99M + 33.60M = 62.59M",
+   "status": "INFERRED",
+   "note": "margin_calc_out.json"
+  },
+  {
+   "name": "KR 30M account capacity at 21%",
+   "value": "max 2 mini (1.32x; initial 22.19M); 3 mini (1.98x; 33.28M) only with the 10M reserve; 4 mini needs 44.37M",
+   "status": "INFERRED",
+   "note": "max leverage of total equity 1.79x in 30M, 2.38x in 40M"
+  },
+  {
+   "name": "US 40M account, 5x generic",
+   "value": "free over initial 8.1M KRW; margin call at NDX -2.754%; 80%-risk liquidation at -8.406%",
+   "status": "INFERRED",
+   "note": "with 5 whole MNQ (5.22x): -2.33% / -7.98% / wipe-out -9.57%"
+  },
+  {
+   "name": "US 40M account, 4 MNQ (4.18x)",
+   "value": "initial 26.64M, maintenance 24.22M; margin call -4.72%; liquidation -10.37%; wipe-out -11.97%",
+   "status": "INFERRED",
+   "note": "with 40M+10M: call -7.71%, liquidation -13.37%"
+  },
+  {
+   "name": "Package margin_ok (x1.6 buffer) at current margins",
+   "value": "3 MNQ (3.13x) + 1 mini (0.66x)",
+   "status": "INFERRED",
+   "note": "v11_live.py margin_buffer=1.6; its demo broker assumes 8% (MNQ) and 12% (K200) margins"
+  },
+  {
+   "name": "NDX close-to-open frequency, 1999-03..2026-10 (6,937 nights)",
+   "value": "<= -2.33%: 89 (3.23/yr); <= -2.75%: 54 (1.96/yr); <= -4.72%: 10 (0.36/yr); <= -7.98%: 2; <= -8.4%: 1; worst -9.46% (2020-03-16)",
+   "status": "CONFIRMED",
+   "note": "computed from us.csv r_on; understates intra-night lows"
+  },
+  {
+   "name": "Prev close to next RTH low (QQQ)",
+   "value": "<= -2.75%: 601 (21.8/yr); <= -7.98%: 20 (0.73/yr); <= -10.37%: 6",
+   "status": "CONFIRMED",
+   "note": "includes day session; the 2015-08-24 -17.25% is a QQQ ETF print that likely overstates the futures move"
+  },
+  {
+   "name": "Events at raw rule leverage, today's MNQ margin, US account = 50% of equity",
+   "value": "below maintenance at open: 19 (0.69/yr); settlement margin call: 61 (2.21/yr); 80% liquidation at open print: 0; at RTH low: 2 (2010-05-06, 2015-08-24)",
+   "status": "INFERRED",
+   "note": "call_freq_out.json; vol target only (gate/brake/cooldown not applied), daily rebalance to 50% assumed. With US account 62.5%: 3 / 0 / 0 / 1"
+  },
+  {
+   "name": "Worst levered night losses at raw rule L",
+   "value": "2015-08-24 -39.9% of total equity (5x); 2008-01-22 -27.8%; 2024-08-05 -26.8%; 2020-03-09 -21.0% (3x)",
+   "status": "INFERRED",
+   "note": "2020-03-16 (-9.46%) hit at 0.5x only, so the rule had already cut"
+  },
+  {
+   "name": "KR night frequency (kr_n, 4,038 nights 2010-02..2026-10)",
+   "value": "<= -4%: 15; <= -5%: 8 (6 in 2026); worst -9.29% (2026-06-08); <= -11.2%: 0",
+   "status": "CONFIRMED",
+   "note": "2026 night std 2.91% vs about 1.0% in 2022/2025"
+  },
+  {
+   "name": "Raw rule leverage now",
+   "value": "US night 5.0x (sigma 15.3%), day 4.0x; KR night 2.5x (sigma 29.8%). KR 2026 mean 0.79x, median 0.5x",
+   "status": "INFERRED",
+   "note": "my replication of floor0.5(min(cap, c/sigma^2)), KR sigma on KODEX200 close; at cap 84% of days (US) and 90% (KR) over full history"
+  },
+  {
+   "name": "MNQ one-way cost vs package 0.83 bp",
+   "value": "tick 0.080 bp; commission 0.16 bp (KIS $1), 0.32 bp (Kiwoom $2), 0.08 bp ($0.5 event); with 1 tick slippage 0.24 / 0.40 / 0.16 bp",
+   "status": "INFERRED",
+   "note": "leaves 6-9 ticks of slippage under 0.83 bp; whether exchange fees are included in the broker quote is UNVERIFIED (+0.06-0.09 bp if not)"
+  },
+  {
+   "name": "Mini K200 one-way cost vs package 0.6 bp",
+   "value": "tick 0.189 bp; commission 0.185 bp (KIS BanKIS), 0.30 bp (Kiwoom), 0.981 bp (KIS branch account); with 1 tick 0.37 / 0.49 / 1.17 bp",
+   "status": "INFERRED",
+   "note": "KIS fee table dated 2025-10-27 (primary); Kiwoom 0.003% from secondary sources; only 1.6-2.2 ticks of slippage room under 0.6 bp"
+  },
+  {
+   "name": "Forced-liquidation fee",
+   "value": "KIS overseas phone rate $10 per micro contract (vs $1 online); KIS domestic 0.0448%; Kiwoom domestic 0.03%, overseas micro $4",
+   "status": "INFERRED",
+   "note": "KIS figures primary; Kiwoom figures secondary"
+  },
+  {
+   "name": "Derivatives tax",
+   "value": "10% + 1% local = 11%; 2.5M KRW annual deduction; domestic and overseas netted; no loss carry-forward; file May 1-31; no interim filing",
+   "status": "CONFIRMED",
+   "note": "NTS page (primary); financial investment income tax abolished 2024-12-10 (Yonhap, MOEF notice)"
+  }
+ ],
+ "findings": [
+  {
+   "title": "Cap leverage cannot be carried with the 40M/30M/10M split at current margins",
+   "severity": "critical",
+   "status": "INFERRED",
+   "detail": "KRX raised mini K200 margin to 21% initial / 14% maintenance effective 2026-11-02 (it was 9.15% / 6.10% in Sept 2025). Caps of 5x MNQ + 3x mini on 80M need 31.88M + 50.40M = 82.28M KRW initial margin, more than total capital. The 30M domestic account opens at most 2 mini (1.32x of equity), or 3 (1.98x) using the whole 10M reserve; the current raw rule target of 2.5x (3 contracts, 33.28M) already does not fit in 30M. The plan and demo code implicitly assumed about 12% (K200) and 8% (MNQ). Live leverage will be well below backtest leverage on the KR leg whenever its target exceeds about 1.8x.",
+   "evidence": "https://05.myasset.com/myasset/static/agreement/margin_rate.pdf (2026.11.2 기준, 미니코스피200선물 위탁 21.000% / 유지 14.000%); https://www.kbsec.com/go.able?idt=20261029&linkcd=s060901010000&seq=10010552; https://www.myasset.com/myasset/static/notice/250829_02.pdf (9.15/6.10); /home/user/onv/wf1/execution/margin_calc_out.json; /home/user/onv/wf1/execution/cost_targets_out.json"
+  },
+  {
+   "title": "Forced liquidation is real-time at both brokers and sits inside the historical range of moves",
+   "severity": "critical",
+   "status": "INFERRED",
+   "detail": "Kiwoom and KIS both liquidate overseas futures at market when risk reaches 80% (equity = 20% of initial margin), with SMS notice only, and KIS states liquidation is not its obligation. Margin calls are set at daily settlement when equity is below maintenance. For 5x in a 40M account: call at -2.75%, liquidation at -8.41% (5 whole contracts: -2.33% / -7.98%). At raw rule leverage with today's margin, the account is below maintenance at the open on 19 nights in 27.6 years and gets 61 settlement calls (2.2/yr); the 80% line is reached at the RTH low on 2010-05-06 and 2015-08-24. Close-to-open data cannot see intra-night lows, so these are lower bounds for the night leg. The package states forced liquidation was not simulated.",
+   "evidence": "https://www.kiwoom.com/m/foreign/fofuop/VFofuopMainView ('위험도가 80% 도달 시 해당 포지션을 시장가 ... 강제 청산'); https://securities.koreainvestment.com/main/bond/foreign/_view/TF03df020400.jsp ('위험도 80% 도달 시 장중반대매매를 수행', '강제청산은 회사의 의무사항이 아니므로'); /home/user/onv/wf1/execution/call_freq_out.json"
+  },
+  {
+   "title": "Margins rise in stress and can trigger calls without a price move",
+   "severity": "major",
+   "status": "INFERRED",
+   "detail": "CME equity index margins have been on SPAN2 since 2024-10-18 and can change daily. MNQ initial went $2,442 to $3,410 (+40%) between 2025-04-09 and 2025-04-23. At the 2020-03-18 level (about 10.5% maintenance) 5x would need 41.8M maintenance against a 40M account. Kiwoom applies changes on Tuesdays and says a hike triggers real-time liquidation and additional margin at the open. K200 initial margin went 9.15% to 21% in 13 months. Mitigation: the vol target usually cuts leverage before sustained stress (0.5x on 2020-03-16), so the exposure is the first shock night from a calm regime (2015-08-24, 2024-08-05, 2025-04-03 were all at 5x).",
+   "evidence": "https://www.samsungpop.com/ux/kor/customer/notice/notice/noticeViewContent.do?MenuSeqNo=22333 (MNQ 위탁 2,442 to 3,410); https://www.cmegroup.com/notices/clearing/2020/03/Chadv20-100.pdf; https://www.myasset.com/myasset/customer/notice/CU_0201000_P2.cmd?SEQ=202504221429570000000004&gubun=norNotice (K200 9.15 to 11.55); /home/user/onv/wf1/execution/cost_targets_out.json"
+  },
+  {
+   "title": "Plan contract counts and notionals are stale; one MNQ exceeds 1.0x of total equity",
+   "severity": "major",
+   "status": "INFERRED",
+   "detail": "At project data prices one MNQ is 83.6M KRW (1.04x of 80M) and one mini K200 is 52.8M (0.66x); the plan says 76M and 39.5M. The 5x cap is 4 MNQ (4.18x), the 4x day cap is 3 MNQ, the 3x KR cap is 4 mini. The 0.5-step leverage grid cannot be expressed in whole contracts at this account size: 4.5x and 4.0x both give 4 or 3 contracts, 2.5x gives 2. The task premise of 5 MNQ + 6 mini would be 5.22x and 3.96x.",
+   "evidence": "/home/user/onv/uploads_ro/52856404-*.md; /home/user/onv/data/us.csv, kr.csv; /home/user/onv/wf1/execution/margin_calc_out.json"
+  },
+  {
+   "title": "API coverage: only KIS REST handles both legs; Kiwoom futures are Windows-only OCX",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Kiwoom REST API covers domestic stocks, ETF/ETN/ELW, gold spot and US stocks only. KOSPI200 futures need Kiwoom OpenAPI+ and overseas futures need the separate overseas-derivatives OpenAPI+, both Windows PC programs. A secondary source citing a Kiwoom board answer says the Kiwoom API does not support the KRX night session. KIS Open API (REST/WebSocket) has domestic futures day and night order TRs and overseas futures order TRs. No paper-trading TR for overseas futures appears in the catalog I saw, so MNQ mock trading by API is probably unavailable (inferred).",
+   "evidence": "https://www.kiwoom.com/m/customer/download/VChannelOpenApiView; https://github.com/koreainvestment/open-trading-api (domestic_futureoption, overseas_futureoption); https://securities.koreainvestment.com/main/customer/systemdown/_static/TF04ea000000.jsp"
+  },
+  {
+   "title": "Costs: package assumptions hold for commission plus tick, but depend on account type and unmeasured slippage",
+   "severity": "major",
+   "status": "INFERRED",
+   "detail": "MNQ: 0.16-0.48 bp one-way including up to 2 ticks, against 0.83 bp assumed, so the US assumption is conservative at today's index level. Mini K200: KIS BanKIS 0.00185% and Kiwoom 0.003% give 0.37-0.49 bp with 1 tick, under 0.6 bp with only about 2 ticks of room; a KIS branch-type account at 0.009811% gives 1.17 bp, above both the 0.6 bp assumption and the plan's 0.9 bp go-live threshold. No spread or depth data exists for 09:00:05 / 15:30:20 KST or 16:00:20 / 09:30:05 ET; the package itself calls execution cost the largest variable. One-off KRW to USD conversion spread is not in the cost model.",
+   "evidence": "https://securities.koreainvestment.com/main/customer/guide/_static/TF04ae010000.jsp (2025.10.27 기준: 영업점 0.009811%, 뱅키스 0.00185%, 야간 0.00190%); https://www.truefriend.com/main/bond/foreign/_static/TF03dc000000.jsp (micro $1); /home/user/onv/wf1/execution/cost_targets_out.json"
+  },
+  {
+   "title": "Broker rules differ on what counts as collateral",
+   "severity": "minor",
+   "status": "INFERRED",
+   "detail": "Kiwoom computes overseas-futures risk separately per deposit currency, so KRW sitting in the account would not protect a USD position. KIS computes on total assets converted to KRW, but covers a foreign-currency shortfall at a rate 5% worse than the base rate and auto-converts at 09:00. KIS margin-call deadline is 16:00 KST, liquidation by limit order 20 ticks adverse. KIS has no basic deposit for overseas derivatives; Kiwoom's is unverified.",
+   "evidence": "https://www.kiwoom.com/m/foreign/fofuop/VFofuopMainView ('위험도 산정은 예탁금 통화별로 별도 계산'); https://securities.koreainvestment.com/main/bond/foreign/_view/TF03df020100.jsp ('매매기준환율의 5% 불리한 환율', '기본예탁금은 없으며')"
+  },
+  {
+   "title": "KRX account rules: basic deposit is re-checked daily for this strategy; intraday margin calls exist",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "Futures need a basic deposit of at least 10M KRW (broker sets the tier), 1 hour of pre-education and 3 hours of mock trading. The deposit is checked when opening from flat, which this strategy does every afternoon. Additional margin is due by 12:00 next trading day when equity is below maintenance at the close; an intraday additional margin applies when KOSPI200 moves at least 80% of the maintenance rate (11.2% now), due 08:00 next day, and is not applied in the night session. Non-payment leads to liquidation without notice.",
+   "evidence": "https://www.myasset.com/myasset/static/notice/261008_031.pdf (Yuanta 장내파생상품 거래설명서, 2026-10); /home/user/onv/wf1/execution/dl/yuanta.txt"
+  },
+  {
+   "title": "Order-time and calendar issues",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "E2 at 15:30:20 KST leaves 4m40s before the 15:35 closing auction. KRX futures open at 08:45, so E1 at 09:00:05 is 15 minutes into continuous trading and only the +/-8% limit applies 08:45-09:00. On CME half days the market closes 13:15 ET, so E3 cannot run at 16:00:20. KIS force-closes cash-settled overseas contracts at 16:00 KST the day before last trading day unless consent is given, so the MNQ roll must be earlier. KRX has its own night session since 2025-06-09 (18:00-06:00), which gives a way to cut the KR leg overnight that the backtest does not use. E3/E4 are ET-anchored, so the scheduler must handle US daylight saving.",
+   "evidence": "https://open.krx.co.kr/contents/OPN/01/01040204/OPN01040204.jsp; https://www.cmegroup.com/trading-hours.html; https://securities.koreainvestment.com/main/bond/foreign/_view/TF03df020200.jsp"
+  },
+  {
+   "title": "Live skeleton code is not broker-ready",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "v11_live.py takes market data from a Yahoo class, uses a paper broker with fixed 12% / 8% margins, and computes total equity as the two futures accounts only, leaving out the separate cash account. Margin, quotes and equity must come from the broker API before any live use.",
+   "evidence": "/home/user/onv/uploads_ro/f5f50c5a-v11_live.py"
+  },
+  {
+   "title": "Interest assumptions are unverified",
+   "severity": "minor",
+   "status": "UNVERIFIED",
+   "detail": "The package assumes 0 on USD (conservative) and Korean rate minus 0.3%p on 50% of the KR margin. Sources conflict on USD: a KIS fee page shows 0.70% above $500 as of 2026-01-01, while a 2026-09 article and an older KIS page say 0% for overseas-futures accounts; Kiwoom is reported at 0.45-0.6% above $1,000. I found no source for KRW deposit interest in a domestic futures account, so the minus 0.3%p assumption may be optimistic.",
+   "evidence": "http://eng.koreainvestment.com/main/customer/guide/_static/TF04ae010000.jsp; greened.kr 2026-09-11 and news1 2026-01-26 (secondary)"
+  },
+  {
+   "title": "Tax treatment matches the package",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "11% including local tax, 2.5M KRW deduction, domestic and overseas derivatives netted since 2017, no loss carry-forward, annual filing in May, FIFO, overseas P&L converted at the settlement-date base rate. The package ignores the deduction, which is conservative. The financial investment income tax was abolished on 2024-12-10, so this regime continues.",
+   "evidence": "https://www.nts.go.kr (파생상품 양도소득세 안내: '10%의 탄력세율', '통산하여 연간 250만원을 공제', '이월하여 공제하지 않습니다'); https://www.yna.co.kr/view/AKR20241210118951001"
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf1/execution/margin_calc.py",
+  "/home/user/onv/wf1/execution/margin_calc_out.json",
+  "/home/user/onv/wf1/execution/cost_targets.py",
+  "/home/user/onv/wf1/execution/cost_targets_out.json",
+  "/home/user/onv/wf1/execution/call_freq.py",
+  "/home/user/onv/wf1/execution/call_freq_out.json",
+  "/home/user/onv/wf1/execution/dl/yuanta.txt",
+  "/home/user/onv/wf1/execution/dl/261008_031.pdf",
+  "/home/user/onv/wf1/execution/dl/20260429.pdf"
+ ],
+ "open_issues": [
+  "ACCOUNT HOLDER: today's per-contract MNQ 위탁/유지증거금 on the Kiwoom and KIS order screens (I used $4,516 maintenance from a US broker page; Kiwoom's JS fee page could not be read)",
+  "ACCOUNT HOLDER: today's mini K200 margin per contract at the broker, and whether the broker adds its own surcharge over the KRX 21% / 14%",
+  "ACCOUNT HOLDER: KIS account type (BanKIS 0.00185% vs branch 0.009811% for mini K200) and any event rate in force; Kiwoom's actual mini K200 rate",
+  "ACCOUNT HOLDER: actual MNQ commission per side at each broker and whether it includes CME/NFA fees (check a trade confirmation)",
+  "ACCOUNT HOLDER: whether USD in the overseas-futures account earns 예탁금이용료, and the KRW rate paid in the domestic futures account",
+  "ACCOUNT HOLDER: KRW-USD conversion spread and 우대율; whether KRW in the overseas account counts toward margin intraday (Kiwoom computes risk per currency)",
+  "ACCOUNT HOLDER: 기본예탁금 tier assigned to the domestic derivatives account, and completion of pre-education (1h) and mock trading (3h) for domestic and overseas derivatives; 투자성향 grade",
+  "ACCOUNT HOLDER: forced-liquidation risk threshold setting (KIS allows a lower one), SMS alert numbers, margin-call deadlines as applied to the account",
+  "ACCOUNT HOLDER: KIS Open API app key for the futures accounts, eligibility of domestic futures (day and night) and overseas futures orders by API, and whether any overseas-futures mock environment exists",
+  "ACCOUNT HOLDER: real-time CME and KRX quote subscription status and fees (delayed quotes would break E3/E4 signals)",
+  "ACCOUNT HOLDER: transfer times and limits between the cash, domestic and overseas accounts, including night-hour restrictions, since the plan relies on moving the 10M reserve",
+  "ACCOUNT HOLDER: consent setting for automatic close-out before the MNQ last trading day at KIS",
+  "ACCOUNT HOLDER: measured fills versus reference price at 09:00:05 and 15:30:20 KST and 16:00:20 and 09:30:05 ET (nobody has measured this; it decides whether costs stay under 0.83 / 0.6 bp)",
+  "UNVERIFIED: MNQ margin level in 2022; exact MNQ maintenance on 2020-03-18 (inferred from NQ initial $16,500)",
+  "UNVERIFIED: Kiwoom overseas-futures basic deposit and exact current Kiwoom fee/margin table (page is JS-rendered)",
+  "UNVERIFIED: Kiwoom API lack of KRX night-session support rests on one secondary source",
+  "LIMITATION: frequency counts use QQQ/NDX close-to-open and RTH lows as a proxy for MNQ; intra-night futures lows are unobserved, and the 2015-08-24 QQQ low is an ETF dislocation print",
+  "LIMITATION: event frequencies use raw vol-target leverage (no crisis gate, brake or cooldown) and today's margin percentages applied to all history, with the US account reset to 50% of equity daily",
+  "NOT DONE: no re-simulation of the strategy under margin constraints; that is needed before the backtest figures can be quoted for live trading"
+ ]
+}

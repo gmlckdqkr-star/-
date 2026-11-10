@@ -1,0 +1,311 @@
+{
+ "verdict": "eng.py (audited snapshot md5 cd90c0b7..., 13:03:40Z, includes fin_spread) is correct in its core: an independent event-timestamp simulator reproduces its equity paths to <=2.2e-16 for 4 configs x 3 windows, look-ahead perturbation tests pass in tradable mode (kr_sync fails them, as designed), US signals match the uploaded leverage_history on 6,938/6,938 days, and a replay through the uploaded live decision functions gives 12.25% vs 12.26% for PRESET_A. I found no bug that rescues the claims. Real engine defects: (1) KR sigma NaN propagation switches the KR leg off for ~20 rows after each missing price row (PRESET_A -0.75pp 1999~, -1.27pp 2010~; v10 +0.05pp); (2) granular mode sizes the US-open position with the same day's close (look-ahead; path effect mean +1.1 to +2.0pp, sd 5-6.5pp); (3) default frictions are not the project's fixed conditions (interest rf-2% on, fin_spread 0): baseline table overstated by 1.6pp (A) to 3.1pp (v10); (4) bond-overlay carry days / booking time / brake scaling (only when bond_lev>0); (5) Sharpe annualisation 1% low. With all fixes and standard frictions (interest 0, financing +0.4%), 1999-03~2026-10 tradable: PRESET_A 10.07% / -70.1%, v10 26.38% / -62.5%, v9 31.83% / -58.3%, v11D-nobond 25.29% / -68.9%. The backtest-vs-live gap is confirmed and decomposed: plan.py applies one per-row multiplier (brake, cooldown, equity known after the US session) to a KR night entered before that session; the cooldown flag alone lifts PRESET_A 2010~ from 15.0% to 56.2% (all inputs: 72.5%). The uploaded live code is not safe for real money as shipped: KILL/HALT does not stop E3 from increasing risk and HALT is permanent, events are skipped or duplicated around restarts, a lost state file silently resets the brake, bars up to 4 days old are accepted, v11D never trades its KR leg, flows trigger cooldown, and there is no roll/half-day/expiry handling. eng.py was not edited; patches are in eng_fixes.diff (applies cleanly; all switches off reproduces the snapshot bit-for-bit).",
+ "key_numbers": [
+  {
+   "name": "Engine vs independent reference simulator (max relative equity-path difference, 12 runs)",
+   "value": "<= 2.2e-16",
+   "status": "CONFIRMED",
+   "note": "t01_ref_vs_eng.out; PRESET_A/v10/v9/v11D-nobond x (US+KR 1999, US only, US+KR 2010); cooldown counts identical"
+  },
+  {
+   "name": "PRESET_A 1999-03~2026-10 tradable, snapshot default frictions (CAGR / MDD)",
+   "value": "13.01% / -68.6%",
+   "status": "CONFIRMED",
+   "note": "US only 22.73% / -65.9%; 2010-03~ 15.01%"
+  },
+  {
+   "name": "PRESET_A 1999-03~ after all engine fixes, default frictions",
+   "value": "12.26% / -70.0%",
+   "status": "CONFIRMED",
+   "note": "2010-03~: 13.74% / -70.0%"
+  },
+  {
+   "name": "PRESET_A 1999-03~ all fixes + standard frictions (interest 0, fin_spread 0.4%)",
+   "value": "10.07% / -70.1%",
+   "status": "CONFIRMED",
+   "note": "2010-03~ 11.19%; US only 20.05% / -69.6%; non-tradable kr_sync 42.32%"
+  },
+  {
+   "name": "v10 1999-03~ snapshot default -> all fixes + standard frictions",
+   "value": "29.35% / -60.4% -> 26.38% / -62.5%",
+   "status": "CONFIRMED",
+   "note": "US only 29.44%; 2010-03~ 31.96%; kr_sync 39.15%"
+  },
+  {
+   "name": "v9 and v11D-nobond 1999-03~ all fixes + standard frictions",
+   "value": "v9 31.83% / -58.3%; v11D-nobond 25.29% / -68.9%",
+   "status": "CONFIRMED",
+   "note": "t13_final_table.csv"
+  },
+  {
+   "name": "Cash-interest and financing defaults, effect on CAGR 1999-03~ (snapshot)",
+   "value": "PRESET_A 13.01 -> 12.11 (interest 0) -> 11.44 (+fin 0.4%); v10 29.35 -> 28.13 -> 26.29; v9 34.51 -> 33.40 -> 31.90",
+   "status": "CONFIRMED",
+   "note": "Cfg default cash_spread=0.02, fin_spread=0.0"
+  },
+  {
+   "name": "KR sigma NaN bug: KR rows differing from upload leverage_history / nights lost",
+   "value": "260 rows (0 after fix); +251 tradable nights 2010-03~",
+   "status": "CONFIRMED",
+   "note": "29 missing KR price rows 2015-2024; sigma NaN on 309 rows vs 29"
+  },
+  {
+   "name": "KR sigma fix effect on CAGR",
+   "value": "PRESET_A -0.75pp (1999~), -1.27pp (2010~); v10 +0.04/+0.06pp; v11D-nobond +0.76/+1.26pp; kr_sync PRESET_A 2010~ 72.47 -> 77.08",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Granular-mode look-ahead repro",
+   "value": "126/150 days changed (max 1.13% of equity) in snapshot; 0/150 patched",
+   "status": "CONFIRMED",
+   "note": "t04a_gran_min.out"
+  },
+  {
+   "name": "Granular fix effect on CAGR (sweep 2 cfg x 7 starts x 9 unit sizes)",
+   "value": "PRESET_A mean +1.13pp, median +0.42, sd 6.51, range -15.2..+20.5; v10 mean +2.00, median +0.68, sd 4.93",
+   "status": "CONFIRMED",
+   "note": "e.g. PRESET_A unit 0.95/0.5 start 1999: 6.48% -> 11.03%; start 2010: 4.58% -> 6.52%"
+  },
+  {
+   "name": "KR look-ahead decomposition, PRESET_A 2010-03~ CAGR",
+   "value": "tradable 15.0 | cooldown flag after US session only 56.2 | brake ratio only 24.4 | notional E only 21.3 | crisis flag only 15.5 | all (kr_sync) 72.5",
+   "status": "CONFIRMED",
+   "note": "1999-03~: 13.0 / 35.9 / 18.5 / 16.7 / 13.3 / 44.3. v10 2010~: 34.8 / 46.8 / 37.9 / 41.8 / 36.2 / 56.0"
+  },
+  {
+   "name": "KR night after a US close-to-close loss worse than -5% (PRESET_A, 2010-03~)",
+   "value": "244 days; mean next KR night -0.92% (all nights +0.050%); negative 84%",
+   "status": "CONFIRMED",
+   "note": "regression of KR night on the US intraday return that follows KR entry: slope 0.477, corr 0.514, n 3907"
+  },
+  {
+   "name": "Replay through uploaded live functions vs patched engine (PRESET_A 1999-03~)",
+   "value": "12.25% / -70.0% vs 12.26% / -70.0%",
+   "status": "CONFIRMED",
+   "note": "v10 29.39 vs 29.39; v11D-nobond 27.49 vs 27.49"
+  },
+  {
+   "name": "Live as shipped, net_flow never passed (tax seen as loss)",
+   "value": "PRESET_A 12.25% -> 11.84%; v10 unchanged",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Live v11D KR leg (sigma window bug)",
+   "value": "0 of 47 sampled days traded (rule wants 36); replay 32.60% / -55.9% as shipped vs 27.49% / -68.8% as specified",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Bond overlay variants, PRESET_A + bond 2x, 1999-03~ tradable",
+   "value": "snapshot 17.10% | carry-day fix 17.19% | booked at close 18.87% | not scaled by brake 23.20%",
+   "status": "CONFIRMED",
+   "note": "kr_sync 51.06% (unscaled 47.06%) vs claimed 77.6%"
+  },
+  {
+   "name": "Sharpe annualisation",
+   "value": "257.0 rows/yr on union calendar; Sharpe 0.4951 -> 0.4999 (x1.0098)",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Signal delay sensitivity (interest 0), CAGR at delay 0/1/2",
+   "value": "PRESET_A 12.11 / 12.78 / 12.99; v10 28.13 / 27.25 / 27.70",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Cooldown activity",
+   "value": "PRESET_A 380 triggers, active on 25.9% of US closes; v10 146 triggers, 10.1%",
+   "status": "CONFIRMED",
+   "note": "worst row 2000-01-04: -28.5% (A), -22.5% (v10)"
+  },
+  {
+   "name": "Margin check with plan split and demo margin rates (8% / 12%, buffer 1.6)",
+   "value": "US max 3 MNQ = 3.13x (5x target wants 4); KR max 2 mini = 1.36x (3x target wants 4)",
+   "status": "INFERRED",
+   "note": "mechanism confirmed in t10_live.out; real broker margin rates not verified. 2026-10-07: 1 MNQ = 83.5M KRW = 1.04x of 80M, 1 mini K200 = 54.3M = 0.68x"
+  },
+  {
+   "name": "plan.py year count in full.pkl",
+   "value": "implied H 21.38y vs 20.84 calendar years (2006 start); 41.64 vs 40.84 (1986)",
+   "status": "CONFIRMED",
+   "note": "H = rows/252.5 on a ~259 rows/yr calendar; understates reported CAGR (v11-A 71.3% would be about 73.7%)"
+  }
+ ],
+ "findings": [
+  {
+   "title": "B1 Backtest sizes the KR night with information from after the US session; live cannot",
+   "severity": "critical",
+   "status": "CONFIRMED",
+   "detail": "plan.py computes one multiplier b per row (line 52: brake from EA/peak and the cooldown flag set at line 69 of the previous row, i.e. after the previous US session) and applies it, on post-US-session EA, to that row's KR night (lines 59, 62). That night was entered at 15:30 KST, before the US session. Line 11 (g.crk) does the same for the crisis flag. Live E2 (v11_live.py lines 167-182) uses equity at 15:30 KST, peak/cooldown from the previous E3 and us_crisis_last. The cooldown flag is the main driver: after a US loss day the backtest had already cut the KR position to 30% before the KR gap down. Order of operations is confirmed by reading; that S['kon'][r] is the night ENDING at row r is inferred (g2.py not uploaded) and supported by the fact that only this reading reproduces the reported numbers.",
+   "evidence": "t12_kr_decomp.out: PRESET_A 2010-03~ 15.0% tradable -> 56.2% with only the cooldown flag taken after the US session -> 72.5% all; 1999-03~ 13.0 -> 35.9 -> 44.3; v10 2010~ 34.8 -> 46.8 -> 56.0. t02_lookahead.out: kr_sync fails 62/80 and 60/80 perturbation tests, tradable mode 0."
+  },
+  {
+   "title": "L1 KILL/HALT does not stop risk increases at E3, and HALT is permanent",
+   "severity": "critical",
+   "status": "CONFIRMED",
+   "detail": "on_us_close under guard failure only sets n=min(n,d) and still sends order_to_target: with a KILL file and a flat account E3 bought 3 MNQ (3.13x equity). Under HALT the system holds the day multiple overnight and skips E2. Nothing ever resets halted (0 assignments of False), so one transient exception (timeout, order reject) degrades the strategy indefinitely. A failed E1 is marked done with no retry and E2 returns early under HALT, so a K200 futures position can stay open unmanaged for 24h or longer.",
+   "evidence": "t10_live.out H3, H7; t11_sched.out (f); v11_live.py lines 136-140, 198-203, 241-246"
+  },
+  {
+   "title": "L2 Scheduler skips events with no catch-up and duplicates them on restart",
+   "severity": "critical",
+   "status": "CONFIRMED",
+   "detail": "done is an in-memory set and each event has a 3-minute window. Process down across the window: E1 skipped leaves the KR night position open through the day session; E4 skipped keeps the night multiple (up to 5x) through the US day; E3 skipped means no snapshot/cooldown update and a stale us_day_next. Restart inside the window re-runs E3: cooldown counter 5 -> 4 (shortened one day per duplicate), snapshot overwritten, orders sent twice. State has no last-run timestamp to detect either case.",
+   "evidence": "t11_sched.out (b), (c), (c2), (c3); t10_live.out H2"
+  },
+  {
+   "title": "E1 eng.kr_state: one missing KR price row disables the KR leg for about 20 rows",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "log-return of a NaN close poisons the 20-row rolling std (min_periods=20). 29 missing rows (2015-2024) give sigma NaN on 309 rows instead of 29; 260 KR rows differ from the uploaded leverage_history and 251 tradable nights are lost. Live realized_vol drops NaN closes. Fix: FIX['kr_sig_dropna'] (0 mismatches after). Conclusions unchanged; PRESET_A gets worse, v10 flat.",
+   "evidence": "t00_data.py output, t08_signals_oracle.out, t03_effects.out section 1: PRESET_A 13.01 -> 12.26 (1999~), 15.01 -> 13.74 (2010~); v10 29.35 -> 29.39"
+  },
+  {
+   "title": "E2 Granular mode uses the same day's close to size the position at the US open",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "At the US open tgt = floor(tgt/uus[t])*uus[t] with uus[t] built from the NDX close of day t. Only active when unit_us is set (the 80M contract-unit tests). Patched to previous close x (1 + overnight move). The effect is mostly path noise with a positive mean, which also shows that single-path results at 80M with whole contracts move by +-5 to 20pp on tiny changes and should be reported as a distribution over start dates.",
+   "evidence": "t04a_gran_min.out (126/150 vs 0/150), t04_gran.out, t04_gran_sweep.csv"
+  },
+  {
+   "title": "E3 Engine default frictions differ from the project's fixed conditions",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Cfg defaults pay interest max(rf-2%,0) on the whole equity and use fin_spread 0, while CHECKPOINT.md fixes futures-account interest at 0 and the financing standard is +0.4%. The __main__ baseline table therefore overstates CAGR by 1.6pp (PRESET_A), 3.1pp (v10), 2.6pp (v9). ms1f.py/run_pre.py/hist_windows.py do pass cash_spread=None; eng.py's own table and real_table.py set 'A' do not.",
+   "evidence": "t03_effects.out section 5; t13_final_table.csv"
+  },
+  {
+   "title": "L3 Losing the state file silently resets peak, cooldown and crisis flag",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "TraderState.load returns a fresh state when the file is absent (default path is the relative 'v10_state.json', so starting from another directory is enough): multiplier 0.225 (50% drawdown + cooldown) became 1.000. us_crisis_last resets to False, so the KR leg can enter during a US crisis until the next E3. A truncated file raises TypeError in the constructor with no fallback. Save uses os.replace but no fsync.",
+   "evidence": "t10_live.out H4; v11_live.py lines 104-115"
+  },
+  {
+   "title": "L4 Stale or not-yet-final daily bars are accepted without warning",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "stale() only rejects bars older than 4 days and is applied to NDX and K200 only (TNX/IRX are forward-filled unchecked). E3 traded on a last bar 1, 3 and 4 days old; there is no check that the last bar is today's. At lag 5 E3 returns after updating the risk state in memory without saving it and leaves us_day_next/us_crisis_last stale. Measured cost of 1-2 day stale signals is under 1pp CAGR, so this is an integrity problem more than a return problem. YahooData drops null closes, so a missing today bar silently becomes yesterday's.",
+   "evidence": "t10_live.out H5; t05_misc.out T07 (delay 0/1/2)"
+  },
+  {
+   "title": "L5 v11D live never trades its KR leg",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "on_kr_close calls realized_vol(k, cfg.vol_window) with 60 closes. For v11D vol_window=60, so only 59 returns exist, sigma is NaN and kr_target returns 0 every day. The rule specifies kr_vol_window=20. No effect for PRESET_A or v10 (both 20). In the tradable ordering the KR leg loses money, so this bug happens to help v11D.",
+   "evidence": "t10_live.out H1 (0 of 47 vs 36); t15_live_replay.out (32.60% / -55.9% vs 27.49% / -68.8%); v11_live.py line 173"
+  },
+  {
+   "title": "L6 Deposits, withdrawals, tax and rebalancing are treated as trading losses",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "run_forever calls on_us_close() with no argument, so net_flow is always 0. A 6% withdrawal triggered a 5-day cooldown and left the peak unreduced (equity/peak 0.94), which also tightens the brake permanently. The yearly A-to-D rebalance, reserve skim and 6% withdrawals of the plan all hit this. plan.py line 50 intends to rescale the peak but multiplies by EA/EA (a no-op), so the backtest never rescaled it either.",
+   "evidence": "t10_live.out H6; t15_live_replay.out (PRESET_A 12.25 -> 11.84 with tax only); 3872a1f2-plan.py line 50"
+  },
+  {
+   "title": "L7 No rollover, expiry, half-day or special-session handling",
+   "severity": "major",
+   "status": "INFERRED",
+   "detail": "Confirmed in code: roll_symbol exists only in a comment; event times are fixed clock times; holidays covers full-day closures only. E3 fires at 16:00:20 ET on 13:00-close days and E1 at 09:00:05 KST on 10:00-open days. Inferred from exchange rules I did not re-verify: CME equity futures are halted at that time on early-close days, the expiring K200 mini contract stops trading before 15:30 on expiry day, and MNQ settles at the open on quarterly expiry. Each of these would produce an order error and, through L1, a permanent HALT.",
+   "evidence": "t11_sched.out (d), (e); t10_live.out H9"
+  },
+  {
+   "title": "L8 Per-account margin check silently caps leverage below the strategy targets",
+   "severity": "major",
+   "status": "INFERRED",
+   "detail": "margin_ok shrinks the order and only logs. With the plan's split (US account 40M, KR 30M of 80M), the demo's margin rates (8% and 12%) and buffer 1.6, the US leg is capped at 3 MNQ (3.13x; a 5x target wants 4) and the KR leg at 2 mini contracts (1.36x; a 3x target wants 4). If margin_per_contract is not implemented there is no check at all. Mechanism confirmed; actual broker margin rates not verified.",
+   "evidence": "t10_live.out H8"
+  },
+  {
+   "title": "E4 Bond overlay: carry days, booking time and brake scaling",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "(a) Carry uses the union-calendar gap: 127 US rows, 278 of 6,064 carry days (4.6%) lost since 2010, +0.09pp at 2x. (b) The close-to-close bond P&L is booked at the US open, before the day target is sized: moving it to the close gives +1.8pp for PRESET_A+bond2, +0.6pp for v11D+bond. (c) Bond notional is scaled by brake x cooldown (cooldown is active 25.9% of days for A) while the v11 report says 2x at all times; unscaled gives 23.20% instead of 17.10%. Which one the original used is unverifiable without g2.py. PRESET_A (bond 0) is unaffected.",
+   "evidence": "t03_effects.out section 3; t05_misc.out T09"
+  },
+  {
+   "title": "E5 Sharpe annualised with sqrt(252) on a calendar with 257-259 rows per year",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "Understates Sharpe by 1.0% on US+KR runs (0.4951 -> 0.4999); US-only runs unaffected. Sharpe also has no rf deduction while default runs include cash interest.",
+   "evidence": "t03_effects.out section 4"
+  },
+  {
+   "title": "E6 Engine traps and model omissions (no numeric effect on the baseline)",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "unit_kr is normalised to the first available KR close (2007-01-29, back-filled) when start is before 2007 while unit_us is normalised at start; a start before 1999-03-10 silently gives zero returns while still charging costs; floor_step maps sigma==0 to the cap where live returns 0 (never occurs in the data); delay does not shift the bond shock flag; the final open position is not liquidated; MDD and worst-day include tax-payment rows; equity at the KR close excludes the unrealised US overnight P&L that live sees; USD cash FX exposure and quarterly roll costs are not modelled; kr_ok uses knowledge that the next KR row has data (51 nights skipped, neutral).",
+   "evidence": "read of eng_snapshot.py; t00_data.py"
+  },
+  {
+   "title": "E7 kr.csv usdkrw contains 32 NaN although README says forward-filled",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "build_data uses reindex(method='ffill'), which does not fill NaN values present in the source (e.g. 2026-10-07). The engine does not use this column. load_panel labels KRW=X bars with New York dates; a possible one-day label shift is unverified.",
+   "evidence": "t10 debugging output; build_data.py line 47"
+  },
+  {
+   "title": "L9 Smaller live/backtest differences",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "E3 passes 0.0 as the KR multiple to apply_caps, so the gross cap ignores the open KR position; us_targets is called without above_ma; the bond overlay is not implemented in live while the 62% / 77.6% claims include a 2x bond; total_equity excludes standby cash until modified; fill results are never checked; fx is the last daily close with no staleness check and a NaN raises ValueError (then HALT); FX gains/losses on USD cash enter the brake and cooldown; year_end's min_invested constraint is a no-op; attack_weight() from the plan is not in portfolio_v13.py; plan.py line 58 scales the KR contract unit with the same lvl series as the US unit (meaning of ext.lvl unverified); plan.py counts years as rows/252.5, which understates its own CAGR.",
+   "evidence": "read of v11_live.py, portfolio_v13.py, plan.py; full.pkl implied H"
+  },
+  {
+   "title": "E0 What was checked and found correct in eng.py",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "Event order and sizing times; Ln/Ld set at close t and used for night t and day t+1; KR crisis flag from the last completed US close; delay shifts US and KR leverage by exactly n rows; cooldown covers 5 nights + 5 days and the 5 KR entries after the trigger; brake 0.75 at 50% drawdown; tax 11% with no carry-forward, paid at the first row of the year, never triggers a cooldown; interest arithmetic; scenario haircut scales each leg mean exactly and leaves volatility unchanged; holiday rows on either side; the 700-bar live window reproduces the full-history macro state on 6,938/6,938 dates.",
+   "evidence": "t01, t02, t05_misc.out, t06_tax.out, t08, t14_window.out"
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf1/codeaudit/eng_fixes.diff",
+  "/home/user/onv/wf1/codeaudit/eng_patched.py",
+  "/home/user/onv/wf1/codeaudit/eng_snapshot.py",
+  "/home/user/onv/wf1/codeaudit/ref.py",
+  "/home/user/onv/wf1/codeaudit/baseline.txt",
+  "/home/user/onv/wf1/codeaudit/t00_data.py",
+  "/home/user/onv/wf1/codeaudit/t01_ref_vs_eng.py",
+  "/home/user/onv/wf1/codeaudit/t01_ref_vs_eng.out",
+  "/home/user/onv/wf1/codeaudit/t02_lookahead.py",
+  "/home/user/onv/wf1/codeaudit/t02_lookahead.out",
+  "/home/user/onv/wf1/codeaudit/t03_effects.py",
+  "/home/user/onv/wf1/codeaudit/t03_effects.out",
+  "/home/user/onv/wf1/codeaudit/t04_gran.py",
+  "/home/user/onv/wf1/codeaudit/t04_gran.out",
+  "/home/user/onv/wf1/codeaudit/t04_gran_sweep.csv",
+  "/home/user/onv/wf1/codeaudit/t04a_gran_min.py",
+  "/home/user/onv/wf1/codeaudit/t04a_gran_min.out",
+  "/home/user/onv/wf1/codeaudit/t05_misc.py",
+  "/home/user/onv/wf1/codeaudit/t05_misc.out",
+  "/home/user/onv/wf1/codeaudit/t06_tax.py",
+  "/home/user/onv/wf1/codeaudit/t06_tax.out",
+  "/home/user/onv/wf1/codeaudit/t08_signals_oracle.py",
+  "/home/user/onv/wf1/codeaudit/t08_signals_oracle.out",
+  "/home/user/onv/wf1/codeaudit/t10_live.py",
+  "/home/user/onv/wf1/codeaudit/t10_live.out",
+  "/home/user/onv/wf1/codeaudit/t11_sched.py",
+  "/home/user/onv/wf1/codeaudit/t11_sched.out",
+  "/home/user/onv/wf1/codeaudit/t12_kr_decomp.py",
+  "/home/user/onv/wf1/codeaudit/t12_kr_decomp.out",
+  "/home/user/onv/wf1/codeaudit/t13_final_table.py",
+  "/home/user/onv/wf1/codeaudit/t13_final_table.csv",
+  "/home/user/onv/wf1/codeaudit/t13_final_table.out",
+  "/home/user/onv/wf1/codeaudit/t14_window.py",
+  "/home/user/onv/wf1/codeaudit/t14_window.out",
+  "/home/user/onv/wf1/codeaudit/t15_live_replay.py",
+  "/home/user/onv/wf1/codeaudit/t15_live_replay.out",
+  "/home/user/onv/wf1/codeaudit/live_sandbox/v11_live.py",
+  "/home/user/onv/wf1/codeaudit/live_sandbox/v11_strategy.py",
+  "/home/user/onv/wf1/codeaudit/live_sandbox/portfolio_v13.py"
+ ],
+ "open_issues": [
+  "g2.py and ext.py were not uploaded: the meaning of S['kon'][r], Lv['konL'], g.crk usage inside g.levels, whether the original bond overlay was scaled by the brake, and what ext.lvl is cannot be read at source. B1 rests on the confirmed order of operations in plan.py plus the fact that only the look-ahead reading reproduces the reported numbers.",
+  "The engine does not reproduce the 2006-start multiples in full.pkl in either mode (v10: upload 4,625x vs 1,571x kr_sync / 138x tradable; v11-A: 99,721x vs 8,202x / 7.3x). KR data here starts 2010-02 (ETF proxy) while the upload evidently had KR futures from earlier; this belongs to the replicate lane.",
+  "eng.py was modified by the orchestrator during the audit (13:03:40Z, fin_spread and load(ext) added). Everything here refers to md5 cd90c0b7a3b578f1fbfb50d79bafa2a4; eng_fixes.diff must be re-checked if eng.py changes again.",
+  "Exchange facts used in L7 and L8 (CME early-close halt times, K200 mini expiry-day last trade time, MNQ settlement at the open, actual broker margin rates) were not verified against sources in this lane.",
+  "Granular (whole-contract) results at 80M are chaotic: the same fix moves CAGR between -15pp and +21pp depending on start date and unit size. A single path should not be quoted; use a distribution over start dates.",
+  "Not modellable with daily data: unrealised US overnight P&L in the equity used at the KR close, intraday margin calls and forced liquidation, FX on USD cash. Roll cost (rough estimate 0.2-0.3%/yr at 4x) is not in the engine.",
+  "I did not open the raw price panel on the shared mount, so the possible one-day date-label shift of KRW=X in load_panel.py is unverified (the column is unused by the engine).",
+  "The v11 report itself is inconsistent on the v11-A cooldown length (summary table says 3 days, rules table says 5); the engine and PRESET_A use 5."
+ ]
+}

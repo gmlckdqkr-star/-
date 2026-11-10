@@ -1,0 +1,209 @@
+{
+ "verdict": "The negative verdict survives only in its narrow pre-registered form (judging basis C, fee 0.83bp per side, stress 1.66bp): after I corrected a measurement artifact, still 0 of the 6 candidates I re-ran beat v1 on both bases. The broader claim \"the overnight-futures family cannot beat v1\" does not survive. Two inputs worked against the candidates and are hard to defend: (1) the synthetic night residual drawn with seed 11 had a mean of -8.5%/yr on pre-1999 days of the dev pool, so \"alpha = 0\" was really about -8.5%/yr and M's 1993-98 alpha was about +2%/yr instead of 11.8%/yr; (2) the 0.83bp fee is about $4.3-5 per contract side against published all-in costs of roughly $0.75-2.75 (0.14-0.53bp). With the residual de-meaned and a 0.30bp fee, P3, T5 and F1 beat v1 on both bases even under C (worst-basis margins +2.2, +0.25 and +0.16%p), but none survives fee x2 (0.60bp). Under M, the mode the 1993-98 SPY evidence supports, the same three beat v1 on both bases at 0.30bp and at 0.60bp. The largest improvement I can defend is about +1 to +2.5%p a year for T5 (v1 unchanged plus a 1x night-only MNQ position while v1 is invested): +3.6 path / +2.4 real at 0.30bp, +2.3 / +1.0 at 0.60bp. It is conditional and fragile: under the pre-registration's rule 4 an M-only result is \"assumption-dependent\", not a pass; every candidate fails at 1.66bp; the premium decays inside the dev data; and if it is absent the same candidates lose 2-7%p.",
+ "key_numbers": [
+  {
+   "name": "v1 reference reproduced (dev250_path / real_ndx_86_14)",
+   "value": "16.159% / 31.081%",
+   "status": "CONFIRMED",
+   "note": "Patched engine copy matches the original to 1e-14; T1|C and P3|C pre-registered rows also reproduced (-3.58/-3.81, -2.67/-2.91)."
+  },
+  {
+   "name": "Effective intercept of synthetic pre-1999 nights under C, seed 11",
+   "value": "dev250 pool -8.49%/yr (pre-1993 -7.38, 1993-99 -9.79); real-path source -2.86%/yr; intended 0",
+   "status": "CONFIRMED",
+   "note": "Across 12 seeds on the dev pool: mean -3.54, sd 2.95 %/yr. Mean night return on paths under C rises from 5.69 to 9.61 %/yr once de-meaned (real path 8.00 to 9.34)."
+  },
+  {
+   "name": "Corrected C, fee 0.83bp: d vs v1 in %p (path / real)",
+   "value": "P3 -0.22/-1.68; P1 -4.12/-16.33; T1 -0.81/-2.99; T5 -0.79/-1.87; T6 +0.02/-3.55; F1 -3.40/-2.31",
+   "status": "CONFIRMED",
+   "note": "Pre-registered values were P3 -2.67/-2.91, P1 -11.13/-19.04, T1 -3.58/-3.81, T5 -3.23/-2.66, T6 -2.77/-4.13, F1 -8.44/-4.02. Still no pass."
+  },
+  {
+   "name": "Corrected M, fee 0.83bp: d (path / real)",
+   "value": "P3 +1.84/+0.23; P1 +1.53/-11.88; T1 +1.49/-1.17; T5 +1.26/+0.02; T6 +2.34/-2.01; F1 +0.10/+0.77",
+   "status": "CONFIRMED",
+   "note": "P3, T5 and F1 are at or above v1 on both bases, but the real-path margins are inside seed noise (about 0.5%p for T, 1-2%p for P3)."
+  },
+  {
+   "name": "Corrected M, pre-registered stress fee 1.66bp: d (path / real)",
+   "value": "P3 -1.91/-4.45; T5 -2.19/-3.29; F1 -5.25/-4.67",
+   "status": "CONFIRMED",
+   "note": "All fail the pre-registered fee x2 rule."
+  },
+  {
+   "name": "BEST FAIR CASE (corrected M, fee 0.30bp, futures cash 0, spread 0.4%p, delay 2, tax as law): d (path / real)",
+   "value": "P3 +4.13/+4.63; P1 +8.03/-5.38; T1 +4.33/+1.41; T5 +3.57/+2.36; T6 +5.01/+0.57; F1 +3.38/+4.44",
+   "status": "CONFIRMED",
+   "note": "Share of paths won: P3 0.75, T5 0.93, F1 0.77. Case fixed before these runs. Using the shared module's own de-meaning instead of mine: P3 +4.28/+4.52, T5 +3.56/+2.17, F1 +3.44/+4.40."
+  },
+  {
+   "name": "Best fair case at fee x2 (0.60bp): d (path / real)",
+   "value": "P3 +2.96/+1.88; P1 +4.19/-8.89; T1 +2.70/-0.08; T5 +2.27/+1.01; T6 +3.43/-0.91; F1 +1.64/+2.68",
+   "status": "CONFIRMED",
+   "note": "P3, T5 and F1 survive on both bases. With another residual seed (7): P3 +2.48/+0.56, T5 +1.71/+0.85, F1 +1.31/+1.91 (at 0.30bp: P3 +3.75/+2.79, T5 +3.10/+2.24, F1 +3.34/+3.85)."
+  },
+  {
+   "name": "Corrected C at realistic fees: d (path / real)",
+   "value": "0.30bp: P3 +2.20/+2.69; T5 +1.40/+0.25; F1 +0.16/+1.33; T1 +1.74/-0.68; T6 +2.49/-1.30; P1 +1.40/-11.42. 0.60bp: P3 +0.80/-0.09; T5 +0.21/-0.97; F1 -1.94/-0.44",
+   "status": "CONFIRMED",
+   "note": "Under C, three candidates clear both bases at 0.30bp; none survives 0.60bp."
+  },
+  {
+   "name": "Break-even fee per side on the worse basis",
+   "value": "Corrected C: P3 0.59bp, T5 0.36bp, F1 0.32bp. Corrected M: P3 0.87bp, T5 0.83bp, F1 0.84bp",
+   "status": "INFERRED",
+   "note": "Linear interpolation between measured fee points."
+  },
+  {
+   "name": "Downside if there is no night premium anywhere (corrected Z, fee 0.30bp): d (path / real)",
+   "value": "T5 -4.38/-2.33; P3 -5.66/-0.58; F1 -6.75/-7.56",
+   "status": "CONFIRMED",
+   "note": "Best fair case on the S&P-era bases (no premium by assumption, 1955-85 / 1970-85): T5 -4.32/-4.67; P3 -3.44/-3.18; F1 -12.11/-14.38."
+  },
+  {
+   "name": "Real-night-only dev windows, T5 d in %p (1999-03..2014 / 2001..2014 / 2005..2014 / 2008..2014)",
+   "value": "0.83bp: +3.85/+1.47/+1.61/+0.93; 0.30bp: +6.16/+3.77/+4.36/+3.60; 0.60bp: +4.87/+2.45/+2.78/+2.06",
+   "status": "CONFIRMED",
+   "note": "Single paths, overlapping, in-sample for the premium, low interest rates (rf averaged 1.96%; 0.26% in 2008-14). The 0.83bp values match hist_dev.json; 2008..2014 is an extra window I added. At 0.30bp: F1 +10.06/+5.34/+4.01/+5.63; P3 +8.13/-1.75/-0.62/+1.60; T1 +3.96/+1.11/+2.01/-0.63."
+  },
+  {
+   "name": "Night premium in the <=2014 data cut",
+   "value": "QQQ 1999-03..2014: night +13.4%/yr (t 3.6), day -9.0%/yr. Night by sub-period 1999-02 / 2003-07 / 2008-14: +21.4 / +15.4 / +7.7 %/yr; model alpha 23.0 / 12.6 / 4.9 %/yr. SPY 1993-01..1999-03: night +16.0%/yr (t 5.1), with 1993-95 +7.2 and 1996-99 +24.1. SPY 2008-14: night +2.75 vs day +2.12",
+   "status": "CONFIRMED",
+   "note": "Model used by M and H: alpha 11.82%/yr, beta 0.220. NDX index opens before 1999 are stale (open equals prior close on 77-99% of days in every year but 1988), so NDX itself gives no pre-1999 evidence."
+  },
+  {
+   "name": "Cost of parking 15% of equity in a zero-interest futures account (T structure with no tilt)",
+   "value": "-1.08%p path / -3.62%p real",
+   "status": "CONFIRMED",
+   "note": "On the real path this structural drag is almost all of T1's pre-registered deficit."
+  },
+  {
+   "name": "Futures-account cash earning T-bill minus 2%p (optimistic, unverified)",
+   "value": "On top of best fair case: P3 +6.63/+7.24, F1 +5.87/+6.98, P1 +9.90/-2.98. T1 under C: +0.24/+0.21 only",
+   "status": "CONFIRMED",
+   "note": "Simulated effect is confirmed; whether any Korean broker pays this on overseas-futures deposits is not. Not part of the best fair case."
+  },
+  {
+   "name": "Whole MNQ contracts at 100M KRW capital, best fair case",
+   "value": "T5 +1.78/+2.35 (average tilt 0.62/0.68); F1 +2.02/+3.53",
+   "status": "CONFIRMED",
+   "note": "1 MNQ taken as 76M KRW, as in the pre-registration. The P engine cannot do whole contracts in this harness."
+  },
+  {
+   "name": "Corrected H (upper bound), fee 0.83bp: d (path / real)",
+   "value": "P3 +3.74/+3.25; T5 +3.75/+2.17; T6 +5.23/+0.68",
+   "status": "CONFIRMED",
+   "note": "H is not supported by evidence for 1986-92."
+  },
+  {
+   "name": "Extra tries beyond the pre-registered 12",
+   "value": "2 ideas. N1 (tilt only after a down day): -2.01/-4.34 at corrected C 0.83bp; +0.04/-2.22 at corrected M 0.30bp. N2 (v1 sells at next open instead of close, no futures): +0.43/+0.75 (C), +0.50/+0.80 (M), +0.37/+0.52 (no premium)",
+   "status": "CONFIRMED",
+   "note": "N2 controls: night return forced to 0 gives -0.05/-0.06; S&P-era bases -0.08/+0.05; real windows +0.73/+0.67/-1.63/-1.58. The premium contributes only +0.06 to +0.28%p of N2."
+  }
+ ],
+ "findings": [
+  {
+   "title": "The judging basis contained a seed artifact that pushed every candidate down",
+   "severity": "critical",
+   "status": "CONFIRMED",
+   "detail": "split_source draws one residual series (seed 11) for all synthetic days and never centres it. On the dev250 pool the drawn residual averages -8.49%/yr over pre-1999 days (2.4 standard errors below its expectation; the standardised residual also has a small negative mean worth about -1.5%/yr). All 500 paths resample the same source days, so the error does not average out. Effect: C meant alpha of about -8.5%/yr rather than 0; M's 1993-98 alpha was about +2.0%/yr rather than 11.8; even H was only +2 to +4%/yr on synthetic days. De-meaning moves d under C by +2.4 to +2.8%p on the path basis for T and P3 (+5.0 for F1, +7.0 for P1) and +0.6 to +1.7%p on the real path (+2.7 for P1). A different uncentred seed (1) alone moves T1's path d from -3.58 to -1.27. The shared modules gained a `demean` option at 13:52 UTC while I was running, so the orchestrator appears to know already; my two-segment de-meaning and the shared one-segment version agree within 0.3%p.",
+   "evidence": "/home/user/onv/wf2/steelman/t1.py (seed table), stageA.py (parity and night means), res_stageB.json (S7, S8), res_stageC.json, res_stageI.json"
+  },
+  {
+   "title": "After the correction the pre-registered verdict still holds, but by much less",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Corrected C at 0.83bp: best are T6 +0.02 path (but -3.55 real) and P3 -0.22/-1.68. No candidate is above v1 on both bases, so rule 1 still fails. Under corrected M at 0.83bp, P3 (+1.84/+0.23), T5 (+1.26/+0.02) and F1 (+0.10/+0.77) are at or above v1 on both bases, which the pre-registered M runs did not show. They fail the 1.66bp stress, and an M-only result is 'conditional' under rule 4.",
+   "evidence": "res_stageC.json, res_stageD.json"
+  },
+  {
+   "title": "The fee assumption is the swing factor and looks 1.5-5x too high",
+   "severity": "major",
+   "status": "INFERRED",
+   "detail": "0.83bp per side is about $4.3 at $52k notional ($5 at $60k). Published figures: explicit costs about $0.92-1.55 per side at US discount brokers plus half a tick ($0.25) of spread; a Korean broker's online list price of $2 per micro contract; a $0.5 event rate cited in the earlier MF1 study. All-in that is roughly $0.75-2.75, or 0.14-0.53bp. I used 0.30bp as the fair case and 0.60bp as its stress. Measured effect of 0.83 to 0.30bp: T candidates +2.2 to +2.8 path / +2.1 to +2.6 real; P3 +2.3/+4.4; F1 +3.3/+3.7. Slippage at the 09:30 open and at the close was not measured, and changing the fee is post hoc relative to the pre-registration.",
+   "evidence": "https://nexusfi.com/a/risk-management/futures-trading-costs ; https://www.samsungpop.com/mbw/trading/foreignFutures/mForeignFuturesBeginning.pop ; /mnt/project-files/research/mf1/RESULT_MF1_KO.md ; res_stageC.json, res_stageD.json"
+  },
+  {
+   "title": "Assumptions (a)-(h): which are defensible and what each moves",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "(a) Alpha 0: defensible for 1986-92, too harsh for 1993-98. Friendly alternative M: +2.0 to +2.3 path / +1.5 to +1.9 real for T and P3, +3.5/+3.1 for F1 (corrected, 0.83bp). H adds a further +1.9 to +2.9 / +2.2 to +3.0 but has no support. (b) Futures cash at 0: defensible default, because published USD deposit rates (0.15-2%) are for brokerage accounts and say nothing about futures accounts. Friendly alternative T-bill minus 2%p: P3 +2.5 to +2.7 / +2.6 to +3.4, F1 +2.5/+2.5, T1 +0.24/+0.21. (c) Spread +0.4%p: defensible and probably slightly friendly already; removing it entirely gives P3 +1.38/+2.55 (existing sens file) and about +0.25 for a 1x tilt (my arithmetic, not run). Left unchanged. (d) Fee: see previous finding. (e) Delay 2: not adverse. P3 with delay 0 is worse by 1.43/1.77; T6 with same-day volatility is worse by 0.06/0.12. (f) Tax: this is the law and already favours the candidates; P3 taxed at 22% would be 2.39/4.32 worse. (g) Dividends ignored: mildly adverse. With 0.55%/yr credited to both sides, P3 +0.55/+1.08 and T1 +0.36/+0.19. (h) Bootstrap mixing: 45.9% of path-days (47.7% on the real path) are pre-1999 synthetic. On real-night-only windows T5 beats v1 in all four windows at all three fees, but those windows are in-sample and low-rate. Eight sensitivity runs were used for this item.",
+   "evidence": "res_stageB.json (S1-S8), /home/user/onv/results/sens_le2014.json, res_stageH_windows.json; https://ceoscoredaily.com/page/view/2026100215351927558"
+  },
+  {
+   "title": "Published evidence supports C for 1986-92 and M for 1993-98; nothing supports H",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "I found no study that documents a positive overnight premium for US indexes or index futures before 1993. Modern work starts in 1993 or later because that is when reliable opening prices begin: Cooper, Cliff and Gulen (1993-2006), Lou, Polk and Skouras (from 1993/1997), Boyarchenko et al. (S&P futures 1998-2020: 3.6 of 5.9 %/yr earned overnight), Bondarenko and Muravyev (2004-2018), Knuteson (21 indexes from 1990 at the earliest, S&P from 1993-01-29). Older work points the other way or is mixed. Bondarenko and Muravyev summarise Rogalski (1984) and Smirlock and Starks (1986) as finding lower night returns in the 1970s and early 1980s, and Wood, McInish and Ord (1985) as finding higher overnight returns in 1971-72. Cornell (1985) and Dyl and Maberly (1986) found a negative weekend closed-market effect in S&P 500 futures. Hong and Wang (2000) list 'higher returns over trading periods than over nontrading periods' as a stylised fact. For 1993-98 the data cut itself shows SPY nights at +16.0%/yr (t 5.1) with real opening prints. Caveats on M: its alpha (11.8%/yr) comes from QQQ 1999-2014, SPY's 1993-95 premium was only 7.2%/yr, and Aretz and Bartram (35 countries, stocks, 1993-2011) find day returns above night returns, concentrated in 1993-98. Knuteson also states the US night/day divergence stopped in 2008, which matches the cut data.",
+   "evidence": "https://portal.northernfinanceassociation.org/viewp.php?n=2240010836 ; https://scispace.com/pdf/trading-and-returns-under-periodic-market-closures-30kaoudnxn.pdf ; https://business.purdue.edu/faculty/mcconnell/publications/Day-of-the-Week-Effects-in-Financial-Futures.pdf ; https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr917.pdf ; https://arxiv.org/pdf/2010.01727.pdf ; https://www.cxoadvisory.com/calendar-effects/day-and-night-stock-returns-worldwide/ ; https://core.ac.uk/download/157632316.pdf ; /home/user/onv/wf2/steelman/stats1.py"
+  },
+  {
+   "title": "Best fair case: three candidates beat v1 on both bases and survive fee x2",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Case: corrected M, fee 0.30bp, futures cash 0, spread 0.4%p, delay 2, taxes as law, dividends ignored. P3 +4.13/+4.63, F1 +3.38/+4.44, T5 +3.57/+2.36; at 0.60bp P3 +2.96/+1.88, F1 +1.64/+2.68, T5 +2.27/+1.01. T1 and T6 pass at 0.30bp but go negative on the real path at 0.60bp; P1 fails the real path throughout. Largest worst-basis margin: P3 +4.1%p (+2.8 with seed 7); at fee x2, P3 +1.9 (+0.6 with seed 7), F1 +1.6 (+1.3), T5 +1.0 (+0.9). T5 is the one I would defend: it leaves v1 untouched, is the least seed-sensitive, and is positive in every real-night window. P3 is a stand-alone 4-5x futures strategy whose real-path result moves by about 2%p with the seed and whose intraday margin risk the daily engine does not model. F1 has a worse drawdown profile than v1 (80% drawdown reached on 89% of paths vs 73%).",
+   "evidence": "res_stageC.json, res_stageD.json, res_stageG.json, res_stageI.json"
+  },
+  {
+   "title": "Two new uses tested; neither is a credible improvement",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "N1, night tilt only after a down day (reason: the premium as pay for absorbing end-of-day selling; in the cut data QQQ nights after down days earn 7.3bp vs 3.2bp after up days, but the pattern is absent in 1999-2002 and reversed in SPY 1993-99). It is worse than the plain tilt and fails the real path in both settings; it also needs the same-day return, which breaks the 2-day delay convention. N2, v1 unchanged but reductions executed at the next open (reason: one extra night of exposure per sale at no extra cost, no futures account). It gains +0.4 to +0.8%p on the NDX-era bases, but almost all of that is next-day rebound after v1's sale days, not the premium: it gains +0.37/+0.52 with no premium at all, about 0 on the S&P-era bases, and -1.6%p on the 2005-14 and 2008-14 windows. Neither should be taken forward.",
+   "evidence": "ntilt_sm.py (gate 3, sao switch), res_stageE.json, res_stageF.json, res_stageG.json, res_stageH_windows.json, stats2.py"
+  },
+  {
+   "title": "Why the favourable case is fragile",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "The premium shrinks inside the dev data (QQQ alpha 23.0, 12.6, 4.9 %/yr across the three sub-periods; SPY night barely above day in 2008-14), while M applies the full-sample 11.8%/yr to 1993-98. If the premium is absent, T5 loses 4.4/2.3%p, P3 5.7/0.6, F1 6.8/7.6 at 0.30bp, and 3-14%p on the S&P-era bases. All fail at 1.66bp. The T structure itself costs 1.1/3.6%p before any tilt. Whole contracts at 100M KRW cut T5's path gain from 3.5 to 1.8%p; below roughly 76M KRW a 1x tilt cannot be sized. Financing drag grows with interest rates (about 0.81 x (T-bill + 0.4%) per unit of night exposure); the real-night windows that flatter T5 had rates near 2% or lower. The best-of-six pick and my post hoc fee choice add selection risk.",
+   "evidence": "res_stageE.json, res_stageG.json, res_stageD.json, res_stageB.json, stats1.py"
+  },
+  {
+   "title": "Process notes for the orchestrator",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "ms1f.py and ntilt.py in /home/user/onv/code changed at 13:52 UTC during this lane (new `demean`, `SPLIT`, `ded`, `bdel`). My stages A-E ran on the earlier version, F-I on the new one with default settings; P3's best-fair-case numbers reproduced exactly across the change. I did not examine `ded` or `bdel`; at the time of my runs the P engine applied no 2.5M KRW deduction, which is a small item against P. My first two probe scripts ran with the harness's built-in shared numba cache directory and may have written cache files there; all later runs used a cache inside my folder. Total compute: about 90 two-basis runs of a few seconds each, plus the single-path windows. The literature search necessarily surfaced post-2014 facts (sample periods to 2020, and a web summary reporting that two overnight ETFs launched in 2022 and closed in 2023); none entered any number here. I opened none of the forbidden paths.",
+   "evidence": "/home/user/onv/wf2/steelman/ms1f_shared_snapshot_1352.py.txt, stage scripts A-I"
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf2/steelman/sm.py",
+  "/home/user/onv/wf2/steelman/ntilt_sm.py",
+  "/home/user/onv/wf2/steelman/stats1.py",
+  "/home/user/onv/wf2/steelman/stats2.py",
+  "/home/user/onv/wf2/steelman/t0.py",
+  "/home/user/onv/wf2/steelman/t1.py",
+  "/home/user/onv/wf2/steelman/stageA.py",
+  "/home/user/onv/wf2/steelman/stageB.py",
+  "/home/user/onv/wf2/steelman/stageC.py",
+  "/home/user/onv/wf2/steelman/stageD.py",
+  "/home/user/onv/wf2/steelman/stageE.py",
+  "/home/user/onv/wf2/steelman/stageF.py",
+  "/home/user/onv/wf2/steelman/stageG.py",
+  "/home/user/onv/wf2/steelman/stageH.py",
+  "/home/user/onv/wf2/steelman/stageI.py",
+  "/home/user/onv/wf2/steelman/res_stageB.json",
+  "/home/user/onv/wf2/steelman/res_stageC.json",
+  "/home/user/onv/wf2/steelman/res_stageD.json",
+  "/home/user/onv/wf2/steelman/res_stageE.json",
+  "/home/user/onv/wf2/steelman/res_stageF.json",
+  "/home/user/onv/wf2/steelman/res_stageG.json",
+  "/home/user/onv/wf2/steelman/res_stageH_windows.json",
+  "/home/user/onv/wf2/steelman/res_stageI.json",
+  "/home/user/onv/wf2/steelman/ms1f_shared_snapshot_1352.py.txt"
+ ],
+ "open_issues": [
+  "Did a Nasdaq-100 night premium exist in 1993-98 at the 1999-2014 size (only SPY evidence, and 1993-95 was about half), and at all in 1986-92 (no evidence found)? This alone decides between 'conditional pass' and 'fail'.",
+  "The real all-in MNQ cost per side at the user's broker, including slippage at the 09:30 open and the close, is unmeasured. Break-even is about 0.36bp for T5 and 0.59bp for P3 under C, and about 0.83-0.87bp under M.",
+  "Whether the overseas-futures account pays interest on USD cash is unverified. If it paid T-bill minus 2%p, P3 and F1 would gain a further 2.5%p or so; the T candidates only about 0.2%p.",
+  "Under the pre-registered rules the corrected results give no pass under C at 0.83bp, and an M-only result does not unlock the holdout. Re-judging at a 0.30bp fee would be a post hoc change to the pre-registration and needs an explicit decision.",
+  "The premium decays within the dev data and the favourable real-night windows had low interest rates. I did not open the holdout, so whether the premium persisted after 2014 is untested here.",
+  "The shared ms1f.py and ntilt.py changed at 13:52 UTC during the lane. I did not examine the new `ded` and `bdel` parameters or re-run stages A-E on the new version; only P3's best-fair-case numbers were re-checked and matched.",
+  "P3's 4-5x leverage is measured by a daily engine with no intraday liquidation or margin-call modelling, and its real-path result moves about 2%p with the residual seed. Whole-contract sizing for the P presets could not be tested in this harness.",
+  "The fee, spread and tax judgements in (c), (d) and (f) rest partly on general knowledge and a few web pages, not on the user's actual broker terms.",
+  "My first two probe scripts may have written numba cache files into /home/user/onv/nbcache before I redirected the cache to my own folder."
+ ]
+}

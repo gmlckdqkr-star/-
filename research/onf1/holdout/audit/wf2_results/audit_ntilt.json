@@ -1,0 +1,219 @@
+{
+ "verdict": "ntilt.py is a correct implementation of the pre-registered T/F design, and the stored T/F numbers can be trusted as such: tau=0 reproduces std.engine and mfeng mode 1 exactly, an independent plain-Python version matches T1 and F1 on the real path to 1e-14 relative, and all 1,629 values in pre_T_le2014.json and pre_F_le2014.json re-compute with zero difference. I found no look-ahead and no accounting error in what tau>0 adds. The one material problem is in the input, not the engine: the single seed-11 draw of the synthetic pre-1999 night residual has a realised mean of -7.9%/yr on dev250_path and -3.0%/yr on the real path instead of 0, so \"mode C\" is harsher than stated; this costs T1 about 2.6%p on dev250_path and 0.85%p on the real path. With that residual de-meaned, still 0 of 9 T/F candidates beat v1 on both bases under C or M, so the verdict stands, but the dev250_path magnitudes for always-on tilts are too pessimistic and the M-mode failures are close calls. T1 loses under C because fees (-3.6 to -3.8%p), financing (-3.0%p) and the idle 15% futures account (-1.0%p dev, -3.6%p real) together outweigh the post-1999 premium (+6.2 to +6.9%p); no design-fairness sensitivity turns T1 positive on both bases under C or M.",
+ "key_numbers": [
+  {
+   "name": "Parity impl 0, tau=0, phi=0 vs std.engine",
+   "value": "real_ndx_86_14 31.0815%, dev250_path 16.1593%; max abs diff 0 on CAGR and on the daily equity paths",
+   "status": "CONFIRMED",
+   "note": "a1_parity.py, a11_misc.py"
+  },
+  {
+   "name": "Parity impl 1, tau=0 vs mfeng mode 1 (daily=1, cmode 0, s 0.004, fee 0.0002, m 0.07, continuous)",
+   "value": "real 30.2256% / dev 14.7381% at W0=1e7; real 29.9104% / dev 14.2583% at W0=1e8; max abs diff 0 on CAGR, equity paths and out[:9]",
+   "status": "CONFIRMED",
+   "note": "ntilt.parity() only compared final values; I also compared the equity paths"
+  },
+  {
+   "name": "Independent plain-Python T1, real_ndx_86_14, mode C",
+   "value": "final 1093.294384049820 vs ntilt 1093.294384049823 (rel 3e-15); daily equity max abs diff 5.0e-12 (rel 5e-15); CAGR 27.2702%",
+   "status": "CONFIRMED",
+   "note": "indep.py: TQQQ as shares x price, stock sleeve as fund units/NAV, v1 brake via .py_func; T3-T6 also match to <=1.3e-14 rel"
+  },
+  {
+   "name": "Independent plain-Python F1, real_ndx_86_14, mode C",
+   "value": "final 1043.311694192131 on both sides, diff 0; CAGR 27.0651%",
+   "status": "CONFIRMED",
+   "note": "F2 and F3 also diff 0"
+  },
+  {
+   "name": "Only discrepancy found: night financing share",
+   "value": "ntilt hard-codes 0.8132; exact 1-6.5/(24*1.45)=0.813218. T1 final 1093.2819 vs 1093.2944 (rel 1.1e-5, CAGR 27.2701 vs 27.2702); F1 rel 2.0e-5",
+   "status": "CONFIRMED",
+   "note": "negligible"
+  },
+  {
+   "name": "Stored JSON reproduction",
+   "value": "1,629 values in pre_T_le2014.json + pre_F_le2014.json recomputed, 0 mismatches, worst abs diff 0",
+   "status": "CONFIRMED",
+   "note": "a7_repro_json.py; 0 of 9 T/F have d>0 on both bases under C or M"
+  },
+  {
+   "name": "T1 build-up, mode C (step effect on median CAGR, %p; dev250_path / real)",
+   "value": "idle 15% futures account + yearly sweep -1.03 / -3.62; beta*cc night exposure +0.91 / +1.14; residual -2.72 / -0.71; alpha (post-1999 premium) +6.19 / +6.85; financing -3.04 / -2.99; fees -3.64 / -3.76; futures tax -0.32 / -0.73; total -3.66 / -3.81",
+   "status": "CONFIRMED",
+   "note": "real path is exactly additive; dev median paired d is -3.58"
+  },
+  {
+   "name": "T1 build-up, mode M (%p; dev250_path / real)",
+   "value": "idle -1.03 / -3.62; beta*cc +0.91 / +1.14; residual -2.72 / -0.71; alpha +9.19 / +9.22; financing -3.51 / -3.39; fees -4.09 / -4.04; futures tax -0.37 / -0.78; total -1.61 / -2.18",
+   "status": "CONFIRMED",
+   "note": "dev median paired d is -1.67"
+  },
+  {
+   "name": "T1 leave-one-out, mode C (T1 minus T1-without, %p; dev / real)",
+   "value": "fees -3.46 / -3.55; financing -2.56 / -2.45; futures tax -0.32 / -0.73; alpha +4.84 / +5.45; beta*cc +0.25 / +1.02; residual -2.68 / -0.25; of which pre-1999 residual mean -2.60 / -0.85; night volatility (means kept) -2.55 / -2.25; sweep gain realisation + cost -0.38 / -0.27; futures cash at 0% -0.22 / -0.21; cash-first withdrawal +0.05 / +0.03",
+   "status": "CONFIRMED",
+   "note": "a6_decomp.py, decomp_T1.json"
+  },
+  {
+   "name": "T1 leave-one-out, mode M (%p; dev / real)",
+   "value": "fees -3.87 / -3.77; financing -3.00 / -2.63; futures tax -0.37 / -0.78; alpha +6.89 / +7.08; beta*cc +0.65 / +1.18; residual -3.03 / -1.36; pre-1999 residual mean -3.18 / -0.98; night volatility -2.69 / -2.92; sweep realisation -0.17 / -0.24; futures cash at 0% -0.22 / -0.24; cash-first +0.17 / +0.03",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Brake interaction",
+   "value": "T1: none (real path 155 trades in both, avg level 2.3677 vs 2.3675; dev median avg level 2.052 vs 2.050). F1: brake sees the tilt P&L, avg level falls 2.03 -> 1.57 on dev C; decoupling the brake gives +2.63%p (dev C), +0.42 (real C), +1.49 (dev M), +0.38 (real M)",
+   "status": "CONFIRMED",
+   "note": "a8_sens.py, a12_brake.py"
+  },
+  {
+   "name": "Pre-1999 synthetic residual, realised mean (path-weighted)",
+   "value": "seed 11: -7.92%/yr dev250_path, -3.01%/yr real; seeds 1-4: +0.16, -0.44, -2.28, -0.30 (dev) and -1.92, +1.95, -0.85, -0.08 (real). E[z] = -0.0046, about -1.5%/yr structural; standard error of the mean about 2.8%/yr",
+   "status": "CONFIRMED",
+   "note": "T1 mode C d by seed: dev -3.58 (seed 11) vs -1.27 to -1.99; real -3.81 vs -2.53 to -4.16"
+  },
+  {
+   "name": "All 9 candidates with the pre-1999 residual de-meaned, mode C d (%p; dev / real)",
+   "value": "T1 -1.02/-2.97; T2 -0.27/-1.32; T3 -3.40/-6.78; T4 -1.23/-5.08; T5 -1.06/-1.94; T6 -0.12/-3.41; F1 -3.71/-2.35; F2 -7.75/-10.82; F3 -1.22/-2.11",
+   "status": "CONFIRMED",
+   "note": "0 of 9 pass; a9_seed.py"
+  },
+  {
+   "name": "Same, mode M d (%p; dev / real)",
+   "value": "T1 +1.22/-1.20; T2 +0.80/-0.46; T3 +0.93/-3.21; T4 -1.03/-4.89; T5 +0.98/-0.11; T6 +2.05/-2.01; F1 -0.45/+0.89; F2 -1.49/-3.05; F3 -0.89/-1.89",
+   "status": "CONFIRMED",
+   "note": "0 of 9 pass on both bases; T5 misses by 0.11%p on the real path"
+  },
+  {
+   "name": "Item 4 sensitivities on T1, d in %p (C dev/real | M dev/real); base -3.58/-3.81 | -1.67/-2.18",
+   "value": "S1 phi 0.075 + cap at broker minimum 7.5%: -1.61/-0.44 | -0.44/+0.75. S2 monthly sweep: -5.58/-5.64 | -2.82/-2.38. S3 cap at 7.5%, phi 0.15: -3.84/-4.62 | -1.81/-2.98. S4 1% of notional penalty when equity <7% of notional at the open: -3.65/-3.83 | -1.76/-2.20. S5 whole MNQ contracts at 80M KRW: -2.19/-2.84 | -1.44/-1.02. S6 all tilt-unfriendly items off at once: -1.45/-0.13 | -0.26/+1.06",
+   "status": "CONFIRMED",
+   "note": "sensitivity only, not candidates. S1 and S6 are infeasible: the futures account goes <=0 on 55% of dev paths and on the real path, and is under 7% of notional on about 900 nights"
+  },
+  {
+   "name": "Margin cap in T",
+   "value": "binds on 42% (dev) / 51% (real) of days for T1 in mode C; realised average tilt 0.81 / 0.79 instead of 1.0 (T3: 1.67 / 1.63 instead of 2.0)",
+   "status": "CONFIRMED",
+   "note": "the futures share drifts below 12% between yearly sweeps"
+  },
+  {
+   "name": "Night margin stress at the open print",
+   "value": "T family: 3 nights on the real path with futures equity <7% of notional (minimum 4.0%), median 4 per dev path (max 12-13); no candidate ever has a futures balance <=0. F1/F2 minimum 17.9% / 12.4%",
+   "status": "CONFIRMED",
+   "note": "intra-night path is not in the data"
+  },
+  {
+   "name": "Fee per unit notional",
+   "value": "2 x 0.83bp x 252 = 4.18%/yr, against a mode C night return net of financing of +5.69%/yr (real) and +3.37%/yr (dev)",
+   "status": "CONFIRMED",
+   "note": "net after fees +1.51%/yr real, -0.81%/yr dev, before variance drag and tax"
+  },
+  {
+   "name": "QQQ dividends inside the price-based night return",
+   "value": "0.546%/yr over 1999-03..2014",
+   "status": "CONFIRMED",
+   "note": "a futures position would not bear the ex-dividend drop; effect on T1 about +0.2 to +0.3%p is INFERRED, not run"
+  }
+ ],
+ "findings": [
+  {
+   "title": "Engine is correct against its specification",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "Read line by line against beng.run1 and mfeng.run1F: the tau=0 code paths are identical, and what tau>0 adds does what the pre-registration says. Tilt is sized at close t from equity at close t, the level in force that night and 20-day vol through t-2; it earns ron[t+1]; fee is charged at entry on Y and at exit on Y*(1+ron); financing is 0.8132*(rf+0.4%/252); futures tax is 11% of yearly net P&L above D with no carry-forward, paid from the futures account; no tilt is opened on the last day; final value includes both accounts and both liquidation taxes.",
+   "evidence": "a10_causal.py: a change to ron[j], r[j] or rf[j] first moves equity on day j, never earlier; a change to sg[j] first shows at j+3 (sizing at j+2). T4 reacts to night returns only when v1 is flat, T5 only when v1 holds. Pulse test: +1% night gives exactly tau*E[j-1]*1% for F1 and exactly the cap (0.15/0.12 = 1.25) for T1. Cost test: tilt P&L equals minus fees, and minus financing, to 8 decimals."
+  },
+  {
+   "title": "Seed-11 residual draw makes mode C harsher than 'alpha = 0' on dev250_path",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Each source day before 1999-03-10 gets one fixed synthetic residual (ms1f.split_source, seed 11). Its realised mean is -7.9%/yr on the dev250_path source rows and -3.0%/yr on the real path, and the bootstrap reuses the same rows so it does not average out. Other seeds give -2.3 to +0.2%/yr on dev. This inflates the losses of always-on tilts on dev250_path: T1 by 2.6%p, F1 by 4.7%p, F2 by 8.3%p in mode C. The pass/fail verdict does not change (0 of 9 under C and under M after de-meaning), but in M five T candidates turn positive on dev250_path and fail only on the real path.",
+   "evidence": "a3_resid.py, a9_seed.py, seed_check.json"
+  },
+  {
+   "title": "Why T1 loses under C",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "On the real path the idle 15% futures account alone costs 3.62%p (v1 runs on 85% of equity, re-set yearly), and the tilt itself nets -0.19%p: premium +6.85 and beta exposure +1.14 are eaten by fees -3.76, financing -2.99, futures tax -0.73 and residual -0.71. On dev250_path idle cash costs 1.03%p and the tilt nets -2.63%p, of which 2.6%p is the seed-11 residual mean. Night variance on top of 3x TQQQ costs 2.2 to 2.9%p and is embedded in those steps.",
+   "evidence": "a6_decomp.py"
+  },
+  {
+   "title": "T4 carries the idle futures account all year although its tilt is on 12-14% of days",
+   "severity": "minor",
+   "status": "INFERRED",
+   "detail": "Idle cash alone (phi 0.15, tau 0) is -1.08%p dev / -3.62%p real of T4's -1.58 / -5.22. A version funded only while v1 is in cash was not run (run budget); subtracting the idle part leaves about -0.5 / -1.6%p. F3, the no-idle futures analogue, shows the same: -0.56 / -1.41%p relative to v1-as-futures. So the handicap is real but does not change the result.",
+   "evidence": "a8_sens.py reference rows; stored T4 and F3 values"
+  },
+  {
+   "title": "Design choices tested as unfair to the tilt do not rescue it",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "Halving phi to the broker minimum with no buffer improves T1 by 2.0%p (dev C) and 3.4%p (real C) but stays negative and is not operable. The yearly sweep is favourable, not unfair: monthly is 2.0%p (dev) and 1.8%p (real) worse in C. Relaxing the margin cap is worse. Sweep gain realisation costs 0.2 to 0.4%p, futures cash at 0% costs 0.2%p. With everything tilt-unfriendly removed at once T1 is still -1.45 / -0.13 in C.",
+   "evidence": "a8_sens.py, sens_T1.json"
+  },
+  {
+   "title": "Design choices tested as favourable to the tilt are small, except the fee level",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "A 1% of notional penalty on the nights where the futures account is under 7% of notional at the open costs 0.02 to 0.09%p. Whole MNQ contracts at 80M KRW shrink the tilt (average 0.35 dev / 0.65 real) and make d less negative. Extra slippage is the stored fee-x2 run: another 0.83bp per side costs T1 2.9%p (dev) and 3.0%p (real). No intra-night liquidation is modelled and cannot be with daily data.",
+   "evidence": "a8_sens.py; pre_T_le2014.json T1|C|fee2"
+  },
+  {
+   "title": "Fee assumption is the largest single lever",
+   "severity": "minor",
+   "status": "UNVERIFIED",
+   "detail": "0.83bp per side is 4.18%/yr of notional and costs T1 3.5 to 4.1%p. Whether a real MNQ round trip is cheaper than that today was not checked against any broker schedule. Interpolating between my fee=0 run and the base run, half the fee would put T1 near -1.9 / -2.0 in C and about +0.2 / -0.3 in M.",
+   "evidence": "interpolation is INFERRED from a6_decomp.py fee=0 runs"
+  },
+  {
+   "title": "F family: v1's brake reacts to the tilt",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "In impl 1 the brake is fed the whole futures account, so tilt losses cut v1's level (2.03 to 1.57 on dev C). That accounts for 2.6%p of F1's dev C loss and 0.4%p on the real path. In T the brake sees only the stock sleeve's unit value and flows are not read as performance.",
+   "evidence": "a8_sens.py bdec rows, a12_brake.py"
+  },
+  {
+   "title": "v1 inside T is not bit-identical to stand-alone v1 on bootstrap paths",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "On the real path the trade count is identical (155). On dev250_path only 15% of paths have the same trade count and the mean absolute difference in average level is 0.019, with no systematic sign (median 2.052 vs 2.050). Cause: the tax deduction D is a fixed amount applied to a smaller sleeve, plus sweep tax and cost, which shift the unit value slightly.",
+   "evidence": "a12_brake.py"
+  },
+  {
+   "title": "Cosmetic items",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "The night share is rounded to 0.8132 (effect 1e-6 on CAGR). The recorded daily equity excludes that evening's entry fee, which shows one day later (no effect on the final value). The sweep takes cash before TQQQ instead of pro rata (+0.03 to +0.17%p). The label tau=1.0 overstates the realised tilt (0.79 to 0.85) because the margin cap binds about half the time.",
+   "evidence": "indep.py with exact constant; a10_causal.py; a6_decomp.py"
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf2/audit_ntilt/indep.py",
+  "/home/user/onv/wf2/audit_ntilt/ntx.py",
+  "/home/user/onv/wf2/audit_ntilt/comp.py",
+  "/home/user/onv/wf2/audit_ntilt/a1_parity.py",
+  "/home/user/onv/wf2/audit_ntilt/a3_resid.py",
+  "/home/user/onv/wf2/audit_ntilt/a4_indep.py",
+  "/home/user/onv/wf2/audit_ntilt/a5_ntx_parity.py",
+  "/home/user/onv/wf2/audit_ntilt/a6_decomp.py",
+  "/home/user/onv/wf2/audit_ntilt/a7_repro_json.py",
+  "/home/user/onv/wf2/audit_ntilt/a8_sens.py",
+  "/home/user/onv/wf2/audit_ntilt/a9_seed.py",
+  "/home/user/onv/wf2/audit_ntilt/a10_causal.py",
+  "/home/user/onv/wf2/audit_ntilt/a11_misc.py",
+  "/home/user/onv/wf2/audit_ntilt/a12_brake.py",
+  "/home/user/onv/wf2/audit_ntilt/decomp_T1.json",
+  "/home/user/onv/wf2/audit_ntilt/sens_T1.json",
+  "/home/user/onv/wf2/audit_ntilt/seed_check.json"
+ ],
+ "open_issues": [
+  "The seed-11 residual artefact sits in ms1f.split_source, so the ms1f lane should confirm it and check how much it moves P1-P3; I measured it only through the T/F engine.",
+  "Beyond the six item-4 sensitivity runs I ran two input-noise checks: four other seeds on T1 (mode C) and one de-meaned-residual variant for all nine candidates (C and M). They are checks on the stored numbers, not candidates.",
+  "A T4 variant that funds the futures account only while v1 is in cash was not run (item-4 budget used); the 'still fails' statement for it is inferred from additive differences and from F3.",
+  "Real MNQ all-in cost per side was not verified; the M-mode verdict is sensitive to it, the C-mode verdict much less.",
+  "Intra-night margin calls cannot be tested with daily data; I could only count nights where the account is under 7% of notional at the open print.",
+  "The independent re-implementation covers continuous sizing only; whole-contract rounding (notional>0) was checked by reading and by one run, not re-implemented.",
+  "Dividends are ignored on both sides by convention; the +0.2 to +0.3%p estimate for T1 is not a run.",
+  "My scripts set NUMBA_CACHE_DIR to /home/user/onv/wf2/audit_ntilt/nbcache so nothing was written outside the lane folder."
+ ]
+}

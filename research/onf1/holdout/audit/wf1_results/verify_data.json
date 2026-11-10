@@ -1,0 +1,215 @@
+{
+ "verdict": "The return series are real prints, but they are only approximately what the futures legs would earn, and the gaps are large relative to the strategy's stated cost sensitivity (+0.5bp one-way cuts v10 from 48.9% to 41.1%). US: QQQ opens and closes match a second vendor closely. The dividend-to-night credit is correct and small (0.63%/yr). Three caveats matter. (1) In 1999-2004 the QQQ close is not a 16:00-synchronous print: tracking error against NDX is 1.03%/day in 1999-2000, against 0.12% in 2005+. (2) 1999-2000 alone supplies 29% of the summed night premium (21.7bp/day, against 3.76bp/day for 2001-2026). (3) Two vendors disagree on the 2005-2017 open by 1-2 cents on 57% of sampled days, with the dataset +0.41bp higher on average (t=1.8). The night premium's decline across eras is not statistically significant (ANOVA p=0.63), but 2021-2026 on its own is not significant either (3.3bp/day, t=1.5). KR: kr_n is an internally consistent and conservative proxy; it captures 74% of the spot-ETF night return. It is not an independent premium. Before June 2025 it averaged 2.74bp/night and was entirely explained by overlapping US returns (alpha -0.37bp, t=-0.6). 49% of the whole 2010-2026 KR night sum comes from the last 16 months (June 2025 to October 2026). No actual NQ/MNQ or KOSPI200 futures prices were available, so futures equivalence of either leg is not directly verified.",
+ "key_numbers": [
+  {
+   "name": "US night excess return f_on by era (bp/day, se, t)",
+   "value": "1999-2007: 6.68 (2.19, t3.05) | 2008-2014: 3.66 (1.86, t1.96) | 2015-2020: 5.47 (2.25, t2.43) | 2021-2026: 3.31 (2.20, t1.51)",
+   "status": "CONFIRMED",
+   "note": "Annualised 16.8% / 9.2% / 13.8% / 8.3%. 2021-2026 95% CI is -2.5% to +19.2% per year."
+  },
+  {
+   "name": "Is the decline in the night premium significant?",
+   "value": "No: ANOVA F=0.57 p=0.63; Kruskal p=0.46; 1999-2007 minus 2021-2026 = 3.37bp (se 3.10, t1.09); linear trend -0.12bp/day per year (t-0.78); from 2001 the trend is +0.15 (t0.90)",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Effect of dropping the worst-quality era on f_on",
+   "value": "All 1999-2026: 4.95bp/day (t4.6, 12.5%/yr) | 1999-2000 only: 21.7bp/day (54.7%/yr) | 2001-2026: 3.76bp (t3.5, 9.5%/yr) | 2001-2004: 1.69bp (t0.46) | 2005-2026: 4.14bp (t3.9, 10.4%/yr)",
+   "status": "CONFIRMED",
+   "note": "1999-2000 is 6.6% of days and 29% of the summed night premium."
+  },
+  {
+   "name": "US day excess return f_id",
+   "value": "All: -0.15bp/day (t-0.09); 2005-2026: +1.75bp (t1.2); 1999-2000: -16.3bp",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Dividend credited to the night",
+   "value": "90 ex-dates, 17.2% summed over 1999-2026 = 0.63%/yr (0.75%/yr since 2005; 0 in 1999-2002; max 1.52% in 2014), about 4-6% of the summed r_on",
+   "status": "CONFIRMED",
+   "note": "r_on mean 5.60bp vs price-only 5.35bp; T-bill financing drag 0.65bp/day."
+  },
+  {
+   "name": "QQQ close vs NDX close tracking error (daily sd)",
+   "value": "1999-2000: 1.03% | 2001-2004: 0.49% | 2005+: 0.12% (2008: 0.39%; 2010 onward: 0.05-0.07% except 2020: 0.18%)",
+   "status": "CONFIRMED",
+   "note": "The deviation predicts next-day NDX (beta 0.62 / 0.72) and reverses about 30% in QQQ's next night."
+  },
+  {
+   "name": "Second-source check, Twelve Data",
+   "value": "44 daily bars in 7 windows (1999-03, 2000-01, 2000-09, 2001-04, 2008-10, 2015-08-20..26, 2020-03-12..18): 44/44 open and close identical",
+   "status": "CONFIRMED",
+   "note": "Identical down to float artefacts, so probably the same upstream vendor; not independent."
+  },
+  {
+   "name": "Second-source check, Alpha Vantage monthly bars (first-day open, last-day close)",
+   "value": "240 months compared. 1999-12..2004-12 (61): 6 opens and 3 closes differ by more than 10bp. 2005-2017 (156): 57% of opens differ, median 2.9bp, one >10bp. 2018-2026 (23): 0 differences.",
+   "status": "CONFIRMED",
+   "note": "The 4 largest open gaps (79-307bp) equal the dataset's day high or previous close on the Alpha Vantage side, which points to an Alpha Vantage artefact (INFERRED)."
+  },
+  {
+   "name": "Dataset open minus Alpha Vantage open, 2005-2017",
+   "value": "+0.41bp mean (se 0.23, t=1.80), n=155 first-of-month days",
+   "status": "CONFIRMED",
+   "note": "Same order as the +0.5bp one-way slippage scenario in the v10 report."
+  },
+  {
+   "name": "KR night proxy kr_n mean",
+   "value": "2010-02..2026-10: 4.98bp/night (t3.36, 12.4%/yr) | 2010-02..2025-05: 2.74bp (t2.37, 6.8%/yr) | 2025-06..2026-10: 30.1bp (t2.39, sd 36%/yr)",
+   "status": "CONFIRMED",
+   "note": "The last 16 months are 49% of the total sum (99.4% of 200.9%)."
+  },
+  {
+   "name": "Share of the spot-ETF night captured by the futures proxy",
+   "value": "mean kr_n / mean KODEX200 night = 0.74 overall (0.61 for 2010-02..2025-05); by era 0.48 (2010-14), 0.56, 0.71, 0.49 (2021-2023.07), 0.95, 0.96; slope 1.00; corr 0.985",
+   "status": "CONFIRMED",
+   "note": "Spot minus proxy = 1.72bp/night (t6.8), about 4.3%/yr."
+  },
+  {
+   "name": "Agreement between the two legs of the KR proxy",
+   "value": "lev_n/2 mean 5.28bp vs -inv_n 4.36bp; gap 0.92bp/night (t3.8, 2.3%/yr); corr 0.989; sd of gap 15bp/night; lev_n = -1.85 x inv_n",
+   "status": "CONFIRMED",
+   "note": "The true futures night probably lies in the 4.4-5.3bp band."
+  },
+  {
+   "name": "KR night regressed on overlapping US returns, full sample",
+   "value": "R2=0.383; beta 0.335 (US night before, t12.5), 0.488 (US session inside, t23.3), 0.178 (US night after, t7.5); alpha 1.13bp (t1.2) = 23% of the raw mean",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "Same regression, 2010-02..2025-05",
+   "value": "R2=0.525; betas 0.285 / 0.427 / 0.133; alpha -0.37bp (t-0.6). 2025-06..2026-10: betas 0.95 / 1.50 / 0.77, alpha 12.4bp (t1.5)",
+   "status": "CONFIRMED",
+   "note": "Residual mean is positive in 8 of 17 years; only 2025 has |t|>2 (10.6bp, t2.4)."
+  },
+  {
+   "name": "Missing KR rows",
+   "value": "29 dates (15 in 2023), all three ETFs NaN on the same dates, giving 50 NaN nights (1.2%); regression-predicted sum of those nights -0.73%",
+   "status": "CONFIRMED",
+   "note": "Five missing nights have predicted moves between -1.4% and -2.1%."
+  },
+  {
+   "name": "Closing-auction deviation for large ETFs (published)",
+   "value": "3.63bp average absolute vs the 4:00pm midquote (99th percentile 16.3bp), fully reversed overnight, half within 20 minutes",
+   "status": "INFERRED",
+   "note": "Bogousslavsky and Muravyev (2020), read through a fetched summary."
+  },
+  {
+   "name": "NQ futures implied financing (published)",
+   "value": "3-month LIBOR + 19bp over the 2016-2017 rolls; commission 0.20bp; institutional market-impact assumption 5bp",
+   "status": "INFERRED",
+   "note": "CME cost comparison dated 2018-01-17. The dataset finances at the 13-week T-bill."
+  },
+  {
+   "name": "Worst nights in the dataset",
+   "value": "US: -9.46% (2020-03-16), -8.42% (2001-09-17), -7.98% (2015-08-24); 10 nights below -5%. KR proxy: -9.29% (2026-06-08), best +11.03% (2026-07-31)",
+   "status": "CONFIRMED"
+  },
+  {
+   "name": "QQQ after the dataset ends",
+   "value": "757.73 on 2026-10-07 (dataset), 690.49 on 2026-10-30 and 679.35 on 2026-11-09 (Alpha Vantage): -10.3%",
+   "status": "CONFIRMED",
+   "note": "The common dataset stops on 2026-10-07/08, so this fall is not in it."
+  }
+ ],
+ "findings": [
+  {
+   "title": "(a) QQQ open quality by era: genuine prints, but the 1999-2004 close is not 16:00-synchronous",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Fact table (1999-2000 / 2001-2004 / 2005+; n = 459 / 1004 / 5475):\n- open = previous close: 2.40% / 0.90% / 1.11%\n- open = previous high: 1.96% / 1.29% / 0.68%\n- open = previous low: 0.44% / 0.30% / 0.26%\n- open outside the day's high-low: 0 / 0 / 0\n- opens on a 1/64 grid: 94% / 7% / 5% (fractional pricing, so real prints)\n- nights with |r_on|>2%: 47 / 78 / 138; of those reversed more than 70% intraday: 9 / 16 / 23 (19% / 21% / 17%)\n- big nights where SPY's night had the opposite sign: 0 in every era\n- corr(r_on, r_id) is about 0 in 1999-2000, so no noisy-open signature\n- ETF-implied index level at the open outside NDX's day range by more than 0.5%: 4.1% / 1.0% / 0.09% of days\n- QQQ-minus-NDX close-to-close tracking error sd: 1.03% / 0.49% / 0.12%\n\nJudgement: there is no stale-fill or bad-tick problem in the opens. The real issue is the AMEX-era close. Its deviation from NDX predicts the next day's NDX (beta 0.62 and 0.72) and about 30% reverses in QQQ's next night. That is consistent with a post-16:00 print (QQQ traded to 16:15 on AMEX) plus print noise. A futures entry at 16:00:20 would therefore not have earned the dataset's 1999-2004 r_on. The mean of the missing 16:00-16:15 window is not identifiable here; a mean-versus-median skew test gives -4.1bp/day (se 3.5) for 1999-2000 and -2.3bp/day (se 1.15) for 2001-2004, which is weak evidence that those nights are overstated. Dropping 1999-2000 lowers f_on from 4.95 to 3.76bp/day. The 1999-2000 results should be treated as not tradable-equivalent.",
+   "evidence": "/home/user/onv/wf1/data/a_open_quality.py, a2_outliers.py, a3_close1615.py"
+  },
+  {
+   "title": "(b) Dividend handling is correct in principle; three small data errors",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "r_on minus the price-only night is non-zero on exactly 90 ex-dates and equals dividend / previous close, so the ex-dividend drop is credited to the night as documented. Size: 0 in 1999-2002, 0.95% in 2004 (special), 0.3-0.6% in 2005-2009, 0.8-1.5% in 2010-2019, 0.3-0.75% in 2020-2026; average 0.63%/yr. Crediting it to the night is right for futures, because the futures price does not drop on ex-dates.\n\nErrors found by checking each date against the NDX tracking gap:\n- 2010-06-25: spurious duplicate of the 06-18 dividend (+0.197% falsely credited).\n- 2020-09-21: a real $0.388 dividend is missing from the adjusted close (-0.144%); Twelve Data lists it.\n- 2011-12-27: 0.087% credit not visible in tracking; unconfirmed.\n- 2014-02-27 ($0.373) is real: tracking gap -0.40%.\nNet effect is about +0.14% cumulative over 27 years, which is negligible.",
+   "evidence": "/home/user/onv/wf1/data/a_open_quality.py, e_premium.py; Twelve Data get_dividends(QQQ)"
+  },
+  {
+   "title": "(c) Second-source spot check: prices confirmed; open-print definition differs between vendors in 2005-2017",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Twelve Data: 44 daily bars, including 1999-03-10..19, 2000-01-03..11, 2000-09-20..26, 2001-04-02..09, 2008-10-06..15, 2015-08-24 and 2020-03-16, are identical on open, high, low and close. The match extends to float artefacts, so this is very likely the same upstream feed and adds little independence.\n\nAlpha Vantage (free tier; daily full history is premium-only, so monthly raw bars were used: first trading day's open and last trading day's close):\n- 1999-12..2004-12 (61 months): opens agree within 3.2bp except 6 (11, 16, -16, 79, 125, 307bp). In the three largest, the Alpha Vantage value equals the dataset's day high and SPY's concurrent gap supports the dataset. Closes differ on 2000-05-31 (45bp), 2000-08-31 (37bp; both exactly $0.375, which looks like a 16:00 vs 16:15 print) and 2001-08-31 (Alpha Vantage equals the prior day's close, its own error).\n- 2005-2017 (156 months): 57% of opens differ by 1-2 cents (median 2.9bp). The dataset is higher by +0.41bp on average (se 0.23, t=1.8). One 160bp case (2008-09-02) is Alpha Vantage showing the previous close.\n- 2018-2026 (23 months, including all of 2026-01..09): zero differences.\n\nJudgement: price levels are confirmed. The measured overnight mean carries about +/-0.5bp/day of vendor open-definition uncertainty for 2005-2017, the same size as the report's slippage scenario. Financial Datasets was not used.",
+   "evidence": "/home/user/onv/wf1/data/td_spot.csv, c_spot.py, av_monthly_subset.csv, av_monthly_2005_2017.csv, c2_av_compare.csv, c3_av_2005_2017_compare.csv"
+  },
+  {
+   "title": "(d) A futures position 16:00:20 to 09:30:05 ET earns the ETF close-to-open return only approximately",
+   "severity": "major",
+   "status": "INFERRED",
+   "detail": "Could not be measured: no NQ/MNQ prices are available here. The report's claim (NQ vs QQQ night correlation 0.9985 over 49 days, -1.3bp/day) is UNVERIFIED.\n\nStructural differences and published sizes:\n1. Official closing cross vs a futures print 20 seconds later. For large ETFs (SPY, QQQ) the auction price deviates 3.63bp on average from the 4:00pm midquote (99th percentile 16.3bp), reverses fully overnight, half within 20 minutes (Bogousslavsky and Muravyev 2020). That is about 4-5bp of noise per night with an unconditional mean near zero. No published figure was found for the opening cross vs futures at 09:30:05, or for NQ/MNQ specifically.\n2. Financing basis. The dataset charges the 13-week T-bill. CME's own study puts NQ implied financing at 3-month LIBOR + 19bp (2016-17). f_on and f_id are therefore overstated by roughly 0.4-0.6%/yr per 1x of notional, more in 2007-09.\n3. Dividends are embedded in the futures price. Equivalent over a year; handled.\n4. Daily settlement moved from 16:15 to 16:00 ET on 2020-10-26 (CME FAQ). This affects margin timing, not P&L.\n5. The 16:15-16:30 ET pause was removed on 2021-06-28 (broker notice). The 17:00-18:00 ET daily break remains, so no exit or stop is possible in that hour.\n6. Half days. The ETF close is 13:00 ET and the dataset has no flag. v11_live.py hard-codes E3 at 16:00:20 ET with no early-close handling (CONFIRMED by reading lines 221-237).\n7. AMEX-era close timing: see (a).\n8. MNQ is $2 x index with a 0.25-point tick, about 0.08bp at 31,000, so the explicit spread is small. The risk is timing bias, not spread.\n\nContext: the NY Fed's 2-3am ET overnight-drift window (3.7%/yr in ES, 1998-2020) is reported as close to zero for 2021-2025 in ES, NQ and YM. The NightShares futures-based night ETFs closed about a year after their 2022 launch.",
+   "evidence": "https://aeaweb.org/conference/2021/preliminary/paper/H9T4hef7 ; https://www.cmegroup.com/education/a-cost-comparison-of-nasdaq-100-futures-and-etfs.html ; https://cmegroup.com/education/articles-and-reports/faq-daily-settlement-price-determination-time-change.html ; https://ampfutures.com/news/cme-equity-index-products-trading-halt-between-315-and-330-pm-removed ; https://libertystreeteconomics.newyorkfed.org/?p=43261 ; https://www.advisorperspectives.com/articles/2025/03/11/working-night-shift-still ; https://alphaarchitect.com/market-return-around-the-clock/"
+  },
+  {
+   "title": "(e) Overnight premium by era: positive throughout, decline not significant, recent era not significant alone",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "f_on in bp/day (se; t; annualised; Sharpe):\n- 1999-2007: 6.68 (2.19; 3.05; 16.8%; 1.03)\n- 2008-2014: 3.66 (1.86; 1.96; 9.2%; 0.74)\n- 2015-2020: 5.47 (2.25; 2.43; 13.8%; 0.99)\n- 2021-2026: 3.31 (2.20; 1.51; 8.3%; 0.63)\nNewey-West t-statistics are 3.28 / 2.23 / 2.68 / 1.62.\n\nEquality of the four means is not rejected (ANOVA p=0.63). First-minus-last era is 3.37bp (t1.09). The trend is -0.12bp/day per year (t-0.78) and turns positive once 1999-2000 is dropped.\n\nMean divided by variance, the quantity that drives the c/sigma^2 sizing: 6.3 / 6.0 / 7.1 / 4.7 at night, against -1.4 / 1.1 / 2.8 / 2.0 by day.\n\nJudgement: the data cannot show a decline, but they equally cannot rule out a 2021-2026 premium near zero. The whole-sample figure is inflated by 1999-2000. A defensible forward estimate is the 2001-2026 or 2005-2026 mean of 3.8-4.1bp/day, before the open-print (+/-0.5bp) and financing-spread haircuts.",
+   "evidence": "/home/user/onv/wf1/data/e_premium.py"
+  },
+  {
+   "title": "(f) kr_n=(lev_n-inv_n)/3 is a consistent, conservative proxy, but not verified against actual futures",
+   "severity": "major",
+   "status": "CONFIRMED",
+   "detail": "Mean bp/night for kr_n / lev_n/2 / -inv_n / KODEX200 spot night:\n- 2010-2014: 2.72 / 2.98 / 2.19 / 5.61\n- 2015-2016.07: 0.89 / 1.37 / -0.08 / 1.57\n- 2016.08-2020: 3.37 / 3.79 / 2.52 / 4.76\n- 2021-2023.07: 1.91 / 2.23 / 1.27 / 3.88\n- 2023.08-2025.05: 4.07 / 4.02 / 4.15 / 4.26\n- 2025.06-2026.10: 30.1 / 30.4 / 29.5 / 31.4\n- All: 4.98 / 5.28 / 4.36 / 6.70\nNone of the first five eras has t>1.6 on its own.\n\nCorrelations: kr_n with lev/2 0.9987, with -inv 0.9955, with spot 0.985.\n\nThe proxy captures 74% of the spot-ETF night overall and about 50% in 2010-2014 and 2021-2023.07. The spot ETF's night exceeds the proxy by 1.72bp/night (t6.8), about 4%/yr more than carry explains, which is consistent with an ETF opening premium that futures do not earn. The v9 approach (KODEX200 night minus the rate) therefore overstated the leg; kr_n is the right, lower series.\n\nThe two legs disagree systematically by 0.92bp/night (t3.8), so the premium does not cancel exactly; the true value lies in roughly 4.4-5.3bp.\n\nTick noise: the inverse ETF tick is 5 KRW on 3,600-9,200 KRW (5.5-14bp) and 1 KRW at about 1,100 KRW in 2026 (9bp). Rounding adds about 1-2bp sd per night to kr_n, mean zero, against a night sd of 34-291bp. Negligible.\n\nCaveat: before 2016-08 the ETF close was 15:00 KST, not 15:30, so the README label is wrong for 2010-2016.07.",
+   "evidence": "/home/user/onv/wf1/data/f_kr.py"
+  },
+  {
+   "title": "(g) The 29 missing KR rows: negligible mean bias, some hidden tail nights",
+   "severity": "minor",
+   "status": "CONFIRMED",
+   "detail": "29 dates are NaN in all three ETFs simultaneously (a source gap): 2015: 2, 2018: 3, 2019: 1, 2020: 2, 2022: 2, 2023: 15 (13 between 07-03 and 08-02), 2024: 4. Weekdays are evenly spread. They remove 50 nights (1.2% of 4,088) and 29 days.\n\nUsing the (h) regression, the missing nights sum to -0.73% (mean -1.45bp, against +4.98bp for observed nights). The US session inside those nights averaged -12.9bp, against +2.7bp for all nights. Treating them as flat therefore flatters the KR leg by about 0.7% cumulative at 1x.\n\nFive missing nights have predicted moves between -1.4% and -2.1% (2015-09-30, 2018-02-05, 2018-02-06, 2022-02-14, 2022-05-02). At a KR multiple of 3 those are -4% to -6% account moves, which could have triggered the cooldown or brake. Path-dependent rules are therefore slightly under-tested; the mean is not materially biased.",
+   "evidence": "/home/user/onv/wf1/data/h_reg.py (missing-night table)"
+  },
+  {
+   "title": "(h) The KR night is mostly US beta; independent alpha exists only in the last 16 months",
+   "severity": "critical",
+   "status": "CONFIRMED",
+   "detail": "Regressors, all futures-style excess returns: the US night ending at the open of the US date equal to the previous KR date (partial overlap); the US session(s) fully inside the KR night; the following US night (partial overlap, realised after the KR open).\n\nFull sample (n=4037): R2 0.383; betas 0.335 / 0.488 / 0.178; alpha 1.13bp (t1.2) against a raw mean of 4.98bp. A placebo using the next, non-overlapping US session gives beta -0.014 (t-1.1), so the alignment is right.\n\nBy era, alpha in bp (t): 2010-14 -2.18 (-1.9); 2015-16.07 -0.54; 2016.08-2020 -0.31; 2021-23.07 +0.82; 2023.08-25.05 +1.24; 2025.06-26.10 +12.4 (1.5). For 2010-02..2025-05: R2 0.525, alpha -0.37bp (t-0.6), raw mean 2.74bp.\n\nResidual mean per year, using full-sample betas, bp/night (t): 2010 0.2 (0.1); 2011 3.1 (0.7); 2012 -3.4 (-1.1); 2013 -2.9 (-1.3); 2014 -3.8 (-1.8); 2015 -3.3 (-1.4); 2016 0.1; 2017 0.2; 2018 -2.8 (-1.0); 2019 -2.5 (-1.1); 2020 -2.1 (-0.4); 2021 1.0 (0.4); 2022 2.4 (0.7); 2023 -1.2; 2024 -1.3; 2025 10.6 (2.4); 2026 32.1 (1.7). Positive in 8 of 17 years.\n\nJudgement: this is not an independent premium. Until May 2025 the KR night was a 0.43-0.49 beta to the US session, which the strategy already holds, plus a zero or slightly negative residual. All the apparent alpha comes from the June 2025 to October 2026 KOSPI surge, when betas were 0.95 / 1.50 / 0.77 and night volatility was 36%/yr. The leg also adds hidden US exposure: at a KR multiple of 3 it is roughly +1.5x US day and +1.0x US night.",
+   "evidence": "/home/user/onv/wf1/data/h_reg.py, hX.pkl"
+  },
+  {
+   "title": "(i) KRX trading-hour facts relevant to tradability",
+   "severity": "minor",
+   "status": "INFERRED",
+   "detail": "- Until 2016-07-29: stock market closed 15:00 and derivatives 15:15. From 2016-08-01: stocks 09:00-15:30, derivatives 09:00-15:45 (KRX announcement of 2016-05-24, via a news article).\n- From 2023-07-31: KOSPI200 futures and options open at 08:45; regular session 08:45-15:45; opening call auction 08:30-08:45; an 8% price band applies 08:45-09:00 (FSC press release of 2023-06-08, official). The planned 09:00 exit is therefore 15 minutes into the futures session, not the futures open.\n- Night session: CME-linked trading ended April 2020; Eurex-linked trading ran from 2021-03-22 and ended 2025-06-05. KRX's own night market opened 2025-06-09, 18:00-06:00 KST, with call auctions 17:50-18:00 and 05:50-06:00 and continuous trading in between. Ten products are listed, including KOSPI200 and Mini KOSPI200 futures. Night trades belong to trading day T+1; the price limit is 8% (KRX night-session guide PDF, official; launch date from news).\n- Implication: a 15:30:20 entry by continuous trading is feasible because the futures closing auction starts at 15:35. Between 15:45 and 18:00 and between 06:00 and 08:45 there is no market, so no exit is possible. Since June 2025 the position can be managed overnight, which is new and not in the historical data.\n- Not verified here because KRX global pages blocked the fetch: mini KOSPI200 contract specifications; special-schedule days (opening delayed to 10:00 on the first trading day of the year and on CSAT day); the 15:20 close of the expiring contract on its last trading day. These are from memory. The live scheduler's fixed times do not handle them.",
+   "evidence": "https://fsc.go.kr/eng/pr010101/80143 ; https://open.krx.co.kr/contents/OPN/01/01041401/Guide_to_Night_Session_in_KRX_Derivatives_Market.pdf ; https://www.asiae.co.kr/en/article/2025060914381038478 ; https://www.etoday.co.kr/news/view/1333690"
+  },
+  {
+   "title": "The common dataset ends before a 10% fall in QQQ",
+   "severity": "info",
+   "status": "CONFIRMED",
+   "detail": "us.csv ends 2026-10-07 with QQQ at 757.73. Alpha Vantage monthly bars show 690.49 on 2026-10-30 and 679.35 on 2026-11-09, a fall of 10.3%. The v10 report itself quotes year-to-date results through 2026-11-06 (v10 -15.4%). Any re-run on the common dataset misses this most recent drawdown."
+  }
+ ],
+ "files": [
+  "/home/user/onv/wf1/data/a_open_quality.py",
+  "/home/user/onv/wf1/data/a2_outliers.py",
+  "/home/user/onv/wf1/data/a3_close1615.py",
+  "/home/user/onv/wf1/data/c_spot.py",
+  "/home/user/onv/wf1/data/c2_av.py",
+  "/home/user/onv/wf1/data/e_premium.py",
+  "/home/user/onv/wf1/data/f_kr.py",
+  "/home/user/onv/wf1/data/h_reg.py",
+  "/home/user/onv/wf1/data/td_spot.csv",
+  "/home/user/onv/wf1/data/av_monthly_subset.csv",
+  "/home/user/onv/wf1/data/av_monthly_2005_2017.csv",
+  "/home/user/onv/wf1/data/c2_av_compare.csv",
+  "/home/user/onv/wf1/data/c3_av_2005_2017_compare.csv",
+  "/home/user/onv/wf1/data/q.pkl",
+  "/home/user/onv/wf1/data/krx.pkl",
+  "/home/user/onv/wf1/data/hX.pkl"
+ ],
+ "open_issues": [
+  "No actual NQ/MNQ or KOSPI200 (mini) futures prices were available, so futures equivalence of both legs is not directly measured. The report's claim of NQ vs QQQ night correlation 0.9985 over 49 days with -1.3bp/day could not be reproduced.",
+  "The mean of the 16:00-16:15 ET window missing from the dataset's 1999-2004 nights is not identifiable from daily data. The only evidence is a weak skew estimate of -2 to -4bp/day.",
+  "The +0.41bp/day open difference between the dataset and Alpha Vantage for 2005-2017 (t=1.8) is unresolved: it is unknown which vendor's open matches the 09:30:00 cross. Only the first trading day of each month was sampled, because Alpha Vantage's full daily history is a premium feature.",
+  "Twelve Data appears to share the dataset's upstream feed, so the 44/44 match is not independent confirmation. Its dividend list is also incomplete before 2012-06.",
+  "The financing spread (futures implied rate above the T-bill, roughly 0.4-0.6%/yr per 1x) is not in f_on or f_id. Whether the original cost terms cover it could not be checked because g2.py and ext.py were not uploaded.",
+  "It is unknown how the original backtest treated the 50 NaN KR nights and US half days. v11_live.py has no early-close handling (13:00 ET) and no handling for KRX special-schedule or expiry days.",
+  "KRX facts for 2016-08-01 and the 2025-06-09 night-market launch come from news articles and an official pre-launch guide. The KRX global contract-spec pages blocked the fetch, so mini KOSPI200 specifications and special-day schedules are unverified.",
+  "No published estimate was found of opening-cross or closing-cross slippage specifically for NQ/MNQ. The only figure is the equity-ETF closing-auction deviation of 3.63bp.",
+  "The dataset ends 2026-10-07/08. The subsequent 10.3% fall in QQQ to 2026-11-09 and any matching KR data are not included."
+ ]
+}

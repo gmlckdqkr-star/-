@@ -1,0 +1,170 @@
+{
+ "verdict": "No conclusion falls, but three of the four need rewording before the report is final. Conclusion 1 STANDS WITH REWORDING: the tradable-order numbers (v10 32-37%, PRESET_A 11-19%) are confirmed by my own independent event loop (bit-for-bit equal to eng.py) and by black-box perturbation, but the sentence 'the original backtest sizes the Korean night with the later US session' is an inference that sits under a '(확인됨)' tag, and the table's 'reported 58.4% vs reproduced 57.7%' compares different end dates (like-for-like the eng.py look-ahead run is about 6.5pp short of the upload, not 0.7pp); new package-internal evidence I found (the upload's own '0.47 x previous-day US intraday' statistic) supports the inference and should be cited. Conclusion 2 STANDS WITH REWORDING: '0 of 12 pass' is correct under the registered rules and survives every lever I tried, but 'PRESET_A at its most favourable equals v1 (+0.5~+1.2)' is wrong (that is the conservative basis C at the registered fee), and 'v9/v10 are below v1' is true only on the two MS1 bases; on the real-night windows the report's own table shows v9-US above v1 through 2014 with 16-20pp shallower drawdown, and its sign after 2015 depends on the fee (-1.3pp at 0.83bp, +6.2pp at the report's own 'realistic' 0.30bp). Conclusion 3 STANDS WITH SUBSTANTIAL REWORDING: 'the salvageable part is small' stands, but the report is too generous to T5: T5 fails the registered rules under both C and M (so it is not even 'conditional' by rule 4), the 'four windows' are three nested pre-2015 windows plus the holdout window, no window is statistically significant (t 0.5-1.4), the holdout +1.8pp is used as support against PRECOMMIT rule 5, and '+1~+2.5%p expected' is the best defensible case, not an expectation. Conclusion 4 STANDS (only the margin figure needs a label and the whole-contract number). I found no look-ahead or accounting error in eng.py, ntilt.py or ms1f.py, and every stored number I recomputed matched exactly.",
+ "checked": "Read (read-only): /mnt/project-files/research/onf1/holdout/RESULT_ONF1_FULL_KO.md, PRECOMMIT_ONF1.md, RESULT_ONF1_KO.md, CHECKPOINT.md, PROGRAM_SPEC_ONF1_KO.md, code/{eng,ms1f,ntilt,run_fix,hist_windows,real_table,paths,build_data}.py, results/{fix,pre}_{P,T,F}_le2014.json, results/hist_dev.json, holdout/hist_holdout.json, holdout/real_table.log, holdout/data/{README.md,kr.csv,us.csv,us_ext.csv}, and the 10 audit result JSONs in holdout/audit/wf1 and wf2. Uploads read as text only (plan.py, v11_live.py, v11_strategy.py, four report .md files); no pickle opened, no uploaded code executed. Nothing in the research folder was modified; I did not run hist_windows.py, real_table.py or run_fix.py because they write there. No web, no paid API.\n\nOwn scripts (all in /home/user/onv/wf3/skeptic/, run with /home/user/onv/venv/bin/python -B): s1_align.py (kr_n definition on 4,038 rows, correlations with the US session inside the night vs known at entry, reproduction of the section 1 table, like-for-like end date); s2_indep.py (my own plain-Python event loop compared with eng.py for v9, v10, PRESET_A in tradable and look-ahead modes: max relative difference 0.0; 3,629 KR entries checked for information date; black-box perturbation of eng.py on 4 nights; third 'entry-row' reading); s3_ms1.py (v1 reference 16.159% / 31.081%; T5 and P3 stored numbers for seeds 11, 1, 2 on both bases: difference 0; cash-interest lever; ntilt pulse test 30 days x 3 gates = 90 runs; future-reshuffle and volatility-lag tests for ntilt and ms1f); s4_windows.py (T5 minus v1 on the 6 reported and 6 non-overlapping real-night windows at 0.83, 1.66 and 0.30bp, paired t-statistics; stored window values reproduced exactly); s5_facts.py (night premium statistics, tail nights, KR share, Oct-Nov 2026, ms1f lag test with a -25% shock); s6_rowpair.py (fingerprint of the upload's own regression under the two row readings); s7_mech.py (12 time-shuffles of KR nights, tally of nights cut by a cooldown that began after entry); s8_spy.py (SPY 1993-98 night premium vs tick marking); s9_m96.py (mode M with premium from 1996); s10_pfee.py (P presets on real-night windows at 0.83/0.60/0.30bp and with brake delay 2); s11_cmode.py (what mode C implies for a 1x night futures position by era); s12_carry.py and s13_combo.py (carry-neutral version of C, alone and with cash interest). About 61 500-path engine runs in total (budget about 60) plus a few hundred single-path runs. Holdout-period numbers were computed in my scratch folder for information only.\n\nNot checked by me: the original engines (not uploaded); stored numbers of candidates other than T5 and P3 (taken from the JSON files); the 'fake Korean leg +4.7%p' test; the Kelly figures; the last-month preset losses (I verified only QQQ -14.6%); live-code defects other than KILL/HALT and permanent HALT; broker margin rates and fees; whether the holdout was computed only once; the 44/44 vendor comparison (relied on the audit JSON).",
+ "issues": [
+  {
+   "severity": "major",
+   "where": "RESULT_ONF1_FULL_KO.md line 12 (결론 3), line 144 (4절 마지막에서 둘째 항목), line 170 (남은 문제 2)",
+   "claim": "보수 기준에서는 v1 에 못 미쳐 '조건부'이며, 기대할 수 있는 개선은 연 +1~+2.5%p 입니다",
+   "problem": "Too generous to T5 in two ways. (a) By PRECOMMIT rule 4 a candidate is 'conditional' only if it fails under C but passes rules 1 and 2 under M. T5 fails rule 2 under M (fee x2: -2.2 / -3.1, 0 of 30 seeds; rule1and2_M = 0 in results/fix_T_le2014.json, and the report's own list at line 62 says so). So no candidate is 'conditional' under the registered rule; T5's label needs two relaxations made after registration (premium from 1993 AND a fee below the registered 0.83bp). P3 is stronger than T5 under M (+2.5 / +3.3, 27 of 30 seeds) yet is not called conditional, so the label is applied inconsistently. (b) '+1~+2.5%p' is the steelman lane's 'largest improvement I can defend' (M plus 0.30-0.60bp), presented as the expectation. Under the registered conditions the result is -1.0 / -1.9; with no premium -5.8 / -7.7; on the S&P-era bases -7.1 / -7.1.",
+   "evidence": "results/fix_T_le2014.json: T5|C|base d -1.02 / -1.85, T5|M|base +1.18 / +0.53 (26 of 30 seeds), T5|M|fee2 -2.22 / -3.10, rule1and2_M 0. results/pre_T_le2014.json: real_spx_55_85 / real_spx_70_85 T5 -7.14 / -7.13. holdout/audit/wf2/_results/steelman.json: 'largest improvement I can defend is about +1 to +2.5%p'. My recomputation of T5 under C for seeds 11, 1, 2 (s3_ms1.py) matches the stored values with difference 0.",
+   "suggested_fix": "Replace the last sentence of conclusion 3 with: '그러나 T5 는 사전 등록 규칙을 통과하지 못했습니다: 보수 기준(C) 에서 v1 대비 −1.0 / −1.9%p 이고, 1993년부터 프리미엄을 인정해도(M) 수수료 2배에서 −2.2 / −3.1%p 라 등록 규칙 4의 \"조건부\"에도 해당하지 않습니다. 실제 비용이 편도 0.3~0.6bp 이고 1990년대 중반부터 프리미엄이 있었다고 볼 때의 최선 추정이 연 +1~+2.5%p 이며, 등록 조건에서는 −1~−2%p, 프리미엄이 없으면 −6~−8%p 입니다.' In line 144 change '기대 개선은' to '가장 유리하게 본 개선 폭은'. In line 170 change 'T5 가 \"통과\" 가 아니라 \"조건부\" 인 이유입니다' to 'T5 가 통과하지 못한 이유 중 하나입니다 (다른 하나는 수수료 2배 조건)'."
+  },
+  {
+   "severity": "major",
+   "where": "RESULT_ONF1_FULL_KO.md line 12 (결론 3); line 144",
+   "claim": "실제 밤 자료가 있는 4개 구간 모두에서 v1 을 연 +1.5~+3.8%p 앞섰고 2015~2026 에서도 +1.8%p 였습니다",
+   "problem": "The four windows are not four tests. Three are nested pre-2015 windows (2001-2014 and 2005-2014 lie inside 1999-2014) and the fourth is the holdout window, which is then cited a second time ('에서도'). The pre-2015 version of the report says three windows. The +3.8 comes from 1999-2000, the same caveat the report applies to v9 at line 132. No window is statistically significant, and at the registered stress fee the sign turns negative. The 1999-2014 windows are also the data on which the premium was established, so 'T5 was positive there' restates that the premium was positive net of fees; it is not an independent test.",
+   "evidence": "s4_windows.py (stored hist_dev.json / hist_holdout.json values reproduced exactly). T5 minus v1 at 0.83bp: +3.85 (1999-03..2014), +1.47 (2001..2014), +1.61 (2005..2014), +1.84 (2015..2026-08). Non-overlapping sub-periods: 1999-03..2000 +28.81, 2001..2004 -0.58, 2005..2007 +3.53, 2008..2014 +0.93, 2015..2020 +1.61, 2021..2026-08 +2.22. Paired daily t (plain / Newey-West): 1.12/1.27, 0.49/0.54, 0.47/0.52, holdout 0.45/0.53. At 1.66bp: +0.12, -2.00, -2.42, holdout -2.73. At 0.30bp: +6.16, +3.77, +4.36, +4.82.",
+   "suggested_fix": "Replace with: '실제 밤 자료가 있는 2014년 이전 구간(서로 겹치는 3개)에서 T5 는 v1 을 연 +1.5~+3.8%p 앞섰습니다. 다만 +3.8 은 1999~2000 덕분이고(겹치지 않게 나누면 1999-03~2000 +28.8, 2001~2004 −0.6, 2005~2007 +3.5, 2008~2014 +0.9%p), 어느 구간도 통계적으로 유의하지 않으며(t 0.5~1.3), 수수료 2배에서는 3개 중 2개가 마이너스(+0.1 / −2.0 / −2.4%p)입니다.' Add the non-overlapping row and the t-statistics under the section 3 tables."
+  },
+  {
+   "severity": "major",
+   "where": "RESULT_ONF1_FULL_KO.md line 12 (결론 3), line 133 (3절), line 164 (검증)",
+   "claim": "2015~2026 에서도 +1.8%p 였습니다 / 2015년 이후 v1 을 넘은 것은 T5 하나(+1.8%p)입니다 / 2015년 이후 자료는 ... 선택에 쓰지 않았습니다",
+   "problem": "PRECOMMIT rule 5: when no candidate passes, v1 is kept and post-2014 numbers are information only. The steelman lane did choose T5 without opening the holdout (its JSON says so), so the selection itself was blind. But the conclusion then uses the holdout +1.8pp as corroboration for a candidate that failed the registered rules, and line 133 singles T5 out by its holdout result. That is promotion by holdout. The holdout was also not blind to the driving fact: the night premium through 2026 was in the upload and in the phase-1 data lane before registration (CHECKPOINT items 9-10), and conclusion 3 itself quotes the 1999~2026 premium. The +1.8pp has t about 0.5 and is -2.7pp at 1.66bp. The holdout is now spent for these 12 candidates.",
+   "evidence": "PRECOMMIT_ONF1.md rule 5; CHECKPOINT.md items 9, 10, 22, 23; holdout/audit/wf2/_results/steelman.json ('I did not open the holdout'); s4_windows.py: holdout T5 minus v1 +1.84 (t 0.45 / 0.53), -2.73 at 1.66bp, +4.82 at 0.30bp.",
+   "suggested_fix": "Remove the holdout figure from conclusion 3 or mark it: '2015~2026-08 의 +1.8%p (t 0.5, 수수료 2배면 −2.7%p)는 정보용 수치이며 판정과 선택에 쓰지 않았습니다.' Change line 133 to: '2015년 이후(정보용) v1 대비: T5 +1.8%p, 업로드 프리셋 −1.3 / −2.8 / −13.4%p. 이 수치로 후보를 고르지 않습니다.' Add to 남은 문제: '2015년 이후 자료는 이 12개 후보에 대해 이미 열어 보았으므로, T5 류 후보를 다시 판정하려면 새 사전 등록과 앞으로 쌓일 자료(또는 실계좌 소액 기록)가 필요합니다.'"
+  },
+  {
+   "severity": "major",
+   "where": "RESULT_ONF1_FULL_KO.md line 10 (결론 1), line 19, table lines 21-25, line 31",
+   "claim": "보고된 수익률은 실제 주문으로는 나오지 않습니다 (확인됨). 원본 백테스트는 한국 야간 포지션의 크기를 ... 미국 장의 결과로 정합니다. / 표: v10 보고 58.4% 대 미래참조 방식 재현 57.7%",
+   "problem": "(a) The '(확인됨)' tag covers a sentence the report itself calls inferred at lines 31 and 169. plan.py lines 21-76 alone do not settle it: line 52 computes one b per row and lines 59-66 apply it to kon[r], uon[r], uid[r]; if kon[r] were the night ENTERED on row r, b would be known at entry and line 11 (crisis shifted one row) would be legitimate. That innocent reading exists and is excluded only numerically. (b) The table compares different end dates: the upload's 58.4% ('실데이터 10.03~') runs to 2026-11-06 and includes the Oct-Nov 2026 fall (upload: v10 2026 YTD -15.4%); the reproduction ends 2026-10-07. Like-for-like to 2025-12-31 the upload implies about 64.1%, eng.py look-ahead gives 57.6%, so the gap is about 6.5pp, not 0.7pp. The conclusion still holds because the tradable order gives 34.1% and even the innocent entry-row reading gives 42.1%, both far from 64%, and the other lanes' look-ahead engines give 62-65%.",
+   "evidence": "s1_align.py and s2_indep.py: v10 [upload assumptions] 2010-03-02..2025-12-31 tradable 34.1%, entry-row reading 42.1%, look-ahead 57.6%; PRESET_A 13.2 / 20.0 / 76.3. Upload v10 report (f0764da4...md): data to 2026-11-06, '2026년 11월 6일까지는 v10 −15.4%'; (1.584^16.68 / 0.846)^(1/15.83) - 1 = 64.1%. New evidence for the exit-row reading from the package itself (s6_rowpair.py): the upload's v9 report lines 65-66 state '한국 밤 수익 ≈ 0.47 × 전날 미국 장중 수익 + 연 약 14% 상수, 미국 밤과 상관 0.10'; with the night stored on its exit row I get slope 0.46, 13.8%/yr, correlation 0.09; with the night on its entry row -0.05, 18.5%/yr, 0.27.",
+   "suggested_fix": "Conclusion 1 header: '(실제 주문 순서 수치: 확인됨 / 원본이 그렇게 계산했다는 점: 추론)'. Second sentence: '업로드 보고서 자신의 통계(한국 밤 = 0.47 × \"전날\" 미국 장중 수익)와 수치 일치로 보면, 원본 백테스트는 한국 야간 포지션의 크기를 진입 13.5~14.5시간 뒤에 끝나는 미국 장의 결과로 정한 것으로 추론됩니다.' Add under the table: '보고 58.4% 는 2026-11-06 까지, 재현은 2026-10-07 까지라 종료일이 다릅니다. 2025-12-31 로 맞추면 보고 환산 약 64%, 미래참조 방식 58%(이 엔진)~65%(다른 재구현), 실제 주문 순서 34%, 가장 호의적인 해석(한국 밤을 진입일 줄에 둔 경우) 42% 입니다.' Add the regression fingerprint to line 31 as the second basis of the inference."
+  },
+  {
+   "severity": "major",
+   "where": "RESULT_ONF1_FULL_KO.md line 11 (결론 2); 3절 lines 92-94, 120-122, 132-133",
+   "claim": "v9·v10 은 v1 보다 낮고, PRESET_A 는 가장 유리한 조건에서 v1 과 같은 수준(+0.5~+1.2%p)이며",
+   "problem": "Unfair to the upload in two places. (a) +0.5 / +1.2 is not the most favourable condition; it is the conservative judging basis C at the registered 0.83bp (30-seed mean; only 14 of 30 seeds above v1 on both bases). It is favourable only in that the brake reacts at the same close. The favourable cases are in the report's own table: M +2.5 / +3.3, H +4.7 / +5.9, C at 0.30bp +2.2 / +2.7. With futures-account cash earning rf-2%p (the upload's assumption, my run, 3 seeds) P3 under C is +2.8 / +3.5. (b) 'v9/v10 lower than v1' holds on the two MS1 bases, where about 45% of the nights are synthetic with no premium. On real-night data the report's own table shows v9-US above v1 in all three pre-2015 windows with 16-20pp shallower drawdown, and above over 1999-2026 and 2001-2026; it is below v1 only after 2015 (26.8 vs 28.1) and with fee x2. The section 4 steelman applies the lower 'realistic' fee to P3, T5 and F1 but never to v9 on the real windows; at that fee v9-US is above v1 in every window including 2015-2026. The fair summary is 'mixed and fee-dependent', not 'lower'. Caveats that must stay: the presets were tuned on 1999-2026 (in-sample everywhere), these are single paths, and on the long basis v9-US fails even at 0.30bp.",
+   "evidence": "Report table lines 79, 92, 107, 120: v9-US vs v1 32.2/22.1, 21.7/18.9, 22.5/21.6 (MDD -53/-50/-50 vs -70/-70/-66), holdout 26.8/28.1, 2001-2026 23.9/22.6. s10_pfee.py, v9-US minus v1: at 0.30bp +16.9, +8.9, +7.7, holdout +6.2 (MDD -52% vs -59%), 2001-2026 +8.1; at 0.30bp with brake delay 2: +13.9, +6.8, +5.4, +3.2, +5.6; at 0.60bp +13.0, +5.4, +3.8, +1.9, +4.3; at 0.83bp +10.2, +2.8, +0.9, -1.3, +1.4. v10-US at 0.30bp +7.3, +5.1, +2.8, +0.5, +3.4. PRESET_A-US at 0.30bp +8.3, -0.9, +0.6, -10.0, -5.4. s3_ms1.py: P3 C with cash interest +2.79 / +3.53, fee x2 -0.89 / -0.03. steelman.json: v9-US at 0.30bp under C +1.40 / -11.42.",
+   "suggested_fix": "Replace conclusion 2 body with: 'v1 과 같은 기준(MS1, 1986~2014, 1999년 이전 밤 프리미엄 없음 가정)으로 미국 구간만 재면 v9·v10 은 v1 보다 낮습니다(−2~−15%p). PRESET_A 는 브레이크가 손실 당일 종가에 바로 반응한다고 볼 때만 v1 과 비슷하고(등록 조건 +0.5 / +1.2%p, 난수 30개 중 14개에서만 두 기준 모두 초과; 현금 이자나 1993년 이후 프리미엄을 인정하면 +2.5~+3.5%p), 수수료 2배(−3.0 / −3.5%p)나 2일 반응 지연(−5.7 / −12.0%p)에서는 v1 아래입니다. 실제 밤 자료가 있는 1999년 이후만 보면 v9 미국 구간은 편도 0.83bp 에서 2014년까지 v1 을 +1~+10%p 앞서고 MDD 가 16~20%p 얕았으며 2015~2026-08 은 −1.3%p 였습니다(편도 0.30bp 로 보면 +6%p, 수수료 2배면 −12%p). 이 구간은 프리셋을 맞춘 구간이라 표본 내 수치이고 비용에 매우 민감합니다. 사전 등록한 후보 12개 중 통과는 0개입니다.' Add a line under the section 3 tables stating that the P rows are in-sample (tuned on 1999~2026) and add the 0.30bp rows for P1."
+  },
+  {
+   "severity": "major",
+   "where": "RESULT_ONF1_FULL_KO.md line 143 (4절 문헌 항목), and the reliance on M in line 12",
+   "claim": "1993~98 은 SPY 실제 시가로 연 +16%(t 5.1) 가 관측됩니다. 따라서 1986~92 는 C, 1993~98 은 M 이 근거에 맞습니다.",
+   "problem": "The evidence for M is weaker than stated. SPY traded in 1/64-1/32 ticks then, and the measured night premium depends on where the opening print sat inside the spread. It is robust only from 1996; for 1993-95 it disappears with a one-tick-fraction adjustment. SPY is also not the Nasdaq 100. T5's positive result under M depends on the 1993 start date.",
+   "evidence": "s8_spy.py (pre-2015 data): SPY night 1993-01-29..1999-03-09 +18.3%/yr (t 5.8) as printed, +12.0% with the open marked 1/64 lower, +5.7% with 1/32; 1993-95 alone +9.8% falling to +1.7% (t 0.6) with 1/64; 1996..1999-03 +26.1% falling to +21.5%. holdout/audit/wf1/_results/verify_stats.json reports the same sensitivity (halves with half a tick, vanishes with a full tick). s9_m96.py (premium from 1996-01-01 instead of 1993-01-29, seeds 11, 1, 2): T5 +0.00 / -0.37 against +1.03 / +0.48 for the same seeds with the 1993 start; P3 +1.31 / +1.27.",
+   "suggested_fix": "Replace with: '1993~98 은 SPY 실제 시가로 연 +16~18% 가 관측되지만, 당시 호가 단위(1/64~1/32)만큼 시가를 낮추면 +6~12% 로 줄고 1993~95 는 사라집니다(1996년 이후만 견고). 따라서 1986~92 는 C 가 맞고, 1993~95 는 불확실하며, 1996~98 은 프리미엄이 있었다고 볼 근거가 있습니다. 프리미엄 시작을 1996년으로 잡으면 T5 는 v1 대비 0.0 / −0.4%p 입니다(난수 3개).'"
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 36 (C 정의), line 69-70 (통과 규칙·보정 설명)",
+   "claim": "C = 그 이전 밤 프리미엄 0, 판정 기준",
+   "problem": "The registered conventions are stacked against futures candidates more than the label says, and the report does not show how much. (a) C sets the intercept to zero on raw returns while the engines charge the night 0.8132 x (T-bill + 0.4%). The result is not 'zero premium' but a night that does not even earn its carry in 1986-92. A no-anomaly night (carry plus the beta share of the index excess return) would be rf x 0.593 higher, about 3.6%/yr in 1986-92 and 2.7%/yr in 1993-99. (b) Futures-account cash earns zero (project rule) while the upload assumed rf-2%p. Neither lever alone or together turns any candidate into a pass, so '0 of 12' is robust, but P3's fee x2 failure of -3.0 / -3.5 shrinks to about break-even when both are relaxed. This should be disclosed so the reader sees that the verdict rests on fee x2 and on the brake-delay and real-window results, not on these conventions.",
+   "evidence": "s11_cmode.py: under C a 1x night futures position has excess -1.8%/yr in 1986-92 (T-bill 6.1%) and +2.9%/yr in 1993-01-29..1999-03-09 before fees, -6.0% and -1.3% after 2 x 0.83bp daily; day excess +11.9% and +23.1%. s12_carry.py (carry-neutral C, not registered): T5 base +0.24 / -1.03 (seed 11) and +0.35 / -0.30 (seed 1) against registered -0.86 / -1.96 and -0.92 / -1.70; T5 fee x2 -2.98 / -4.31; P3 base +0.90 / +0.67 against +0.45 / -1.08; P3 fee x2 -2.49 / -3.86 against -3.51 / -6.01. s3_ms1.py (cash interest only, 3 seeds): P3 +2.79 / +3.53, fee x2 -0.89 / -0.03. s13_combo.py (both levers, P3 fee x2): seed 11 -0.24 / +0.83, seed 1 -0.63 / +3.92.",
+   "suggested_fix": "Change line 36 to: 'C = 1999-03-10 이전 합성 밤의 상수항 0 (판정 기준). 이 가정에서는 밤 선물 1배의 금리 차감 후 수익이 1986~92 연 −1.8%, 1993~99-03 연 +2.9%(수수료 전)로, 밤 구간이 금리 비용도 벌지 못하는 보수적 가정입니다.' Add one bullet under the table: '민감도(등록 조건 아님, 난수 1~3개): 합성 밤에 금리 몫을 더하면 T5 +0.2~+0.4 / −0.3~−1.0%p, PRESET_A +0.9 / +0.7%p; 선물 계좌 현금 이자(금리−2%p)를 인정하면 PRESET_A +2.8 / +3.5%p. 어느 경우에도 수수료 2배 조건은 통과하지 못하거나(T5 −3.0 / −4.3) 본전 수준(PRESET_A 두 가지 모두 적용 시 −0.2~−0.6 / +0.8~+3.9)이라 통과 0/12 은 그대로입니다.'"
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md 2절 (lines 34-71) and line 12",
+   "claim": "(omission) 2절 표와 결론 3 에 S&P 시대 기준과 8천만 계약 단위 수치가 없음",
+   "problem": "PRECOMMIT_ONF1.md requires the S&P-era bases and the 80M contract-unit result to be reported next to the C values. Both are stored and both are unfavourable to the candidates, so leaving them out makes T5 look better than the registered reporting would. The fact that T5 is zero contracts at 80M appears only in section 5, not in the conclusion that promotes it.",
+   "evidence": "PRECOMMIT_ONF1.md ('보고 수치: C 기준 값만 대표로 쓰고, M·H·Z, 8천만 계약 단위(1 MNQ = 7,600만), S&P 시대 ... 를 함께 적는다'). results/pre_T_le2014.json and pre_P_le2014.json: real_spx_55_85 / real_spx_70_85 T5 -7.14 / -7.13, P3 -9.18 / -8.40. Report line 150: '8천만 원에서는 0계약입니다'.",
+   "suggested_fix": "Add under the section 2 table: 'S&P 시대(1955~85, 1970~85; 밤 프리미엄 증거 없음, 참고): T5 −7.1 / −7.1%p, PRESET_A 미국만 −9.2 / −8.4%p. 8천만 원 계약 단위: T5 는 MNQ 0계약이라 v1 과 같음.' Add to conclusion 3: '8천만 원에서는 MNQ 0계약이라 지금 자본으로는 실행할 수 없습니다.'"
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 159 (검증, 자료)",
+   "claim": "QQQ 시가·종가는 실제 체결가, 다른 공급자와 44/44 일치",
+   "problem": "Overstates independence. Per the phase-1 data audit the 44/44 match is against a vendor that probably shares the same upstream feed; the independent vendor disagrees on more than half of the sampled opens. The resulting uncertainty in the open print is the same size as T5's edge.",
+   "evidence": "holdout/audit/wf1/_results/verify_data.json: Twelve Data 44/44 'probably the same upstream vendor; not independent'; Alpha Vantage 2005-2017 opens differ on 57% of sampled days, dataset opens +0.41bp higher (t 1.8), '±0.5bp/day of vendor open-definition uncertainty'. 0.5bp x 252 = about 1.3%/yr on a 1x nightly position; T5 holds about 0.8x on 82-91% of days (s4_windows.py), so roughly ±1pp/yr.",
+   "suggested_fix": "Replace with: 'QQQ 시가·종가는 한 공급자 계열 자료이며(같은 원천으로 보이는 다른 공급자와 44/44 일치, 독립 공급자와는 2005~2017 표본의 57% 에서 시가가 다름, 평균 +0.4bp), 시가 정의 불확실성 ±0.5bp/일은 밤 1배 포지션에 연 ±1%p 안팎으로 T5 의 우위와 같은 크기입니다.' Add the same sentence to 남은 문제 5."
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 13 (결론 4), line 151 (5절)",
+   "claim": "8천만 원으로는 설계 배율에 필요한 증거금(8,228만 원)이 자본보다 크며",
+   "problem": "8,228만 is for the non-integer 5.0x / 3.0x notional (3,188만 + 5,040만) and is labelled '추론' only in section 5. With whole contracts inside the caps (4 MNQ = 4.18x, 4 mini = 2.64x per PROGRAM_SPEC) the requirement is about 7,100만, below capital. The conclusion is unaffected: 89% of capital in margin leaves no buffer, the money is split across a 4,000만 and a 3,000만 account, and a margin call comes at -2.75%.",
+   "evidence": "PROGRAM_SPEC_ONF1_KO.md: 3,188만 + 5,040만 = 8,228만; '5배 상한 = 4계약 4.18배, 한국 3배 = 4계약 2.64배'. My arithmetic from those rates: 3,188 x 4.18/5 = about 2,665만; 5,040 x 2.64/3 = about 4,435만; total about 7,100만 = 89% of 8,000만.",
+   "suggested_fix": "Replace with: '설계 배율(미국 5배 + 한국 3배)을 그대로 채우면 위탁증거금이 약 8,228만 원으로 자본보다 크고, 계약 수를 내림해도(MNQ 4 + 미니 4계약) 약 7,100만 원(자본의 89%)이라 추가증거금 여유가 없습니다(추론, 증권사 화면 미확인).'"
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 66 (MDD 줄), line 12 ('가장 안전하게 쓰는 형태')",
+   "claim": "대표 기준 MDD 중앙값 / −80% 도달 경로 비율: P3 A-US -76.1% / 0.17, T5 -84.2% / 0.75 ... / 이를 가장 안전하게 쓰는 형태(T5 ...)",
+   "problem": "The line has no v1 comparator, so T5's 0.75 reads as alarming when it is about the same as v1, and P3's 0.17 is not recognised as much better than v1 (unfair to the upload). Separately, T5 is not 'the safest' form: it adds about 0.8x of overnight futures on 82-91% of days on top of a 3x fund, and its median drawdown on the representative basis is slightly deeper than v1's.",
+   "evidence": "s3_ms1.py: v1 on dev250_path median MDD -82.9%, share of paths reaching -80% 0.73. fix JSONs: P3 -76.1% / 0.17, T5 -84.2% / 0.75. s4_windows.py: T5 tilt on 82-91% of days, average 0.78-0.87x of equity.",
+   "suggested_fix": "Line 66: prepend 'v1 -82.9% / 0.73, '. Line 12: change '이를 가장 안전하게 쓰는 형태' to 'v1 을 건드리지 않고 쓰는 형태' and add '(밤사이 노출은 v1 의 3배에서 약 3.8배로 늘어납니다)'."
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 30 (원인 증거)",
+   "claim": "한국 밤 순서를 무작위로 섞으면 두 방식의 차이가 0 이 되고",
+   "problem": "True for v10, not exactly for PRESET_A, where the look-ahead method becomes worse than the tradable order after shuffling. The inference (the gap comes entirely from timing) is intact; the wording should match the numbers.",
+   "evidence": "s7_mech.py, 12 shuffles with eng.py: v10 gap +22.9pp real, -0.3pp shuffled (range -4.5..+4.9); PRESET_A +59.1pp real, -7.7pp shuffled (range -12.1..-3.5). Nights cut by a cooldown that began after entry: PRESET_A 232 nights, mean -0.91%, others +0.11% (report: 231, -0.92%, +0.11%); v10 95 nights, mean -1.21%.",
+   "suggested_fix": "Replace with: '한국 밤 순서를 무작위로 섞으면 두 방식의 차이가 사라지거나 뒤집힙니다(v10 +22.9 → −0.3%p, PRESET_A +59.1 → −7.7%p, 12회 평균).'"
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 32 (한국 야간 구간의 기여)",
+   "claim": "v9·v10 은 2015년 이후 구간에서 소폭 플러스(v10 2015~ 32.2% → 33.1%)",
+   "problem": "Understates the Korean leg for v9/v10 in the most recent window. The report's own log shows that in the 2020~ window the tradable Korean leg adds 11-14pp for v9 and v10. It is concentrated in the last 16 months, which the report does say, but the size should be shown.",
+   "evidence": "holdout/real_table.log, 2020~ window, project assumptions: v9 US-only 42.1% -> with KR 55.9%; v10 34.6% -> 45.5%. s5_facts.py: KR night sum 2010-03..2026-10 200.7%, of which 99.4% since 2025-06 (50%).",
+   "suggested_fix": "Append: '2020년 이후 구간에서는 v9 42.1% → 55.9%, v10 34.6% → 45.5% 로 크게 더하지만, 이 증가는 거의 전부 2025-06 이후 16개월에서 나온 것입니다.'"
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 10 (결론 1 마지막 문장)",
+   "claim": "서로 모르는 독립 재구현 4건이 같은 결론이고",
+   "problem": "The implementations are independent code, but they are not blind to each other and not independent in data: the challenge lanes were given the replication lane's numbers, and all used the common dataset in holdout/data/.",
+   "evidence": "holdout/audit/wf1/_results/challenge_timing-logic.json and challenge_numbers.json quote the replication lane's figures; all lanes load holdout/data/us.csv and kr.csv. My own fifth implementation (s2_indep.py) equals eng.py with maximum relative difference 0.0 in both modes for v9, v10 and PRESET_A, also on the same data.",
+   "suggested_fix": "Replace with: '서로 다른 코드로 다시 구현한 5건(자료는 공통)이 같은 결론이고'."
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_FULL_KO.md line 12 ('연 12.5%, t 5.1'), line 131 (자료 종료일)",
+   "claim": "미국 밤 프리미엄 자체는 실재합니다(1999~2026 연 12.5%, t 5.1, 확인됨)",
+   "problem": "Numbers that need a qualifier or will need revising. The 12.5% is gross: before the daily round-trip fee (4.2%/yr at 0.83bp, 1.5%/yr at 0.30bp) and the 0.33%/yr financing spread. I get t 4.6 (plain) to 5.0 (autocorrelation-robust), not 5.1. The premium is weaker in sub-periods. The section 3 tables stop at 2026-08-31 and so exclude the Sep-Nov 2026 fall, which will lower T5's edge slightly when the data are extended.",
+   "evidence": "s5_facts.py: night excess 1999-03-10..2026-10 +12.46%/yr, t 4.58 / 5.00; 2001-2014 +8.09 (t 2.2-2.5); 2015..2026-10 +11.12 (t 2.8-3.05); 2021..2026-10 +8.35 (t 1.5-1.6). Fee 2 x 0.83bp x 252 = 4.18%/yr. 2026-09-01..11-09: sum of night returns -1.8%, day -3.0%.",
+   "suggested_fix": "Replace with: '(1999-03~2026-10 수수료 전 연 12.5%, t 4.6~5.0, 확인됨; 편도 0.83bp 를 매일 내면 약 4.2%p 가 빠지고, 2021년 이후만 보면 연 8.4%, t 1.6 입니다)'. Add to line 131: '2026-09~11 을 이어 붙이면 T5 의 2015년 이후 우위는 약 0.2%p 줄어듭니다(추정).'"
+  },
+  {
+   "severity": "info",
+   "where": "Items 1-2 of the review: code/eng.py, holdout/data/kr.csv, 1절",
+   "claim": "실제 주문 순서 방식은 진입일 15:30 KST 에 알 수 있는 정보만 쓰고, 미래참조 방식은 그 점에서만 다르다",
+   "problem": "None found. This part is fine. The look-ahead mode differs from the tradable mode in three things, all of them state fixed after entry: the brake/cooldown multiple, the equity base, and an exit-row crisis flag (plus the timing of the cost). No contract rounding difference.",
+   "evidence": "s1_align.py: kr_n equals (lev_open_t/lev_close_{t-1} - inv_open_t/inv_close_{t-1})/3 with max difference 3.7e-09 on 4,038 rows; correlation of kr_n with the US session inside the night 0.579-0.586 (0.515 intraday), with the session known at entry -0.059; 96.9% of nights contain a US session. The section 1 table reproduced exactly (v10 34.9 / 57.7 / US-only 40.1; PRESET_A 13.7 / 77.1 / 31.9; v9 35.1 / 49.4 / 37.3 on upload assumptions; 32.0, 11.2, 32.6 on project assumptions). s2_indep.py: my event loop equals eng.py bit-for-bit; all 3,629 v10 Korean entries in tradable mode used US state dated at least one calendar day before the entry date. Perturbation on 4 nights (2012-08-08, 2017-08-10, 2022-01-26, 2025-06-13): a -6% shock to the US session inside the night changes the tradable Korean notional by 0.0% and the look-ahead notional by -41..-63%; a shock to the session known at entry changes the tradable notional by -59..-68%.",
+   "suggested_fix": "No change needed. Optionally add the perturbation result as one line of evidence in 1절."
+  },
+  {
+   "severity": "info",
+   "where": "Item 5 of the review: code/ntilt.py, code/ms1f.py",
+   "claim": "측정 엔진에 미래참조 없음 (검증 line 162)",
+   "problem": "None found. No look-ahead and no accounting error in the tilt or in ms1f.py on the real_ndx_86_14 basis.",
+   "evidence": "s3_ms1.py: +1% pulse on the night return of day t, 30 random days x T1/T4/T5 = 90 runs: equity before day t changed in 0 runs; T4 responded on 6 days, T5 on 24, both on 0, neither on 0 (gates are mutually exclusive and add up to T1); implied tilt between 0.293 and 1.000 of equity (margin cap binds). Reshuffling all later night returns leaves earlier equity unchanged. T6 volatility shock first appears at t+3. ms1f: later returns reshuffled -> 0 change; s5_facts.py: a -25% shock to the sigma input at lag 0 and 1 -> 0 change, lag 2 -> cost only (-7.1e-04), lag 3 -> P&L (-3.95e-02), consistent with the 2-day signal delay.",
+   "suggested_fix": "No change needed."
+  },
+  {
+   "severity": "info",
+   "where": "Item 3 of the review: 2절 표, line 69",
+   "claim": "통과 0/12. 등록 당시 측정으로도, 보정한 측정으로도 같습니다.",
+   "problem": "Correct under the registered rules 1-5. P3 meets rule 1 on the 30-seed mean (+0.49 / +1.16, 14 of 30 seeds on both bases) but fails rule 2 in 30 of 30 seeds (-2.96 / -3.47), and with the brake delayed 2 days it fails rule 1 (-5.70 / -11.97). The three post-registration corrections (de-meaned residual with 30 seeds, deduction, brake-delay rows) each move in the direction the report states, and candidates and rules were not changed.",
+   "evidence": "results/fix_P_le2014.json, fix_T_le2014.json, fix_F_le2014.json: rule1and2_C = rule1and2_M = 0 for every candidate. s3_ms1.py: v1 16.159% / 31.081%; T5 and P3 under C for seeds 11, 1, 2 on both bases equal the stored per-seed values with difference 0.",
+   "suggested_fix": "No change needed to the count. See the separate issue on disclosing the convention sensitivities."
+  },
+  {
+   "severity": "info",
+   "where": "5절 (lines 152, 154, 155), line 32",
+   "claim": "밤사이 −2.75% 이하 54회(연 2.0회), 최악 −9.46%; QQQ −14.6%; 한국 밤 합계의 49% 가 마지막 16개월; KILL/HALT 결함",
+   "problem": "Verified as stated (one rounding difference).",
+   "evidence": "s5_facts.py: 54 nights at or below -2.75% since 1999-03-10 (2.0 per year), worst -9.46% on 2020-03-16; QQQ 2026-10-07 -> 11-05 -14.6%; Korean night share since 2025-06 50% (report 49%). v11_live.py lines 136-140, 198-203, 245: a failed guard only caps n at d and still calls order_to_target at the US close; 'halted' is only ever set to True.",
+   "suggested_fix": "No change needed (49% -> 50% optional)."
+  }
+ ],
+ "open_points": [
+  "The original engines g2.py, uni.py and ext.py were not uploaded, so 'the original backtest stored the Korean night on its exit row' remains an inference. It is now supported by three things (order of operations in plan.py, numeric match of the look-ahead reproduction at 58-65% against about 64% like-for-like, and the upload's own '0.47 x previous-day US intraday' statistic), with one unmatched fingerprint (v10 in 2022). The files would settle it.",
+  "The real all-in MNQ cost per side, including slippage at the open and close, is unmeasured, and the verdicts on v9-US and T5 change sign inside the plausible range: v9-US against v1 in 2015-2026 is -1.3pp at 0.83bp, +1.9pp at 0.60bp and +6.2pp at 0.30bp; T5 is +1.8pp at 0.83bp, -2.7pp at 1.66bp and +4.8pp at 0.30bp.",
+  "Opening-print uncertainty of about 0.5bp per day between vendors is the same size as T5's edge; no real MNQ or KOSPI 200 futures prices were available.",
+  "The pre-1999 Nasdaq 100 night premium cannot be observed. The SPY evidence is robust only from 1996; whether the premium is taken to start in 1993 or 1996 decides whether T5 is positive under M.",
+  "My sensitivity runs used 1 to 3 seeds (carry-neutral C: seeds 11 and 1; cash interest and 1996 start: seeds 11, 1, 2; both levers on P3 at fee x2: seeds 11 and 1), not the 30 seeds of the stored results. The directions are clear; the second decimals are not.",
+  "With both non-registered levers (carry-neutral synthetic night and cash interest at rf-2%p) P3 at double fee is about break-even with v1 (-0.2 / +0.8 and -0.6 / +3.9 on two seeds). I did not run 30 seeds or the brake-delay variant under those levers, so I cannot say whether P3 would pass rules 1 and 2 under them; it would still be far below v1 on real-night data after 2001 (15.3% vs 18.9%) and in 2015-2026 (14.6% vs 28.1%).",
+  "The innocent entry-row reading of plan.py gives 42.1% for v10 to 2025-12-31 against 34.1% for the tradable order. I did not decompose the 8pp difference; that reading books the Korean night's P&L ahead of the same row's US legs, which is itself a look-ahead of a few hours.",
+  "The holdout is spent for these 12 candidates and ends 2026-08-31, before the Oct-Nov 2026 fall. Whether it was computed only once cannot be verified from the files.",
+  "Margin rates, account interest and the split between the overseas and domestic futures accounts are not verifiable without the broker screen; the 8,228만 and my 7,100만 figure are both arithmetic from the report's stated rates.",
+  "Not re-verified by me: stored numbers for candidates other than T5 and P3, the 'fake Korean leg +4.7%p' test, the Kelly estimates, the last-month losses of the three presets, live-code defects other than KILL/HALT and permanent HALT, and the effect of the yearly tax payment on the brake's drawdown reference in ms1f.py."
+ ]
+}

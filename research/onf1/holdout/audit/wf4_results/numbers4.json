@@ -1,0 +1,135 @@
+{
+ "verdict": "The revised reports are numerically sound: no headline number or verdict is wrong, and I found nothing critical. Every generated table line reproduces verbatim from the result files, and all 60 of my engine runs matched the stored values (max abs difference 2.2e-16). The new result files (sens_A to F and V, hist_extra_dev, night_sharpe) are correct and internally consistent, and the break-even fee line recomputes by hand to the printed values.\n\nOne major point must change before the reports are final. The MNQ contract value of 8,355만 원 is labelled \"2026-11-10 지수·환율 기준\" in all three files, but it is the 2026-10-07 index (31,160.08) times the 2026-10-08 exchange rate (1,340.68). At the last index in the folder (27,937 on 2026-11-09, same rate) one contract is about 7,490만 원, below 8,000만 원. So the statements \"8천만 원에서는 0계약\" and \"약 8,400만 원부터 1계약\" hold only at the October index; the pass/fail verdict is unaffected.\n\nThe rest is minor: one mislabelled quantity (\"연도별 수익률\" for a window-CAGR gap), three small rounding or range slips, one sentence in the ≤2014 report that mixes an M figure with a C figure, two over-strong wordings about T5, and a few unsourced counts or estimates.",
+ "checked": "Scope: all prose numbers in holdout/RESULT_ONF1_FULL_KO.md, RESULT_ONF1_KO.md and PROGRAM_SPEC_ONF1_KO.md, plus the new result files. Nothing under /mnt/project-files/ was modified (no file newer than the 15:13 mirror state), no web, no pickle opened, no uploaded code executed. Scratch: /home/user/onv/wf4/numbers4/ (recompute.py, recompute2.py, recompute3.py, recompute.log, recompute_out.json, mt_*.txt).\n\nCounts (approximate):\n- Table lines: 263 generated lines (158 in the full report, 105 in the ≤2014 report, about 2,300 numbers). All 263 are verbatim in the reports; 0 mismatches.\n- Prose numbers: about 540 (full report about 370, ≤2014 report about 110, program spec about 60). About 525 matched; 10 mismatched or mislabelled; 5 unsourced. All are listed as issues.\n\nEngine recomputation, 60 runs in total, max abs difference 2.2e-16:\n- Sens cells, seeds 11 and 7, both bases, per_seed_cagr and per_seed_d: 'P3 A-US|C|fee030', 'P3 A-US bd2|C|fee030', 'F1|M|fee060' (sens_A), 'T5|M96|base' (sens_B), 'T5|Ccarry|base' (sens_C), 'P3 A-US|Ccarry+cash|fee2' (sens_D), 'T5|C|base' on real_spx_55_85 / real_spx_70_85 (sens_E), 'T5|C|unit80M' (sens_F). 32 seed-cells, 64 numbers, max abs diff 0.0.\n- v1 references: 16.159280% / 31.081466%; S&P era 11.935% / 12.633%; at 80M start 15.869% / 30.731%. All equal the stored values.\n- sens_V (v1 MDD median -82.92%, share of paths at or below -80% 0.732): diff 0.0.\n- hist_extra_dev, dev mode in memory: dev_1999_2014 and sub_2001_2004 at all four fees (d, cagr, t, Newey-West t with my own implementation, tilt share, average tilt), plus sub_1999_2000 T5 and v9, dev_2001_2014 v9 0.30bp and PRESET_A 0.30bp with brake delay, and PRESET_A 0.30bp on two windows. Max abs diff 2.2e-16.\n- One fix_T cell (T5|C|base, seed 7, dev250_path): diff 0.0.\n\nWithout the engine:\n- Break-even fees by hand from the 30-seed means: T5 C 0.404 (real basis), M 0.951; PRESET_A US-only C 0.948 (dev basis), M 1.393; F1 C below 0.30 (dev -0.06 at 0.30bp), M 0.818. All equal the printed 0.40 / 0.95 / 0.95 / 1.39 / 0.30 미만 / 0.82. The four \"0.30 미만\" entries for P1, P2 and P3 with brake delay are also right.\n- night_sharpe_le2014.json recomputed with awk from data_cut/us_le2014.csv: Sharpe 0.5696 / 0.2171 / 0.3924, t 2.263 / 0.811 / 1.240, fee x2 0.2861 / -0.0890 / 0.0152. All match.\n- Internal consistency of sens_A to F: 172 cell-bases, 30 seeds each, mean of per-seed values equals the stored d and cagr (max 1e-16), seeds_d_pos and d_min/d_max all consistent.\n- Rule-1 and rule-1+2 seed counts recomputed from per-seed arrays for all 15 rows under C and M: 0 mismatches (PRESET_A 14/30 and 27/30, 2/30 under M; T5 26/30 under M, 0 for rule 1+2).\n- hist_extra_dev vs hist_dev and hist_extra_holdout vs hist_holdout on the six shared windows: difference 0 for v1, T5 and the presets; d = cagr - v1 holds in all 228 cells.\n- Data-level checks with awk: 54 nights at or below -2.75% over 1999-03 to 2026-10, worst -9.457% on 2020-03-16; 31 nights and -8.358% on 2001-09-17 up to 2014; night excess 12.46%/yr, t 4.58; QQQ 757.73 to 647.05 = -14.6%.\n- Section 1 hand-typed table and bullets against holdout/real_table.log and real_table_presets.csv: all cells match.\n- Uploaded text files: plan.py line 52 and lines 59-66; v11 report line 26 and final plan line 34 (\"연 15~40%\"); v9 report line 65 (\"0.47 × 전날 미국 장중 수익 + 연 약 14%\"); v10 report line 116 (58.4% / -55.1%), line 114 (48.0%), line 145 (2026 -15.4%), line 229 (2022 -40%); v11 report line 11 (77.6%); final plan line 205 (62.0%). All 14 sha256 prefixes and the PRECOMMIT hash match.\n- All 13 audit result JSONs and the seven skeptic .out files read; each quoted lane figure matched. The 63 issues split as 23 + 19 + 21, with 1 critical and 11 major, as the report says.",
+ "issues": [
+  {
+   "severity": "major",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 153 (사전 등록 대비 차이), line 23 (결론 3), lines 303-304 (5절); RESULT_ONF1_KO.md lines 98, 177-178; PROGRAM_SPEC_ONF1_KO.md lines 8, 13-14, 36",
+   "claim": "\"등록 문서의 MNQ 1계약 7,600만 원은 2026-11-10 지수·환율 기준 8,355만 원으로 고쳐 썼습니다\"; \"MNQ 1계약 명목 ≈ 8,355만 원 (지수 × 2달러 × 환율, 2026-11-10 기준)\"; \"8천만 원에서는 ... 0계약으로 시작합니다\"; \"총자산 약 8,400만 원부터 1계약\"",
+   "problem": "The date basis is wrong. 8,355만 원 is the 2026-10-07 index times the 2026-10-08 exchange rate, not 2026-11-10. No file holds an index or exchange rate for 2026-11-10. At the last index in the folder one contract is below 8,000만 원, so the '0계약' and '약 8,400만 원' statements hold only at the October index. The pre-registered 7,600만 원 is closer to the November level than the 'corrected' figure. The pass/fail verdict does not depend on this.",
+   "evidence": "holdout/data/us.csv last row 2026-10-07 ndx 31160.08; holdout/data/kr.csv last row 2026-10-08 usdkrw 1340.6801; 31,160.08 × 2 × 1,340.68 = 83,551,398 (verify_execution.json: 'NDX 31,160.08 (2026-10-07), USDKRW 1,340.68'; CHECKPOINT.md line 52). holdout/data/us_ext.csv 2026-11-09 ndx 27,936.864 gives 27,936.864 × 2 × 1,340.68 = 74.9M KRW. The rate would have to exceed about 1,432 for one contract to top 80M. results/sens_F_le2014.json was run with notional 83.55M only.",
+   "suggested_fix": "In all three files replace '2026-11-10 지수·환율 기준' with '2026-10-07 지수(31,160)·10-08 환율(1,340.68) 기준'. Add: '2026-11-09 지수(27,937)로는 같은 환율에서 약 7,490만 원이라 8천만 원으로 1계약(약 0.94배)을 들 수 있습니다.' Change '0계약으로 시작합니다' to '10월 초 지수 기준으로는 0계약, 11월 초 지수 기준으로는 1계약' and '약 8,400만 원' to '약 7,500만~8,400만 원(지수·환율에 따라)'. Optionally rerun sens_F at 75M or 76M."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 61 (1절, 근거 ②)",
+   "claim": "\"수치 일치: 연도별 수익률 평균 오차 0.6~1.4%p (변형에 따라 최대 3.6%p)\"",
+   "problem": "The numbers are right but the quantity is mislabelled. 0.6, 1.4 and 3.6 are mean absolute gaps of window CAGRs (four start dates, to end-2025), not of calendar-year returns. The fit on calendar-year tables is much looser.",
+   "evidence": "verify_replicate.json: 'v10 T2 CAGR to 2025-12-31 ... 64.4 / 69.6 / 61.6 / 81.9 vs implied 64.1 / 68.2 / 61.7 / 82.4, mean abs gap 0.6 %p'. challenge_timing-logic.json: 'mean abs gap 1.4 %p' on the same four windows. challenge_numbers.json: 'fits the v10 windows better (mean absolute gap 0.8 pp vs 3.6 pp)'; yearly-table fit 'T2 6.0-8.3 pp', and 7.9-9.8 pp in the timing lane.",
+   "suggested_fix": "\"수치 일치: 시작 시점 4개 구간(2010-03 / 2013 / 2015 / 2020 ~ 2025)의 연 수익률 평균 오차 0.6~1.4%p (변형에 따라 최대 3.6%p). 연도별 수익률 표의 오차는 6~10%p.\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 50 (1절, 종료일)",
+   "claim": "\"미국만 기준으로 11월 초까지 연장하면 실제 주문 순서 수치는 2.5~3%p 더 낮아집니다\"",
+   "problem": "The range does not contain all the values it summarises for the 2010-03 window. PRESET_A falls 2.1%p and v10 falls 3.2 to 3.3%p.",
+   "evidence": "holdout/real_table_presets.csv, US-only 2010-03-02, to 10-07 vs to 11-09: v9 37.32 → 34.74 (A) and 34.91 → 32.36 (S); v10 40.09 → 36.81 and 37.49 → 34.25; PRESET_A 31.93 → 29.80 and 28.40 → 26.31.",
+   "suggested_fix": "\"... 실제 주문 순서 수치는 2.1~3.3%p 더 낮아집니다 (v9 −2.6, v10 −3.2, PRESET_A −2.1%p).\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 50 (1절, 종료일)",
+   "claim": "\"이 엔진의 미래 정보 방식도 원본에 약 6%p 못 미치지만\"",
+   "problem": "Rounding. The gap between the figures quoted in the same sentence is 6.5%p.",
+   "evidence": "Same sentence: 보고 환산 약 64% (64.1 in s2_indep.out) and 57.6%; 64.1 − 57.6 = 6.5. skeptic.json verdict: 'about 6.5pp short'.",
+   "suggested_fix": "\"약 6.5%p 못 미치지만\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 20 (결론 3)",
+   "claim": "\"2021년 이후만 보면 연 8.4%, t 1.6\"",
+   "problem": "Double rounding. The value is 8.349%/yr, which rounds to 8.3. The t of 1.6 is the autocorrelation-robust one; the plain t is 1.5.",
+   "evidence": "awk on holdout/data/us.csv f_on, 2021-01-01 onward: n 1447, mean × 252 = 8.3490%, plain t 1.51. verify_stats.json and verify_data.json both say 8.3%. s5_facts.out prints '+8.35%/yr t 1.51 / 1.62'.",
+   "suggested_fix": "\"2021년 이후만 보면 연 8.3%, t 1.5~1.6\""
+  },
+  {
+   "severity": "minor",
+   "where": "RESULT_ONF1_KO.md line 11 (결론 3)",
+   "claim": "\"PRESET_A 미국만은 M 에서 +2.5 / +3.3%p 로 T5 보다 높지만 브레이크를 v1 처럼 2일 지연하면 −5.7 / −12.0%p 라 제외\"",
+   "problem": "The sentence starts under assumption M and then quotes the brake-delay figure for assumption C. The like-for-like M figure is −4.1 / −9.6. The exclusion stands either way.",
+   "evidence": "Same report, table row 'P3 (브레이크 2일 지연)': C −5.7 / −12.0, M −4.1 / −9.6. fix_P_le2014.json 'P3 A-US bd2|M|base' d −0.0412 / −0.0960.",
+   "suggested_fix": "\"... 브레이크를 v1 처럼 2일 지연하면 M 에서 −4.1 / −9.6%p (C 에서 −5.7 / −12.0%p) 라 제외\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 24 (결론 3)",
+   "claim": "\"가장 유리하게 본 개선 폭은 M 가정에 수수료 0.30bp 를 더한 +3.5 / +3.1%p\"",
+   "problem": "The report's own table shows a slightly larger figure for T5 under H at the registered fee. '가장 유리하게 본' is therefore not the largest number in the report, and the sentence does not say that H was set aside.",
+   "evidence": "Section 2 table, T5 row, H column: +3.6 / +3.2. fix_T.log: 'T5|H|base ... d +3.62 ... d +3.17'. sens_A: T5|M|fee030 d +3.54 / +3.06.",
+   "suggested_fix": "\"근거가 있는 가정 가운데 가장 유리하게 본 개선 폭은 M + 수수료 0.30bp 의 +3.5 / +3.1%p 이고 (근거 없는 상한 H 는 0.83bp 에서 +3.6 / +3.2%p), ...\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 298 (4절)",
+   "claim": "\"가장 방어할 만한 탈락 후보는 T5 입니다. v1 을 건드리지 않고, 난수에 가장 덜 민감하며, ...\"",
+   "problem": "Not supported by the result files. Four other candidates vary less across the 30 seeds than T5 on both bases. T5 is less seed-sensitive than PRESET_A, which is probably what was meant.",
+   "evidence": "fix_*_le2014.json, cagr_sd under C (dev / real, %p): T5 0.375 / 0.418; T2 0.186 / 0.173; T4 0.180 / 0.372; T1 0.341 / 0.328; F3 0.267 / 0.405; PRESET_A 1.130 / 2.629.",
+   "suggested_fix": "\"v1 을 건드리지 않고, PRESET_A 보다 난수에 훨씬 덜 민감하며(난수 간 표준편차 0.4%p 대 1.1~2.6%p), ...\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 16 (결론 1)",
+   "claim": "\"이 엔진과 별도로 작성한 재구현 5건(자료는 공통)이 모두 같은 결론이고, 그중 2건은 이 결론을 뒤집으려는 목적으로 만든 것\"",
+   "problem": "Unsourced count. No file states 5. Depending on what is counted, the records give 3 own engines (replication, two challenges) plus the code-audit reference simulator, the stats lane's simplified simulation and the phase-3 skeptic's own event loop, so 4 to 6. The '2건' is correct.",
+   "evidence": "verify_replicate.json, challenge_numbers.json, challenge_timing-logic.json (own engines); verify_codeaudit.json (reference simulator, 2.2e-16); verify_stats.json (simplified simulation, status INFERRED); wf3/skeptic/s2_indep.out (own event loop).",
+   "suggested_fix": "Name them: \"별도로 작성한 구현 5건(독립 재구현 1, 반박 시도 2, 코드 점검의 기준 시뮬레이터 1, 3단계 반대 심사의 자체 구현 1; 자료는 공통)\"."
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 295 (4절, Z)",
+   "claim": "\"수수료를 0.30bp 로 낮춰도 약 2%p 만 회복됩니다(추정)\"",
+   "problem": "Unsourced estimate. There is no 30-seed run of Z at 0.30bp. The fee effect measured under C fits '약 2%p' for T5 only; it is larger for the other two candidates named in the same sentence.",
+   "evidence": "sens_A and fix files, C, 0.83bp → 0.30bp: T5 +2.2 / +2.3; PRESET_A +2.3 / +3.5; F1 +3.3 / +3.8. The only Z run at 0.30bp is single-seed (steelman.json: T5 −4.38 / −2.33, P3 −5.66 / −0.58, F1 −6.75 / −7.56) and is not comparable with the 30-seed Z column.",
+   "suggested_fix": "\"수수료를 0.30bp 로 낮추면 C 기준으로 T5 약 2%p, PRESET_A 2~3.5%p, F1 3~4%p 가 회복되므로(Z 에서는 따로 재지 않음, 추정) 프리미엄이 없으면 여전히 마이너스입니다.\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 63 (1절, 맞지 않는 점)",
+   "claim": "\"v10 의 2022년(보고 −40%, 미래 정보 방식 −25~−29%, 위기 신호를 진입 시점으로 읽는 변형은 −30~−39%)\"",
+   "problem": "The first range leaves out one look-ahead variant. The challenge_numbers lane's look-ahead run with the crisis flag taken inside the night gives −34%, which is not an entry-time-flag variant.",
+   "evidence": "challenge_numbers.json finding 'KR crisis-flag timing stays undecided': 'the entry-time flag fits the reported 2022 return better (-39% vs -34%, report -40%)'. challenge_timing-logic.json: −24.6% and −30.3%. verify_replicate.json: −29.0% and −34.5%.",
+   "suggested_fix": "\"미래 정보 방식 −25~−34%, 위기 신호를 진입 시점으로 읽는 변형은 −30~−39%\""
+  },
+  {
+   "severity": "minor",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 298 (4절)",
+   "claim": "\"밤 포지션을 든 날 82~91%, 평균 0.8배\"",
+   "problem": "The range covers only the six long windows. The sub-periods printed in the same report's tables go from 63% to 98%, and the average size from 0.59 to 0.93.",
+   "evidence": "hist_extra_dev.json and hist_extra_holdout.json, T5 0.83bp tilt_on: 0.816, 0.817, 0.892, 0.906, 0.854, 0.858 (long windows); 0.806, 0.629, 0.944, 0.868, 0.981, 0.826 (sub-periods). avg_tilt 0.585 to 0.928.",
+   "suggested_fix": "\"밤 포지션을 든 날 82~91%(하위 구간별로는 63~98%), 평균 0.8배\""
+  },
+  {
+   "severity": "info",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 16 (결론 1)",
+   "claim": "\"보고 수치에 가까운 값(v10 55~65%, PRESET_A 70~88%)\"",
+   "problem": "For PRESET_A there is no stand-alone reported figure on this window, as the table three lines below says ('단독 수치 없음'). The 70~88% is the look-ahead result, not a match to a reported number.",
+   "evidence": "Section 1 table, PRESET_A row. The uploaded reports give 62.0% (1986~2026) and 77.6% (v11-A, 1999~2026), both with the 2x bond overlay.",
+   "suggested_fix": "\"보고 수치에 가까운 값(v10 55~65%; PRESET_A 는 단독 보고 수치가 없으나 같은 방식에서 70~88%)\""
+  },
+  {
+   "severity": "info",
+   "where": "holdout/RESULT_ONF1_FULL_KO.md line 319 (검증, 2015년 이후 자료를 연 시점)",
+   "claim": "\"보정 측정의 T·F 군(14:03Z, 14:05Z)과 반대 논증(14:00Z)은 그 뒤에 끝났습니다\"",
+   "problem": "The corrected P-group measurement also finished after 13:56Z, by about a minute and a half. It does not matter for the verdict, since the P group's post-2014 numbers were seen from the start, as the same paragraph says.",
+   "evidence": "wf3/_results/compliance.json: 'hist_holdout.json 13:56:34; fix_P 13:57:56, fix_T 14:03:01, fix_F 14:05:36; steelman.json 14:00:09'.",
+   "suggested_fix": "\"보정 측정(P 군 13:58Z, T·F 군 14:03Z, 14:05Z)과 반대 논증(14:00Z)은 그 뒤에 끝났습니다\""
+  },
+  {
+   "severity": "info",
+   "where": "All three files: generated tables, break-even line, new result files, hashes",
+   "claim": "Tables, sens_A to F and V, hist_extra_dev, hist_extra_holdout, night_sharpe, v1 reference 16.159% / 31.081%, pass count 0/12, upload and PRECOMMIT hashes",
+   "problem": "None. Recorded so the clean parts are explicit.",
+   "evidence": "263 generated lines verbatim in the reports; 60 engine runs with max abs diff 2.2e-16; break-even fees and night Sharpe recomputed by hand; 30 rule counts recomputed with 0 mismatches.",
+   "suggested_fix": "None."
+  }
+ ],
+ "open_points": [
+  "Unsourced numbers, listed explicitly: (1) the count '재구현 5건'; (2) the '2026-11-10' basis of 8,355만 원 (the data say 2026-10-07/08); (3) '수수료를 0.30bp 로 낮춰도 약 2%p 만 회복' under Z (no 30-seed run); (4) '2026-09~11 을 이어 붙이면 약 0.2%p 줄어듭니다' (an estimate from the skeptic lane's night-return sum of -1.8%, no engine run); (5) '시가 정의 불확실성 하루 ±0.5bp, 연 ±1%p 안팎' (derived from the measured +0.41bp). Also only in CHECKPOINT.md: '사용자 실전 기준 MS1 대표값 30% 이상'.",
+  "The exchange rate after 2026-10-08 is not in the folder, so the exact MNQ contract value on 2026-11-10 cannot be computed. At the 2026-11-09 index it is below 80M KRW unless the rate is above about 1,432.",
+  "sens_F was not rerun at a contract value of 75M or 76M KRW; I had used my budget of about 60 engine runs. With one contract affordable from the start, the whole-contract result should move towards the 'same capital without contract units' figures (C -1.2 / -2.1, M +1.0 / +0.3), which would not change the verdict.",
+  "hist_extra_holdout.json was not rerun through the engine, as instructed (dev mode only). I checked it against hist_holdout.json on the three shared windows (difference 0) and for internal consistency; the two post-2014 sub-period windows rest on the stored file alone.",
+  "Of the fix_* files I reran one cell only (T5|C|base, seed 7, dev250_path, diff 0.0). The files were regenerated after the third review round; their values equal those in CHECKPOINT.md from before the rerun, and all rule counts recompute from the per-seed arrays.",
+  "Lane figures matched to the audit JSONs but not recomputed by me: the roughly 231 Korean nights with mean -0.92%, the Korean alpha of -0.37bp, the Kelly leverage ranges, the 19 and 61 margin events, the 12.25% vs 12.26% live replay, the SPY tick-adjustment figures, and all web-sourced facts (KRX 21% margin, MNQ margin, broker fees, CME settlement window).",
+  "Importing the engines pulls in project modules outside the paths named for this lane (std.py imports from research/c3_relax/code, c3_invent/code and c3_combo/code). I imported them as the engines require but did not open or read any file there."
+ ]
+}
