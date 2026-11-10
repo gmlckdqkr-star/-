@@ -1,0 +1,44 @@
+{
+ "lane": "CAPIT",
+ "written": "2026-11-10",
+ "files": [
+  {
+   "name": "ndx_close_volume_le2014.csv",
+   "sha256": "bc71c03df615034667e5af736083d945fa9bdc9316884ad160c9d52669abc6d8",
+   "rows": 7376,
+   "first": "1985-10-01",
+   "last": "2014-12-31",
+   "columns": [
+    "date",
+    "close",
+    "volume"
+   ],
+   "label": "ACTUAL (vendor index bars; volume as published by the vendor for ^NDX)",
+   "source_file": "/mnt/project-files/research/data/panel_f32.npz.xz",
+   "source_sha256": "fa2c35b295642ddf27924e1125a50c823ea464a0f6b47e54c0b3b254fd35242c",
+   "source_key": "_NDX|ts, _NDX|v columns 3 (close) and 5 (volume)",
+   "source_origin": "Yahoo chart v8 daily bars for ^NDX, fetched 2026-10-08 from the PC (see research/data/EXT_MANIFEST.json format note); no network request was made by this lane",
+   "cut": "rows with date <= 2014-12-31 only; later rows dropped by timestamp before use",
+   "volume_valid_rows": 7376,
+   "volume_first_valid": "1985-10-01",
+   "volume_invalid_rows": 0
+  },
+  {
+   "name": "gspc_close_le2014.csv",
+   "sha256": "dd9d1928d6a71d9ca24db4013c79ae387064e6a2dd3c92a3a36e0ea8f645c818",
+   "rows": 11355,
+   "first": "1970-01-02",
+   "last": "2014-12-31",
+   "columns": [
+    "date",
+    "close"
+   ],
+   "label": "ACTUAL (vendor index bars, S&P 500 price index)",
+   "source_file": "/mnt/project-files/research/data/panel_f32.npz.xz",
+   "source_sha256": "fa2c35b295642ddf27924e1125a50c823ea464a0f6b47e54c0b3b254fd35242c",
+   "source_key": "_GSPC|ts, _GSPC|v column 3 (close)",
+   "source_origin": "Yahoo chart v8 daily bars for ^GSPC (shared base panel); no network request was made by this lane",
+   "cut": "rows with date <= 2014-12-31 only; later rows dropped by timestamp before use"
+  }
+ ]
+}

@@ -1,0 +1,94 @@
+{
+ "lane": "CAPIT",
+ "window": "early",
+ "precommit_sha256": "ec06110c92bf9bc4558749738a01fd28d54a15634abef9e7ae6dc92f20084186",
+ "N": 2,
+ "variants": {
+  "CAP1": {
+   "variant": "CAP1",
+   "window": "early",
+   "signal": {
+    "n_days": 3539,
+    "trigger_days": 0,
+    "trigger_days_v1_below3": 0,
+    "on_days": 0,
+    "on_days_v1_below3": 0,
+    "on_episodes": 0,
+    "v1_below3_days": 680,
+    "trigger_dates": []
+   },
+   "n_blocks": 168,
+   "n_universe": 31,
+   "universe_v1B_counts": {
+    "0.0": 14,
+    "1.0": 17
+   },
+   "n_on": 0,
+   "n_on_any_v1_state": 0,
+   "always_in_hit": 0.5714285714285714,
+   "base": 0.5806451612903226,
+   "wins": 0,
+   "cond": NaN,
+   "cond_minus_base": NaN,
+   "se_cond": NaN,
+   "p_binom_ge": NaN,
+   "pass_B": false,
+   "fail_reasons": [
+    "n_on<8",
+    "cond<base+10pp",
+    "cond<60%"
+   ],
+   "on_blocks": [],
+   "info_any_v1_state": {
+    "n_on": 0,
+    "cond": NaN,
+    "note": "information only, not the test"
+   },
+   "early_pass": false
+  },
+  "CAP2": {
+   "variant": "CAP2",
+   "window": "early",
+   "signal": {
+    "n_days": 3539,
+    "trigger_days": 0,
+    "trigger_days_v1_below3": 0,
+    "on_days": 0,
+    "on_days_v1_below3": 0,
+    "on_episodes": 0,
+    "v1_below3_days": 680,
+    "trigger_dates": []
+   },
+   "n_blocks": 168,
+   "n_universe": 31,
+   "universe_v1B_counts": {
+    "0.0": 14,
+    "1.0": 17
+   },
+   "n_on": 0,
+   "n_on_any_v1_state": 0,
+   "always_in_hit": 0.5714285714285714,
+   "base": 0.5806451612903226,
+   "wins": 0,
+   "cond": NaN,
+   "cond_minus_base": NaN,
+   "se_cond": NaN,
+   "p_binom_ge": NaN,
+   "pass_B": false,
+   "fail_reasons": [
+    "n_on<8",
+    "cond<base+10pp",
+    "cond<60%"
+   ],
+   "on_blocks": [],
+   "info_any_v1_state": {
+    "n_on": 0,
+    "cond": NaN,
+    "note": "information only, not the test"
+   },
+   "early_pass": false
+  }
+ },
+ "early_window": "1986-01-02..1999-12-31 (volume valid from 1985-10-01; ratio defined from the 61st row, 1985-12-26)",
+ "spx_1955_85": "not covered (no Nasdaq volume)"
+}

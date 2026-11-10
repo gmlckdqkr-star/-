@@ -1,0 +1,326 @@
+{
+ "v1_state_share_1986_2014": {
+  "0.0": 0.1421,
+  "1.0": 0.0934,
+  "3.0": 0.7645
+ },
+ "calendar": {
+  "first": "1984-01-03",
+  "last": "2014-12-31",
+  "n": 7817,
+  "panel_dates_not_in_calendar": 0,
+  "calendar_dates_ge_1985_10_01_not_in_panel": 0,
+  "early_max_abs_diff_vendor_ret_vs_frame_ret": 0.0
+ },
+ "early": {
+  "n_blocks": 168,
+  "first_block": "1986-01-02",
+  "last_block": "1999-11-16",
+  "last_block_end": "1999-12-20",
+  "always_in_hit": 0.5714285714285714,
+  "wins_all": 96,
+  "n_universe": 31,
+  "universe_v1B_counts": {
+   "0.0": 14,
+   "1.0": 17
+  },
+  "base": 0.5806451612903226,
+  "base_wins": 18,
+  "label_vendor_close_disagreements": 0,
+  "min_abs_excess": 0.004744963620077369,
+  "v1_below3_days": 680,
+  "variants": {
+   "CAP1": {
+    "trigger_days": 0,
+    "on_days": 0,
+    "on_days_v1_below3": 0,
+    "n_on": 0,
+    "n_on_alt_window_reading": 0,
+    "n_on_any_v1_state": 0,
+    "wins": 0,
+    "cond": null,
+    "cond_minus_base": null,
+    "pass_B": false
+   },
+   "CAP2": {
+    "trigger_days": 0,
+    "on_days": 0,
+    "on_days_v1_below3": 0,
+    "n_on": 0,
+    "n_on_alt_window_reading": 0,
+    "n_on_any_v1_state": 0,
+    "wins": 0,
+    "cond": null,
+    "cond_minus_base": null,
+    "pass_B": false
+   }
+  }
+ },
+ "gate_crosscheck_early": {
+  "n": 168,
+  "same_dates": true,
+  "label_disagreements": 0
+ },
+ "unseen_signal_counts_only": {
+  "n_blocks": 179,
+  "n_universe": 50,
+  "universe_v1B_counts": {
+   "0.0": 37,
+   "1.0": 13
+  },
+  "v1_below3_days": 1042,
+  "variants": {
+   "CAP1": {
+    "trigger_days": 1,
+    "trigger_days_v1_below3": 0,
+    "on_days": 42,
+    "on_days_v1_below3": 18,
+    "n_on": 1,
+    "n_on_any_v1_state": 2,
+    "on_block_dates": [
+     "2011-08-24"
+    ]
+   },
+   "CAP2": {
+    "trigger_days": 0,
+    "trigger_days_v1_below3": 0,
+    "on_days": 0,
+    "on_days_v1_below3": 0,
+    "n_on": 0,
+    "n_on_any_v1_state": 0,
+    "on_block_dates": []
+   }
+  }
+ },
+ "compare_mine_vs_builder": {
+  "CAP1.early.n_blocks": {
+   "mine": 168,
+   "builder": 168,
+   "equal": true
+  },
+  "CAP1.early.n_universe": {
+   "mine": 31,
+   "builder": 31,
+   "equal": true
+  },
+  "CAP1.early.universe_v1B_counts": {
+   "mine": {
+    "0.0": 14,
+    "1.0": 17
+   },
+   "builder": {
+    "0.0": 14,
+    "1.0": 17
+   },
+   "equal": true
+  },
+  "CAP1.early.base": {
+   "mine": 0.5806451612903226,
+   "builder": 0.5806451612903226,
+   "equal": true
+  },
+  "CAP1.early.always_in_hit": {
+   "mine": 0.5714285714285714,
+   "builder": 0.5714285714285714,
+   "equal": true
+  },
+  "CAP1.early.trigger_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP1.early.on_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP1.early.n_on": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP1.early.v1_below3_days": {
+   "mine": 680,
+   "builder": 680,
+   "equal": true
+  },
+  "CAP1.early.pass_B": {
+   "mine": false,
+   "builder": false,
+   "equal": true
+  },
+  "CAP1.unseen.n_blocks": {
+   "mine": 179,
+   "builder": 179,
+   "equal": true
+  },
+  "CAP1.unseen.n_universe": {
+   "mine": 50,
+   "builder": 50,
+   "equal": true
+  },
+  "CAP1.unseen.universe_v1B_counts": {
+   "mine": {
+    "0.0": 37,
+    "1.0": 13
+   },
+   "builder": {
+    "0.0": 37,
+    "1.0": 13
+   },
+   "equal": true
+  },
+  "CAP1.unseen.trigger_days": {
+   "mine": 1,
+   "builder": 1,
+   "equal": true
+  },
+  "CAP1.unseen.trigger_days_v1_below3": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP1.unseen.on_days": {
+   "mine": 42,
+   "builder": 42,
+   "equal": true
+  },
+  "CAP1.unseen.on_days_v1_below3": {
+   "mine": 18,
+   "builder": 18,
+   "equal": true
+  },
+  "CAP1.unseen.n_on": {
+   "mine": 1,
+   "builder": 1,
+   "equal": true
+  },
+  "CAP1.unseen.n_on_any_v1_state": {
+   "mine": 2,
+   "builder": 2,
+   "equal": true
+  },
+  "CAP1.unseen.on_block_dates": {
+   "mine": [
+    "2011-08-24"
+   ],
+   "builder": [
+    "2011-08-24"
+   ],
+   "equal": true
+  },
+  "CAP2.early.n_blocks": {
+   "mine": 168,
+   "builder": 168,
+   "equal": true
+  },
+  "CAP2.early.n_universe": {
+   "mine": 31,
+   "builder": 31,
+   "equal": true
+  },
+  "CAP2.early.universe_v1B_counts": {
+   "mine": {
+    "0.0": 14,
+    "1.0": 17
+   },
+   "builder": {
+    "0.0": 14,
+    "1.0": 17
+   },
+   "equal": true
+  },
+  "CAP2.early.base": {
+   "mine": 0.5806451612903226,
+   "builder": 0.5806451612903226,
+   "equal": true
+  },
+  "CAP2.early.always_in_hit": {
+   "mine": 0.5714285714285714,
+   "builder": 0.5714285714285714,
+   "equal": true
+  },
+  "CAP2.early.trigger_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.early.on_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.early.n_on": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.early.v1_below3_days": {
+   "mine": 680,
+   "builder": 680,
+   "equal": true
+  },
+  "CAP2.early.pass_B": {
+   "mine": false,
+   "builder": false,
+   "equal": true
+  },
+  "CAP2.unseen.n_blocks": {
+   "mine": 179,
+   "builder": 179,
+   "equal": true
+  },
+  "CAP2.unseen.n_universe": {
+   "mine": 50,
+   "builder": 50,
+   "equal": true
+  },
+  "CAP2.unseen.universe_v1B_counts": {
+   "mine": {
+    "0.0": 37,
+    "1.0": 13
+   },
+   "builder": {
+    "0.0": 37,
+    "1.0": 13
+   },
+   "equal": true
+  },
+  "CAP2.unseen.trigger_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.unseen.trigger_days_v1_below3": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.unseen.on_days": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.unseen.on_days_v1_below3": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.unseen.n_on": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.unseen.n_on_any_v1_state": {
+   "mine": 0,
+   "builder": 0,
+   "equal": true
+  },
+  "CAP2.unseen.on_block_dates": {
+   "mine": [],
+   "builder": [],
+   "equal": true
+  }
+ },
+ "mismatches": []
+}

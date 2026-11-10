@@ -1,0 +1,37 @@
+{
+ "1995-06-30": {
+  "days": 2702,
+  "flags_diff": 0,
+  "signal_diff": 0,
+  "engine_equity_maxabs": 0.0,
+  "engine_level_diff": 0
+ },
+ "2001-03-30": {
+  "days": 4153,
+  "flags_diff": 0,
+  "signal_diff": 0,
+  "engine_equity_maxabs": 0.0,
+  "engine_level_diff": 0
+ },
+ "2008-10-31": {
+  "days": 6061,
+  "flags_diff": 0,
+  "signal_diff": 0,
+  "engine_equity_maxabs": 0.0,
+  "engine_level_diff": 0
+ },
+ "2012-07-31": {
+  "days": 7004,
+  "flags_diff": 0,
+  "signal_diff": 0,
+  "engine_equity_maxabs": 0.0,
+  "engine_level_diff": 0
+ },
+ "calendar_max": {
+  "real_ndx_86_14": "2014-12-31",
+  "dev250_glued": "2014-12-31",
+  "dev250_path": "2014-12-31",
+  "real_spx_55_85": "1985-12-31",
+  "real_spx_70_85": "1985-12-31"
+ }
+}

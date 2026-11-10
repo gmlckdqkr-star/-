@@ -1,0 +1,39 @@
+{
+ "note": "verifier download 2026-11-10 (robots.txt read first, generic user agent). Raw zips hold rows after 2014-12, so they were NOT kept: rows > 201412 were dropped at parse and the raw files deleted after the run. sha256 equals the values recorded in results/mega.json.",
+ "files": {
+  "Portfolios_Formed_on_ME_CSV.zip": {
+   "url": "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_ME_CSV.zip",
+   "sha256": "05a799e6fcea1c6f185d4ce4b5faf8f8c73e031b74f563774bec7abd74843cfc",
+   "bytes": 200897,
+   "kept": false
+  },
+  "F-F_Research_Data_Factors_CSV.zip": {
+   "url": "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip",
+   "sha256": "b03d39e4bb253dda0f14893db3b78e64b40b8d6549a0fc0fd4111dae84c98618",
+   "bytes": 13078,
+   "kept": false
+  }
+ },
+ "code_sha256": {
+  "kf_peek.py": "e957eb4021c8fb2f9cf131893c45eda2c392857c34201d25d99065bb1ea31761",
+  "v_compare.py": "5213b7013a97bb5e0a655c4e90157dd217ad5217430b065125beac5b1d1bb8d6",
+  "v_lookahead.py": "cc85987632ac5bc734657770264058b257e2fcf53485a9f6ea7960868d1c1cd5",
+  "v_mega.py": "5b90d8420f7bac807a98a34bffb9d09a3188f5e871681839a91bc2bc57068e1c",
+  "v_nbr.py": "6817dc5792bbaa05728b83fd6d910f08b1cb363a4e6d160dc0abc4512475ea6d",
+  "v_openfill.py": "31a8664a7a2a2584d02984e89b0a0e315e2a752b574d8cee4f2432cce5d81090",
+  "v_replay.py": "f3ac01a4b7192b62b3db8c31a7384c74eca0a595b1af31d0e2c3f279991be9e6",
+  "v_replay_lib.py": "b4dc9d7a826c99a0cd71c9b971b38bf26a53c3bc77be2a160dd3b0952166b3a4",
+  "v_replay_path.py": "7305449e5778efab5dc8544208daac83f40e700939d0c81e15a3a38a0f4b718b",
+  "v_stack.py": "a99ada279450afb880aa01c0be6a312ee11108fac629d4546f01d0a880b2eb43"
+ },
+ "results": [
+  "v_compare.json",
+  "v_lookahead.json",
+  "v_mega.json",
+  "v_nbr.json",
+  "v_openfill.json",
+  "v_replay.json",
+  "v_replay_path.json",
+  "v_stack.json"
+ ]
+}
