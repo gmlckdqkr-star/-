@@ -1,22 +1,25 @@
-"""<= 2014 only: xeng with no extras must equal beng.run1 (locked engine) for v1 and for 3x hold, standard and zero cash,
-delay 2 and 3, cost x1 and x2. Also a mechanical test of the extras on synthetic numbers."""
+"""<= 2014 only: xeng with no extras must be bit-identical to beng.run1 (locked engine) for v1 and for 3x hold, standard and zero cash,
+delay 2 and 3, cost x1 and x2. Also mechanical tests of the extras on synthetic numbers and of the 1x-hold instrument."""
 import sys, numpy as np
 sys.path.insert(0, '/home/user/-/research_xv1/code')
 import xv1, std, xeng
 from std import bk, beng
-c, dates = xv1.build(xv1.OLD_END)
-feat = bk.features(c)[0]
-worst = 0.0
-for nm, mk in (('v1', std.s085), ('3x', xv1.hold3)):
-    m = mk(c)
-    for kw in (dict(), dict(cspr=10.0), dict(cspr=10.0, delay=3), dict(cspr=10.0, cost=0.006)):
-        k = dict(kw); k['fstep'] = m[3]
-        _, a = beng.run_path(np.ascontiguousarray(c.r[0]), np.ascontiguousarray(c.rf[0]), np.ascontiguousarray(m[0][0], dtype=np.float64),
-                             np.ascontiguousarray(feat), m[1], np.asarray(m[2], dtype=np.float64), **k)
-        b = xeng.run(c.r[0], c.rf[0], m[0][0], feat, m[1], m[2], **k)
-        d = float(np.max(np.abs(b[:, 0] / a[:, 0] - 1))); dl = float(np.max(np.abs(b[:, 1] - a[:, 1]))); worst = max(worst, d, dl)
-        print('%-3s %-32s equity max rel diff %.2e  level max diff %.1e' % (nm, kw, d, dl))
-print('PARITY', 'OK' if worst < 1e-12 else 'FAIL', worst)
+X = xv1.frame(xv1.OLD_END); v = xv1.View(X); c = v.c; feat = v.feat
+worst = 0
+for nm, mk in (('v1', xv1.ref), ('3x', xv1.hold3)):
+    m = xv1._call(mk, v)
+    for kw in (dict(), dict(cspr=10.0), dict(cspr=10.0, delay=3), dict(cspr=10.0, delay=1), dict(cspr=10.0, cost=0.006), dict(cspr=10.0, tax=0.0), dict(cspr=10.0, W0=None)):
+        k = dict(kw); k['fstep'] = m['fstep']
+        _, a = beng.run_path(np.ascontiguousarray(c.r[0]), np.ascontiguousarray(c.rf[0]), m['B'], feat, m['bfn'], m['bp'], **k)
+        b = xeng.run(c.r[0], c.rf[0], m['B'], feat, m['bfn'], m['bp'], **k)
+        d = int(np.sum(b[:, :4] != a[:, :4])); worst = max(worst, d)
+        print('%-3s %-40s differing cells (equity, level, brake target, base) %d' % (nm, kw, d))
+print('PARITY', 'OK (bit-identical)' if worst == 0 else 'FAIL', worst)
+h = xv1._call(xv1.hold1, v); rec = xv1._run(v, h, 0, v.T)
+lv = np.cumprod(1 + h['G'][xv1.WARM:, 0])
+print('1x hold instrument: bought at close of day 2, never traded: equity / index ratio last day %.6f (expect %.6f = (1 - 0.003))' %
+      (rec[-1, 0] / (lv[-1] / lv[2]), 1 - 0.003))
+print('  liquidation value / equity last day %.4f (22%% tax on the gain above the first-year deduction)' % (rec[-1, 4] / rec[-1, 0]))
 # synthetic mechanics: flat NDX (v1 base 0 -> all cash), one extra that doubles in a year, weight 20%, no tax, no cost
 T = xeng.WARM + 600; r = np.zeros(T); rf = np.zeros(T); B = np.zeros(T); ft = np.zeros((T, bk.NF), np.float32)
 G = np.zeros((T, 1)); G[xeng.WARM + 10:xeng.WARM + 262, 0] = 2 ** (1 / 252) - 1
@@ -33,3 +36,20 @@ rec = xeng.run(r, rf, B, ft, std.ident, np.zeros(1), G=G, Wt=W, mode=0, inc=1, c
 # money in: 0.1 + 0.2*... tranche 2 = 0.1 of equity 0.95 ; tranche 3 = 0.1 of equity 0.9025 (approx)
 e1 = 1.0; v = 0.1; cash = 0.9; v *= .5; e2 = v + cash; add = 0.1 * e2; v += add; cash -= add; v *= .5; e3 = v + cash; add = 0.1 * e3; v += add; cash -= add; v *= 8
 print('tranche test: final equity %.6f (expect %.6f)' % (rec[-1, 0], v + cash))
+# rebalancing rules of the extras (flat NDX, no cost, no tax, no fund drag): exact expectations
+a = xeng.WARM; z = dict(cspr=10.0, cost=0.0, tax=0.0, harvest=0, er3=0.0)
+B3 = np.full(T, 3.0); W = np.full((T, 1), 0.1)
+G = np.zeros((T, 1)); G[a + 50, 0] = 1.0
+rec = xeng.run(r, rf, B3, ft, std.ident, np.zeros(1), G=G, Wt=W, mode=1, up=[0.5], **z)
+print('band skim  : weight day 51 %.4f (expect 0.1818), day 52 %.4f (expect 0.1000), equity %.4f (expect 1.1)' % (rec[51, 5], rec[52, 5], rec[-1, 0]))
+rec = xeng.run(r, rf, B3, ft, std.ident, np.zeros(1), G=G, Wt=W, mode=1, **z)
+print('no band    : weight last day %.4f (expect 0.1818)' % rec[-1, 5])
+RB = np.zeros((T, 1)); RB[a + 100, 0] = 1
+rec = xeng.run(r, rf, B3, ft, std.ident, np.zeros(1), G=G, Wt=W, mode=1, RB=RB, **z)
+print('flag       : weight day 101 %.4f (expect 0.1818), day 102 %.4f (expect 0.1000)' % (rec[101, 5], rec[102, 5]))
+G = np.zeros((T, 1)); G[a + 50, 0] = -0.6
+rec = xeng.run(r, rf, B3, ft, std.ident, np.zeros(1), G=G, Wt=W, mode=1, dn=[0.5], **z)
+print('band refill: weight day 51 %.4f (expect 0.0426), day 52 %.4f (expect 0.1000), equity %.4f (expect 0.94)' % (rec[51, 5], rec[52, 5], rec[-1, 0]))
+Bs = np.full(T, 3.0); Bs[a + 100:a + 200] = 0.0; W2 = np.full((T, 1), 0.2)
+rec = xeng.run(r, rf, Bs, ft, std.ident, np.zeros(1), G=np.zeros((T, 1)), Wt=W2, mode=0, **z)
+print('mode 0     : weight while v1 is at 3x %.4f (expect 0), while v1 is in cash %.4f (expect 0.2), after v1 returns %.4f (expect 0)' % (rec[60, 5], rec[150, 5], rec[260, 5]))

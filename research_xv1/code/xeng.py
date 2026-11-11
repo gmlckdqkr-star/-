@@ -10,9 +10,15 @@ account equity decided at close t (signal only; the engine decides what is affor
 mode 0: v1 has priority. The 3x NDX fund gets want/3 of the account whenever v1's level changes; extras may only use
         cash that v1 leaves idle and are cut pro rata when v1 needs it back.
 mode 1: extras have priority. They get their target weight; the 3x NDX fund gets want/3 of what is left.
-inc 0: a changed target weight w means 'hold w of the account now' (rebalance to it).
+inc 0: a changed target weight w means 'hold w of the account now' (rebalance to it). Between changes the position drifts,
+       except: (i) in mode 0 every change of v1's level re-sets the extras to their targets inside the cash v1 leaves idle;
+       (ii) a rebalance flag RB[t, j] = 1 decided at close t re-sets instrument j to its target after `delay` days;
+       (iii) bands: when at a close the actual weight of j is above target * (1 + up[j]) or below target * (1 - dn[j]), j is re-set
+       to its target after `delay` days (up = profit skim, dn = refill; a large value switches a side off).
+       In mode 1 every re-set of an extra also re-sets the 3x NDX fund to want/3 of what is left, so skimmed money goes to v1.
 inc 1: tranche semantics. A higher target adds (new - old) of the account as fresh money and leaves earlier tranches alone;
        a lower target sells the position pro rata (to zero when the target is zero). Money put in never exceeds the target sum.
+       RB and bands are ignored.
 rec columns: 0 equity E (after costs and paid taxes), 1 v1 level in force, 2 brake target, 3 base signal,
              4 liquidation value (E minus tax on all realised + unrealised gains so far), 5 sum of extra weights."""
 import numpy as np
@@ -21,10 +27,11 @@ WARM = 300
 
 
 @njit
-def runx(r, rf, B, feat, G, Wt, mode, inc, delay, cost, tax, D, harvest, hthr, cspr, er3, step, bfn, bp, rec, fstep):
+def runx(r, rf, B, feat, G, Wt, RB, up, dn, mode, inc, delay, cost, tax, D, harvest, hthr, cspr, er3, step, bfn, bp, rec, fstep):
     T = r.shape[0]; J = G.shape[1]
     v0 = 0.0; v3 = 0.0; b0 = 0.0
     ve = np.zeros(J); be = np.zeros(J); curw = np.zeros(J); te = np.zeros(J)
+    qr = np.zeros((delay + 1, J)); rbn = np.zeros(J)
     real = 0.0; due = 0.0
     held = 0.0; cur = -99.0
     q = np.zeros(delay + 1); qw = np.zeros((delay + 1, J)); wantw = np.zeros(J)
@@ -45,10 +52,12 @@ def runx(r, rf, B, feat, G, Wt, mode, inc, delay, cost, tax, D, harvest, hthr, c
                     v0 *= (1 - f); v3 *= (1 - f); b0 *= (1 - f)
                     due = 0.0
             want = q[0]
-            for j in range(J): wantw[j] = qw[0, j]
+            for j in range(J):
+                wantw[j] = qw[0, j]; rbn[j] = qr[0, j]
             for i in range(delay - 1):
                 q[i] = q[i + 1]
-                for j in range(J): qw[i, j] = qw[i + 1, j]
+                for j in range(J):
+                    qw[i, j] = qw[i + 1, j]; qr[i, j] = qr[i + 1, j]
             if k > 0:
                 v0 *= (1 + 3 * r[t] - 2 * rf[t] - er3 / 252)
                 v3 *= (1 + max(rf[t] - cspr / 252, 0.0) * (1 - 0.154))
@@ -57,6 +66,7 @@ def runx(r, rf, B, feat, G, Wt, mode, inc, delay, cost, tax, D, harvest, hthr, c
             chg_w = False
             for j in range(J):
                 if wantw[j] != curw[j]: chg_w = True
+                if inc == 0 and rbn[j] > 0 and wantw[j] > 0: chg_w = True
             if chg_l or chg_w:
                 tot = v0 + v3 + ve.sum()
                 if k == 0:
@@ -64,8 +74,8 @@ def runx(r, rf, B, feat, G, Wt, mode, inc, delay, cost, tax, D, harvest, hthr, c
                 w0 = want / 3
                 se = 0.0
                 for j in range(J):
-                    if wantw[j] == curw[j]: te[j] = ve[j]
-                    elif inc == 0: te[j] = wantw[j] * tot
+                    if inc == 0 and (wantw[j] != curw[j] or rbn[j] > 0 or (mode == 0 and chg_l)): te[j] = wantw[j] * tot
+                    elif wantw[j] == curw[j]: te[j] = ve[j]
                     elif wantw[j] > curw[j]: te[j] = ve[j] + (wantw[j] - curw[j]) * tot      # add a tranche, never top up old ones
                     else: te[j] = ve[j] * (wantw[j] / curw[j]) if curw[j] > 0 else 0.0           # sell pro rata
                     if te[j] < 0: te[j] = 0.0
@@ -84,7 +94,8 @@ def runx(r, rf, B, feat, G, Wt, mode, inc, delay, cost, tax, D, harvest, hthr, c
                         for j in range(J): te[j] *= sc_e
                         se = tot
                     t0 = w0 * (tot - se) if (chg_l or chg_w) else v0
-                t3 = tot - t0 - se
+                if se == 0.0 and chg_l: t3 = (1 - w0) * tot        # no extras held: same arithmetic as beng.run1 (bit-identical)
+                else: t3 = tot - t0 - se
                 d0 = t0 - v0
                 tc = cost * abs(d0)
                 if d0 < 0 and v0 > 0:
@@ -135,6 +146,11 @@ def runx(r, rf, B, feat, G, Wt, mode, inc, delay, cost, tax, D, harvest, hthr, c
                 w = Wt[t, j]
                 if np.isnan(w): w = 0.0
                 qw[delay - 1, j] = w
+                f = 1.0 if RB[t, j] > 0 else 0.0          # rebalance asked by the candidate at close t
+                if inc == 0 and curw[j] > 0 and E > 0:     # bands on the actual weight at close t
+                    a = ve[j] / E
+                    if a > curw[j] * (1 + up[j]) or a < curw[j] * (1 - dn[j]): f = 1.0
+                qr[delay - 1, j] = f
         if t >= WARM:
             unr = v0 - b0
             se = 0.0
@@ -146,14 +162,22 @@ def runx(r, rf, B, feat, G, Wt, mode, inc, delay, cost, tax, D, harvest, hthr, c
     return ntr, taxp, costp
 
 
-def run(r, rf, B, feat, bfn, bp, G=None, Wt=None, mode=0, inc=0, **kw):
+OFF = 1e9                                 # band value that switches a side off
+
+
+def run(r, rf, B, feat, bfn, bp, G=None, Wt=None, mode=0, inc=0, RB=None, up=None, dn=None, **kw):
     """single path. returns rec (T - WARM, 6)."""
     import beng
     p, D = beng._args(kw); T = len(r)
     if G is None: G = np.zeros((T, 1)); Wt = np.zeros((T, 1))
+    J = G.shape[1]
+    if RB is None: RB = np.zeros((T, J))
+    up = np.full(J, OFF) if up is None else np.asarray(up, dtype=np.float64).reshape(J)
+    dn = np.full(J, OFF) if dn is None else np.asarray(dn, dtype=np.float64).reshape(J)
     rec = np.zeros((T - WARM, 6))
     runx(np.ascontiguousarray(r), np.ascontiguousarray(rf), np.ascontiguousarray(B, dtype=np.float64), np.ascontiguousarray(feat),
-         np.ascontiguousarray(G, dtype=np.float64), np.ascontiguousarray(Wt, dtype=np.float64), int(mode), int(inc), int(p['delay']), p['cost'],
+         np.ascontiguousarray(G, dtype=np.float64), np.ascontiguousarray(Wt, dtype=np.float64), np.ascontiguousarray(RB, dtype=np.float64), up, dn,
+         int(mode), int(inc), int(p['delay']), p['cost'],
          p['tax'], D, int(p['harvest']), p['hthr'], p['cspr'], p['er3'], p['step'], bfn, np.asarray(bp, dtype=np.float64), rec,
          float(p['fstep']))
     return rec
