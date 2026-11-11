@@ -8,15 +8,20 @@ NOTES (reading choices)
  3. Trend flag = cm.trend_flag (1.02 / 0.98 around SMA200, off while the average does not exist). Hi252 = cm.roll_max(level, 252)
     including row t. 'X >= 0.92*Hi252' uses >=. 'calm' = vol20 <= 1.25*vol120 with cm.vol (annualised, log returns).
  4. Rows where any input of a rule's conditions is NaN are 'invalid': the candidate then holds what v1 holds (or cash when v1 is
-    off), weight 0, runs of consecutive closes restart, and state machines are set OFF.
- 5. 'K = 4 on three consecutive closes': the run counts the row t itself (cm.consec >= 3). OFF is tested before ON.
+    off), weight 0, runs of consecutive closes restart, and state machines are set OFF. The vehicle class keeps its last value.
+    On the <= 2014 calendar the only invalid rows are view rows 0..198 (warm-up); a missing close of the semiconductor series
+    later would make 120 rows invalid (sig120).
+ 5. 'K = 4 on three consecutive closes': the run counts the row t itself (cm.consec >= 3: rows t-2, t-1, t). In every state
+    machine of this file the OFF / exit conditions are tested first on every row, whatever the state, and win over ON / entry.
  6. AGREE-4 OFF rule: OFF when a1 = 0 at the close, or K <= 2 on three consecutive closes. B4 (ON at K >= 3): ON when K >= 3 on
-    three consecutive closes; OFF rule unchanged.
+    three consecutive closes; OFF rule unchanged. K >= 3 is possible with a1 = 0 (a2, a3, a4 on): such a row is OFF ('OFF when
+    a1 = 0'), the state does not turn ON for one row and OFF again on the next.
  7. Vehicle ladder with 0.03 margin: current class c (0 SOXL, 1 USD, 2 SOXX) moves up when sig20 >= boundary + 0.03 (boundaries
     0.30, 0.45) and down when sig20 < boundary - 0.03; first valid row takes the raw class. The class is tracked on every valid
     row (also while OFF), so a position opened later uses the tracked class. PURE-LADDER (candidate 4) does not state a margin:
     its vehicle is chosen on the plain thresholds of the row (SOXL < 0.30 <= USD < 0.45 <= SOXX; TQQQ < 0.25 <= QLD < 0.35 <= QQQ).
- 8. Vehicles: SOXL = cm.fund(SOXL, semis, 3); USD = cm.fund(USD, semis, 2); SOXX = ret:SOXX spliced with semis; QLD = cm.fund(QLD,
+ 8. Vehicles: SOXL = cm.fund(SOXL, semis, 3); USD = cm.fund(USD, semis, 2); SOXX = ret:SOXX, before it exists the Chips
+    return less the plain index-fund cost of 0.2% a year (cm.lev(semis, rf, 1), the same as the modelled QQQ); QLD = cm.fund(QLD,
     ndx r, 2); QQQ = ret:QQQ spliced with cm.lev(r,rf,1); PSQ = cm.fund(PSQ, ndx r, -1). TQQQ in the ladder is expressed as B = 3.
  9. B5 / QQQ-AGREE 'base level 1 solely because of the caution flag': caution_only = (v1 B == 1) & F['shock6m'] & vol20(NDX) <= 0.40.
     In v1 (fam4: B = 3 or 1 when vol20 > 0.40, min(B, 1) when shock6m, 0 when its trend gate is off) B == 1 together with the
@@ -28,13 +33,33 @@ NOTES (reading choices)
 11. b3 momentum = Q > Q[t-126] and Q > Q[t-21] (strict).
 12. QQQ-AGREE PSQ: 'v1 level 0' = v.ref_target == 0, 'above 0' = ref_target > 0. Entry needs: v1 level 0, b1 off for >= 42 consecutive
     closes, Q < 0.80*Hi252, Q < Q[t-126], rho < SMA100(rho). Exit when ref_target > 0, or b1 on, or Q > Q[t-21] on 5 consecutive
-    closes. After an exit a new entry needs all entry conditions again and the 5-close exit run must not be running at that row.
+    closes. The exit conditions are tested first on every row: no entry on a row where one of them holds (so not while the 5-close
+    run is still running); after an exit a new entry needs all entry conditions again.
 13. PURE-LADDER: raw rung each close (1..5), a rung change needs 3 consecutive closes (cm.debounce on the raw rung; invalid rows count
     as rung 5 = cash and force cash). Bear unanimity = Nasdaq trend flag off >= 42 closes & Q < 0.80*Hi252 & Q < Q[t-126] &
     rho < SMA100(rho); rung 4 = 50% PSQ, 50% cash (no rebalancing, drifts). E2 uses rungs 1 and 5 only, E3 rungs 2..5 only (K_X
     ignored; K_Q >= 5 -> Nasdaq vehicle). v1 off: B = 0 except TQQQ rung (B = 3), no brake, mode 1, inc 0, one instrument at a time.
 14. K_X in PURE-LADDER has six terms (X trend, rho, breadth, calm of X, momentum of X, X near high); K_Q likewise on Q with the
     shared rho and breadth. In AGREE-4, a4 (calm) uses X; in QQQ-AGREE b4 uses Q.
+15. sig20 / sig120 = cm.vol: population standard deviation (divisor n) of the daily log returns, times sqrt(252): the project's
+    convention (v1's own vol20 is the same). A sample deviation (n - 1) would move the calm ratio by about 2% and sig20 by 2.6%.
+16. Signals on Q use the index level v.c.lvl[0] on every row (also after QQQ exists); QQQ is used only as a vehicle.
+17. Hi252 on view rows 0..250 is the high of the rows that exist (cm.roll_max). Those are warm-up rows; requiring 252 rows instead
+    changes no base level and no weight on an account row (reviewer check on the <= 2014 calendar).
+18. T0 = None for every configuration: every signal input exists from the first view row (Chips, the nine French industries, the
+    index, v1's flags), the longest look-backs (SMA200, Hi252) lie inside the 300 warm-up rows (first valid row: view row 199),
+    and every vehicle has its modelled series before the fund exists.
+19. v.ref_target is 0 on the warm-up rows (the shadow account has not started), so the PSQ leg could see 'v1 level 0' there. The
+    engine does not trade warm-up weights and the PSQ state is never on on a warm-up row of this calendar (reviewer check).
+20. B5 ("excludes level-0 and brake states"): besides caution_only the weight needs v.ref_target == 1 (v1's level after its
+    brake is exactly 1x; a brake cut lowers it). On the <= 2014 calendar v1's level is exactly 1 on every caution_only row, so
+    the test changes no row there. QQQ-AGREE ADD tests v1's base signal only: its text applies the brake on top, unchanged.
+21. Engine terms: inc = 0, no rebalance flags, no bands for all three candidates. AGREE-4 and PSQ: mode 0, the engine limits the
+    weight to v1's idle cash, re-sets it to the target at every change of v1's level and lets it drift otherwise. PURE-LADDER: mode 1.
+22. The modelled 2x fund (USD and QLD before the funds exist) is cbase's: yearly drag 0.0095 + 0.0075 = 0.0170 (the fee plus
+    0.0075 per borrowed unit, the same rule as the 3x model's 0.0245; CANDIDATE_API.md states the same).
+23. A parameter value outside the registered points (k_on not 3 / 4, vehicle not 'ladder' / 'soxx', part not 'full' / 'soxx' /
+    'qqq') raises ValueError instead of silently running another rule.
 """
 import numpy as np
 import xv1
@@ -46,7 +71,8 @@ NAMES_LADDER = ('ret:SOXL', 'ret:USD', 'ret:SOXX', 'ret:QQQ', 'ret:QLD', 'ret:PS
 
 
 def _core(v, who):
-    """conditions for underlying who in 'X' / 'Q'; returns dict of arrays (bool conditions, K and validity)"""
+    """conditions for underlying who in 'X' / 'Q'; returns dict of arrays (c = the six bool conditions, False on invalid rows;
+    valid; the series the rules compare)"""
     X = cm.semis_level(v); Q = cm.ndx_level(v); rho = X / Q
     U = X if who == 'X' else Q
     sma_rho = cm.sma(rho, 100); br = cm.breadth(v)
@@ -59,7 +85,6 @@ def _core(v, who):
         c = dict(trend=cm.trend_flag(U), lead=rho > sma_rho, breadth=br >= 2 / 3 - 1e-12, calm=v20 <= 1.25 * v120,
                  mom=(U > l126) & (U > l21), high=U >= 0.92 * hi)
     c = {k: np.asarray(a, dtype=bool) & valid for k, a in c.items()}
-    c['trend'] = cm.trend_flag(U) & valid
     return dict(c=c, valid=valid, U=U, X=X, Q=Q, rho=rho, sma_rho=sma_rho, hi=hi, l126=l126, l21=l21, v20=v20, v120=v120)
 
 
@@ -77,7 +102,7 @@ def _vclass(sig, valid, b=(0.30, 0.45), m=0.03):
 
 def _semis_returns(v):
     s = v.x['semis']
-    return [cm.fund(v, 'SOXL', s, 3), cm.fund(v, 'USD', s, 2), cm.spliced(v.x['ret:SOXX'], s)]
+    return [cm.fund(v, 'SOXL', s, 3), cm.fund(v, 'USD', s, 2), cm.spliced(v.x['ret:SOXX'], cm.lev(s, v.c.rf[0], 1))]
 
 
 def _caution_only(v, oB):
@@ -86,17 +111,17 @@ def _caution_only(v, oB):
 
 def agree4(v, w=0.30, vehicle='ladder', k_on=4, caution_only=False):
     """AGREE-4 SOXL: semis unanimity overlay in v1's idle cash (mode 0). k_on 4 (K = 4) or 3 (K >= 3 turns ON)."""
+    if k_on not in (3, 4) or vehicle not in ('ladder', 'soxx'): raise ValueError((k_on, vehicle))
     o = xv1.ref(v); S = _core(v, 'X'); c = S['c']; valid = S['valid']
     K = c['trend'].astype(int) + c['lead'] + c['breadth'] + c['calm']
     on_run = cm.consec(valid & ((K == 4) if k_on == 4 else (K >= 3))); off_run = cm.consec(valid & (K <= 2))
     st = False; ON = np.zeros(v.T, dtype=bool)
     for t in range(v.T):
-        if not valid[t]: st = False
-        elif st and ((not c['trend'][t]) or off_run[t] >= 3): st = False
-        elif (not st) and on_run[t] >= 3: st = True
+        if (not valid[t]) or (not c['trend'][t]) or off_run[t] >= 3: st = False     # OFF first, whatever the state: a1 = 0 is never ON
+        elif on_run[t] >= 3: st = True
         ON[t] = st
     cls = _vclass(S['v20'], valid) if vehicle == 'ladder' else np.full(v.T, 2)
-    if caution_only: ON = ON & _caution_only(v, o['B'])
+    if caution_only: ON = ON & _caution_only(v, o['B']) & (v.ref_target == 1.0)     # B5: v1 at exactly 1x (no brake cut, not level 0)
     G = np.column_stack(_semis_returns(v)); W = np.zeros((v.T, 3))
     W[np.arange(v.T), cls] = np.where(ON, w, 0.0)
     o.update(G=G, Wt=W, mode=0, inc=0)
@@ -111,9 +136,8 @@ def qqq_agree(v, l_add=None, psq_w=None):
         co = _caution_only(v, o['B']); r6 = cm.consec(valid & (K == 6)); l4 = cm.consec(valid & (K <= 4))
         st = False; B = o['B'].copy()
         for t in range(T):
-            if not valid[t]: st = False
-            elif st and ((not c['trend'][t]) or l4[t] >= 3): st = False
-            elif (not st) and co[t] and r6[t] >= 3: st = True
+            if (not valid[t]) or (not c['trend'][t]) or l4[t] >= 3: st = False     # return to v1's own level
+            elif co[t] and r6[t] >= 3: st = True
             if st and co[t]: B[t] = l_add
         o['B'] = B
     if psq_w is not None:
@@ -121,9 +145,8 @@ def qqq_agree(v, l_add=None, psq_w=None):
         entry = valid & (off_run >= 42) & (Q < 0.80 * S['hi']) & (Q < S['l126']) & (S['rho'] < S['sma_rho'])
         lvl = v.ref_target; st = False; ON = np.zeros(T, dtype=bool)
         for t in range(T):
-            if not valid[t]: st = False
-            elif st and (lvl[t] > 0 or c['trend'][t] or up5[t] >= 5): st = False
-            elif (not st) and entry[t] and lvl[t] == 0 and up5[t] < 5: st = True
+            if (not valid[t]) or lvl[t] > 0 or c['trend'][t] or up5[t] >= 5: st = False     # exit conditions win on every row
+            elif entry[t] and lvl[t] == 0: st = True
             ON[t] = st
         o.update(G=cm.fund(v, 'PSQ', v.c.r[0], -1)[:, None], Wt=np.where(ON, psq_w, 0.0)[:, None], mode=0, inc=0)
     return o
@@ -131,6 +154,7 @@ def qqq_agree(v, l_add=None, psq_w=None):
 
 def ladder(v, part='full'):
     """PURE-LADDER: one instrument at a time, v1 switched off. part 'full' (E1), 'soxx' (E2: rungs 1, 5), 'qqq' (E3: rungs 2-5)."""
+    if part not in ('full', 'soxx', 'qqq'): raise ValueError(part)
     T = v.T; SX = _core(v, 'X'); SQ = _core(v, 'Q'); cx = SX['c']; cq = SQ['c']
     valid = SX['valid'] & SQ['valid']
     KX = sum(cx[k].astype(int) for k in ('trend', 'lead', 'breadth', 'calm', 'mom', 'high'))

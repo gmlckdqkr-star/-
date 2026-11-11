@@ -30,3 +30,14 @@ for e in cfgs:
     for a, b in zip(st, en):
         cols = sorted(set(np.flatnonzero((W[a:b + 1] != 0).any(axis=0)).tolist())); lv = sorted(set(np.round(W[a:b + 1].sum(axis=1), 6).tolist()))
         print('    episode', dt(a), '..', dt(b), 'rows', int(b - a + 1), 'columns', cols, 'weight levels', lv)
+
+# candidate 1: rows on which a position is open (or is being closed) while the other signal conditions hold in a later episode
+import bridge
+N = cm.ndx_level(v); H, high, dd = bridge._highs(N); age = cm.since(high); ep = np.cumsum(high)
+for d in (0.20, 0.25):
+    W = np.asarray(bridge.fast_crash(v, X='TQQQ', d=d, w=0.20)['Wt'])[:, 0]; on = W != 0
+    st = np.flatnonzero(np.diff(np.r_[0, on.astype(int)]) == 1); en = np.flatnonzero(np.diff(np.r_[on.astype(int), 0]) == -1); n = 0
+    for a, b in zip(st, en):
+        rows = np.arange(a + 1, min(b + 2, v.T))
+        with np.errstate(invalid='ignore'): n += int(((dd[rows] <= -d) & (age[rows] <= 63) & (L[rows] <= 1) & (ep[rows] != ep[a])).sum())
+    print('fast_crash d=%.2f: rows with an open position on which a signal of a later episode would otherwise fire:' % d, n)

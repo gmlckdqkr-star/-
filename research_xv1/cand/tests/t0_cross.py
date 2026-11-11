@@ -9,8 +9,10 @@ for k in names: print(k, 'nan count', int(np.isnan(v.x[k]).sum()), 'first', firs
 for nm, a in (('r', v.c.r[0]), ('rb', v.c.rb[0]), ('rf', v.c.rf[0]), ('y10', v.m['y10']), ('vol20', v.c.vol(20)[0])): print(nm, int(np.isnan(a).sum()), first(a))
 dy = cross._dy(v); print('dy', first(dy))
 k = cross._kappa(v.c.r[0], dy, 252); print('kappa252', first(k))
-q = np.log1p(v.c.r[0]); 
+have = cross._ndx_ok(v); print('index exists from row', int(np.argmax(have)), str(X.index[i0 + int(np.argmax(have))].date()))
+q = np.where(have, np.log1p(v.c.r[0]), np.nan)      # as sbc_cap: rows before the index exists are missing (NOTES G5)
 for N in (126,252,504): print('rho', N, first(cross._roll_corr(q, -dy, N, min(200, N))))
+R = np.where(have, cm.semis_level(v) / cm.ndx_level(v), np.nan); print('SMA200 of S/NDX', first(cm.sma(R, 200)))
 # calendar projection check: projected exec day vs actual row t+2 (calendar fields only)
 m, d, w, y, ok = cross._exec_day(v); T = v.T
 am, ad = v.x['cal:month'], v.x['cal:dom']

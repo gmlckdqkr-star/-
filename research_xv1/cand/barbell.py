@@ -47,3 +47,13 @@ def sleeve(v, w=0.10, rule='skim', held='always', band=0.25):
     if up is not None: o['up'] = up
     if dn is not None: o['dn'] = dn
     return o
+
+
+def always(v, w=0.10, rule='skim', band=0.25):
+    """the sleeve is always held (one family)"""
+    return sleeve(v, w, rule, 'always', band)
+
+
+def trend(v, w=0.10, rule='skim', band=0.25):
+    """the sleeve is held only while the semiconductor index is above its 200-day average (another family)"""
+    return sleeve(v, w, rule, 'trend', band)

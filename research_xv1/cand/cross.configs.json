@@ -9,7 +9,7 @@
    "Lr": 3.0
   },
   "names": [],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "SBC-CAP",
@@ -21,7 +21,7 @@
    "Lr": 2.0
   },
   "names": [],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "SBC-CAP",
@@ -33,7 +33,7 @@
    "Lr": 3.0
   },
   "names": [],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "SBC-CAP",
@@ -45,7 +45,7 @@
    "Lr": 3.0
   },
   "names": [],
-  "t0": null
+  "t0": "1986-04-02"
  },
  {
   "family": "SBC-CAP",
@@ -60,7 +60,7 @@
   "names": [
    "semis"
   ],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "SBC-CAP",
@@ -90,7 +90,7 @@
    "ret:SOXL",
    "semis"
   ],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "CHIP-LEAD-12M",
@@ -107,7 +107,7 @@
    "ret:SOXL",
    "semis"
   ],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "CHIP-LEAD-12M",
@@ -124,7 +124,7 @@
    "ret:SOXL",
    "semis"
   ],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "CHIP-LEAD-12M",
@@ -141,7 +141,7 @@
    "ret:SOXL",
    "semis"
   ],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "CHIP-LEAD-12M",
@@ -158,7 +158,7 @@
    "ret:SOXL",
    "semis"
   ],
-  "t0": null
+  "t0": "1986-07-17"
  },
  {
   "family": "CHIP-LEAD-12M",

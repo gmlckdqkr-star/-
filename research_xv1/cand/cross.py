@@ -5,9 +5,19 @@ NOTES (reading choices)
  General
   G1. 756-row look-backs (3-year highs) use the history available in the view (the calendar starts about 300 rows before the
       account, 1984; the semiconductor series itself goes back to 1926 but only the view rows are readable): before 756 rows
-      exist the window is the available history (same choice as bridge.py). So T0 = None for every configuration.
-  G2. "v1's level after the brake" at the decision close t: v.ref_target[t] (for 'final level is 3', rounded to v1's order grid
-      o['fstep'] = 0.1, so 2.96 counts as 3). Where the text says "actually holds" (idle = 1 - q/3) v.ref_held[t] is used.
+      exist the window is the available history (same choice as bridge.py). This alone does not move T0.
+  G2. Two different "v1 levels" are used, as the texts word them:
+      (a) "v1's final (post-brake) level" at the decision close t (chip_lead): the level v1's own order rule holds after the
+          close of row t, which is the level in force two rows later, when a weight decided at close t is in force too. It is
+          rebuilt from v.ref_target with the engine's order rule (_v1_level: a move only when the target is at least one order
+          step away from the level held or goes to 0; step 0.5, and o['fstep'] = 0.1 while target and level are both below 1).
+          On the <= 2014 calendar it equals v.ref_held two rows later on every account row. A plain rounding of
+          v.ref_target is not the same thing (the order rule has a memory: 2.6 after 3 stays 3, 2.96 after 2.5 stays 2.5).
+          The rule runs over all view rows in order; where the evaluator joins account rows (removed blocks) the rebuilt
+          level can differ from the joined account's until the next order of v1.
+      (b) "the level v1 actually holds" (idle = 1 - q/3 in tmf_fill and soxl_sleeve, L_v1 in midterm_add): v.ref_held[t], the
+          level in force on row t. A weight decided from it is in force two rows later, so after a change of v1's level the
+          extra follows two rows behind (the engine's mode-0 cut covers the rows in between).
       v.ref_held / v.ref_target read 0 on the 300 warm-up rows (shadow account starts at the account start), so idle reads
       1.0 there; state machines that use idle may therefore enter on warm-up rows (the engine ignores weights on those rows
       but the state carries into the account). Observed: tmf_fill P4/P6 (no H) hold weight 1.0 on warm-up rows 0..299 and the
@@ -15,33 +25,47 @@ NOTES (reading choices)
   G3. Stateful machines process a row in this order: ends / exits first (weight 0 on that row), then, only if flat at the
       start of the row, entry. No exit and re-entry on the same row.
   G4. Rows where a needed input is NaN: no entry, indicators False; the base level stays v1's and weight 0.
+  G5. The Nasdaq-100 starts inside the warm-up rows (about 60 rows before the account); the chain fills the rows before it
+      with a return of exactly 0 and a flat level. Those rows are not data: _ndx_ok marks the rows from the first non-zero
+      return on, and every look-back of this file that is built on the index (rho of sbc_cap, S/NDX and its 200-day average
+      in sbc_cap P5 and chip_lead) treats the earlier rows as missing. kappa of tmf_fill skips zero-return days by its own
+      text. So these signals do not exist on the first account rows and T0 is the first row on which they do (rho: 200
+      real pairs, 126 for N = 126; S/NDX average: 200 real rows; kappa: 252 valid days). T0 = None where no such signal is
+      used (sbc_cap P6, chip_lead point 6, tmf_fill P4 / P6, soxl_sleeve, midterm_add). On the <= 2014 calendar the masking
+      changes no output row (no signal fires that early); it only keeps filled zeros from counting as pairs.
  1. sbc_cap (SBC-CAP, P1-P6)
-  S1. q = log1p(NDX return), b = -(y10[t] - y10[t-1]) with y10 = v.m['y10'] (the yield series v1 itself uses, lagged one day by
-      the chain; bond holidays are already repeated values, so a zero change is a valid pair). Pairs with a NaN are dropped.
+  S1. q = log1p(NDX return) (missing before the index exists, G5), b = -(y10[t] - y10[t-1]) with y10 = v.m['y10'] (the yield
+      series v1 itself uses: the same-day closing yield, carried forward on bond holidays, so a zero change is a valid pair
+      and q and b of one row belong to the same day). Pairs with a missing value are dropped.
   S2. rho = Pearson over the last N rows ending at t using the valid pairs in them. Minimum pairs = min(200, N): 200 for N=252
-      and N=504 (as written), and N (full window) for N=126, because 200 pairs cannot exist in a 126-row window.
+      and N=504 (as written; for N=504 rho therefore exists before 504 rows do), and N (full window) for N=126, because 200
+      pairs cannot exist in a 126-row window.
   S3. NEG: on when rho < -0.05, off when rho > +0.05, else unchanged; starts 0; NaN rho leaves it unchanged (cm.hyst).
   S4. Edit of v1's base level: base before caution = 1 where vol20 > 0.40 else 3 (L_on=3, vcap=0.40, vlev=1; NaN vol -> 3).
       v1 caution row = shock6m flag (v.c.F['shock6m'][0]). A row is 'released' when caution and NEG (and, in P5, chip
       confirmation) hold and v1's B is not 0 (B == 0 is the trend-and-macro gate, left alone, B before the gate is 1 or 3 so
       B == 0 identifies the gate exactly). On released rows B = min(base, Lr). Everything else is v1's B. bfn, bp, fstep as v1.
-  S5. P5 chip confirmation: R = S / NDX where S = level of v.x['semis'] (Chips to SOXX splice) and NDX = v.c.lvl[0];
-      confirmed when R > SMA200(R) (strict; NaN -> not confirmed -> cap stays).
+  S5. P5 chip confirmation: R = S / NDX where S = level of v.x['semis'] (Chips to SOXX splice) and NDX = v.c.lvl[0] (missing
+      before the index exists, G5); confirmed when R > SMA200(R) (strict; NaN -> not confirmed -> cap stays).
   S6. P6 control: NEG treated as 1 on every row, Lr = 3 (cap removed everywhere the gate does not send v1 to cash).
  2. chip_lead (CHIP-LEAD-12M, points 1-6)
-  C1. S = level of v.x['semis']; Q = v.c.lvl[0]; R = S/Q. DD_t = any u in [t-503, t] with S_u <= (1-D) * max(S[u-755..u]).
+  C1. S = level of v.x['semis']; Q = v.c.lvl[0]; R = S/Q (missing before the index exists, G5). DD_t = any u in [t-503, t]
+      with S_u <= (1-D) * max(S[u-755..u]).
   C2. UP = cm.trend_flag(S, 200, 0.02) (starts off). LEAD: on when R > SMA200(R), off after 20 consecutive closes R < SMA200(R)
       (cm.hyst; starts off). Point 6 (lead=False): LEAD dropped from both entry and ending.
-  C3. Entry needs DD, UP, LEAD, v1 final level 3 (G2) and no cooldown. Active: Wt[SOXL] = a on rows with final level 3, 0 on
-      other rows. mode 1 (extras first) gives v1's 3x fund level/3 of the rest = (1-a) on level-3 rows. inc = 0.
+  C3. Entry needs DD, UP, LEAD, v1 final level 3 (G2a) and no cooldown. Active: Wt[SOXL] = a on rows with final level 3, 0 on
+      other rows. mode 1 (extras first) gives v1's 3x fund level/3 of the rest = (1-a) on level-3 rows. inc = 0: the two
+      positions are set when the weight changes and drift in between (the text names no rebalancing).
   C4. Window ends at the first row t with: t - entry >= H (no cooldown after this end), UP off, LEAD off, S_t <= 0.8 * max(S
-      since entry, row t included) (cooldown after these three). Cooldown 63 rows: blocked rows end+1..end+63, a new entry
-      at end+64 earliest. Weight is 0 on the end row. SOXL = cm.fund(v, 'SOXL', semis, 3).
+      since entry, row t included) (cooldown after these three). The checks run in this order, so an end by H on a row on
+      which UP, LEAD or the stop also fails counts as an end by H (no cooldown). Cooldown 63 rows: blocked rows
+      end+1..end+63, a new entry at end+64 earliest. Weight is 0 on the end row; after an end by H a new entry is possible
+      on the next row (G3), which then is a sale and a re-purchase one row apart. SOXL = cm.fund(v, 'SOXL', semis, 3).
  3. tmf_fill (gated long-Treasury fill, P1-P6)
   T1. dy = y10[t] - y10[t-1] (v.m['y10']), r = NDX return; a day is valid when r != 0, dy != 0 and both finite; kappa = mean of
       sign(r)*sign(dy) over the last W VALID days (not the last W rows); NaN until W valid days exist. H on at kappa >= 0.10,
       off at kappa <= 0, else unchanged, 0 before kappa exists. S = shock6m flag. E = NDX level < SMA50 (NaN -> False).
-  T2. idle = 1 - v.ref_held[t]/3 (G2); target = min(cap, floor(10 * idle + 1e-9)/10) when Gate, else 0.
+  T2. idle = 1 - v.ref_held[t]/3 (G2b); target = min(cap, floor(10 * idle + 1e-9)/10) when Gate, else 0.
   T3. Trade rule: the 'held' weight is the weight this candidate last set (its own state, not the drifted actual weight).
       New weight = target if |target - held| >= 0.20 (>= 0.2 - 1e-9) or (target == 0 and held > 0), else held. mode 0, inc 0.
   T4. Instruments: TMF = cm.fund(v, 'TMF', tlt1x, 3) with tlt1x = ret:TLT spliced with v.c.rb[0]. TLT vehicle (P3, P6) = actual
@@ -49,10 +73,15 @@ NOTES (reading choices)
       synthetic series of E06 is not readable, the rule-translation series (rb proxy) is used instead.
   T5. P4 / P6: H dropped. P5: E added. Reported-alongside variants (ungated, demeaned null) are not configurations.
  4. soxl_sleeve (S1-S6)
-  L1. X = level of v.x['semis'] (SOXX / Chips splice). DD = X / max(X over last 756 rows) - 1 (G1). idle = 1 - ref_held/3.
-  L2. FLAT -> LONG when DD <= -D, (confirm: X > SMA50(X); NaN -> False), idle >= 0.5, not blocked. LONG weight = min(w, idle)
-      in BOTH modes (literal text; in mode 1 the sleeve therefore never exceeds v1's idle cash either, only the engine's
-      priority rule differs and exit (g) is mode 0 only, exit (h) mode 1 only).
+  L1. X = level of v.x['semis'] (SOXX / Chips splice). DD = X / max(X over last 756 rows) - 1 (G1). idle = 1 - ref_held/3
+      (G2b).
+  L2. FLAT -> LONG when DD <= -D, (confirm: X > SMA50(X); NaN -> False), idle >= 0.5, not blocked. LONG weight: mode 0
+      min(w, idle); mode 1 (S5, S6) the constant target w = 0.10 on every LONG row. The sentence "target = min(w, idle)" has no
+      mode qualifier, but the text defines mode 1 as "sleeve has priority while held, capped at 10%" and S5 as "longer hold,
+      trailing exit", and gives exit (g) (v1 fully re-invested) to mode 0 only: with min(w, idle) the mode-1 sleeve would be
+      sold whenever v1 is fully invested and the points would not test a longer hold. Decision of the lead before registration:
+      mode 1 holds w through v1's re-investment (v1 gets its level on the rest of the account); entry still needs idle >= 0.5.
+      With inc 0 the engine buys w once and lets the holding drift until the target changes (no daily re-set, no band).
   L3. Exits (checked in this order): (e) X <= 0.85 * X(entry row) -> flat and block; (f) DD > -0.10; (g) mode 0: idle < 0.05
       on 5 consecutive closes (the count runs on all rows); (h) mode 1: X <= 0.75 * max X since entry (entry row included).
   L4. Block after a stop: confirm variant: the block lifts on the first row after the stop on which X > SMA50 after at least one
@@ -66,10 +95,12 @@ NOTES (reading choices)
       P3: from the first trading day after Election Day (Tuesday after the first Monday of November): projected day in
       November with day-of-month >= first_Monday + 2 (election Tuesday + 1), or December, in a year with ymod4 == 2.
   M2. C = 3 if vol20 <= 0.40 else 1 (v.c.vol(20)[0]; NaN -> 0) inside the window, P2: C = 3 always, else 0.
-  M3. x = phi * max(0, C - L)/3 with L = v.ref_held[t] (G2, 'actually holds'). Trade rule: weight changes only when
+  M3. x = phi * max(0, C - L)/3 with L = v.ref_held[t] (G2b, 'actually holds'). Trade rule: weight changes only when
       |x - held_weight| >= 1/6 (- 1e-9) or x == 0 with held > 0 (own last-set weight). mode 0, inc 0.
-  M4. TQQQ = cm.fund(v, 'TQQQ', NDX return, 3); P6: QLD = cm.fund(v, 'QLD', NDX return, 2), same weight formula. The netting
-      or re-label cost is an engine term and is not modelled.
+  M4. TQQQ = cm.fund(v, 'TQQQ', NDX return, 3); P6: QLD = cm.fund(v, 'QLD', NDX return, 2), same weight formula (the 2x model
+      of cm.lev before the fund exists: 0.95% fee + 0.75% financing spread a year). The extra is its own instrument: when v1
+      takes the cash the engine sells the extra and buys v1's fund at its cost per side on each (the 0.6% of the text); no
+      netting is modelled.
 """
 import numpy as np
 import xv1
@@ -97,6 +128,24 @@ def _dy(v):
     y = np.asarray(v.m['y10'], dtype=np.float64); d = np.full(v.T, np.nan); d[1:] = y[1:] - y[:-1]; return d
 
 
+def _ndx_ok(v):
+    """rows on which the Nasdaq-100 exists: the chain fills the rows before the index starts with a return of exactly 0, so
+    the rows before the first non-zero return are not data (G5)"""
+    return np.cumsum(np.asarray(v.c.r[0]) != 0) > 0
+
+
+def _v1_level(v, fstep, step=0.5):
+    """the level v1's order rule holds after the close of row t (in force two rows later), rebuilt from v.ref_target with the
+    engine's own rule: a move only when the target is at least one order step away from the level held, or goes to 0; the
+    step is 0.5, and fstep while target and level are both below 1 (G2a)"""
+    tg = np.asarray(v.ref_target, dtype=np.float64); out = np.zeros(v.T); held = 0.0
+    for t in range(v.T):
+        x = 0.0 if np.isnan(tg[t]) else tg[t]; stp = step if (x >= 1.0 or held >= 1.0) else fstep
+        if abs(x - held) >= stp or (x == 0 and held > 0): held = np.round(x / stp) * stp
+        out[t] = held
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ 1. SBC-CAP
 NAMES_SBC = ()
 NAMES_SBC_CHIP = ('semis',)
@@ -120,13 +169,13 @@ def _base_pre(v):
 
 
 def sbc_cap(v, N=252, Lr=3.0, chip=False, always=False):
-    o = xv1.ref(v); B = o['B'].copy()
-    q = np.log1p(v.c.r[0]); b = -_dy(v)
-    neg = np.ones(v.T, dtype=bool) if always else _hy(_lt(_roll_corr(q, b, N, min(200, N)), -0.05), _gt(_roll_corr(q, b, N, min(200, N)), 0.05))
+    o = xv1.ref(v); B = o['B'].copy(); have = _ndx_ok(v)
+    q = np.where(have, np.log1p(v.c.r[0]), np.nan); b = -_dy(v); rho = _roll_corr(q, b, N, min(200, N))
+    neg = np.ones(v.T, dtype=bool) if always else _hy(_lt(rho, -0.05), _gt(rho, 0.05))
     caution = np.asarray(v.c.F['shock6m'][0], dtype=bool)
     rel = caution & neg & (B != 0)
     if chip:
-        R = cm.semis_level(v) / cm.ndx_level(v); rel &= _gt(R, cm.sma(R, 200))
+        R = np.where(have, cm.semis_level(v) / cm.ndx_level(v), np.nan); rel &= _gt(R, cm.sma(R, 200))
     B[rel] = np.minimum(_base_pre(v)[rel], Lr)
     o['B'] = B; return o
 
@@ -140,9 +189,9 @@ def chip_lead(v, D=0.40, a=1.0 / 3.0, H=252, lead=True, dd_win=504, hi_win=756, 
     Hmax = cm.roll_max(S, hi_win); f = _lt(S, (1 - D) * Hmax) | (S == (1 - D) * Hmax)
     c = np.r_[0, np.cumsum(f)]; idx = np.arange(T); DD = (c[idx + 1] - c[np.maximum(0, idx - dd_win + 1)]) > 0
     UP = cm.trend_flag(S, 200, 0.02)
-    R = S / Q; sR = cm.sma(R, 200)
+    R = np.where(_ndx_ok(v), S / Q, np.nan); sR = cm.sma(R, 200)
     LEAD = _hy(_gt(R, sR), cm.consec(_lt(R, sR)) >= 20) if lead else np.ones(T, dtype=bool)
-    L3 = np.round(v.ref_target / o['fstep']) * o['fstep'] >= 3.0 - 1e-9
+    L3 = _v1_level(v, o['fstep']) >= 3.0 - 1e-9
     W = np.zeros((T, 1)); act = False; ent = -1; pk = np.nan; blocked_to = -1
     for t in range(T):
         if act:
@@ -220,9 +269,9 @@ def soxl_sleeve(v, D=0.35, confirm=True, mode=0, w=0.15):
             elif mode == 0 and low5[t] >= 5: lg = False
             elif mode == 1 and X[t] <= 0.75 * pk: lg = False
             if not lg: continue
-            W[t, 0] = min(w, idle[t])
+            W[t, 0] = min(w, idle[t]) if mode == 0 else w
         elif (not blocked) and dd[t] <= -D and (above[t] if confirm else True) and idle[t] >= 0.5:
-            lg = True; ex = X[t]; pk = X[t]; W[t, 0] = min(w, idle[t])
+            lg = True; ex = X[t]; pk = X[t]; W[t, 0] = min(w, idle[t]) if mode == 0 else w
     o.update(G=g[:, None], Wt=W, mode=mode, inc=0, RB=np.zeros((T, 1))); return o
 
 

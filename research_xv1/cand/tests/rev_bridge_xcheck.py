@@ -73,11 +73,11 @@ def my_fast(v, B, X, d, w=0.20):
 def my_staged(v, B, X, depths, budget, use_a, tstop):
     S = plevel(v.x['semis']); S = np.where(np.cumsum(~np.isnan(v.x['semis'])) > 0, S, np.nan); L = v.ref_target; T = v.T
     g = fundret(v, 'SOXL', v.x['semis'], 3) if X == 'SOXL' else fundret(v, 'USD', v.x['semis'], 2)
-    P = plevel(g); W = np.zeros((T, 1)); waiting = False; is_open = False; spent = False; fired = set(); tr = []
+    P = plevel(g); W = np.zeros((T, 1)); waiting = False; is_open = False; spent = False; fired = set(); tr = []; n_open = 0; tr_ep = None
     for t in range(T):
         H = wmax(S, t); dd = S[t] / H - 1 if not (np.isnan(S[t]) or np.isnan(H)) else np.nan
         if not np.isnan(dd) and S[t] >= H: waiting = True; is_open = False; spent = False; fired = set()
-        elif waiting and not np.isnan(dd) and dd <= -depths[0]: waiting = False; is_open = True; spent = False; fired = set()
+        elif waiting and not np.isnan(dd) and dd <= -depths[0]: waiting = False; is_open = True; spent = False; fired = set(); n_open += 1
         sold = False
         if tr:
             f0 = tr[0]; ca = use_a and t > f0 and B[t] == 3; cc = t - f0 >= tstop; cb = False
@@ -90,10 +90,14 @@ def my_staged(v, B, X, depths, budget, use_a, tstop):
             if ca or cb or cc:
                 ST['s_exit_a'] += int(ca); ST['s_exit_b'] += int(cb); ST['s_exit_c'] += int(cc); ST['s_exit_before_fill'] += int(t < f0 + 2); tr = []; spent = True; sold = True
         if not sold:
-            if is_open and not spent and not np.isnan(L[t]) and L[t] <= 1 and not np.isnan(dd) and not np.isnan(g[t]):
+            older = len(tr) > 0 and tr_ep != n_open            # one budget at a time: a sleeve of an earlier episode is still held
+            ST['s_blocked_by_older_sleeve'] += int(older and is_open and not spent and not np.isnan(L[t]) and L[t] <= 1 and not np.isnan(dd) and dd <= -depths[0])
+            if is_open and not spent and not older and not np.isnan(L[t]) and L[t] <= 1 and not np.isnan(dd) and not np.isnan(g[t]):
                 n0 = len(tr); held0 = n0 > 0 and len(fired) == 0
                 for k in range(3):
-                    if k not in fired and dd <= -depths[k]: fired.add(k); tr.append(t)
+                    if k not in fired and dd <= -depths[k]:
+                        fired.add(k); tr.append(t)
+                        if len(tr) == 1: tr_ep = n_open
                 ST['s_multi_fire_rows'] += int(len(tr) - n0 > 1); ST['s_merge_rows'] += int(held0 and len(tr) > n0); ST['s_fire_rows_B3'] += int(len(tr) > n0 and B[t] == 3)
             W[t, 0] = len(tr) * budget / 3.0
     return W
@@ -172,7 +176,9 @@ if __name__ == '__main__':
     cfgs = json.load(open('/home/user/-/research_xv1/cand/bridge.configs.json'))
     X = xv1.frame(xv1.OLD_END); names = sorted(set(n for e in cfgs for n in e['names']))
     v = xv1.View(X, xv1.extras(names, X.index)); B = xv1.ref(v)['B']
-    print('REAL <= 2014 view: total differing rows', compare('real', cfgs, v, B)); ST.clear()
+    print('REAL <= 2014 view: total differing rows', compare('real', cfgs, v, B))
+    print('REAL corner counters (all 18 configurations together): tranche rows that add to a sleeve of an earlier episode', ST['s_merge_rows'],
+          '| candidate 1 signals on a row with B == 3', ST['f_signals_B3'], '| tranche rows with B == 3', ST['s_fire_rows_B3'], '| candidate 3 exits on NaN R', ST['p_exit_nan']); ST.clear()
     real_ref = xv1.ref; tot = 0; act = 0
     for seed in range(int(sys.argv[1]) if len(sys.argv) > 1 else 40):
         sv, sB = synth(seed)

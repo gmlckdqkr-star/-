@@ -9,7 +9,10 @@
  D2   rows whose value comes from a monthly fallback series.
  D3   value checks (zeros, jumps, duplicates).
  P4   the design account from the full calendar equals the account of the calendar cut at 2015-12-31 on blocks 0-9 (boolean).
+ D4   registered extra inputs of batch 1: rows without a value between the first and the last valid row, and rows after the
+      last valid row (counts and dates only).
  TAX  dates of the yearly tax payments of the design account.
+When every check passes on the full calendar a 'checks' line is written to the ledger; a batch cannot be registered without it.
 (P2, the identity with the locked MS1 run and the recorded 30.53%, is t_old_end.py.)"""
 import sys, json, numpy as np, pandas as pd
 sys.path.insert(0, '/home/user/-/research_xv1/code')
@@ -19,6 +22,7 @@ import md, mkt
 
 DRY = '--dry2014' in sys.argv            # mechanics test on the <= 2014 calendar only (CAL table and P3)
 END = xv1.OLD_END if DRY else xv1.CAL_END
+if not DRY: xv1._check_env()
 OK = True
 def verdict(name, ok, **kw):
     global OK; OK &= bool(ok)
@@ -150,11 +154,20 @@ verdict('D3', ok3, stop_counts=stop, threshold_counts=thr, report_only=info)
 
 # ---------------------------------------------------------------- P4 (design account = cut-calendar account on blocks 0-9)
 if not DRY:
-    full = xv1._design_account(xv1.ref); keep = xv1.CAL_END; xv1.CAL_END = xv1.A_END
-    try: cutacc = xv1._design_account(xv1.ref)
-    finally: xv1.CAL_END = keep
+    full = xv1._design_account(xv1.ref); cutacc = xv1._design_account(xv1.ref, end=xv1.A_END)
     same = all(np.array_equal(full[b][f], cutacc[b][f]) for b in range(10) for f in ('x', 'lev', 'w', 'a0'))
     verdict('P4', same and sorted(full) == [b for b in range(xv1.NB) if b not in xv1.SEALED], blocks_scored=sorted(full), blocks_0_9_bit_identical=same)
+
+# ---------------------------------------------------------------- D4 registered extra inputs of batch 1
+import m_batch1
+names = sorted(set(n for c in m_batch1.configs() for n in c.names) | {'ret:TQQQ'}); E = xv1.extras(names, idx); rep4 = {}; ok4 = True
+for k in names:
+    a = E[k]; has = ~np.isnan(a)
+    if not has.any(): rep4[k] = 'no value'; ok4 = False; continue
+    f = int(np.argmax(has)); l = len(a) - 1 - int(np.argmax(has[::-1])); gap = ~has[f:l + 1]; yy = idx[f:l + 1].year
+    rep4[k] = dict(first=idx[f].date(), last=idx[l].date(), gaps_upto2014=int(gap[yy <= 2014].sum()), gaps_after2014=int(gap[yy > 2014].sum()), rows_after_last=len(a) - 1 - l)
+    ok4 &= rep4[k]['gaps_after2014'] == 0 and rep4[k]['rows_after_last'] == 0
+verdict('D4', ok4, **rep4)
 
 # ---------------------------------------------------------------- TAX (design account: 252-row tax years from 1986-01-02 on the design calendar)
 ca = xv1.Cal(xv1.acc_dates(xv1.frame(END))); days = np.flatnonzero(~np.isin(ca.blk, xv1.SEALED))
@@ -162,4 +175,5 @@ pay = [(str(ca.dates[days[k]].date()), int(ca.blk[days[k]]), bool(ca.rank[days[k
 print('TAX  design-account payment rows (date, block, inside the 63-row embargo): %d payments, %d inside an embargo' % (len(pay), sum(p[2] for p in pay)))
 print('     ', ' '.join('%s%s' % (p[0], '*' if p[2] else '') for p in pay))
 print('ALL CHECKS', 'PASS' if OK else 'FAIL')
+xv1.checks_line(OK, dict(script='m_checks.py'))
 sys.exit(0 if OK else 1)

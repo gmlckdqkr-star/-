@@ -4,9 +4,10 @@ import xv1
 
 
 def noise_cut(v, seed=0, share=0.05):
-    """v1 with a seeded random share of days capped at level 1 (pure noise; prefix-consistent because the draw is per row from the start)"""
+    """v1 with a fixed pseudo-random share of days capped at level 1 (pure noise; prefix-consistent because the value of a
+    row depends only on its position from the start: allowed in a dummy, not in a real candidate)"""
     o = xv1.ref(v); B = np.array(o['B'], dtype=float).reshape(-1)
-    u = np.random.default_rng(seed).random(200000)[:len(B)]
+    u = np.abs(np.sin(np.cumsum(np.ones(v.T)) * 12.9898 * (seed + 1)) * 43758.5453) % 1.0
     B[u < share] = np.minimum(B[u < share], 1.0); o['B'] = B; return o
 
 
@@ -24,12 +25,12 @@ def chips_sleeve(v, w=0.1):
     o.update(G=G[:, None], Wt=W[:, None], mode=0, inc=0); return o
 
 
-_SEEN = {}
+SEEN = {}
 def stateful(v):
     """planted: remembers the longest return array it was ever given and reads 3 rows ahead from it (must be voided)"""
     o = xv1.ref(v); B = np.array(o['B'], dtype=float); r = v.c.r[0]
-    if len(_SEEN.get('r', ())) < len(r): _SEEN['r'] = r.copy()
-    f = _SEEN['r']; n = len(B); k = np.zeros(n, dtype=bool); m = min(len(f) - 3, n); k[:m] = f[3:m + 3] < -0.03
+    if len(SEEN.get('r', ())) < len(r): SEEN['r'] = r.copy()
+    f = SEEN['r']; n = len(B); k = np.zeros(n, dtype=bool); m = min(len(f) - 3, n); k[:m] = f[3:m + 3] < -0.03
     B[k] = 0.0; o['B'] = B; return o
 
 
@@ -37,3 +38,34 @@ def era(v):
     """planted: a threshold on the absolute height of the index level picks out an era without naming a date (must be voided
     by the level-scale test; it passes the prefix test because it never looks ahead)"""
     o = xv1.ref(v); B = np.array(o['B'], dtype=float); B[v.c.lvl[0] > 20.0] = 3.0; o['B'] = B; return o
+
+
+def invent(v, w=0.1):
+    """planted: an instrument return that is no registered input and no modelled fund (must be voided by the instrument check)"""
+    o = xv1.ref(v); o.update(G=np.full((v.T, 1), 0.001), Wt=np.full((v.T, 1), w), mode=1, inc=0); return o
+
+
+def own_brake(v):
+    """planted: v1's brake with one parameter moved (must be voided by the output rules)"""
+    o = xv1.ref(v); bp = np.array(o['bp'], dtype=float); bp[-1] += 1e-9; o['bp'] = bp; return o
+
+
+def write_input(v):
+    """planted: tries to change an input array in place (must be voided)"""
+    o = xv1.ref(v); v.c.r[0][5] = 0.0; return o
+
+
+def swap_input(v):
+    """planted: replaces an input array of the view by another one (must be voided)"""
+    o = xv1.ref(v); v.c.r = v.c.r * 1.0; return o
+
+
+def crash(v):
+    """planted: raises (must be voided, the batch goes on)"""
+    return xv1.ref(v)['nothing']
+
+
+def late(v, row=3000):
+    """mechanics of T0: v1 until a fixed row of the view, then capped at level 1 on every fifth row"""
+    o = xv1.ref(v); B = np.array(o['B'], dtype=float); k = np.cumsum(np.ones(v.T)) - 1
+    q = (k >= row) & (k % 5 == 0); B[q] = np.minimum(B[q], 1.0); o['B'] = B; return o
