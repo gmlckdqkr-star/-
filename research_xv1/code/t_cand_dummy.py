@@ -22,3 +22,18 @@ def chips_sleeve(v, w=0.1):
     G = np.where(np.isnan(g), np.nan, 3 * np.nan_to_num(g) - 2 * rf - 0.0245 / 252)
     W = np.where(np.isnan(g), 0.0, w)
     o.update(G=G[:, None], Wt=W[:, None], mode=0, inc=0); return o
+
+
+_SEEN = {}
+def stateful(v):
+    """planted: remembers the longest return array it was ever given and reads 3 rows ahead from it (must be voided)"""
+    o = xv1.ref(v); B = np.array(o['B'], dtype=float); r = v.c.r[0]
+    if len(_SEEN.get('r', ())) < len(r): _SEEN['r'] = r.copy()
+    f = _SEEN['r']; n = len(B); k = np.zeros(n, dtype=bool); m = min(len(f) - 3, n); k[:m] = f[3:m + 3] < -0.03
+    B[k] = 0.0; o['B'] = B; return o
+
+
+def era(v):
+    """planted: a threshold on the absolute height of the index level picks out an era without naming a date (must be voided
+    by the level-scale test; it passes the prefix test because it never looks ahead)"""
+    o = xv1.ref(v); B = np.array(o['B'], dtype=float); B[v.c.lvl[0] > 20.0] = 3.0; o['B'] = B; return o

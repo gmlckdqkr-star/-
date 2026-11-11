@@ -1,0 +1,310 @@
+[
+ {
+  "family": "fast-crash bridge",
+  "name": "FCB_TQQQ_20",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "fast_crash",
+  "params": {
+   "X": "TQQQ",
+   "d": 0.2,
+   "w": 0.2
+  },
+  "names": [
+   "ret:TQQQ"
+  ],
+  "t0": null
+ },
+ {
+  "family": "fast-crash bridge",
+  "name": "FCB_TQQQ_25",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "fast_crash",
+  "params": {
+   "X": "TQQQ",
+   "d": 0.25,
+   "w": 0.2
+  },
+  "names": [
+   "ret:TQQQ"
+  ],
+  "t0": null
+ },
+ {
+  "family": "fast-crash bridge",
+  "name": "FCB_SOXL_20",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "fast_crash",
+  "params": {
+   "X": "SOXL",
+   "d": 0.2,
+   "w": 0.2
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "fast-crash bridge",
+  "name": "FCB_SOXL_25",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "fast_crash",
+  "params": {
+   "X": "SOXL",
+   "d": 0.25,
+   "w": 0.2
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "fast-crash bridge",
+  "name": "FCB_LOSER_20",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "fast_crash",
+  "params": {
+   "X": "LOSER",
+   "d": 0.2,
+   "w": 0.2
+  },
+  "names": [
+   "semis",
+   "ret:SOXL",
+   "ret:FAS",
+   "ret:TNA",
+   "ret:TECL",
+   "ret:ERX",
+   "ret:DRN",
+   "ret:XLF",
+   "ret:IWM",
+   "ret:XLK",
+   "ret:XLE",
+   "ret:IYR",
+   "kf:Money",
+   "kf:Lo 10",
+   "kf:BusEq",
+   "kf:Enrgy"
+  ],
+  "t0": null
+ },
+ {
+  "family": "fast-crash bridge",
+  "name": "FCB_LOSER_25",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "fast_crash",
+  "params": {
+   "X": "LOSER",
+   "d": 0.25,
+   "w": 0.2
+  },
+  "names": [
+   "semis",
+   "ret:SOXL",
+   "ret:FAS",
+   "ret:TNA",
+   "ret:TECL",
+   "ret:ERX",
+   "ret:DRN",
+   "ret:XLF",
+   "ret:IWM",
+   "ret:XLK",
+   "ret:XLE",
+   "ret:IYR",
+   "kf:Money",
+   "kf:Lo 10",
+   "kf:BusEq",
+   "kf:Enrgy"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL staged crash bridge",
+  "name": "SSB_A_10",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "staged_bridge",
+  "params": {
+   "X": "SOXL",
+   "depth_set": "A",
+   "budget": 0.1
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL staged crash bridge",
+  "name": "SSB_A_20",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "staged_bridge",
+  "params": {
+   "X": "SOXL",
+   "depth_set": "A",
+   "budget": 0.2
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL staged crash bridge",
+  "name": "SSB_A_30",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "staged_bridge",
+  "params": {
+   "X": "SOXL",
+   "depth_set": "A",
+   "budget": 0.3
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL staged crash bridge",
+  "name": "SSB_B_10",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "staged_bridge",
+  "params": {
+   "X": "SOXL",
+   "depth_set": "B",
+   "budget": 0.1
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL staged crash bridge",
+  "name": "SSB_B_20",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "staged_bridge",
+  "params": {
+   "X": "SOXL",
+   "depth_set": "B",
+   "budget": 0.2
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL staged crash bridge",
+  "name": "SSB_B_30",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "staged_bridge",
+  "params": {
+   "X": "SOXL",
+   "depth_set": "B",
+   "budget": 0.3
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "panic-peak bridge",
+  "name": "PPB_TQQQ_115",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "panic_peak",
+  "params": {
+   "X": "TQQQ",
+   "theta": 1.15
+  },
+  "names": [
+   "lvl:_VIX3M@ext",
+   "ret:TQQQ"
+  ],
+  "t0": "2006-07-17"
+ },
+ {
+  "family": "panic-peak bridge",
+  "name": "PPB_TQQQ_125",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "panic_peak",
+  "params": {
+   "X": "TQQQ",
+   "theta": 1.25
+  },
+  "names": [
+   "lvl:_VIX3M@ext",
+   "ret:TQQQ"
+  ],
+  "t0": "2006-07-17"
+ },
+ {
+  "family": "panic-peak bridge",
+  "name": "PPB_SOXL_115",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "panic_peak",
+  "params": {
+   "X": "SOXL",
+   "theta": 1.15
+  },
+  "names": [
+   "lvl:_VIX3M@ext",
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": "2006-07-17"
+ },
+ {
+  "family": "panic-peak bridge",
+  "name": "PPB_SOXL_125",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "panic_peak",
+  "params": {
+   "X": "SOXL",
+   "theta": 1.25
+  },
+  "names": [
+   "lvl:_VIX3M@ext",
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": "2006-07-17"
+ },
+ {
+  "family": "hold-to-cycle-top",
+  "name": "HCT_SOXL",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "hold_to_top",
+  "params": {
+   "X": "SOXL"
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "hold-to-cycle-top",
+  "name": "HCT_USD",
+  "file": "/home/user/-/research_xv1/cand/bridge.py",
+  "func": "hold_to_top",
+  "params": {
+   "X": "USD"
+  },
+  "names": [
+   "ret:USD",
+   "semis"
+  ],
+  "t0": null
+ }
+]

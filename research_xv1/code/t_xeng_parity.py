@@ -15,7 +15,7 @@ for nm, mk in (('v1', xv1.ref), ('3x', xv1.hold3)):
         d = int(np.sum(b[:, :4] != a[:, :4])); worst = max(worst, d)
         print('%-3s %-40s differing cells (equity, level, brake target, base) %d' % (nm, kw, d))
 print('PARITY', 'OK (bit-identical)' if worst == 0 else 'FAIL', worst)
-h = xv1._call(xv1.hold1, v); rec = xv1._run(v, h, 0, v.T)
+h = xv1._call(xv1.hold1, v); rec = xv1._run(v, h)
 lv = np.cumprod(1 + h['G'][xv1.WARM:, 0])
 print('1x hold instrument: bought at close of day 2, never traded: equity / index ratio last day %.6f (expect %.6f = (1 - 0.003))' %
       (rec[-1, 0] / (lv[-1] / lv[2]), 1 - 0.003))

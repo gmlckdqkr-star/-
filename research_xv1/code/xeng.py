@@ -159,6 +159,8 @@ def runx(r, rf, B, feat, G, Wt, RB, up, dn, mode, inc, delay, cost, tax, D, harv
             rec[t - WARM, 0] = E; rec[t - WARM, 1] = cur; rec[t - WARM, 2] = tg; rec[t - WARM, 3] = b
             rec[t - WARM, 4] = E - due - tax * max(real + unr - D, 0.0)
             rec[t - WARM, 5] = se / max(E, 1e-300)
+            rec[t - WARM, 6] = v0 / max(E, 1e-300)        # actual weight of the 3x fund
+            for j in range(J): rec[t - WARM, 7 + j] = ve[j] / max(E, 1e-300)   # actual weight of each extra instrument
     return ntr, taxp, costp
 
 
@@ -166,7 +168,8 @@ OFF = 1e9                                 # band value that switches a side off
 
 
 def run(r, rf, B, feat, bfn, bp, G=None, Wt=None, mode=0, inc=0, RB=None, up=None, dn=None, **kw):
-    """single path. returns rec (T - WARM, 6)."""
+    """single path. returns rec (T - WARM, 7 + J): equity, level in force, target level, base signal, liquidation value,
+    total weight of the extra instruments, weight of the 3x fund, weight of each extra instrument."""
     import beng
     p, D = beng._args(kw); T = len(r)
     if G is None: G = np.zeros((T, 1)); Wt = np.zeros((T, 1))
@@ -174,7 +177,7 @@ def run(r, rf, B, feat, bfn, bp, G=None, Wt=None, mode=0, inc=0, RB=None, up=Non
     if RB is None: RB = np.zeros((T, J))
     up = np.full(J, OFF) if up is None else np.asarray(up, dtype=np.float64).reshape(J)
     dn = np.full(J, OFF) if dn is None else np.asarray(dn, dtype=np.float64).reshape(J)
-    rec = np.zeros((T - WARM, 6))
+    rec = np.zeros((T - WARM, 7 + J))
     runx(np.ascontiguousarray(r), np.ascontiguousarray(rf), np.ascontiguousarray(B, dtype=np.float64), np.ascontiguousarray(feat),
          np.ascontiguousarray(G, dtype=np.float64), np.ascontiguousarray(Wt, dtype=np.float64), np.ascontiguousarray(RB, dtype=np.float64), up, dn,
          int(mode), int(inc), int(p['delay']), p['cost'],

@@ -2,7 +2,8 @@
 
 Run only after (1) the structure is registered, (2) the evaluator and the sealing passed the independent verification and
 (3) m_checks.py passed. The script itself refuses to score if the registered hashes do not match or if v1 fails the prefix test.
-Scalars only; nothing is produced for the sealed blocks 10 and 12."""
+Scalars only, from the design account (one continuous account on the calendar without the sealed rows); nothing is produced
+for the sealed blocks 10 and 12."""
 import sys, os, json
 sys.path.insert(0, '/home/user/-/research_xv1/code')
 import xv1
@@ -13,7 +14,7 @@ now = xv1.env_hashes()
 bad = [k for k in reg['data'] if now['data'].get(k) != reg['data'][k]] + [k for k in reg['code'] if now['code'].get(k) != reg['code'][k]]
 if bad or now['packages'] != reg['packages']:
     print('HASH MISMATCH', bad, now['packages']); sys.exit(2)
-pt = xv1.prefix_test(xv1.ref, n_rand=200, seed=int(reg['prereg_sha256'][:8], 16))
+pt = xv1.prefix_test(xv1.ref, n_rand=200, seed=int(reg['prereg_sha256'][:8], 16), step=21, n_event=10 ** 6)
 print('prefix test of v1 on the full calendar:', pt)
 if pt['result'] != 'PASS': sys.exit(3)
 
@@ -31,5 +32,8 @@ for nm, s in T['sets'].items():
     a, b = s['D_A_v1_minus_3x'], s['D_B_v1_minus_1x']
     print('%-16s n=%5d  v1 %s  1x %s  3x %s | v1-3x %s [%s, %s] | v1-1x %s [%s, %s]' % (
         nm, s['n'], pc(s['v1']), pc(s['hold1']), pc(s['hold3']), pc(a['d']), pc(a['ci90'][0]), pc(a['ci90'][1]), pc(b['d']), pc(b['ci90'][0]), pc(b['ci90'][1])))
+    a, b = s['tax0']['D_A_v1_minus_3x'], s['tax0']['D_B_v1_minus_1x']
+    print('%-16s tax 0:   v1 %s  1x %s  3x %s | v1-3x %s [%s, %s] | v1-1x %s [%s, %s]' % (
+        '', pc(s['tax0']['v1']), pc(s['tax0']['hold1']), pc(s['tax0']['hold3']), pc(a['d']), pc(a['ci90'][0]), pc(a['ci90'][1]), pc(b['d']), pc(b['ci90'][0]), pc(b['ci90'][1])))
 print('model check (actual TQQQ minus modelled 3x, annualised log, scored rows):')
 for r in T['model_check']: print('  ', r)

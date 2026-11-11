@@ -1,0 +1,30 @@
+SBC_P1 | SBC-CAP | rows_B_differs 114 rows_w_nonzero 0 w_changes 0 episodes 0 weight_or_B_before_t0 0 t0 None rebuild_mismatch_vs_v1 0 {'result': 'PASS', 'cuts': 236, 'failed_cuts': 0, 'differing_cells': 0} 9s
+SBC_P2 | SBC-CAP | rows_B_differs 114 rows_w_nonzero 0 w_changes 0 episodes 0 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 282, 'failed_cuts': 0, 'differing_cells': 0} 5s
+SBC_P3 | SBC-CAP | rows_B_differs 99 rows_w_nonzero 0 w_changes 0 episodes 0 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 234, 'failed_cuts': 0, 'differing_cells': 0} 4s
+SBC_P4 | SBC-CAP | rows_B_differs 72 rows_w_nonzero 0 w_changes 0 episodes 0 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 254, 'failed_cuts': 0, 'differing_cells': 0} 5s
+SBC_P5 | SBC-CAP | rows_B_differs 96 rows_w_nonzero 0 w_changes 0 episodes 0 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 243, 'failed_cuts': 0, 'differing_cells': 0} 5s
+SBC_P6 | SBC-CAP | rows_B_differs 302 rows_w_nonzero 0 w_changes 0 episodes 0 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 196, 'failed_cuts': 0, 'differing_cells': 0} 4s
+CHIP_P1 | CHIP-LEAD-12M | rows_B_differs 0 rows_w_nonzero 771 w_changes 26 episodes 13 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 306, 'failed_cuts': 0, 'differing_cells': 0} 15s
+CHIP_P2 | CHIP-LEAD-12M | rows_B_differs 0 rows_w_nonzero 771 w_changes 26 episodes 13 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 306, 'failed_cuts': 0, 'differing_cells': 0} 14s
+CHIP_P3 | CHIP-LEAD-12M | rows_B_differs 0 rows_w_nonzero 1316 w_changes 38 episodes 19 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 323, 'failed_cuts': 0, 'differing_cells': 0} 15s
+CHIP_P4 | CHIP-LEAD-12M | rows_B_differs 0 rows_w_nonzero 771 w_changes 26 episodes 13 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 306, 'failed_cuts': 0, 'differing_cells': 0} 16s
+CHIP_P5 | CHIP-LEAD-12M | rows_B_differs 0 rows_w_nonzero 771 w_changes 26 episodes 13 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 306, 'failed_cuts': 0, 'differing_cells': 0} 14s
+CHIP_P6 | CHIP-LEAD-12M | rows_B_differs 0 rows_w_nonzero 1011 w_changes 36 episodes 18 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 322, 'failed_cuts': 0, 'differing_cells': 0} 14s
+TMF_P1 | Gated TMF fill | rows_B_differs 0 rows_w_nonzero 988 w_changes 81 episodes 25 weight_or_B_before_t0 0 t0 1986-10-31  {'result': 'PASS', 'cuts': 391, 'failed_cuts': 0, 'differing_cells': 0} 12s
+TMF_P2 | Gated TMF fill | rows_B_differs 0 rows_w_nonzero 988 w_changes 77 episodes 25 weight_or_B_before_t0 0 t0 1986-10-31  {'result': 'PASS', 'cuts': 386, 'failed_cuts': 0, 'differing_cells': 0} 11s
+TMF_P3 | Gated TMF fill | rows_B_differs 0 rows_w_nonzero 988 w_changes 81 episodes 25 weight_or_B_before_t0 0 t0 1986-10-31  {'result': 'PASS', 'cuts': 391, 'failed_cuts': 0, 'differing_cells': 0} 11s
+TMF_P4 | Gated TMF fill | rows_B_differs 0 rows_w_nonzero 1811 w_changes 135 episodes 49 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 422, 'failed_cuts': 0, 'differing_cells': 0} 12s
+TMF_P5 | Gated TMF fill | rows_B_differs 0 rows_w_nonzero 607 w_changes 81 episodes 36 weight_or_B_before_t0 0 t0 1986-10-31  {'result': 'PASS', 'cuts': 408, 'failed_cuts': 0, 'differing_cells': 0} 12s
+TMF_P6 | Gated TMF fill | rows_B_differs 0 rows_w_nonzero 1811 w_changes 135 episodes 49 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 422, 'failed_cuts': 0, 'differing_cells': 0} 12s
+SOXLSL_S1 | SOXL crash-rebound sleeve | rows_B_differs 0 rows_w_nonzero 455 w_changes 24 episodes 12 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 325, 'failed_cuts': 0, 'differing_cells': 0} 17s
+SOXLSL_S2 | SOXL crash-rebound sleeve | rows_B_differs 0 rows_w_nonzero 415 w_changes 16 episodes 8 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 311, 'failed_cuts': 0, 'differing_cells': 0} 17s
+SOXLSL_S3 | SOXL crash-rebound sleeve | rows_B_differs 0 rows_w_nonzero 718 w_changes 38 episodes 19 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 354, 'failed_cuts': 0, 'differing_cells': 0} 19s
+SOXLSL_S4 | SOXL crash-rebound sleeve | rows_B_differs 0 rows_w_nonzero 536 w_changes 24 episodes 12 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 328, 'failed_cuts': 0, 'differing_cells': 0} 17s
+SOXLSL_S5 | SOXL crash-rebound sleeve | rows_B_differs 0 rows_w_nonzero 449 w_changes 24 episodes 12 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 325, 'failed_cuts': 0, 'differing_cells': 0} 18s
+SOXLSL_S6 | SOXL crash-rebound sleeve | rows_B_differs 0 rows_w_nonzero 421 w_changes 18 episodes 9 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 315, 'failed_cuts': 0, 'differing_cells': 0} 18s
+MID_P1 | MIDTERM-ADD | rows_B_differs 0 rows_w_nonzero 229 w_changes 57 episodes 25 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 339, 'failed_cuts': 0, 'differing_cells': 0} 10s
+MID_P2 | MIDTERM-ADD | rows_B_differs 0 rows_w_nonzero 325 w_changes 55 episodes 20 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 356, 'failed_cuts': 0, 'differing_cells': 0} 10s
+MID_P3 | MIDTERM-ADD | rows_B_differs 0 rows_w_nonzero 191 w_changes 45 episodes 20 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 332, 'failed_cuts': 0, 'differing_cells': 0} 9s
+MID_P4 | MIDTERM-ADD | rows_B_differs 0 rows_w_nonzero 229 w_changes 54 episodes 25 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 334, 'failed_cuts': 0, 'differing_cells': 0} 9s
+MID_P5 | MIDTERM-ADD | rows_B_differs 0 rows_w_nonzero 170 w_changes 49 episodes 21 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 330, 'failed_cuts': 0, 'differing_cells': 0} 9s
+MID_P6 | MIDTERM-ADD | rows_B_differs 0 rows_w_nonzero 229 w_changes 57 episodes 25 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 339, 'failed_cuts': 0, 'differing_cells': 0} 9s

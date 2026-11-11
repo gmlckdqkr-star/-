@@ -29,7 +29,8 @@ All arrays have T rows: 300 warm-up rows, then the account days. Row t holds wha
   `'cal:month'` (1..12), `'cal:dom'` (day of month), `'cal:dow'` (Monday 0), `'cal:ymod4'` (calendar year modulo 4): periodic
   calendar fields only. No absolute date or year exists for a candidate.
 - `v.ref_target` the level v1 wants after its brake, decided at the close of row t (a continuous number in 0..3; it comes
-  into force two rows later, rounded to the engine's order grid); `v.ref_held` the level v1 actually holds on row t. Both come from v1 alone in a continuous shadow account. Use these
+  into force two rows later, rounded to the engine's order grid); `v.ref_held` the level v1 actually holds on row t. Both come from v1 alone in a shadow account (the same
+  kind of account the candidate is scored in; the evaluator takes care of that). Use these
   wherever a rule says "v1's level", "v1 is idle / in cash / at 1x". `xv1.ref(v)['B']` is v1's base signal before the brake.
 - `v.feat` the 12 brake features of v1 (read-only), `v.T` the number of rows.
 - Shared helpers in `cand/cbase.py` (import cbase as cm): `cm.lev(r1, rf, L)` modelled fund, `cm.fund(v, 'SOXL', r1, 3)` fund
@@ -39,7 +40,9 @@ All arrays have T rows: 300 warm-up rows, then the account days. Row t holds wha
 Forbidden: dates, row numbers as calendar positions, files, caches, module-level data, random numbers without a fixed seed,
 anything from the future. No date literal in the source. Use only causal operations: no centred windows, no backward
 fill, no shift to negative lags, no statistic over the whole array (quantile, mean, max, z-score with full-sample moments).
-An expanding or rolling statistic that ends at row t is fine. Rows where an input is NaN: hold the v1 level / weight 0.
+An expanding or rolling statistic that ends at row t is fine. No threshold on the absolute height of a price level
+(index level, a cumulative product of returns): use ratios (level / its average, level / its past value). The evaluator
+multiplies `v.c.lvl` by 2 and by 0.5 and voids a candidate whose outputs change. Thresholds on yields, spreads, VIX are fine. Rows where an input is NaN: hold the v1 level / weight 0.
 
 ## What it returns
 - `B` (T,) base level for the 3x Nasdaq fund, values in [0, 3] (v1 uses 0, 1, 3). The brake `bfn` with parameters `bp` runs

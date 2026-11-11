@@ -1,14 +1,17 @@
-"""XV1 sealed block evaluator, version 2 (see PREREG_XV1_STRUCTURE.md).
+"""XV1 sealed block evaluator, version 4 (see PREREG_XV1_STRUCTURE.md).
 
 Accounts
-  stage A   one continuous account 1986-01-02 .. 2015-12-31 on the calendar CUT at 2015-12-31 (no later row is passed to
-            candidate code or to the engine). It scores blocks 0-9.
-  own       blocks 10-13 each have their own account for candidate and reference: started on the block's first trading day
-            with equity 1 in cash, no position, no tax basis, empty brake memory, zero tax deduction; the ov.WARM rows before
-            the block are engine warm-up (only the signal and feature rows are read there). Blocks 11 and 13 are DESIGN.
-            Blocks 10 and 12 are SEALED: they are run only inside open_g3().
+  design    ONE continuous account on the design calendar = the evaluator calendar with every row of the sealed blocks
+            (10 and 12) removed and the remaining rows joined in order. Signal, weights and features are computed once,
+            causally, on the full calendar and then indexed by the design rows; the return of a removed row never reaches
+            the engine. It scores every DESIGN and WEAK block for candidate, reference and the holds. A join is the start
+            of a block, so the 63 unscored rows of that block cover it. Up to 2015-12-31 it is the full-calendar account.
+  main      the full calendar in one account. Run only inside open_g3(); scores blocks 10 and 12 only.
 Score       V = liquidation value of the account (equity minus 22% tax on every realised and unrealised gain not yet taxed);
             x_k = ln(V_k / V_{k-1}) on scored rows (row rank inside its block >= 63).
+            d  = candidate minus reference.
+            d* = candidate minus the static-equivalent benchmark (reference plus the candidate's MEAN extra holdings held
+                 constantly): the part of d that comes from WHEN the candidate holds, not from how much it holds on average.
 Outputs     scalars per non-sealed block and per registered set only. No equity level, peak, cumulative figure or array ever
             leaves this module (design-block sub-block means of paired differences are the one exception: they are design
             material and are needed for the family-wise test).
@@ -27,10 +30,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xeng, xdata
 
 CAL_START, ACC_START, CAL_END = '1984-01-03', '1986-01-02', '2026-08-31'
+REG_END = '2026-08-31'                 # the registered calendar end (the block table is checked only on this calendar)
 A_END, OLD_END = '2015-12-31', '2014-12-31'
 Y0, BLEN, EMB, NB = 1986, 3, 63, 14
 SEALED = (10, 12)                      # 2016-18, 2022-24
-OWN = (10, 11, 12, 13)                 # blocks with their own account
 ACTIVE_MIN = 20                        # active rows that make an active block
 FAM_CORR = 0.7                         # |correlation| of design sub-block means at or above which two configurations are one family
 DESIGN = (1, 3, 5, 7, 9, 11, 13)
@@ -38,6 +41,8 @@ WEAK = (0, 2, 4, 6, 8)
 ENGINE = dict(cspr=10.0)               # idle cash earns nothing (owner rule 2026-11-11); everything else = beng.F1
 STRESS = dict(base={}, cost2=dict(cost=0.006), delay3=dict(delay=3), delay1=dict(delay=1), tax0=dict(tax=0.0))
 G1_STRESS = ('cost2', 'delay3', 'delay1', 'tax0')
+D_MIN_G1, D_MIN_G3 = 0.010, 0.005      # smallest set score d (log growth per year) for G1 and for CONFIRMED
+DRAWS = 200000                         # sign-flip draws of the family-wise test
 OUT = '/mnt/project-files/research/xv1/'
 WARM = ov.WARM
 assert WARM == xeng.WARM == beng.WARM
@@ -54,8 +59,9 @@ def years_of(b): return '%d-%02d' % (Y0 + BLEN * b, (Y0 + BLEN * b + BLEN - 1) %
 
 # ------------------------------------------------------------------------------------------------ calendar and views
 _FR = {}
-def frame(end=CAL_END):
+def frame(end=None):
     """X of the MS1 real-path chain on the calendar rows CAL_START..end."""
+    end = end or CAL_END
     if end not in _FR:
         R, M = jp.calendar(CAL_START, end); _FR[end] = jp.mkX(R, M, 'NDX')
     return _FR[end]
@@ -70,10 +76,12 @@ class View:
     """What candidate code may read: c (ov.Ctx, P = 1), m (the macro levels y10, y3m, cs of the REF chain) and x (dict of
     registered extra inputs), all on the same T rows (WARM warm-up rows, then the account days). The calendar position
     (c.ii) and the dates are removed on purpose."""
-    def __init__(s, X, extra=None):
+    def __init__(s, X, extra=None, account='design'):
         i0 = int(X.index.searchsorted(pd.Timestamp(ACC_START))) - WARM
         s.c = ov.Ctx(X, ov.flags_hist(X), np.arange(i0, len(X))[None, :]); s.c.ii = None
-        s.T = s.c.T
+        s.T = s.c.T; s.account = account
+        blk = np.asarray((X.index[i0 + WARM:].year - Y0) // BLEN)
+        s.keep = np.r_[np.arange(WARM), WARM + np.flatnonzero(~np.isin(blk, SEALED))]   # view rows of the design account
         s.x = {k: np.ascontiguousarray(v[i0:len(X)]) for k, v in (extra or {}).items()}
         s.m = {k: np.ascontiguousarray(X[k].values[i0:len(X)], dtype=np.float64) for k in ('y10', 'y3m', 'cs')}   # macro levels of the REF chain
         s._feat = None; s._shadow = None
@@ -84,11 +92,16 @@ class View:
         return s._feat
 
     def _sh(s):
-        """v1 alone in one continuous shadow account over the view rows (level paths only; warm-up rows are 0)"""
+        """v1 alone in a shadow account (level paths only; warm-up rows are 0). In a design view the rows of the design
+        account carry v1's levels in the design account (the account the candidate is scored in) and the removed rows carry
+        its levels in the full-calendar account; in a main view every row carries the full-calendar account."""
         if s._shadow is None:
-            m = _call(ref, s); rec = _run(s, m, 0, s.T)
-            pad = lambda a: np.ascontiguousarray(np.r_[np.zeros(WARM), a])
-            s._shadow = (pad(rec[:, 2]), pad(np.maximum(rec[:, 1], 0.0)))
+            m = _call(ref, s); rec = _run(s, m)
+            tg = np.r_[np.zeros(WARM), rec[:, 2]]; hd = np.r_[np.zeros(WARM), np.maximum(rec[:, 1], 0.0)]
+            if s.account == 'design' and len(s.keep) < s.T:
+                rd = _run(s, m, s.keep); kd = s.keep[WARM:]
+                tg[kd] = rd[:, 2]; hd[kd] = np.maximum(rd[:, 1], 0.0)
+            s._shadow = (np.ascontiguousarray(tg), np.ascontiguousarray(hd))
         return s._shadow
 
     @property
@@ -118,7 +131,9 @@ BLOCK_TABLE = (  # (b, first row, first scored row, last row, rows): part of the
 
 
 def check_calendar(cal, upto=NB):
-    """stop if the calendar does not reproduce the registered block table (blocks 0 .. upto-1)"""
+    """stop if the calendar does not reproduce the registered block table (blocks 0 .. upto-1). Only the registered
+    calendar is checked; a self-test that shortens the calendar skips it."""
+    if CAL_END != REG_END: return
     got = {r['b']: (r['first'], r['first_scored'], r['last'], r['rows']) for r in cal.table()}
     for b, f, fs, l, n in BLOCK_TABLE[:upto]:
         if got.get(b) != (f, fs, l, n): raise RuntimeError('calendar does not match the registered block table at block %d' % b)
@@ -202,11 +217,11 @@ def _call(make, v):
     return o
 
 
-def _run(v, m, a, b, own=False, **stress):
-    k = dict(ENGINE); k.update(stress); k['fstep'] = m['fstep']
-    if own: k['W0'] = None                             # zero deduction for a block account (conservative, scale-free)
-    return xeng.run(v.c.r[0][a:b], v.c.rf[0][a:b], m['B'][a:b], v.feat[a:b], m['bfn'], m['bp'], G=m['G'][a:b], Wt=m['Wt'][a:b],
-                    mode=m['mode'], inc=m['inc'], RB=m['RB'][a:b], up=m['up'], dn=m['dn'], **k)
+def _run(v, m, rows=None, **stress):
+    """the account on the given view rows, joined in order (None = every row of the view)"""
+    k = dict(ENGINE); k.update(stress); k['fstep'] = m['fstep']; q = slice(None) if rows is None else rows
+    return xeng.run(v.c.r[0][q], v.c.rf[0][q], m['B'][q], v.feat[q], m['bfn'], m['bp'], G=m['G'][q], Wt=m['Wt'][q],
+                    mode=m['mode'], inc=m['inc'], RB=m['RB'][q], up=m['up'], dn=m['dn'], **k)
 
 
 def _x(V):
@@ -214,38 +229,37 @@ def _x(V):
 
 
 # ------------------------------------------------------------------------------------------------ accounts (internal)
-def _stage_a(make, names=(), **stress):
-    """blocks 0-9 from one continuous account on the calendar cut at 2015-12-31"""
-    X = frame(A_END); v = View(X, extras(names, X.index)); m = _call(make, v); cal = Cal(acc_dates(X))
-    if A_END == '2015-12-31': check_calendar(cal, 10)
-    rec = _run(v, m, 0, v.T, **stress); x = _x(rec[:, 4]); out = {}
-    for b in range(10):
-        r = cal.rows(b); sc = r[cal.rank[r] >= EMB]
-        out[b] = dict(x=x[sc], lev=rec[sc, 1], w=rec[sc, 5], date=cal.dates[sc])
+def _blocks_of(v, m, rec, rows, cal, blocks):
+    """per-block material on the scored rows: x (daily log growth of V), level in force, total weight of the extras, actual
+    weight of the 3x fund (a0) and of each extra (aw), daily return of each extra (g) and of the 3x fund (r3), dates.
+    rows = view rows of the account days of rec (after the warm-up)."""
+    days = rows - WARM; x = _x(rec[:, 4]); out = {}
+    r3 = 3 * v.c.r[0][rows] - 2 * v.c.rf[0][rows] - beng.F1['er3'] / 252
+    for b in blocks:
+        p = np.flatnonzero(cal.blk[days] == b); sc = p[cal.rank[days[p]] >= EMB]
+        if not len(p): continue
+        out[int(b)] = dict(x=x[sc], lev=rec[sc, 1], w=rec[sc, 5], a0=rec[sc, 6], aw=rec[sc, 7:], g=m['G'][rows[sc]], r3=r3[sc],
+                           date=cal.dates[days[sc]])
     return out
 
 
-_G3 = object()
-def _own(make, names, blocks, _token=None, **stress):
-    """blocks with their own account. Sealed blocks need the token that only open_g3() holds."""
-    for b in blocks:
-        if b not in OWN: raise ValueError('not an own-account block')
-        if b in SEALED and _token is not _G3: raise PermissionError('sealed block')
+def _design_account(make, names=(), **stress):
+    """every non-sealed block from the design account (one continuous account on the calendar without the sealed rows)"""
     X = frame(CAL_END); v = View(X, extras(names, X.index)); m = _call(make, v); cal = Cal(acc_dates(X)); check_calendar(cal)
-    return {b: _block_account(v, m, cal, b, **stress) for b in blocks}
+    rec = _run(v, m, v.keep, **stress)
+    return _blocks_of(v, m, rec, v.keep[WARM:], cal, [b for b in range(NB) if b not in SEALED])
 
 
-def _block_account(v, m, cal, b, **stress):
-    """own account of block b: view row = account day + WARM, so the WARM view rows before the block are the engine warm-up"""
-    r = cal.rows(b); p0, p1 = int(r[0]), int(r[-1])
-    rec = _run(v, m, p0, p1 + WARM + 1, own=True, **stress)
-    x = _x(rec[:, 4]); sc = np.arange(EMB, len(r))
-    return dict(x=x[sc], lev=rec[sc, 1], w=rec[sc, 5], date=cal.dates[r][sc])
+_G3 = object()
+def _main_account(make, names=(), _token=None, **stress):
+    """the sealed blocks from the main account (full calendar). Needs the token that only open_g3() holds."""
+    if _token is not _G3: raise PermissionError('sealed block')
+    X = frame(CAL_END); v = View(X, extras(names, X.index), account='main'); m = _call(make, v); cal = Cal(acc_dates(X)); check_calendar(cal)
+    rec = _run(v, m, None, **stress)
+    return _blocks_of(v, m, rec, np.arange(WARM, v.T), cal, SEALED)
 
 
-def _open_blocks(make, names=(), **stress):
-    """all non-sealed blocks: 0-9 (stage A) + 11, 13 (own accounts)"""
-    o = _stage_a(make, names, **stress); o.update(_own(make, names, (11, 13), **stress)); return o
+def _open_blocks(make, names=(), **stress): return _design_account(make, names, **stress)
 
 
 # ------------------------------------------------------------------------------------------------ statistics
@@ -273,6 +287,33 @@ def test_t(ds, L):
 def p_t(ds): return max(test_t(ds, 63)[1], test_t(ds, 126)[1])
 
 
+def sub_sums(d, L=63):
+    k = max(len(d) // L, 1); j = np.minimum(np.arange(len(d)) // L, k - 1)
+    return np.bincount(j, weights=d, minlength=k)
+
+
+def p_sf(ds, seed=0):
+    """sign-flip check for differences that live in a few episodes: the sums of the 63-row sub-blocks that are not 0 get
+    random signs; p = share of sign assignments whose total is at least the observed total (all 2^A assignments up to
+    A = 16 active sub-blocks, otherwise 100,000 drawn ones)."""
+    s = np.concatenate([sub_sums(d) for d in ds if len(d)]) if any(len(d) for d in ds) else np.zeros(0)
+    s = s[s != 0]; A = len(s)
+    if A == 0: return 1.0
+    obs = float(s.sum()); tol = 1e-12 * float(np.abs(s).sum())
+    if A <= 16:
+        S = ((np.arange(2 ** A)[:, None] >> np.arange(A)) & 1) * 2.0 - 1.0
+        return float(np.mean(S @ s >= obs - tol))
+    g = np.random.default_rng(seed); cnt = 0
+    for _ in range(20):
+        S = g.integers(0, 2, (5000, A)) * 2.0 - 1.0; cnt += int(np.sum(S @ s >= obs - tol))
+    return (1 + cnt) / (100000 + 1)
+
+
+def p_test(ds, seed=0):
+    """test T as used by G3 and the forward readings: the larger of the Student-t p (L = 63 and 126) and the sign-flip p"""
+    return max(p_t(ds), p_sf(ds, seed))
+
+
 def ci90(ds):
     """two-sided 90% interval of the annualised paired difference (the wider of L = 63 and 126)"""
     best = None
@@ -288,7 +329,7 @@ def te_of(ds):
     return float(np.sqrt(252.0) * d.std(ddof=1)) if len(d) > 1 else 0.0
 
 
-def max_t(M, draws=20000, seed=0):
+def max_t(M, draws=DRAWS, seed=0):
     """family-wise adjusted p-values (single-step max-t, sign flips of whole sub-blocks, common to all configurations).
     M (k, N): sub-block means of the paired differences of N configurations on the same k design sub-blocks."""
     k, N = M.shape; ssq = (M * M).sum(0)
@@ -326,7 +367,7 @@ def reference_table():
     R = _ref_blocks(); H1 = _open_blocks(hold1); H3 = _open_blocks(hold3); rows = []
     R0 = _ref_blocks('tax0'); H10 = _open_blocks(hold1, **STRESS['tax0']); H30 = _open_blocks(hold3, **STRESS['tax0'])
     for b in sorted(R):
-        r = dict(b=b, years=years_of(b), kind=kind_of(b), account='own' if b in OWN else 'continuous', n=int(len(R[b]['x'])),
+        r = dict(b=b, years=years_of(b), kind=kind_of(b), account='design', n=int(len(R[b]['x'])),
                  v1=ann([R[b]['x']]), hold1=ann([H1[b]['x']]), hold3=ann([H3[b]['x']]))
         r.update(_levels(R[b])); rows.append(r)
     sets = {}
@@ -373,11 +414,19 @@ class Config:
         body = json.dumps(dict(func=s.func, params=s.params, names=list(s.names), t0=s.t0), sort_keys=True)
         return hashlib.sha256(open(s.file, 'rb').read() + body.encode()).hexdigest()
 
+    def _load(s):
+        d = os.path.dirname(s.file)
+        if d not in sys.path: sys.path.insert(0, d)
+        sp = importlib.util.spec_from_file_location('xv1cand_' + hashlib.sha256(s.file.encode()).hexdigest()[:8], s.file)
+        m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m); return m
+
     def make(s, v):
-        if s.file not in _MOD:
-            sp = importlib.util.spec_from_file_location('xv1cand_' + hashlib.sha256(s.file.encode()).hexdigest()[:8], s.file)
-            m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m); _MOD[s.file] = m
+        if s.file not in _MOD: _MOD[s.file] = s._load()
         return getattr(_MOD[s.file], s.func)(v, **s.params)
+
+    def fresh(s):
+        """the same candidate bound to a newly executed copy of its module (no state left from earlier calls)"""
+        f = getattr(s._load(), s.func); return lambda v: f(v, **s.params)
 
     def to_dict(s):
         return dict(family=s.family, name=s.name, file=s.file, func=s.func, params=s.params, names=list(s.names), t0=s.t0, hash=s.hash)
@@ -412,6 +461,27 @@ def _paired(cand, refb, blocks, t0=None):
         if t0 is not None: d = d[cand[b]['date'] >= pd.Timestamp(t0)]
         ds.append(d)
     return ds
+
+
+def _neutral(cand, refb, blocks, t0=None):
+    """d*: daily differences against the static-equivalent benchmark of the set. The benchmark is the reference account plus,
+    held constantly, the candidate's mean extra holdings on the scored rows of the set (after T0): the mean difference in
+    the actual weight of the 3x fund (it can be negative) times the 3x fund's daily return, plus each extra instrument's
+    mean actual weight times its daily return; financed from cash that earns nothing. A candidate that only holds more (or
+    other things) on average has d* near 0; d* keeps what comes from the timing of the holdings."""
+    sel = {}
+    for b in blocks:
+        k = np.ones(len(cand[b]['x']), dtype=bool) if t0 is None else np.asarray(cand[b]['date'] >= pd.Timestamp(t0))
+        sel[b] = k
+    n = sum(int(sel[b].sum()) for b in blocks)
+    if n == 0: return [np.zeros(0) for b in blocks]
+    d0 = sum(float(np.sum((cand[b]['a0'] - refb[b]['a0'])[sel[b]])) for b in blocks) / n
+    wj = sum(cand[b]['aw'][sel[b]].sum(axis=0) for b in blocks) / n
+    out = []
+    for b in blocks:
+        k = sel[b]; c = d0 * cand[b]['r3'][k] + cand[b]['g'][k] @ wj
+        out.append(cand[b]['x'][k] - np.log(np.maximum(np.exp(refb[b]['x'][k]) + c, 1e-12)))
+    return out
 
 
 def _active(cand, refb, blocks, t0=None):
@@ -466,49 +536,57 @@ def _pre_t0(C, R, t0):
 
 
 def _design(c, stress=True):
-    """G1 material of one configuration on D7 (scalars) and its L = 63 sub-block means (design material)"""
+    """G1 material of one configuration on D7 (scalars) and its L = 63 sub-block means of d and of d* (design material)"""
     C = _open_blocks(c.make, c.names); R = _ref_blocks()
-    if _pre_t0(C, R, c.t0): return dict(void='differs from the reference before T0'), None
+    if _pre_t0(C, R, c.t0): return dict(void='differs from the reference before T0'), None, None
     ds = _paired(C, R, DESIGN, c.t0); o = _gate_stats(ds, _active(C, R, DESIGN, c.t0), DESIGN)
+    dn = _neutral(C, R, DESIGN, c.t0); o['d_star'] = ann(dn); o['t63_star'] = test_t(dn, 63)[0]
     o['cand'] = ann([C[b]['x'] for b in DESIGN]); o['ref'] = ann([R[b]['x'] for b in DESIGN])
     o['extra_weight_mean'] = float(np.mean(np.concatenate([C[b]['w'] for b in DESIGN])))
     o['level_mean'] = float(np.mean(np.concatenate([C[b]['lev'] for b in DESIGN])))
+    o['fund_weight_mean_minus_ref'] = float(np.mean(np.concatenate([C[b]['a0'] - R[b]['a0'] for b in DESIGN])))
     if stress:
         for sname in G1_STRESS:
             Cs = _open_blocks(c.make, c.names, **STRESS[sname]); o['d_' + sname] = ann(_paired(Cs, _ref_blocks(sname), DESIGN, c.t0))
-    sub = np.concatenate([sub_means(d, 63) for d in _paired(C, R, DESIGN, None)])   # rows before T0 are exactly 0 (checked above)
-    return o, sub
+    full = lambda dd: np.concatenate([np.r_[np.zeros(len(C[b]['x']) - len(d)), d] for b, d in zip(DESIGN, dd)])   # rows before T0 count as 0
+    cut = np.cumsum([len(C[b]['x']) for b in DESIGN])[:-1]
+    sub = np.concatenate([sub_means(d, 63) for d in np.split(full(ds), cut)])
+    subn = np.concatenate([sub_means(d, 63) for d in np.split(full(dn), cut)])
+    return o, sub, subn
 
 
 def run_batch(k, stress=True):
     """score every configuration of registered batch k on D7 and apply G1. Scalars only (plus the design sub-block means)."""
-    cfgs, sha = load_batch(k); alpha = 0.05 / 2 ** k; seed = int(sha[:8], 16); res = {}; subs = {}
+    cfgs, sha = load_batch(k); alpha = 0.05 / 2 ** k; seed = int(sha[:8], 16); res = {}; subs = {}; subn = {}
     raw = raw_extras_test([n for c in cfgs for n in c.names], seed=seed)
     for c in cfgs:
         h = c.hash; ledger(dict(kind='score', cfg=h, set='design', batch=k))
         if any(n in raw['failed'] for n in c.names): res[h] = dict(void='raw-level test of an extra input'); res[h].update(family=c.family, name=c.name); continue
-        pt = prefix_test(c.make, c.names, n_rand=60, seed=seed)
+        pt = prefix_test(c.make, c.names, n_rand=60, seed=seed, fresh=c.fresh)
         if pt['result'] != 'PASS': res[h] = dict(void='prefix test', prefix=pt)
+        elif scale_test(c.make, c.names) != 'PASS': res[h] = dict(void='level-scale test', prefix=pt)
         else:
-            o, sub = _design(c, stress); o['prefix'] = pt; res[h] = o
-            if sub is not None: subs[h] = sub
+            o, sub, sn = _design(c, stress); o['prefix'] = pt; res[h] = o
+            if sub is not None: subs[h] = sub; subn[h] = sn
         res[h].update(family=c.family, name=c.name)
     live = list(subs)
     if live:
-        t0, pf = max_t(np.stack([subs[h] for h in live], axis=1), 20000, seed)
-        for h, a, b in zip(live, t0, pf): res[h].update(t63_family=float(a), p_family=float(b))
+        t0, pf = max_t(np.stack([subs[h] for h in live], axis=1), DRAWS, seed)
+        t1, pn = max_t(np.stack([subn[h] for h in live], axis=1), DRAWS, seed + 1)
+        for h, a, b, a1, b1 in zip(live, t0, pf, t1, pn): res[h].update(t63_family=float(a), p_family=float(b), t63_star_family=float(a1), p_star_family=float(b1))
     for h in live:
         o = res[h]
-        o['g1'] = dict(a=bool(o['d'] > 0 and o['active_blocks'] >= 3 and o['n'] >= 1500), b=bool(not o['harm']), c=bool(o['p_family'] <= alpha),
+        o['g1'] = dict(a=bool(o['d'] >= D_MIN_G1 and o['active_blocks'] >= 3 and o['n'] >= 1500), b=bool(not o['harm']), c=bool(o['p_family'] <= alpha),
                        d=bool(all(o['d_' + sn] > 0 for sn in G1_STRESS)) if stress else None)
         o['g1_pass'] = all(v for v in o['g1'].values() if v is not None) and stress
-    key = lambda h: (res[h]['p_family'], -res[h]['t63_family'], h)
-    adv = []                                             # at most one configuration per family goes on
+        o['kind'] = 'timing' if (o['d_star'] > 0 and o['p_star_family'] <= alpha) else 'exposure'
+    key = lambda h: (res[h]['kind'] != 'timing', res[h]['p_family'], -res[h]['t63_family'], h)
+    adv = []                                             # at most one configuration per family goes on (timing kind first)
     for h in sorted([h for h in live if res[h]['g1_pass']], key=key):
         if all(res[g]['family'] != res[h]['family'] and _corr(subs[g], subs[h]) < FAM_CORR for g in adv): adv.append(h)
     for h in res:
         res[h]['advance'] = h in adv
-        ledger(dict(kind='g1', cfg=h, batch=k, passed=bool(res[h].get('g1_pass', False)), advance=res[h]['advance']))
+        ledger(dict(kind='g1', cfg=h, batch=k, passed=bool(res[h].get('g1_pass', False)), advance=res[h]['advance'], type=res[h].get('kind')))
     out = dict(batch=k, sha256=sha, alpha=alpha, n=len(cfgs), raw_extras_test=raw, results=res, sub_means={h: [float(x) for x in subs[h]] for h in live})
     os.makedirs(OUT + 'results', exist_ok=True); json.dump(out, open(OUT + 'results/batch_%d.json' % k, 'w'), indent=1)
     return out
@@ -524,7 +602,8 @@ def weak_eval(c):
     ledger(dict(kind='score', cfg=h, set='weak'))
     C = _open_blocks(c.make, c.names); R = _ref_blocks()
     o = _gate_stats(_paired(C, R, WEAK, c.t0), _active(C, R, WEAK, c.t0), WEAK)
-    o['g2_pass'] = bool(o['d'] > 0 and not o['harm'])
+    o['set_limit'] = float(-1.0 * o['te'] * np.sqrt(252.0 / o['n'])) if o['n'] else 0.0
+    o['g2_pass'] = bool(o['d'] >= o['set_limit'] and not o['harm'])        # no-harm check: the reference was chosen on these blocks
     ledger(dict(kind='g2', cfg=h, passed=o['g2_pass']))
     return o
 
@@ -535,7 +614,7 @@ def authorise_g3(c, owner_message_id):
 
 
 def open_g3(c):
-    """one G3 opening: blocks 10 and 12 from their own accounts. Output: one word."""
+    """one G3 opening: blocks 10 and 12 from the main account (full calendar). Output: one word."""
     h = c.hash; L = read_ledger()
     reg = json.load(open(OUT + 'HASHES.json')); now = env_hashes()
     if any(now['data'].get(k) != v for k, v in reg['data'].items()) or any(now['code'].get(k) != v for k, v in reg['code'].items()):
@@ -555,11 +634,18 @@ def open_g3(c):
     if h not in opened:
         mine = _sub_of(h)
         if any(_corr(mine, _sub_of(g)) >= FAM_CORR for g in set(opened)): raise PermissionError('same family as an opened configuration')
+    seed = int(h[:8], 16)
+    if prefix_test(c.make, c.names, n_rand=60, seed=seed, fresh=c.fresh, account='main')['result'] != 'PASS':
+        raise PermissionError('prefix test of the main view failed')              # nothing has been opened: no opening is used up
     ledger(dict(kind='G3-OPEN', cfg=h, retry=h in opened))
-    Cs = _own(c.make, c.names, SEALED, _token=_G3); Rs = _own(ref, (), SEALED, _token=_G3)
+    Cs = _main_account(c.make, c.names, _token=_G3); Rs = _main_account(ref, (), _token=_G3)
     ds = _paired(Cs, Rs, SEALED, c.t0); act = _active(Cs, Rs, SEALED, c.t0); d = ann(ds)
+    dn = _neutral(Cs, Rs, SEALED, c.t0)
     fail = d <= 0 or any(_harm(x, a, 1.0)[0] for x, a in zip(ds, act))
-    word = 'FAIL' if fail else ('CONFIRMED' if p_t(ds) <= 0.05 / 3 else 'INCONCLUSIVE')
+    if fail: word = 'FAIL'
+    elif d >= D_MIN_G3 and p_test(ds, seed) <= 0.05 / 3:
+        word = 'CONFIRMED' if (ann(dn) > 0 and p_test(dn, seed + 1) <= 0.05 / 3) else 'CONSISTENT'
+    else: word = 'INCONCLUSIVE'
     ledger(dict(kind='G3-VERDICT', cfg=h, verdict=word))
     return word
 
@@ -583,14 +669,16 @@ def _noise(X, E, r, g):
 def _same(a, b): return int(a.shape != b.shape) if a.shape != b.shape else int(np.sum(~((a == b) | (np.isnan(a) & np.isnan(b)))))
 
 
-def prefix_test(make, names=(), end=CAL_END, n_rand=60, seed=0, noise=True, step=0, n_event=200):
+def prefix_test(make, names=(), end=None, n_rand=60, seed=0, noise=True, step=0, n_event=200, fresh=None, account='design'):
     """A candidate may not read anything after the row it decides on. For each cut row the calendar is (a) cut after it and
     (b) kept but filled with noise after it; signal, weights, features, level path and account path on the rows up to the cut
     must be bit-identical to the full run. Cuts: the last row of every block and n_rand drawn rows (both variants), and, with
     deletion only, every `step`-th row and the candidate's own event rows (rows on which its signal, a target weight or a
     rebalance flag changes; the row itself and the row before; at most n_event event rows, drawn with the same generator):
-    a look-ahead hidden behind a threshold shows only at the rows where it acts. Returns PASS / FAIL and counts only."""
-    X = frame(end); E = extras(names, X.index); v = View(X, E); m = _call(make, v); rec = _run(v, m, 0, v.T)
+    a look-ahead hidden behind a threshold shows only at the rows where it acts. With `fresh`, the cut runs use a newly
+    executed copy of the candidate module and go from the earliest cut to the latest, so nothing kept from a call that saw
+    more rows can reach a call that should see fewer. Returns PASS / FAIL and counts only."""
+    X = frame(end or CAL_END); E = extras(names, X.index); v = View(X, E, account); m = _call(make, v); rec = _run(v, m)
     i0 = len(X) - v.T; cal = Cal(acc_dates(X)); g = np.random.default_rng(seed)
     ends = set([int(cal.rows(b)[-1]) for b in range(NB) if len(cal.rows(b))][:-1])
     drawn = set(int(q) for q in g.integers(260, cal.n - 1, n_rand))
@@ -600,30 +688,42 @@ def prefix_test(make, names=(), end=CAL_END, n_rand=60, seed=0, noise=True, step
     if len(evq) > n_event: evq = g.choice(evq, n_event, replace=False)
     events = set(int(q) for q in evq) | set(int(q) - 1 for q in evq)
     cuts = sorted(ends | drawn | events | (set(range(260, cal.n - 1, step)) if step else set()))
-    cells = 0; bad = 0; ncut = 0
+    cells = 0; bad = 0; ncut = 0; mk = fresh() if fresh is not None else make
     for q in cuts:
         r = i0 + WARM + q                                # calendar row of the cut
         variants = [(X.iloc[:r + 1], {k: a[:r + 1] for k, a in E.items()})]
         if noise and (q in ends or q in drawn): variants.append(_noise(X, E, r, g))
         for Xc, Ec in variants:
-            vc = View(Xc, Ec); mc = _call(make, vc); T = q + WARM + 1; ncut += 1
+            vc = View(Xc, Ec, account); mc = _call(mk, vc); T = q + WARM + 1; ncut += 1
             n = _same(mc['B'][:T], m['B'][:T]) + _same(mc['G'][:T], m['G'][:T]) + _same(mc['Wt'][:T], m['Wt'][:T]) + \
                 _same(mc['RB'][:T], m['RB'][:T]) + _same(mc['up'], m['up']) + _same(mc['dn'], m['dn']) + \
                 _same(vc.feat[:T], v.feat[:T]) + _same(mc['bp'], m['bp']) + int(mc['fstep'] != m['fstep']) + \
                 int(mc['mode'] != m['mode']) + int(mc['inc'] != m['inc'])
-            rc = _run(vc, mc, 0, T)
+            rc = _run(vc, mc, slice(0, T))
             n += _same(rc[:, (0, 1, 4, 5)], rec[:q + 1][:, (0, 1, 4, 5)])
             cells += n; bad += int(n > 0)
     return dict(result='PASS' if bad == 0 else 'FAIL', cuts=ncut, failed_cuts=bad, differing_cells=int(cells))
 
 
-def raw_extras_test(names, end=CAL_END, n_rand=12, seed=0):
+def scale_test(make, names=(), end=None):
+    """Level-scale test: the index level handed to candidate code (view.c.lvl) is multiplied by 2 and by 0.5 (exact in
+    binary arithmetic). Every output of the candidate and the features must stay bit-identical: a rule may use ratios of
+    the level, never its absolute height (a threshold on the height would pick out an era without naming a date)."""
+    X = frame(end or CAL_END); E = extras(names, X.index); v = View(X, E); m = _call(make, v); bad = 0
+    for f in (2.0, 0.5):
+        vs = View(X, E); vs.c.lvl = vs.c.lvl * f; vs.c._c.clear(); ms = _call(make, vs)
+        bad += sum(_same(ms[k], m[k]) for k in ('B', 'G', 'Wt', 'RB', 'up', 'dn', 'bp')) + _same(vs.feat, v.feat)
+        bad += int(ms['fstep'] != m['fstep']) + int(ms['mode'] != m['mode']) + int(ms['inc'] != m['inc'])
+    return 'PASS' if bad == 0 else 'FAIL'
+
+
+def raw_extras_test(names, end=None, n_rand=12, seed=0):
     """Raw-level causality of the registered extra inputs. The raw readers behind xdata are wrapped in memory; every raw row
     dated after a cut is (a) deleted and (b) replaced by noise; the aligned arrays up to the cut must be bit-identical.
     Returns PASS / FAIL per name and counts only."""
     names = tuple(sorted(set(names)))
     if not names: return dict(result='PASS', rebuilds=0, failed={})
-    X = frame(end); idx = X.index; cal = Cal(acc_dates(X)); i0 = len(idx) - cal.n; g = np.random.default_rng(seed)
+    X = frame(end or CAL_END); idx = X.index; cal = Cal(acc_dates(X)); i0 = len(idx) - cal.n; g = np.random.default_rng(seed)
     xdata._c.clear(); base = extras(names, idx)
     cuts = set([int(cal.rows(b)[-1]) for b in range(NB) if len(cal.rows(b))][:-1]) | set(int(q) for q in g.integers(260, cal.n - 1, n_rand))
     tr = set()                                           # rows around every start, end or gap of an input (where a fill could reach back)

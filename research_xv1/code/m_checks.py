@@ -8,7 +8,8 @@
  D1   coverage of each raw series, per year: calendar rows with no raw observation and the longest run of them.
  D2   rows whose value comes from a monthly fallback series.
  D3   value checks (zeros, jumps, duplicates).
- TAX  dates of the yearly tax payments of the stage-A account.
+ P4   the design account from the full calendar equals the account of the calendar cut at 2015-12-31 on blocks 0-9 (boolean).
+ TAX  dates of the yearly tax payments of the design account.
 (P2, the identity with the locked MS1 run and the recorded 30.53%, is t_old_end.py.)"""
 import sys, json, numpy as np, pandas as pd
 sys.path.insert(0, '/home/user/-/research_xv1/code')
@@ -26,7 +27,7 @@ def verdict(name, ok, **kw):
 def chain(end):
     """X, flags, features, v1 signal and account on the calendar up to `end` (fresh build, no module cache)"""
     R, M = jp.calendar(xv1.CAL_START, end); X = jp.mkX(R, M, 'NDX'); v = xv1.View(X); m = xv1._call(xv1.ref, v)
-    return X, ov.flags_hist(X), v, m, xv1._run(v, m, 0, v.T)
+    return X, ov.flags_hist(X), v, m, xv1._run(v, m)
 
 def diff(a, b): return xv1._same(np.asarray(a, dtype=float), np.asarray(b, dtype=float))
 
@@ -147,10 +148,18 @@ info = dict(rf_negative=by(X['rf'] < 0), ndx_return_exactly_0=by(r == 0))
 ok3 = all(v['total_after2014'] == 0 for v in stop.values()) and all(v['max_year_after2014'] <= v['max_year_upto2014'] for v in thr.values())
 verdict('D3', ok3, stop_counts=stop, threshold_counts=thr, report_only=info)
 
-# ---------------------------------------------------------------- TAX (stage A account: 252-row tax years from 1986-01-02)
-ca = xv1.Cal(xv1.acc_dates(xv1.frame(xv1.A_END)))
-pay = [(str(ca.dates[k].date()), int(ca.blk[k]), bool(ca.rank[k] < xv1.EMB)) for k in range(252, ca.n, 252)]
-print('TAX  stage-A payment rows (date, block, inside the 63-row embargo): %d payments, %d inside an embargo' % (len(pay), sum(p[2] for p in pay)))
+# ---------------------------------------------------------------- P4 (design account = cut-calendar account on blocks 0-9)
+if not DRY:
+    full = xv1._design_account(xv1.ref); keep = xv1.CAL_END; xv1.CAL_END = xv1.A_END
+    try: cutacc = xv1._design_account(xv1.ref)
+    finally: xv1.CAL_END = keep
+    same = all(np.array_equal(full[b][f], cutacc[b][f]) for b in range(10) for f in ('x', 'lev', 'w', 'a0'))
+    verdict('P4', same and sorted(full) == [b for b in range(xv1.NB) if b not in xv1.SEALED], blocks_scored=sorted(full), blocks_0_9_bit_identical=same)
+
+# ---------------------------------------------------------------- TAX (design account: 252-row tax years from 1986-01-02 on the design calendar)
+ca = xv1.Cal(xv1.acc_dates(xv1.frame(END))); days = np.flatnonzero(~np.isin(ca.blk, xv1.SEALED))
+pay = [(str(ca.dates[days[k]].date()), int(ca.blk[days[k]]), bool(ca.rank[days[k]] < xv1.EMB)) for k in range(252, len(days), 252)]
+print('TAX  design-account payment rows (date, block, inside the 63-row embargo): %d payments, %d inside an embargo' % (len(pay), sum(p[2] for p in pay)))
 print('     ', ' '.join('%s%s' % (p[0], '*' if p[2] else '') for p in pay))
 print('ALL CHECKS', 'PASS' if OK else 'FAIL')
 sys.exit(0 if OK else 1)

@@ -15,7 +15,7 @@ X = xv1.frame(xv1.OLD_END); v = xv1.View(X); m = xv1._call(xv1.ref, v); cal = xv
 print('days', cal.n, cal.dates[0].date(), cal.dates[-1].date())
 c = std.contexts()['real_ndx_86_14']
 fin, EE = std.engine(c, *std.s085(c), cspr=10.0)
-rec = xv1._run(v, m, 0, v.T)
+rec = xv1._run(v, m)
 print('1 equity path xeng vs std.engine: differing cells', int(np.sum(rec[:, 0] != EE[0])), '| max abs rel diff %.1e' % np.max(np.abs(rec[:, 0] / EE[0] - 1)))
 k = dict(beng.F1); k['fstep'] = m['fstep']; k['cspr'] = 10.0; pp, D = beng._args(k)
 def final(n):
