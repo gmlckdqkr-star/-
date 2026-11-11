@@ -1,0 +1,90 @@
+signal KF20C real_ndx_86_14 {'signal_days_share': 0.3844, 'trig_share': 0.0343, 'on_share': 0.0886, 'active_share': 0.0711}
+   episode {'start': '2004-05-10', 'days': 32}
+   episode {'start': '2004-10-18', 'days': 38}
+   episode {'start': '2004-12-13', 'days': 27}
+   episode {'start': '2005-03-29', 'days': 29}
+   episode {'start': '2005-10-18', 'days': 31}
+   episode {'start': '2006-05-17', 'days': 52}
+   episode {'start': '2007-07-03', 'days': 72}
+   episode {'start': '2007-11-21', 'days': 31}
+   episode {'start': '2008-08-14', 'days': 2}
+   episode {'start': '2010-05-25', 'days': 29}
+   episode {'start': '2011-02-11', 'days': 1}
+   episode {'start': '2011-02-15', 'days': 29}
+   episode {'start': '2011-03-30', 'days': 4}
+   episode {'start': '2011-04-14', 'days': 4}
+   episode {'start': '2011-05-25', 'days': 32}
+   episode {'start': '2011-08-08', 'days': 3}
+   episode {'start': '2011-09-07', 'days': 18}
+   episode {'start': '2012-05-30', 'days': 26}
+   episode {'start': '2013-04-05', 'days': 27}
+   episode {'start': '2013-06-24', 'days': 33}
+signal KF60C real_ndx_86_14 {'signal_days_share': 0.379, 'trig_share': 0.0342, 'on_share': 0.0603, 'active_share': 0.0432}
+   episode {'start': '2004-12-06', 'days': 45}
+   episode {'start': '2005-10-24', 'days': 28}
+   episode {'start': '2006-06-16', 'days': 31}
+   episode {'start': '2006-09-28', 'days': 4}
+   episode {'start': '2007-08-07', 'days': 72}
+   episode {'start': '2011-03-09', 'days': 14}
+   episode {'start': '2011-03-30', 'days': 4}
+   episode {'start': '2011-04-14', 'days': 26}
+   episode {'start': '2011-08-05', 'days': 4}
+   episode {'start': '2011-09-07', 'days': 57}
+   episode {'start': '2013-06-14', 'days': 31}
+signal KF20A real_ndx_86_14 {'signal_days_share': 0.3844, 'trig_share': 0.0254, 'on_share': 0.0533, 'active_share': 0.0056}
+   episode {'start': '2009-03-30', 'days': 6}
+   episode {'start': '2009-06-04', 'days': 22}
+   episode {'start': '2009-07-14', 'days': 12}
+   episode {'start': '2013-10-15', 'days': 1}
+signal KF60A real_ndx_86_14 {'signal_days_share': 0.379, 'trig_share': 0.031, 'on_share': 0.0473, 'active_share': 0.0072}
+   episode {'start': '2009-03-10', 'days': 12}
+   episode {'start': '2009-03-30', 'days': 6}
+   episode {'start': '2009-06-04', 'days': 22}
+   episode {'start': '2009-07-14', 'days': 12}
+   episode {'start': '2013-10-15', 'days': 1}
+KF20C  base    real_ndx_86_14  cagr 0.2821 v1 0.3108 dmed -0.0287 dmean -0.0287 changed 1 win 0.000 mdd -0.700 (11s)
+KF60C  base    real_ndx_86_14  cagr 0.2925 v1 0.3108 dmed -0.0183 dmean -0.0183 changed 1 win 0.000 mdd -0.700 (11s)
+KF20A  base    real_ndx_86_14  cagr 0.3130 v1 0.3108 dmed +0.0022 dmean +0.0022 changed 1 win 1.000 mdd -0.700 (11s)
+KF60A  base    real_ndx_86_14  cagr 0.3189 v1 0.3108 dmed +0.0081 dmean +0.0081 changed 1 win 1.000 mdd -0.700 (11s)
+KF20C  delay3  real_ndx_86_14  cagr 0.2902 v1 0.3085 dmed -0.0183 dmean -0.0183 changed 1 win 0.000 mdd -0.736 (11s)
+KF60C  delay3  real_ndx_86_14  cagr 0.2913 v1 0.3085 dmed -0.0172 dmean -0.0172 changed 1 win 0.000 mdd -0.729 (11s)
+KF20A  delay3  real_ndx_86_14  cagr 0.3102 v1 0.3085 dmed +0.0017 dmean +0.0017 changed 1 win 1.000 mdd -0.736 (11s)
+KF60A  delay3  real_ndx_86_14  cagr 0.3115 v1 0.3085 dmed +0.0030 dmean +0.0030 changed 1 win 1.000 mdd -0.736 (11s)
+KF20C  cost2x  real_ndx_86_14  cagr 0.2707 v1 0.2990 dmed -0.0283 dmean -0.0283 changed 1 win 0.000 mdd -0.705 (11s)
+KF60C  cost2x  real_ndx_86_14  cagr 0.2805 v1 0.2990 dmed -0.0186 dmean -0.0186 changed 1 win 0.000 mdd -0.712 (11s)
+KF20A  cost2x  real_ndx_86_14  cagr 0.3017 v1 0.2990 dmed +0.0027 dmean +0.0027 changed 1 win 1.000 mdd -0.705 (11s)
+KF60A  cost2x  real_ndx_86_14  cagr 0.3022 v1 0.2990 dmed +0.0032 dmean +0.0032 changed 1 win 1.000 mdd -0.705 (11s)
+diag {"base_rate": {"n": 131, "p": 0.6183206106870229}, "KF20C": {"n_on": 27, "p_on": 0.6296296296296297, "n_off": 104, "p_off": 0.6153846153846154}, "KF60C": {"n_on": 21, "p_on": 0.6190476190476191, "n_off": 110, "p_off": 0.6181818181818182}, "KF20A": {"n_on": 18, "p_on": 0.7222222222222222, "n_off": 113, "p_off": 0.6017699115044248}, "KF60A": {"n_on": 17, "p_on": 0.7647058823529411, "n_off": 114, "p_off": 0.5964912280701754}}
+signal KF20C dev250_path {'signal_days_share': 0.2778, 'trig_share': 0.0256, 'on_share': 0.063, 'active_share': 0.0501}
+signal KF60C dev250_path {'signal_days_share': 0.2363, 'trig_share': 0.0282, 'on_share': 0.0482, 'active_share': 0.038}
+signal KF20A dev250_path {'signal_days_share': 0.2778, 'trig_share': 0.026, 'on_share': 0.0623, 'active_share': 0.0045}
+signal KF60A dev250_path {'signal_days_share': 0.2363, 'trig_share': 0.0291, 'on_share': 0.0481, 'active_share': 0.004}
+KF20C  base    dev250_path     cagr 0.1568 v1 0.1616 dmed -0.0057 dmean -0.0065 changed 500 win 0.332 mdd -0.827 dd80 0.692 (17s)
+KF60C  base    dev250_path     cagr 0.1619 v1 0.1616 dmed -0.0029 dmean -0.0014 changed 494 win 0.419 mdd -0.827 dd80 0.696 (17s)
+KF20A  base    dev250_path     cagr 0.1656 v1 0.1616 dmed +0.0003 dmean +0.0015 changed 414 win 0.662 mdd -0.829 dd80 0.732 (18s)
+KF60A  base    dev250_path     cagr 0.1643 v1 0.1616 dmed +0.0001 dmean +0.0015 changed 371 win 0.698 mdd -0.830 dd80 0.740 (19s)
+KF20C  delay3  dev250_path     cagr 0.1576 v1 0.1634 dmed -0.0066 dmean -0.0055 changed 498 win 0.353 mdd -0.823 dd80 0.712 (20s)
+KF60C  delay3  dev250_path     cagr 0.1627 v1 0.1634 dmed -0.0006 dmean -0.0008 changed 496 win 0.466 mdd -0.824 dd80 0.700 (20s)
+KF20A  delay3  dev250_path     cagr 0.1641 v1 0.1634 dmed +0.0000 dmean +0.0006 changed 410 win 0.527 mdd -0.832 dd80 0.748 (21s)
+KF60A  delay3  dev250_path     cagr 0.1632 v1 0.1634 dmed +0.0000 dmean +0.0006 changed 366 win 0.590 mdd -0.830 dd80 0.746 (22s)
+KF20C  cost2x  dev250_path     cagr 0.1443 v1 0.1514 dmed -0.0069 dmean -0.0080 changed 499 win 0.321 mdd -0.828 dd80 0.714 (23s)
+KF60C  cost2x  dev250_path     cagr 0.1521 v1 0.1514 dmed -0.0025 dmean -0.0019 changed 496 win 0.425 mdd -0.827 dd80 0.724 (24s)
+KF20A  cost2x  dev250_path     cagr 0.1538 v1 0.1514 dmed +0.0003 dmean +0.0015 changed 411 win 0.647 mdd -0.831 dd80 0.748 (24s)
+KF60A  cost2x  dev250_path     cagr 0.1547 v1 0.1514 dmed +0.0002 dmean +0.0017 changed 372 win 0.707 mdd -0.830 dd80 0.748 (25s)
+signal KF20C dev250_glued {'signal_days_share': 0.2778, 'trig_share': 0.0197, 'on_share': 0.0473, 'active_share': 0.0391}
+signal KF60C dev250_glued {'signal_days_share': 0.2363, 'trig_share': 0.0286, 'on_share': 0.0465, 'active_share': 0.0376}
+signal KF20A dev250_glued {'signal_days_share': 0.2778, 'trig_share': 0.0179, 'on_share': 0.0423, 'active_share': 0.0017}
+signal KF60A dev250_glued {'signal_days_share': 0.2363, 'trig_share': 0.0243, 'on_share': 0.0397, 'active_share': 0.0018}
+KF20C  base    dev250_glued    cagr 0.2597 v1 0.2703 dmed -0.0120 dmean -0.0122 changed 500 win 0.238 mdd -0.732 dd80 0.066 (30s)
+KF60C  base    dev250_glued    cagr 0.2634 v1 0.2703 dmed -0.0087 dmean -0.0097 changed 499 win 0.253 mdd -0.735 dd80 0.060 (31s)
+KF20A  base    dev250_glued    cagr 0.2705 v1 0.2703 dmed +0.0000 dmean +0.0005 changed 387 win 0.612 mdd -0.739 dd80 0.068 (32s)
+KF60A  base    dev250_glued    cagr 0.2711 v1 0.2703 dmed +0.0001 dmean +0.0007 changed 347 win 0.735 mdd -0.740 dd80 0.068 (33s)
+KF20C  delay3  dev250_glued    cagr 0.2688 v1 0.2778 dmed -0.0098 dmean -0.0115 changed 499 win 0.253 mdd -0.736 dd80 0.086 (34s)
+KF60C  delay3  dev250_glued    cagr 0.2705 v1 0.2778 dmed -0.0085 dmean -0.0096 changed 499 win 0.271 mdd -0.738 dd80 0.090 (35s)
+KF20A  delay3  dev250_glued    cagr 0.2772 v1 0.2778 dmed +0.0000 dmean -0.0003 changed 386 win 0.472 mdd -0.740 dd80 0.098 (36s)
+KF60A  delay3  dev250_glued    cagr 0.2771 v1 0.2778 dmed +0.0000 dmean -0.0001 changed 348 win 0.580 mdd -0.741 dd80 0.098 (36s)
+KF20C  cost2x  dev250_glued    cagr 0.2463 v1 0.2554 dmed -0.0129 dmean -0.0130 changed 500 win 0.214 mdd -0.737 dd80 0.084 (38s)
+KF60C  cost2x  dev250_glued    cagr 0.2505 v1 0.2554 dmed -0.0083 dmean -0.0100 changed 499 win 0.242 mdd -0.740 dd80 0.082 (39s)
+KF20A  cost2x  dev250_glued    cagr 0.2564 v1 0.2554 dmed +0.0000 dmean +0.0008 changed 385 win 0.644 mdd -0.745 dd80 0.088 (39s)
+KF60A  cost2x  dev250_glued    cagr 0.2572 v1 0.2554 dmed +0.0003 dmean +0.0009 changed 349 win 0.754 mdd -0.746 dd80 0.082 (40s)
+VERDICT {"KF20C": {"PASS": false, "path_headline_gt_v1": false, "path_mean_d_gt0": false, "path_win_changed_ge55": false, "real_gt_v1": false, "delay3_holds": false, "cost2x_holds": false}, "KF60C": {"PASS": false, "path_headline_gt_v1": true, "path_mean_d_gt0": false, "path_win_changed_ge55": false, "real_gt_v1": false, "delay3_holds": false, "cost2x_holds": false}, "KF20A": {"PASS": true, "path_headline_gt_v1": true, "path_mean_d_gt0": true, "path_win_changed_ge55": true, "real_gt_v1": true, "delay3_holds": true, "cost2x_holds": true}, "KF60A": {"PASS": false, "path_headline_gt_v1": true, "path_mean_d_gt0": true, "path_win_changed_ge55": true, "real_gt_v1": true, "delay3_holds": false, "cost2x_holds": true}} 40s
