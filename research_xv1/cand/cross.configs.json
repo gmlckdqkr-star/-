@@ -1,0 +1,473 @@
+[
+ {
+  "family": "SBC-CAP",
+  "name": "SBC_P1",
+  "file": "cand/cross.py",
+  "func": "sbc_cap",
+  "params": {
+   "N": 252,
+   "Lr": 3.0
+  },
+  "names": [],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "SBC-CAP",
+  "name": "SBC_P2",
+  "file": "cand/cross.py",
+  "func": "sbc_cap",
+  "params": {
+   "N": 252,
+   "Lr": 2.0
+  },
+  "names": [],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "SBC-CAP",
+  "name": "SBC_P3",
+  "file": "cand/cross.py",
+  "func": "sbc_cap",
+  "params": {
+   "N": 504,
+   "Lr": 3.0
+  },
+  "names": [],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "SBC-CAP",
+  "name": "SBC_P4",
+  "file": "cand/cross.py",
+  "func": "sbc_cap",
+  "params": {
+   "N": 126,
+   "Lr": 3.0
+  },
+  "names": [],
+  "t0": "1986-04-02"
+ },
+ {
+  "family": "SBC-CAP",
+  "name": "SBC_P5",
+  "file": "cand/cross.py",
+  "func": "sbc_cap",
+  "params": {
+   "N": 252,
+   "Lr": 3.0,
+   "chip": true
+  },
+  "names": [
+   "semis"
+  ],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "SBC-CAP",
+  "name": "SBC_P6",
+  "file": "cand/cross.py",
+  "func": "sbc_cap",
+  "params": {
+   "N": 252,
+   "Lr": 3.0,
+   "always": true
+  },
+  "names": [],
+  "t0": null
+ },
+ {
+  "family": "CHIP-LEAD-12M",
+  "name": "CHIP_P1",
+  "file": "cand/cross.py",
+  "func": "chip_lead",
+  "params": {
+   "D": 0.4,
+   "a": 0.3333333333333333,
+   "H": 252,
+   "lead": true
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "CHIP-LEAD-12M",
+  "name": "CHIP_P2",
+  "file": "cand/cross.py",
+  "func": "chip_lead",
+  "params": {
+   "D": 0.4,
+   "a": 0.5,
+   "H": 252,
+   "lead": true
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "CHIP-LEAD-12M",
+  "name": "CHIP_P3",
+  "file": "cand/cross.py",
+  "func": "chip_lead",
+  "params": {
+   "D": 0.3,
+   "a": 0.3333333333333333,
+   "H": 252,
+   "lead": true
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "CHIP-LEAD-12M",
+  "name": "CHIP_P4",
+  "file": "cand/cross.py",
+  "func": "chip_lead",
+  "params": {
+   "D": 0.5,
+   "a": 0.3333333333333333,
+   "H": 252,
+   "lead": true
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "CHIP-LEAD-12M",
+  "name": "CHIP_P5",
+  "file": "cand/cross.py",
+  "func": "chip_lead",
+  "params": {
+   "D": 0.4,
+   "a": 0.3333333333333333,
+   "H": 504,
+   "lead": true
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": "1986-07-17"
+ },
+ {
+  "family": "CHIP-LEAD-12M",
+  "name": "CHIP_P6",
+  "file": "cand/cross.py",
+  "func": "chip_lead",
+  "params": {
+   "D": 0.4,
+   "a": 0.3333333333333333,
+   "H": 252,
+   "lead": false
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "Gated TMF fill",
+  "name": "TMF_P1",
+  "file": "cand/cross.py",
+  "func": "tmf_fill",
+  "params": {
+   "veh": "TMF",
+   "cap": 1.0
+  },
+  "names": [
+   "ret:TMF",
+   "ret:TLT"
+  ],
+  "t0": "1986-10-31"
+ },
+ {
+  "family": "Gated TMF fill",
+  "name": "TMF_P2",
+  "file": "cand/cross.py",
+  "func": "tmf_fill",
+  "params": {
+   "veh": "TMF",
+   "cap": 0.5
+  },
+  "names": [
+   "ret:TMF",
+   "ret:TLT"
+  ],
+  "t0": "1986-10-31"
+ },
+ {
+  "family": "Gated TMF fill",
+  "name": "TMF_P3",
+  "file": "cand/cross.py",
+  "func": "tmf_fill",
+  "params": {
+   "veh": "TLT",
+   "cap": 1.0
+  },
+  "names": [
+   "ret:TLT"
+  ],
+  "t0": "1986-10-31"
+ },
+ {
+  "family": "Gated TMF fill",
+  "name": "TMF_P4",
+  "file": "cand/cross.py",
+  "func": "tmf_fill",
+  "params": {
+   "veh": "TMF",
+   "cap": 1.0,
+   "useH": false
+  },
+  "names": [
+   "ret:TMF",
+   "ret:TLT"
+  ],
+  "t0": null
+ },
+ {
+  "family": "Gated TMF fill",
+  "name": "TMF_P5",
+  "file": "cand/cross.py",
+  "func": "tmf_fill",
+  "params": {
+   "veh": "TMF",
+   "cap": 1.0,
+   "useE": true
+  },
+  "names": [
+   "ret:TMF",
+   "ret:TLT"
+  ],
+  "t0": "1986-10-31"
+ },
+ {
+  "family": "Gated TMF fill",
+  "name": "TMF_P6",
+  "file": "cand/cross.py",
+  "func": "tmf_fill",
+  "params": {
+   "veh": "TLT",
+   "cap": 1.0,
+   "useH": false
+  },
+  "names": [
+   "ret:TLT"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL crash-rebound sleeve",
+  "name": "SOXLSL_S1",
+  "file": "cand/cross.py",
+  "func": "soxl_sleeve",
+  "params": {
+   "D": 0.35,
+   "confirm": true,
+   "mode": 0,
+   "w": 0.15
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL crash-rebound sleeve",
+  "name": "SOXLSL_S2",
+  "file": "cand/cross.py",
+  "func": "soxl_sleeve",
+  "params": {
+   "D": 0.5,
+   "confirm": true,
+   "mode": 0,
+   "w": 0.15
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL crash-rebound sleeve",
+  "name": "SOXLSL_S3",
+  "file": "cand/cross.py",
+  "func": "soxl_sleeve",
+  "params": {
+   "D": 0.35,
+   "confirm": false,
+   "mode": 0,
+   "w": 0.15
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL crash-rebound sleeve",
+  "name": "SOXLSL_S4",
+  "file": "cand/cross.py",
+  "func": "soxl_sleeve",
+  "params": {
+   "D": 0.5,
+   "confirm": false,
+   "mode": 0,
+   "w": 0.15
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL crash-rebound sleeve",
+  "name": "SOXLSL_S5",
+  "file": "cand/cross.py",
+  "func": "soxl_sleeve",
+  "params": {
+   "D": 0.35,
+   "confirm": true,
+   "mode": 1,
+   "w": 0.1
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "SOXL crash-rebound sleeve",
+  "name": "SOXLSL_S6",
+  "file": "cand/cross.py",
+  "func": "soxl_sleeve",
+  "params": {
+   "D": 0.5,
+   "confirm": true,
+   "mode": 1,
+   "w": 0.1
+  },
+  "names": [
+   "ret:SOXL",
+   "semis"
+  ],
+  "t0": null
+ },
+ {
+  "family": "MIDTERM-ADD",
+  "name": "MID_P1",
+  "file": "cand/cross.py",
+  "func": "midterm_add",
+  "params": {},
+  "names": [
+   "cal:month",
+   "cal:dom",
+   "cal:dow",
+   "cal:ymod4",
+   "ret:TQQQ"
+  ],
+  "t0": null
+ },
+ {
+  "family": "MIDTERM-ADD",
+  "name": "MID_P2",
+  "file": "cand/cross.py",
+  "func": "midterm_add",
+  "params": {
+   "vcap": false
+  },
+  "names": [
+   "cal:month",
+   "cal:dom",
+   "cal:dow",
+   "cal:ymod4",
+   "ret:TQQQ"
+  ],
+  "t0": null
+ },
+ {
+  "family": "MIDTERM-ADD",
+  "name": "MID_P3",
+  "file": "cand/cross.py",
+  "func": "midterm_add",
+  "params": {
+   "start": "election"
+  },
+  "names": [
+   "cal:month",
+   "cal:dom",
+   "cal:dow",
+   "cal:ymod4",
+   "ret:TQQQ"
+  ],
+  "t0": null
+ },
+ {
+  "family": "MIDTERM-ADD",
+  "name": "MID_P4",
+  "file": "cand/cross.py",
+  "func": "midterm_add",
+  "params": {
+   "phi": 0.5
+  },
+  "names": [
+   "cal:month",
+   "cal:dom",
+   "cal:dow",
+   "cal:ymod4",
+   "ret:TQQQ"
+  ],
+  "t0": null
+ },
+ {
+  "family": "MIDTERM-ADD",
+  "name": "MID_P5",
+  "file": "cand/cross.py",
+  "func": "midterm_add",
+  "params": {
+   "end": "apr"
+  },
+  "names": [
+   "cal:month",
+   "cal:dom",
+   "cal:dow",
+   "cal:ymod4",
+   "ret:TQQQ"
+  ],
+  "t0": null
+ },
+ {
+  "family": "MIDTERM-ADD",
+  "name": "MID_P6",
+  "file": "cand/cross.py",
+  "func": "midterm_add",
+  "params": {
+   "veh": "QLD"
+  },
+  "names": [
+   "cal:month",
+   "cal:dom",
+   "cal:dow",
+   "cal:ymod4",
+   "ret:QLD"
+  ],
+  "t0": null
+ }
+]

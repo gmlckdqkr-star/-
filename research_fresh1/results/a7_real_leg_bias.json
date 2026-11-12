@@ -1,0 +1,35 @@
+{
+ "v1_path_median": 0.16159280018394773,
+ "v1_real": 0.3108146630765727,
+ "model": "log-growth shift of v1 path outcomes",
+ "rows": {
+  "true_16": {
+   "p_beat_real_31": 0.11,
+   "p_beat_path_median_16": 0.498
+  },
+  "true_18": {
+   "p_beat_real_31": 0.14,
+   "p_beat_path_median_16": 0.586
+  },
+  "true_20": {
+   "p_beat_real_31": 0.162,
+   "p_beat_path_median_16": 0.654
+  },
+  "true_25": {
+   "p_beat_real_31": 0.284,
+   "p_beat_path_median_16": 0.828
+  },
+  "true_30": {
+   "p_beat_real_31": 0.468,
+   "p_beat_path_median_16": 0.922
+  },
+  "true_35": {
+   "p_beat_real_31": 0.638,
+   "p_beat_path_median_16": 0.986
+  },
+  "true_40": {
+   "p_beat_real_31": 0.798,
+   "p_beat_path_median_16": 1.0
+  }
+ }
+}
