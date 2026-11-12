@@ -1,0 +1,95 @@
+{
+ "fx_note": "DEXKOUS failed the A10-1 gate for SIGNAL use (2008 noise, fixing time); used here only to translate values and tax at trade dates.",
+ "real_ndx_86_14": {
+  "B0_usd": {
+   "p50": 0.30366212695702366,
+   "p10": null,
+   "mdd_med": -0.6996797738219349,
+   "dd80": 0.0
+  },
+  "krwtax_in_usd": {
+   "p50": 0.30643113117823106,
+   "d_med_vs_B0": 0.002769004221207405,
+   "p_worse": 0.0
+  },
+  "krw_wealth_usdtax": {
+   "p50": 0.3127117146743772
+  },
+  "krw_wealth_krwtax": {
+   "p50": 0.3154999403994323,
+   "d_med_vs_usdtax": 0.0027882257250551046
+  },
+  "krw_wealth_krwtax_fx025": {
+   "p50": 0.31526457817279163,
+   "p10": null,
+   "mdd_krw_med": -0.6526041219537839,
+   "dd80_krw": 0.0
+  },
+  "fx_cagr_med": 0.006941666502559896,
+  "tax_paid_krw_med_usdbasis": 802.6252605900261,
+  "tax_paid_krw_med_krwbasis": 831.8175164184361,
+  "final_wealth_krw_med_krwtax": 2839.6819266982643,
+  "C5_deposits": {
+   "deposits_total": 3.4800000000000004,
+   "wait_share_med": 0.05747126436781609,
+   "waited_cash_days_med": 1298.0,
+   "final_ratio_wait_vs_now_med": -0.00018531392752763054,
+   "final_ratio_p10": -0.00018531392752763054,
+   "p_wait_worse": 1.0
+  },
+  "C6_experience": {
+   "longest_underwater_years_med": 3.630952380952381,
+   "longest_underwater_years_p90": 3.630952380952381,
+   "share_days_below_half_med": 0.09504923413566739,
+   "krw_longest_underwater_years_med": 5.746031746031746,
+   "krw_share_days_below_half_med": 0.06332056892778994,
+   "trades_per_year_med": 5.307439824945296
+  }
+ },
+ "dev250_path": {
+  "B0_usd": {
+   "p50": 0.1504764927454295,
+   "p10": 0.04045145123688454,
+   "mdd_med": -0.8400983396077244,
+   "dd80": 0.782
+  },
+  "krwtax_in_usd": {
+   "p50": 0.15202303531985462,
+   "d_med_vs_B0": 0.0007854633719401871,
+   "p_worse": 0.372
+  },
+  "krw_wealth_usdtax": {
+   "p50": 0.15955299341973983
+  },
+  "krw_wealth_krwtax": {
+   "p50": 0.16038681484764417,
+   "d_med_vs_usdtax": 0.000794371647532377
+  },
+  "krw_wealth_krwtax_fx025": {
+   "p50": 0.1601824546415479,
+   "p10": 0.04737783822225085,
+   "mdd_krw_med": -0.8269080379447393,
+   "dd80_krw": 0.664
+  },
+  "fx_cagr_med": 0.00227248662491919,
+  "tax_paid_krw_med_usdbasis": 38.70909497220709,
+  "tax_paid_krw_med_krwbasis": 39.43964892228842,
+  "final_wealth_krw_med_krwtax": 86.25648380760629,
+  "C5_deposits": {
+   "deposits_total": 3.59,
+   "wait_share_med": 0.0807799442896936,
+   "waited_cash_days_med": 1288.0,
+   "final_ratio_wait_vs_now_med": -0.0004980072624879983,
+   "final_ratio_p10": -0.003376758596050533,
+   "p_wait_worse": 0.654
+  },
+  "C6_experience": {
+   "longest_underwater_years_med": 10.367063492063492,
+   "longest_underwater_years_p90": 19.425396825396827,
+   "share_days_below_half_med": 0.43187830687830686,
+   "krw_longest_underwater_years_med": 9.722222222222221,
+   "krw_share_days_below_half_med": 0.37863756613756616,
+   "trades_per_year_med": 6.2
+  }
+ }
+}
