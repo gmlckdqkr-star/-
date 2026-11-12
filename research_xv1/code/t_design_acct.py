@@ -1,8 +1,9 @@
 """<= 2014 only: mechanics of the design account (one continuous account on the calendar with the sealed rows removed).
 The calendar ends 2014-12-31 and two OLD blocks (4 = 1998-2000 and 6 = 2004-06) play the sealed blocks, so that the join,
 the embargo and the sealing can be exercised on rows that are not sealed in reality. Nothing here is a research result."""
+import os
 import sys, numpy as np
-sys.path.insert(0, '/home/user/-/research_xv1/code')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xv1, t_world
 t_world.old(); t_world.scratch('/tmp/xv1_t_design_acct'); FAKE = (4, 6)
 X = xv1.frame(); cal = xv1.Cal(xv1.acc_dates(X))

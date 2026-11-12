@@ -2,7 +2,7 @@
  {
   "family": "FCR fast-crash floor",
   "name": "FCR_P1",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "fast_crash_floor",
   "params": {
    "A": 30
@@ -13,7 +13,7 @@
  {
   "family": "FCR fast-crash floor",
   "name": "FCR_P2",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "fast_crash_floor",
   "params": {
    "A": 21
@@ -24,7 +24,7 @@
  {
   "family": "FCR fast-crash floor",
   "name": "FCR_P3",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "fast_crash_floor",
   "params": {
    "A": 30,
@@ -36,7 +36,7 @@
  {
   "family": "FCR fast-crash floor",
   "name": "FCR_P4",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "fast_crash_floor",
   "params": {
    "A": 30,
@@ -48,7 +48,7 @@
  {
   "family": "PGC post-gain cut",
   "name": "PGC_P1",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "post_gain_cut",
   "params": {
    "g": 0.3,
@@ -61,7 +61,7 @@
  {
   "family": "PGC post-gain cut",
   "name": "PGC_P2",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "post_gain_cut",
   "params": {
    "g": 0.3,
@@ -74,7 +74,7 @@
  {
   "family": "PGC post-gain cut",
   "name": "PGC_P3",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "post_gain_cut",
   "params": {
    "g": 0.3,
@@ -87,7 +87,7 @@
  {
   "family": "PGC post-gain cut",
   "name": "PGC_P4",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "post_gain_cut",
   "params": {
    "g": 0.25,
@@ -100,7 +100,7 @@
  {
   "family": "PGC post-gain cut",
   "name": "PGC_P5",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "post_gain_cut",
   "params": {
    "g": 0.5,
@@ -114,7 +114,7 @@
  {
   "family": "IVV equity-IV veto",
   "name": "IVV_P1",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "iv_veto",
   "params": {
    "mode": "D1",
@@ -126,7 +126,7 @@
  {
   "family": "IVV equity-IV veto",
   "name": "IVV_P2",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "iv_veto",
   "params": {
    "mode": "D1",
@@ -138,7 +138,7 @@
  {
   "family": "IVV equity-IV veto",
   "name": "IVV_P3",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "iv_veto",
   "params": {
    "mode": "D2"
@@ -149,7 +149,7 @@
  {
   "family": "PRX-SOXL panic sleeve",
   "name": "PRXS_P1",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_soxl",
   "params": {
    "D": 0.3,
@@ -165,7 +165,7 @@
  {
   "family": "PRX-SOXL panic sleeve",
   "name": "PRXS_P2",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_soxl",
   "params": {
    "D": 0.3,
@@ -181,7 +181,7 @@
  {
   "family": "PRX-SOXL panic sleeve",
   "name": "PRXS_P3",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_soxl",
   "params": {
    "D": 0.4,
@@ -197,7 +197,7 @@
  {
   "family": "PRX-SOXL panic sleeve",
   "name": "PRXS_P4",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_soxl",
   "params": {
    "D": 0.3,
@@ -213,7 +213,7 @@
  {
   "family": "PRX-QLD panic re-entry",
   "name": "PRXQ_P1",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_qld",
   "params": {
    "a": 1.75,
@@ -227,7 +227,7 @@
  {
   "family": "PRX-QLD panic re-entry",
   "name": "PRXQ_P2",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_qld",
   "params": {
    "a": 1.75,
@@ -241,7 +241,7 @@
  {
   "family": "PRX-QLD panic re-entry",
   "name": "PRXQ_P3",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_qld",
   "params": {
    "a": 2.0,
@@ -255,7 +255,7 @@
  {
   "family": "PRX-QLD panic re-entry",
   "name": "PRXQ_P4",
-  "file": "/home/user/-/research_xv1/cand/states.py",
+  "file": "cand/states.py",
   "func": "panic_qld",
   "params": {
    "a": 2.0,

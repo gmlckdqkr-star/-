@@ -4,8 +4,9 @@ inputs, prefix test, level-scale test), must not differ from v1 before its T0, a
 PASS / FAIL, dates of first valid input rows and activity counts only; no account figure of any candidate is computed or printed.
 
   python t_batch1_old.py [first [last]]     configurations first..last-1 (default all)"""
+import os
 import sys, time, collections
-sys.path.insert(0, '/home/user/-/research_xv1/code')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 import xv1, t_world, m_batch1
 

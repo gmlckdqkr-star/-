@@ -83,3 +83,32 @@ def jitter_leak(v, look=3, thr=-0.08, w=0.5, eps=0.000001):
     G = -r + v.c.rf[0] - 0.0095 / 252
     o.update(B=B, G=G[:, None], Wt=np.where(k, w, 0.0)[:, None], mode=1, inc=0)
     return o
+
+
+def hold_leak(v, n=50, look=1, thr=-0.02):
+    """planted (v7): own rule = level 3 while the index is above its n-row mean, else 1. A one-row look-ahead HOLDS level 3
+    on a row on which the index dips below the mean with a daily fall beyond thr and is back above it on the next row.
+    The level does not change on such a row, so it makes no event row; only a cut exactly on that row sees the look-ahead
+    (it must be voided by the every-row test, whatever the sampled test says)"""
+    o = xv1.ref(v); lv = v.c.lvl[0]; r = v.c.r[0]; T = v.T
+    c = np.cumsum(np.r_[0.0, lv]); ma = np.full(T, np.inf); ma[n - 1:] = (c[n:] - c[:-n]) / n
+    up = lv > ma; B = np.where(up, 3.0, 1.0)
+    k = np.zeros(T, dtype=bool); k[1:T - look] = up[:T - look - 1] & ~up[1:T - look] & up[1 + look:] & (r[1:T - look] < thr)
+    B[k] = 3.0
+    o.update(B=B, bfn=xv1.std.ident, bp=np.zeros(1), fstep=0.5); return o
+
+
+def list_mem(v, mem, look=3):
+    """planted (v7): as `stateful`, with the memory kept in a list parameter. Up to version 6 that list was one object
+    shared by all calls of a configuration (the cut calls then read what the full call had stored, and the prefix test
+    passed); since version 7 every call gets a new copy, so the look-ahead shows and it must be voided by the prefix test"""
+    o = xv1.ref(v); B = np.array(o['B'], dtype=float); r = v.c.r[0]
+    if not mem or len(mem[0]) < len(r): mem[:] = [r.copy()]
+    f = mem[0]; n = len(B); k = np.zeros(n, dtype=bool); m = min(len(f) - look, n); k[:m] = f[look:m + look] < -0.03
+    B[k] = 0.0; o['B'] = B; return o
+
+
+def oom(v):
+    """planted (v7): asks for an array of about 7 PiB, which no machine has: a MemoryError that is not the rule's own
+    error (the batch run must stop and log it the first time, and void the configuration the second time)"""
+    o = xv1.ref(v); z = np.zeros((999, 999, 999, 999, 999)); return o

@@ -37,10 +37,11 @@ All arrays have T rows: 300 warm-up rows, then the account days. Row t holds wha
   spliced with its model, `cm.level`, `cm.sma`, `cm.roll_max`, `cm.roll_min`, `cm.vol`, `cm.lag`, `cm.hyst`, `cm.trend_flag`,
   `cm.consec`, `cm.debounce`, `cm.since`, `cm.breadth(v)` (needs `cm.SECTOR_NAMES` in the configuration's names),
   `cm.semis_level(v)` (needs 'semis'), `cm.ndx_level(v)`. Use them instead of writing your own; all are causal.
-Source gate (evaluator v6, an allow-list; a file that fails it cannot be registered): module-level `import numpy`,
+Source gate (evaluator v7, an allow-list; a file that fails it cannot be registered): module-level `import numpy`,
 `import xv1` and `import <helper>` (a file of the candidate's own folder whose name is not a standard-library module name)
 only; no from-import, no import inside a function, no class; numpy only through the functions and constants in
-`xv1._NP_OK`, one level deep (`np.X`, never `np.X.Y`; no `np.empty`: use `np.zeros` / `np.full`); built-ins only those in
+`xv1._NP_OK`, one level deep (`np.X`, never `np.X.Y`, also not through a local name such as `f = np.maximum; f.reduce(...)`:
+the gate sees only the direct form, the reader of the source rejects the other; no `np.empty`: use `np.zeros` / `np.full`); built-ins only those in
 `xv1._BI_OK` (no print, open, hash, id, type, exit, getattr ...); no name or attribute that begins with `_` except the
 file's own module-level names, none that contains `__`, none of the attributes in `xv1._BAN_ATTR`; no assignment to any
 attribute; no `global` / `nonlocal`; no number literal above 999, no bytes literal, no string literal (other than a
@@ -85,7 +86,9 @@ From /home/user, never from under /mnt/project-files:
 `NUMBA_CACHE_DIR=/home/claude/nbcache_xv1 ~/.cache/lab/ms1-venv/bin/python -B script.py`
 - First line after the imports: `import t_world; t_world.old()` (declares the <= 2014 test world; nothing after 2014 can be built).
 - The one call: `pre = xv1._prepare(make, names, xv1.OLD_END)` (view, validated output, instrument check); `xv1.gate(path)` must be empty.
-- The causality test: `xv1.prefix_test(None, names, end=xv1.OLD_END, n_rand=25, pre=pre)` and `xv1.scale_test(make, names, pre=pre)` must return PASS.
+- The causality test: `xv1.prefix_test(make, names, end=xv1.OLD_END, n_rand=25, pre=pre)` and `xv1.scale_test(make, names, pre=pre)` must return PASS
+  (v7: the function under test must be handed over; for a configuration object `c` use `fresh=c.fresh`). With `step=1` the test cuts after every account row.
+- Parameter values are plain JSON values (numbers, strings, lists, dicts); every call gets a new copy, so a list or dict parameter cannot keep anything between calls.
 - Activity counts: on how many rows B differs from v1's B, on how many rows a weight is non-zero, how many events.
 - Never compute, print or look at a return, growth figure, equity curve, win rate or any other performance number of a
   candidate, on any period. Never call `xv1.run_batch`, `_design_account`, `_run`, `_run_eng`, `reference_table` or any scoring

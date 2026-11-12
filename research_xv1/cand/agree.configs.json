@@ -2,7 +2,7 @@
  {
   "family": "AGREE4",
   "name": "AGREE4_B1",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "agree4",
   "params": {
    "w": 0.3
@@ -36,7 +36,7 @@
  {
   "family": "AGREE4",
   "name": "AGREE4_B2",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "agree4",
   "params": {
    "w": 0.6
@@ -70,7 +70,7 @@
  {
   "family": "AGREE4",
   "name": "AGREE4_B3",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "agree4",
   "params": {
    "w": 0.3,
@@ -105,7 +105,7 @@
  {
   "family": "AGREE4",
   "name": "AGREE4_B4",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "agree4",
   "params": {
    "w": 0.3,
@@ -140,7 +140,7 @@
  {
   "family": "AGREE4",
   "name": "AGREE4_B5",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "agree4",
   "params": {
    "w": 0.3,
@@ -175,7 +175,7 @@
  {
   "family": "QQQAGREE",
   "name": "QQQAGREE_C1",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "qqq_agree",
   "params": {
    "l_add": 2.0
@@ -207,7 +207,7 @@
  {
   "family": "QQQAGREE",
   "name": "QQQAGREE_C2",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "qqq_agree",
   "params": {
    "l_add": 3.0
@@ -239,7 +239,7 @@
  {
   "family": "QQQAGREE",
   "name": "QQQAGREE_C3",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "qqq_agree",
   "params": {
    "psq_w": 0.3
@@ -271,7 +271,7 @@
  {
   "family": "QQQAGREE",
   "name": "QQQAGREE_C4",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "qqq_agree",
   "params": {
    "l_add": 2.0,
@@ -304,7 +304,7 @@
  {
   "family": "PURELADDER",
   "name": "LADDER_E1",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "ladder",
   "params": {
    "part": "full"
@@ -341,7 +341,7 @@
  {
   "family": "PURELADDER",
   "name": "LADDER_E2",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "ladder",
   "params": {
    "part": "soxx"
@@ -378,7 +378,7 @@
  {
   "family": "PURELADDER",
   "name": "LADDER_E3",
-  "file": "/home/user/-/research_xv1/cand/agree.py",
+  "file": "cand/agree.py",
   "func": "ladder",
   "params": {
    "part": "qqq"

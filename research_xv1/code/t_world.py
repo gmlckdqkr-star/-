@@ -10,7 +10,7 @@
 Both worlds set xv1.WORLD: the evaluator then builds no real calendar after 2014-12-31 whatever else happens, and the
 registered constants may be changed by a test. In the real world (WORLD None) they may not."""
 import os, sys, zlib, shutil, numpy as np, pandas as pd
-sys.path.insert(0, '/home/user/-/research_xv1/code')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xv1
 from xv1 import jp, mkt
 
@@ -19,7 +19,10 @@ DEFAULT_OUT = '/tmp/xv1_world_out/'      # a test world never writes into the re
 
 
 def _away():
+    """a test world writes neither into the registered folder nor into the repository copy of the ledger, and starts
+    without a calendar built before it was declared (v7)"""
     if os.path.realpath(xv1.OUT) == os.path.realpath(xv1.REG_OUT): os.makedirs(DEFAULT_OUT, exist_ok=True); xv1.OUT = DEFAULT_OUT
+    xv1.MIRROR = None; xv1._FR.clear(); xv1._REF.clear()
 
 
 def old():
@@ -60,7 +63,9 @@ def scratch(tmp):
     if xv1.WORLD is None: raise PermissionError('declare a test world first')
     p = os.path.realpath(tmp)
     if not (p.startswith('/tmp/') or p.startswith('/home/claude/')) or 'project-files' in p: raise PermissionError('not a scratch folder: ' + p)
-    shutil.rmtree(p, ignore_errors=True); os.makedirs(p); xv1.OUT = p + '/'
+    if os.path.isdir(p) and os.listdir(p) and not os.path.exists(p + '/.xv1_scratch'):   # v7: only an empty folder or an earlier scratch folder is cleared
+        raise PermissionError('an existing folder that is not a scratch folder: ' + p)
+    shutil.rmtree(p, ignore_errors=True); os.makedirs(p); open(p + '/.xv1_scratch', 'w').close(); xv1.OUT = p + '/'
     return xv1.OUT
 
 

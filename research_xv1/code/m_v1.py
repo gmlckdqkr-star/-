@@ -5,7 +5,7 @@ Run only after (1) the structure is registered, (2) the evaluator and the sealin
 v1 fails the prefix test. Scalars only, from the design account (one continuous account on the calendar without the sealed
 rows); nothing is produced for the sealed blocks 10 and 12."""
 import sys, os, json
-sys.path.insert(0, '/home/user/-/research_xv1/code')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xv1
 _S = xv1.scope(); _S.__enter__()                       # an evaluator script: it may read the registered calendar
 
@@ -13,7 +13,7 @@ reg = json.load(open(xv1.OUT + 'HASHES.json'))
 pre = xv1._prepare(xv1.ref, (), xv1.OLD_END)                # load the whole chain before the hashes are compared
 xv1._check_env()
 if not xv1._checks_passed(): print('m_checks.py has not passed under the registered hashes'); sys.exit(2)
-pt = xv1.prefix_test(xv1.ref, n_rand=200, seed=int(reg['prereg_sha256'][:8], 16), step=21, n_event=10 ** 6)
+pt = xv1.prefix_test(xv1.ref, n_rand=200, seed=int(reg['prereg_sha256'][:8], 16), step=1)   # v7: a cut after every account row
 pt = dict(result=pt['result'])                             # no count is kept: the number of cuts depends on v1's signal on sealed rows
 print('prefix test of v1 on the full calendar:', pt)
 if pt['result'] != 'PASS': sys.exit(3)

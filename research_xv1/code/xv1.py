@@ -1,4 +1,4 @@
-"""XV1 sealed block evaluator, version 6 (see PREREG_XV1_STRUCTURE.md).
+"""XV1 sealed block evaluator, version 7 (see PREREG_XV1_STRUCTURE.md).
 
 Accounts
   design    ONE continuous account on the design calendar = the evaluator calendar with every row of the sealed blocks
@@ -21,8 +21,13 @@ Candidate   make(view) -> dict(B, bfn, bp, fstep[, G, Wt, mode, inc, RB, up, dn]
 Two sides    The object handed to candidate code holds COPIES. The engine reads its own arrays (class _Eng: returns, cash rate,
             features, the design rows, v1's shadow levels), which candidate code never receives. Candidate source is checked
             by an import / name gate before a batch is registered and imports a small stand-in for this module (ref, std.ident).
-            The full-calendar call of a configuration is made ONCE: the same result is tested (prefix, scale) and scored."""
-import os, re, sys, ast, json, time, types, hashlib, weakref, builtins, warnings, contextlib
+            The full-calendar call of a configuration is made ONCE per scoring step: the same result is tested (prefix,
+            scale) and scored. v7: a configuration is frozen when its object is made and every call gets a new copy of its
+            parameter values.
+Registry    HASHES.json is the registry only together with the ledger: line 0 (later: the latest amendment line) names its
+            sha256. The ledger is copied to research_xv1/registry/ after every line; a ledger that lost lines against that
+            copy is refused (v7)."""
+import os, re, sys, ast, json, time, fcntl, types, hashlib, weakref, builtins, warnings, contextlib
 import numpy as np, pandas as pd
 from scipy import stats as sps
 os.environ.setdefault('NUMBA_CACHE_DIR', '/home/claude/nbcache_xv1')   # own cache: the shared one collides with other sessions
@@ -50,6 +55,8 @@ DRAWS = 200000                         # sign-flip draws of the family-wise test
 OUT = '/mnt/project-files/research/xv1/'
 REG_OUT = '/mnt/project-files/research/xv1/'    # the one registered output folder (self-tests point OUT elsewhere, in a test world)
 WORLD = None                           # None = the real calendar. t_world sets 'old' (<= 2014) or 'synth' (made-up values after 2014)
+ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))   # v7: the research_xv1 folder; registry keys and candidate files are kept relative to it
+MIRROR = os.path.join(ROOT, 'registry', '')   # v7: copy of the ledger inside the repository (committed after every step); a ledger that lost lines is refused against it
 FEE, SPREAD = 0.0095, 0.0075           # modelled funds: yearly fee, yearly spread per borrowed unit (3x: 0.0245 = beng.F1['er3'])
 LVL_OK = ('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext')   # level inputs that carry no price height
 EXACT_SF = 20                          # sign-flip check: all 2^A assignments up to this many active sub-blocks
@@ -57,6 +64,7 @@ T0_WARM_MAX = 756                      # a registered T0 lies at most this many 
 G2_MIN_ROWS = 252                      # fewer scored WEAK rows on or after T0: G2 is not available (and the configuration cannot be opened)
 W_ACT = 0.01                           # an extra holding makes a row active only from this total actual weight on (a tiny sleeve does not)
 G3_END = '2031-01-01'                  # no G3 opening on or after this date
+SHAPE_SKEW_MIN, SHAPE_AC1_MAX = -1.0, 0.2   # v7: type "timing" only if the 63-row sub-block means of d* are not more left-skewed / more autocorrelated than this
 F1 = dict(delay=2, cost=0.003, tax=0.22, W0=10000000.0, harvest=3, hthr=1.0, cspr=0.02, er3=0.0245, step=0.5, fstep=0.5)   # beng.F1 as registered
 WARM = ov.WARM
 assert WARM == xeng.WARM == beng.WARM
@@ -66,7 +74,7 @@ _FROZEN = dict(CAL_START='1984-01-03', ACC_START='1986-01-02', CAL_END='2026-08-
                STRESS=dict(base={}, cost2=dict(cost=0.006), delay3=dict(delay=3), delay1=dict(delay=1), tax0=dict(tax=0.0)),
                G1_STRESS=('cost2', 'delay3', 'delay1', 'tax0'), D_MIN_G1=0.010, D_MIN_G3=0.005, DRAWS=200000,
                OUT=REG_OUT, FEE=0.0095, SPREAD=0.0075, EXACT_SF=20, WARM=int(WARM), T0_WARM_MAX=756, G2_MIN_ROWS=252,
-               LVL_OK=('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext'), W_ACT=0.01, G3_END='2031-01-01',
+               LVL_OK=('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext'), W_ACT=0.01, G3_END='2031-01-01', SHAPE_SKEW_MIN=-1.0, SHAPE_AC1_MAX=0.2,
                F1=dict(delay=2, cost=0.003, tax=0.22, W0=10000000.0, harvest=3, hthr=1.0, cspr=0.02, er3=0.0245, step=0.5, fstep=0.5), CARRY=5,
                LIT_INT_MAX=999, LIT_SEQ_MAX=64, LIT_STR_MAX=64)
 _FROZEN_LISTS = ('_NP_OK', '_BI_OK', '_BAN_ATTR', '_BAN_NAME', '_ERRSTATE_KW', '_ONE_X', '_LEV')   # v6: added to _FROZEN once they exist
@@ -88,11 +96,13 @@ def _guard():
     if dict(beng.F1) != _FROZEN['F1']: raise PermissionError('engine terms (beng.F1) changed')
     if xdata.CARRY != _FROZEN['CARRY']: raise PermissionError('carry limit of the extra inputs changed')
     if abs(beng.F1['er3'] - (FEE + 2 * SPREAD)) > 1e-15: raise PermissionError('fund model terms changed')
+    if MIRROR != os.path.join(ROOT, 'registry', ''): raise PermissionError('the place of the ledger copy was changed')   # v7
 
 
 def _writable():
     """a test world never writes into the registered folder"""
-    if WORLD is not None and os.path.realpath(OUT) == os.path.realpath(REG_OUT): raise PermissionError('a test world does not write into the registered folder')
+    o, r = os.path.realpath(OUT), os.path.realpath(REG_OUT)
+    if WORLD is not None and (o == r or o.startswith(r + os.sep)): raise PermissionError('a test world does not write into the registered folder')   # v7: nor into a folder below it
 
 
 _SCOPE = [0]
@@ -119,13 +129,19 @@ _G3_PRE = [None]                       # the hash whose main view open_g3 tests 
 
 
 def _registered():
-    """the structure is registered: HASHES.json of the registered folder names the text whose sha256 is ledger line 0"""
+    """the structure is registered: HASHES.json of the registered folder names the text whose sha256 is ledger line 0, and
+    (v7) the sha256 of HASHES.json itself is the one in ledger line 0 or in the latest amendment line"""
     if OUT != REG_OUT or not os.path.exists(OUT + 'HASHES.json'): return False
     try:
         reg = json.load(open(OUT + 'HASHES.json')); L = read_ledger()
         txt = hashlib.sha256(open(OUT + 'PREREG_XV1_STRUCTURE.md', 'rb').read()).hexdigest()
     except Exception: return False
-    return bool(L) and L[0].get('kind') == 'registration' and L[0].get('sha256') == reg.get('prereg_sha256') == txt
+    return bool(L) and L[0].get('kind') == 'registration' and L[0].get('sha256') == reg.get('prereg_sha256') == txt and _sha(OUT + 'HASHES.json') == _reg_line(L).get('hashes_sha256')
+
+
+def _reg_line(L):
+    """v7: the ledger line that names the registry in force: the registration, or the latest amendment"""
+    return [e for e in L if e.get('kind') in ('registration', 'amendment')][-1]
 
 
 def kind_of(b):
@@ -143,6 +159,7 @@ def frame(end=None):
     """X of the MS1 real-path chain on the calendar rows CAL_START..end. A real calendar after 2014 is built only in the
     real world, with the registered constants, after registration, and only to the registered end or to A_END."""
     end = end or CAL_END
+    if not (isinstance(end, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', end)): raise PermissionError('calendar end must be text of the form YYYY-MM-DD')   # v7: the guards below compare text
     if end > OLD_END and not _SCOPE[0]: raise PermissionError('outside an evaluator entry point no calendar after %s is read' % OLD_END)
     if end not in _FR:
         if end > OLD_END:
@@ -151,7 +168,9 @@ def frame(end=None):
             _guard()
             if end not in (REG_END, A_END): raise PermissionError('only the registered calendar ends are built')
             if not _registered(): raise PermissionError('the structure is not registered: no real calendar after %s (tests use t_world.old() or t_world.synth())' % OLD_END)
-        R, M = jp.calendar(CAL_START, end); _FR[end] = jp.mkX(R, M, 'NDX')
+        R, M = jp.calendar(CAL_START, end); X = jp.mkX(R, M, 'NDX')
+        if WORLD is None and end in (REG_END, A_END) and str(X.index[-1].date()) != end: raise RuntimeError('the calendar does not end on %s' % end)   # v7
+        _FR[end] = X
     return _FR[end]
 
 
@@ -266,6 +285,9 @@ BLOCK_TABLE = (  # (b, first row, first scored row, last row, rows): part of the
     (8, '2010-01-04', '2010-04-06', '2012-12-31', 754), (9, '2013-01-02', '2013-04-04', '2015-12-31', 756),
     (10, '2016-01-04', '2016-04-05', '2018-12-31', 754), (11, '2019-01-02', '2019-04-03', '2021-12-31', 757),
     (12, '2022-01-03', '2022-04-04', '2024-12-31', 753), (13, '2025-01-02', '2025-04-04', '2026-08-31', 416))
+
+
+_FROZEN['BLOCK_TABLE'] = tuple(BLOCK_TABLE)             # v7: a registered constant like the others
 
 
 def check_calendar(cal, upto=None):
@@ -407,7 +429,7 @@ def _call(make, v):
     d0 = _digest(v)
     try:
         with _sandbox(): m = make(v)
-    except (KeyboardInterrupt, Void): raise              # the operator's stop (candidate code has no name for it); a gate or load Void as it is
+    except (KeyboardInterrupt, MemoryError, Void): raise  # the operator's stop and a machine out of memory (candidate code has no name for either; v7); a gate or load Void as it is
     except BaseException as e: raise Void('error in candidate code: ' + type(e).__name__)
     if _digest(v) != d0: raise Void('candidate code changed or replaced an input')
     try: return _norm(m, v.T)
@@ -482,7 +504,8 @@ def _x(V):
 def _blocks_of(e, m, rec, rows, cal, blocks):
     """per-block material on the scored rows: x (daily log growth of V), level in force, total weight of the extras, actual
     weight of the 3x fund (a0) and of each extra (aw), daily return of each extra (g), whether it exists on the row (gok), the
-    3x fund's return (r3), dates. rows = view rows of the account days of rec (after the warm-up)."""
+    3x fund's return (r3), dates, and (v7) whether the account owes liquidation tax at the close before the row (tx).
+    rows = view rows of the account days of rec (after the warm-up)."""
     if not (np.isfinite(rec[:, 4]).all() and (rec[:, 4] > 0).all()): raise Void('account value not finite or not positive')
     days = rows - WARM; x = _x(rec[:, 4]); out = {}
     r3 = 3 * e.r[rows] - 2 * e.rf[rows] - beng.F1['er3'] / 252
@@ -490,7 +513,8 @@ def _blocks_of(e, m, rec, rows, cal, blocks):
         p = np.flatnonzero(cal.blk[days] == b); sc = p[cal.rank[days[p]] >= EMB]
         if not len(p): continue
         out[int(b)] = dict(x=x[sc], lev=rec[sc, 1], w=rec[sc, 5], a0=rec[sc, 6], aw=rec[sc, 7:], g=m['G'][rows[sc]],
-                           gok=~np.isnan(m['Graw'][rows[sc]]), r3=r3[sc], date=cal.dates[days[sc]])
+                           gok=~np.isnan(m['Graw'][rows[sc]]), r3=r3[sc], date=cal.dates[days[sc]],
+                           tx=rec[sc - 1, 4] < rec[sc - 1, 0] * (1 - 1e-12))   # v7: at the close before the row the account owes liquidation tax (V below equity)
     return out
 
 
@@ -652,7 +676,7 @@ def _dd(x):
 def reference_table():
     """first measurement: v1, 1x hold and 3x hold on every DESIGN and WEAK block. Scalars only. (The 1x hold is an extra
     instrument: the engine's yearly loss harvest and deduction step-up exist for the 3x fund only, so the 1x row has none.)"""
-    _check_env(); R = _ref_blocks(); H1 = _open_blocks(hold1); H3 = _open_blocks(hold3); rows = []
+    _ready(); R = _ref_blocks(); H1 = _open_blocks(hold1); H3 = _open_blocks(hold3); rows = []
     R0 = _ref_blocks('tax0'); H10 = _open_blocks(hold1, **STRESS['tax0']); H30 = _open_blocks(hold3, **STRESS['tax0'])
     for b in sorted(R):
         r = dict(b=b, years=years_of(b), kind=kind_of(b), account='design', n=int(len(R[b]['x'])),
@@ -676,7 +700,7 @@ def reference_table():
 @_scoped
 def model_check():
     """modelled 3x fund against the actual TQQQ on the scored rows of non-sealed blocks where the fund exists. Scalars only."""
-    _check_env(); X = frame(CAL_END); idx = X.index; cal = Cal(acc_dates(X)); i0 = len(idx) - cal.n
+    _ready(); X = frame(CAL_END); idx = X.index; cal = Cal(acc_dates(X)); i0 = len(idx) - cal.n
     a = extras(('ret:TQQQ',), idx)['ret:TQQQ'][i0:]; r = X['r'].values[i0:]; rf = X['rf'].values[i0:]
     m = 3 * r - 2 * rf - beng.F1['er3'] / 252; out = []
     for b in range(NB):
@@ -834,7 +858,8 @@ def _param_bad(x, path='params'):
     """v6: the literal rules of the gate applied to a configuration's parameter values"""
     if isinstance(x, bool) or x is None: return []
     if isinstance(x, (int, float)): return ['%s: number above %d' % (path, LIT_INT_MAX)] if abs(x) > LIT_INT_MAX else []
-    if isinstance(x, str): return (['%s: string with a year' % path] if _YEAR.search(x) else []) + (['%s: string longer than %d' % (path, LIT_STR_MAX)] if len(x) > LIT_STR_MAX else [])
+    if isinstance(x, str): return (['%s: string with a year' % path] if _YEAR.search(x) else []) + (['%s: string longer than %d' % (path, LIT_STR_MAX)] if len(x) > LIT_STR_MAX else []) + \
+                                  (['%s: string with a double underscore' % path] if '__' in x else [])
     if isinstance(x, (list, tuple)):
         out = ['%s: more than %d elements' % (path, LIT_SEQ_MAX)] if len(x) > LIT_SEQ_MAX else []
         for i, y in enumerate(x): out += _param_bad(y, '%s[%d]' % (path, i))
@@ -860,9 +885,23 @@ def _cand_ref(v):
 
 class Config:
     """one configuration = candidate source file + function + parameter values + registered inputs + T0"""
-    def __init__(s, family, name, file, func, params=None, names=(), t0=None, **_):
-        s.family, s.name, s.file, s.func = family, name, os.path.realpath(file), func
-        s.params = dict(params or {}); s.names = tuple(names); s.t0 = t0
+    def __init__(s, family, name, file, func, params=None, names=(), t0=None, calendar=False, **_):
+        """v7: func, params, names, T0 and the calendar mark are fixed here as canonical JSON; the attributes are read-only
+        views of it and `params` is a new copy on every read, so nothing a caller or candidate code changes later reaches
+        a call (a list or dict parameter is no longer one object shared by all calls). A file below research_xv1 is kept
+        relative to it (the registry does not depend on where the repository lies)."""
+        if not os.path.isabs(file): file = os.path.join(ROOT, file)
+        s.family, s.name, s.file = family, name, os.path.realpath(file)
+        s._pj = json.dumps(dict(func=func, params=dict(params or {}), names=list(names), t0=t0, calendar=bool(calendar)), sort_keys=True)
+
+    func = property(lambda s: json.loads(s._pj)['func'])
+    params = property(lambda s: json.loads(s._pj)['params'])
+    names = property(lambda s: tuple(json.loads(s._pj)['names']))
+    t0 = property(lambda s: json.loads(s._pj)['t0'])
+    calendar = property(lambda s: json.loads(s._pj)['calendar'])   # the registrant's mark: the rule uses a period counted in rows (a calendar slot in all but name)
+
+    def relfile(s):
+        return os.path.relpath(s.file, ROOT) if s.file.startswith(ROOT + os.sep) else s.file
 
     def _src(s):
         if getattr(s, '_s', None) is None: s._s = _read_src(s.file)
@@ -873,12 +912,10 @@ class Config:
         """v6: sha256 of the names and sha256 of the candidate file and of every helper file it imports (the very bytes that
         are gated and executed), and of the configuration (computed once per object; load_batch builds new objects and
         compares them with the registered values)"""
-        if getattr(s, '_h', None) is None:
-            main, src = s._src()
-            body = json.dumps(dict(main=main, files=[[k, hashlib.sha256(b).hexdigest()] for k, b in sorted(src.items())],
-                                   func=s.func, params=s.params, names=list(s.names), t0=s.t0), sort_keys=True)
-            s._h = hashlib.sha256(body.encode()).hexdigest()
-        return s._h
+        if getattr(s, '_fh', None) is None:
+            main, src = s._src(); s._fh = (main, [[k, hashlib.sha256(b).hexdigest()] for k, b in sorted(src.items())])
+        body = json.dumps(dict(main=s._fh[0], files=s._fh[1], **json.loads(s._pj)), sort_keys=True)
+        return hashlib.sha256(body.encode()).hexdigest()
 
     def _code(s):
         if getattr(s, '_co', None) is None:
@@ -905,7 +942,7 @@ class Config:
             m = types.ModuleType(name); m.__dict__['__builtins__'] = bi; mods[name] = m; exec(co[name], m.__dict__); return m
         try:
             with _sandbox(): return run(main)
-        except KeyboardInterrupt: raise
+        except (KeyboardInterrupt, MemoryError): raise
         except BaseException as e: raise Void('error while loading candidate code: ' + type(e).__name__)
 
     def make(s, v):
@@ -918,16 +955,17 @@ class Config:
 
 
     def to_dict(s):
-        return dict(family=s.family, name=s.name, file=s.file, func=s.func, params=s.params, names=list(s.names), t0=s.t0, hash=s.hash)
+        return dict(family=s.family, name=s.name, file=s.relfile(), func=s.func, params=s.params, names=list(s.names), t0=s.t0, calendar=s.calendar, hash=s.hash)
 
 
 def register_batch(configs):
     """write the next batch file and its ledger line. Must happen before any configuration of the batch is scored. The batch
     number is the next one in the ledger (it sets the level 0.05 / 2^k and cannot be chosen); a configuration that was scored
     before, a source that fails the gate and a level input off the allow-list are refused. Returns (k, sha256)."""
-    _guard(); _check_env(); _writable(); L = read_ledger(); os.makedirs(OUT, exist_ok=True)
+    _ready(); _writable(); L = read_ledger(); os.makedirs(OUT, exist_ok=True)
+    if not configs: raise ValueError('empty batch')                                   # v7: a batch number is not spent on nothing
     k = 1 + sum(1 for e in L if e.get('kind') == 'batch'); path = OUT + 'BATCH_%d.json' % k
-    if os.path.exists(path): raise FileExistsError(path)
+    if any(not _batch_done(j, L) for j in range(1, k)): raise PermissionError('an earlier batch is not scored yet')   # v7: batches are scored in order (family rule)
     hs = [c.hash for c in configs]
     if len(set(hs)) != len(hs) or len(set(c.name for c in configs)) != len(configs): raise ValueError('duplicate configuration')
     if set(hs) & set(e.get('cfg') for e in L if e.get('kind') == 'score'): raise PermissionError('a configuration of this batch was scored before')
@@ -935,19 +973,43 @@ def register_batch(configs):
     for j in range(1, k):
         for d in json.load(open(OUT + 'BATCH_%d.json' % j)):
             if d['hash'] in hs: raise PermissionError('a configuration of this batch is in batch %d' % j)
-            fam[(os.path.realpath(d['file']), d['func'])] = d['family']
+            fam[(Config(**d).file, d['func'])] = d['family']
     for c in configs:
         if fam.setdefault((c.file, c.func), c.family) != c.family: raise PermissionError('one source function under two family labels: %s' % c.name)
-    if WORLD is None and not _checks_passed(): raise PermissionError('the data and parity checks have not passed under the registered hashes')
     for c in configs:
         bad = _gate_src(*c._src()) + _param_bad(c.params)                     # v6: the very bytes that are hashed and executed
         if bad: raise PermissionError('source gate, %s: %s' % (c.name, '; '.join(bad[:5])))
         if any(n.startswith('lvl:') and n not in LVL_OK for n in c.names): raise PermissionError('level input off the allow-list: %s' % c.name)
+        if c.t0 is not None and not _iso_date(c.t0): raise ValueError('T0 of %s is not a date of the form YYYY-MM-DD' % c.name)   # v7: a slip here would stop the batch run for good
+    try: extras(sorted(set(n for c in configs for n in c.names)), frame(OLD_END).index)     # v7: every registered input name must be readable
+    except PermissionError: raise
+    except Exception as e: raise ValueError('an input name of this batch cannot be read (%s)' % type(e).__name__)
     body = json.dumps([c.to_dict() for c in configs], indent=1, sort_keys=True)
-    with open(path, 'w') as f: f.write(body)
+    with open(path + '.tmp', 'w') as f: f.write(body)
+    os.replace(path + '.tmp', path)                      # v7: a BATCH file left without its ledger line by an interrupted registration is written again
     sha = hashlib.sha256(body.encode()).hexdigest()
     ledger(dict(kind='batch', batch=k, sha256=sha, n=len(configs)))
     return k, sha
+
+
+def _iso_date(t):
+    if not (isinstance(t, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', t)): return False
+    try: pd.Timestamp(t); return True
+    except Exception: return False
+
+
+def _batch_done(k, L): return any(e.get('kind') == 'batch-done' and e.get('batch') == k for e in L)
+
+
+def _read_json(path):
+    """v7: a file that is missing or was cut while it was written counts as missing"""
+    try: return json.load(open(path))
+    except Exception: return None
+
+
+def _write_json(path, obj, **kw):
+    with open(path + '.tmp', 'w') as f: json.dump(obj, f, **kw); f.flush(); os.fsync(f.fileno())
+    os.replace(path + '.tmp', path)
 
 
 def load_batch(k):
@@ -978,7 +1040,10 @@ def _neutral(cand, refb, blocks, t0=None, info=None):
                       kappa = 1 if the reference's weight does not vary), so a candidate that scales v1, adds a constant
                       amount of the fund or dilutes v1 with a sleeve is matched without v1's own timing being counted;
       w_j           = mean actual weight of extra j over the rows on which it exists.
-      m_t = ln(1 + kappa (exp(x_REF,t) - 1) + delta0 R3_t + sum_j w_j G_j,t);   d*_t = x_cand,t - m_t.
+      m_t = ln(1 + kappa (exp(x_REF,t) - 1) + f_t (delta0 R3_t + sum_j w_j G_j,t));   d*_t = x_cand,t - m_t.
+    v7: f_t = 1 - tax on a row before which the candidate's account owes liquidation tax (V below equity: a gain or loss of
+    the row changes V by 1 - tax of it), 1 otherwise. x is growth of V after tax; without f the constant holdings were
+    counted before tax, which pushed d* down for a candidate that holds more and UP for one that holds less of the fund.
     A candidate that only holds more, less or other things on average has d* near 0; d* keeps what comes from WHEN it holds."""
     sel = {}
     for b in blocks:
@@ -994,7 +1059,7 @@ def _neutral(cand, refb, blocks, t0=None, info=None):
     if info is not None: info.update(kappa=kap, delta0=d0, w=[float(x) for x in np.atleast_1d(wj)])
     out = []
     for b in blocks:
-        k = sel[b]; c = d0 * cand[b]['r3'][k] + cand[b]['g'][k] @ wj
+        k = sel[b]; c = np.where(cand[b]['tx'][k], 1.0 - beng.F1['tax'], 1.0) * (d0 * cand[b]['r3'][k] + cand[b]['g'][k] @ wj)
         out.append(cand[b]['x'][k] - np.log(np.maximum(1.0 + kap * np.expm1(refb[b]['x'][k]) + c, 1e-12)))
     return out
 
@@ -1012,6 +1077,13 @@ def _active_rows(cand, refb, blocks, t0=None):
 
 
 def _active(cand, refb, blocks, t0=None): return [int(np.sum(a)) for a in _active_rows(cand, refb, blocks, t0)]
+
+
+def _active_subs(a):
+    """number of 63-row sub-blocks (leftover rows join the last one) that contain an active row"""
+    if not len(a): return 0
+    k = max(len(a) // 63, 1); j = np.minimum(np.arange(len(a)) // 63, k - 1)
+    return int(np.sum(np.bincount(j, weights=np.asarray(a, dtype=float), minlength=k) > 0))
 
 
 def _harm(d, active, k):
@@ -1111,7 +1183,8 @@ def _design(c, stress=True, pre=None):
     if _pre_t0(C, R, c.t0) or _pre_t0_sig(pre, c.t0): raise Void('differs from the reference before T0')
     ds = _paired(C, R, DESIGN, c.t0); o = _gate_stats(ds, _active(C, R, DESIGN, c.t0), DESIGN)
     o['n_span'] = _span(C, R, DESIGN, c.t0)
-    plain = not c.names and not (pre['m']['Wt'] != 0).any() and not _eng(pre['v']).touched
+    o['active_sub63'] = [_active_subs(a) for a in _active_rows(C, R, DESIGN, c.t0)]    # v7: active 63-row sub-blocks per design block (the sealed set needs 6 or more for any verdict above INCONCLUSIVE)
+    plain = not c.names and not (pre['m']['Wt'][_eng(pre['v']).keep] != 0).any() and not _eng(pre['v']).touched   # v7: weights on the rows of the design account only
     o['g0'] = 'required' if plain else 'not available'   # the simulation screen exists only for a rule on the index chain alone
     inf = {}; dn = _neutral(C, R, DESIGN, c.t0, inf); o['d_star'] = ann(dn); o['t63_star'] = test_t(dn, 63)[0]; o['benchmark'] = inf
     on = {b: (np.ones(len(C[b]['x']), dtype=bool) if c.t0 is None else np.asarray(C[b]['date'] >= pd.Timestamp(c.t0))) for b in DESIGN}
@@ -1127,13 +1200,13 @@ def _design(c, stress=True, pre=None):
     cut = np.cumsum([len(C[b]['x']) for b in DESIGN])[:-1]
     sub = np.concatenate([sub_means(d, 63) for d in np.split(full(ds), cut)])
     subn = np.concatenate([sub_means(d, 63) for d in np.split(full(dn), cut)])
-    o['skew63'], o['ac1_63'] = _shape(sub)
+    o['skew63'], o['ac1_63'] = _shape(sub); o['skew63_star'], o['ac1_63_star'] = _shape(subn)
     return o, sub, subn
 
 
 def _advanced_before(k, L):
     """(family label, design sub-block means) of every configuration that advanced at G1 in a batch before k"""
-    return [(e.get('family'), _sub_of(e['cfg'])) for e in L if e.get('kind') == 'g1' and e.get('advance') and e.get('batch', 0) < k]
+    return [(e.get('family'), _sub_of(e['cfg'])) for e in L if e.get('kind') == 'g1' and e.get('advance') and e.get('batch') != k]
 
 
 @_scoped
@@ -1142,7 +1215,9 @@ def run_batch(k, stress=True):
     A configuration that breaks a rule (source gate, raw-level, prefix or level-scale test, output rules, an error in its own
     code) is void: it is not scored and the batch level is not refunded. A batch is scored once; a run that was interrupted
     before its results file was written is resumed (finished configurations are kept in results/partial_k/)."""
-    _guard(); _check_env(); _writable(); cfgs, sha, line = load_batch(k); L = read_ledger(); done = OUT + 'results/batch_%d.json' % k
+    _ready(); _writable(); _run_lock(); cfgs, sha, line = load_batch(k); L = read_ledger(); done = OUT + 'results/batch_%d.json' % k
+    if WORLD is None and not stress: raise PermissionError('the registered batch run includes the stress runs of G1 (d)')   # v7
+    if any(not _batch_done(j, L) for j in range(1, k)): raise PermissionError('an earlier batch is not scored yet')   # v7: the family rule reads the earlier batches
     if os.path.exists(done):
         if any(e.get('kind') == 'batch-done' and e.get('batch') == k for e in L): raise PermissionError('batch %d is already scored: read %s' % (k, done))
         os.remove(done)                                  # interrupted between the results file and its ledger line: rebuilt from the partial files
@@ -1152,18 +1227,24 @@ def run_batch(k, stress=True):
     for c in cfgs:
         h = c.hash; cp = part + h + '.json'
         if not any(e.get('kind') == 'score' and e.get('cfg') == h and e.get('batch') == k for e in L): ledger(dict(kind='score', cfg=h, set='design', batch=k))
-        got = json.load(open(cp)) if os.path.exists(cp) else None
-        if got is None or got.get('env') != env:
+        got = _read_json(cp)                                 # v7: a partial file cut while it was written counts as missing
+        if got is None or got.get('env') != env or (stress and 'void' not in got['o'] and 'd_cost2' not in got['o']):
             try:
                 if any(n in raw['failed'] for n in c.names): raise Void('raw-level test of an extra input')
                 pre = _prepare(c.fresh(), c.names)                   # the one full-calendar call (newly executed module): tested below, then scored
                 if prefix_test(None, c.names, n_rand=60, seed=seed, fresh=c.fresh, pre=pre)['result'] != 'PASS': raise Void('prefix test')
                 if scale_test(c.fresh(), c.names, pre=pre) != 'PASS': raise Void('level-scale test')
                 o, sub, sn = _design(c, stress, pre)
+                if o['d'] >= D_MIN_G1 and prefix_test(None, c.names, n_rand=0, seed=seed, noise=False, step=1, fresh=c.fresh, pre=pre)['result'] != 'PASS':
+                    raise Void('prefix test: every row')   # v7: a score that reaches the G1 size is kept only after a cut after EVERY account row
                 got = dict(env=env, o=o, sub=[float(x) for x in sub], subn=[float(x) for x in sn])
             except Void as e: got = dict(env=env, o=dict(void=str(e) if WORLD is not None else str(e).split(':')[0]), sub=None, subn=None)   # v6: real calendar = the category only
-            json.dump(got, open(cp, 'w'))
-        res[h] = got['o']; res[h].update(family=c.family, name=c.name, calendar=bool(any(n.startswith('cal:') for n in c.names)))
+            except MemoryError:                              # v7: not the candidate's rule break: the run stops and is resumed; the second time on one configuration it is void
+                if not any(e.get('kind') == 'out-of-memory' and e.get('cfg') == h for e in read_ledger()):
+                    ledger(dict(kind='out-of-memory', cfg=h, batch=k)); raise
+                got = dict(env=env, o=dict(void='error in candidate code: out of memory twice' if WORLD is not None else 'error in candidate code'), sub=None, subn=None)
+            _write_json(cp, got)
+        res[h] = got['o']; res[h].update(family=c.family, name=c.name, calendar=bool(c.calendar or any(n.startswith('cal:') for n in c.names)))
         if got['sub'] is not None: subs[h] = np.asarray(got['sub']); subn[h] = np.asarray(got['subn'])
     live = list(subs)
     if live:
@@ -1175,7 +1256,7 @@ def run_batch(k, stress=True):
         o['g1'] = dict(a=bool(o['d'] >= D_MIN_G1 and o['active_blocks'] >= 3 and min(o['n'], o['n_span']) >= 1500), b=bool(not o['harm']), c=bool(o['p_family'] <= alpha),
                        d=bool(all(o['d_' + sn] > 0 for sn in G1_STRESS)) if stress else None)
         o['g1_pass'] = all(v for v in o['g1'].values() if v is not None) and stress
-        o['kind'] = 'timing' if (o['d_star'] > 0 and o['p_star_family'] <= alpha) else 'exposure'
+        o['kind'] = 'timing' if (o['d_star'] > 0 and o['p_star_family'] <= alpha and o['skew63_star'] >= SHAPE_SKEW_MIN and o['ac1_63_star'] <= SHAPE_AC1_MAX) else 'exposure'   # v7: shape condition
     key = lambda h: (res[h]['kind'] != 'timing', res[h]['p_family'], -res[h]['t63_family'], h)
     prev = _advanced_before(k, L); adv = []          # at most one configuration per family goes on (timing kind first), over all batches
     for h in sorted([h for h in live if res[h]['g1_pass']], key=key):
@@ -1183,7 +1264,7 @@ def run_batch(k, stress=True):
            all(f != res[h]['family'] and _corr(sm, subs[h]) < FAM_CORR for f, sm in prev): adv.append(h)
     out = dict(batch=k, sha256=sha, alpha=alpha, n=len(cfgs), raw_extras_test=raw, results=res, sub_means={h: [float(x) for x in subs[h]] for h in live})
     for h in res: res[h]['advance'] = h in adv
-    json.dump(out, open(done + '.tmp', 'w'), indent=1)
+    with open(done + '.tmp', 'w') as f: json.dump(out, f, indent=1); f.flush(); os.fsync(f.fileno())
     have = set(e.get('cfg') for e in read_ledger() if e.get('kind') == 'g1' and e.get('batch') == k)
     for h in res:
         if h not in have:
@@ -1197,7 +1278,7 @@ def run_batch(k, stress=True):
 
 def g0_line(c, passed, code_sha256):
     """ledger line of the simulation screen G0 (its function lives in its own reviewed file; this records the outcome)"""
-    _guard(); _check_env(); h = c.hash; L = read_ledger(); o = _g1_of(h, L)
+    _ready(); h = c.hash; L = read_ledger(); o = _g1_of(h, L)
     if not (o.get('g1_pass') and o.get('advance')) or o.get('g0') != 'required': raise PermissionError('G0 is not due for this configuration')
     if any(e.get('kind') == 'g0' and e.get('cfg') == h for e in L): raise PermissionError('G0 already recorded')
     ledger(dict(kind='g0', cfg=h, passed=bool(passed), code=code_sha256))
@@ -1213,16 +1294,17 @@ def weak_eval(c):
     """G2 (old-data no-harm check) on W5: only for a configuration that passed G1 and was selected (and G0 where it exists),
     and only once. With fewer than G2_MIN_ROWS scored WEAK rows on or after T0 the check does not exist: the line says so,
     nothing is read, and the configuration cannot be opened."""
-    _guard(); _check_env(); h = c.hash; L = read_ledger(); g1 = _g1_of(h, L)
+    _ready(); _run_lock(); h = c.hash; L = read_ledger(); g1 = _g1_of(h, L)
     if not (g1.get('g1_pass') and g1.get('advance')): raise PermissionError('no G1 pass for this configuration')
     if not _g0_clear(h, g1, L): raise PermissionError('G0 is required and not passed')
-    if any(e.get('kind') in ('score', 'g2') and e.get('cfg') == h and e.get('set', 'weak') == 'weak' for e in L):
+    nw = sum(1 for e in L if e.get('kind') == 'score' and e.get('cfg') == h and e.get('set') == 'weak')
+    if any(e.get('kind') == 'g2' and e.get('cfg') == h for e in L) or nw >= 2:   # v7: a read that was interrupted before its g2 line (nothing was returned) is run again once, logged
         raise PermissionError('weak blocks already read for this configuration')
     cal = Cal(acc_dates(frame())); ok = cal.scored & np.isin(cal.blk, WEAK)
     if c.t0 is not None: ok &= np.asarray(cal.dates >= pd.Timestamp(c.t0))
     if int(ok.sum()) < G2_MIN_ROWS:
         ledger(dict(kind='g2', cfg=h, passed=False, available=False)); return dict(g2_pass=False, available=False, n=int(ok.sum()))
-    ledger(dict(kind='score', cfg=h, set='weak'))
+    ledger(dict(kind='score', cfg=h, set='weak', rerun=bool(nw)))
     C = _design_account(c.fresh(), c.names); R = _ref_blocks()
     o = _gate_stats(_paired(C, R, WEAK, c.t0), _active(C, R, WEAK, c.t0), WEAK)
     o['set_limit'] = float(-1.0 * o['te'] * np.sqrt(252.0 / o['n'])) if o['n'] else 0.0
@@ -1234,8 +1316,9 @@ def weak_eval(c):
 def authorise_g3(c, owner_message_id):
     """record the owner's authorisation of a G3 opening (the id of the owner's own message, and where the ledger stood). Only
     for a configuration that passed G1 and was selected, passed G0 where it exists and passed G2."""
-    _guard(); _check_env(); h = c.hash; L = read_ledger(); g1 = _g1_of(h, L)
+    _ready(); h = c.hash; L = read_ledger(); g1 = _g1_of(h, L)
     if not (isinstance(owner_message_id, str) and owner_message_id.startswith('cmsg_') and len(owner_message_id) > 10): raise PermissionError('not a message id')
+    if _msg_used(owner_message_id, L): raise PermissionError('this message was used before (every opening needs a further message of the owner)')   # v7
     if not (g1.get('g1_pass') and g1.get('advance')): raise PermissionError('no G1 pass')
     if not _g0_clear(h, g1, L): raise PermissionError('G0 is required and not passed')
     if not any(e.get('kind') == 'g2' and e.get('cfg') == h and e.get('passed') for e in L): raise PermissionError('no G2 pass')
@@ -1246,7 +1329,11 @@ def close_g3(owner_message_id):
     """the owner closes G3 for good (no further opening); the release function then reports the opened configurations"""
     _guard(); _check_env()
     if not (isinstance(owner_message_id, str) and owner_message_id.startswith('cmsg_') and len(owner_message_id) > 10): raise PermissionError('not a message id')
+    if _msg_used(owner_message_id, read_ledger()): raise PermissionError('this message was used before')   # v7
     ledger(dict(kind='G3-CLOSED', message=owner_message_id))
+
+
+def _msg_used(mid, L): return any(mid in (e.get('message'), e.get('owner_message')) for e in L)
 
 
 def _markers():
@@ -1258,7 +1345,7 @@ def _markers():
 def open_g3(c):
     """one G3 opening: blocks 10 and 12 from the main account (full calendar). Output: one word. One opening at a time: the
     lock file G3.lock is created first and removed at the end (after a crash it is removed by hand, and the retry rule applies)."""
-    _guard(); _check_env(); _writable(); lock = OUT + 'G3.lock'
+    _ready(); _writable(); _run_lock(); lock = OUT + 'G3.lock'
     try: os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
     except FileExistsError: raise PermissionError('another opening is in progress (G3.lock exists)')
     try: return _open_g3(c)
@@ -1282,6 +1369,7 @@ def _g3_word(c, g1, prem, seed):
     Cs = _main_account(pre=prem); Rs = _main_account(ref, ())
     ds = _paired(Cs, Rs, SEALED, c.t0); rows = _active_rows(Cs, Rs, SEALED, c.t0); act = [int(np.sum(a)) for a in rows]; d = ann(ds)
     dn = _neutral(Cs, Rs, SEALED, c.t0)
+    if _pre_t0(Cs, Rs, c.t0): return 'FAIL'              # v7: before T0 the paired difference is 0 on the main view too
     if d <= 0 or any(_harm(x, a, 1.0)[0] for x, a in zip(ds, act)): return 'FAIL'
     if d >= D_MIN_G3 and p_test(ds, seed, rows) <= 0.05 / 3:
         timing = g1.get('kind') == 'timing' and not g1.get('calendar') and not any(n.startswith('cal:') for n in c.names)
@@ -1298,8 +1386,8 @@ def _open_g3(c):
     g2 = [i for i, e in enumerate(L) if e.get('kind') == 'g2' and e.get('cfg') == h and e.get('passed')]
     if not g2: raise PermissionError('no G2 pass')
     if not any(e.get('kind') == 'owner-auth' and e.get('cfg') == h and i > g2[0] for i, e in enumerate(L)): raise PermissionError('no owner authorisation after the G2 pass')
-    opened = [e['cfg'] for e in L if e.get('kind') == 'G3-OPEN']; mk = _markers()
-    if len(mk) > len(opened) or mk != opened[:len(mk)]: raise PermissionError('the ledger shows fewer openings than the marker file')
+    opened = [e.get('cfg') for e in L if e.get('kind') == 'G3-OPEN']; mk = _markers()
+    if any(mk.count(x) > opened.count(x) for x in set(mk)): raise PermissionError('the ledger shows fewer openings than the marker file')   # v7: per hash, as the text says ("at least as many"); a marker write that failed after its ledger line blocks nothing
     if any(e.get('kind') == 'G3-VERDICT' and e.get('cfg') == h for e in L): raise PermissionError('already opened')
     if h in opened:
         if opened.count(h) >= 2: raise PermissionError('retry already used')
@@ -1310,7 +1398,7 @@ def _open_g3(c):
     fixed = float(np.std(np.concatenate([C[b]['lev'] for b in DESIGN]))) == 0 and float(np.ptp(ma['Wt'], axis=0).max()) == 0 and not ma['RB'].any()
     if te <= 0 or fixed or _input_free(c, c.t0): raise PermissionError('a configuration whose level does not depend on any input may not be opened')
     if h not in opened:
-        fam = {e['cfg']: e.get('family') for e in L if e.get('kind') == 'g1'}; mine = _sub_of(h)
+        fam = {e.get('cfg'): e.get('family') for e in L if e.get('kind') == 'g1'}; mine = _sub_of(h)
         for g in set(opened):
             if fam.get(g) == fam.get(h) or _corr(mine, _sub_of(g)) >= FAM_CORR: raise PermissionError('same family as an opened configuration')
     ledger(dict(kind='G3-OPEN', cfg=h, retry=h in opened))                       # v6: logged BEFORE the candidate first runs on the main view
@@ -1318,7 +1406,7 @@ def _open_g3(c):
     word = None; prem = None; _G3_RUN[0] = h; _G3_PRE[0] = h; seed = int(h[:8], 16)
     try:
         prem = _prepare(c.fresh(), c.names, None, 'main')
-        if _pre_t0_sig(prem, c.t0) or prefix_test(None, c.names, n_rand=60, seed=seed, fresh=c.fresh, account='main', pre=prem)['result'] != 'PASS':
+        if _pre_t0_sig(prem, c.t0) or prefix_test(None, c.names, n_rand=60, seed=seed, step=1, fresh=c.fresh, account='main', pre=prem)['result'] != 'PASS':   # v7: every account row
             word = 'FAIL'                                # a check of the main view failed: the opening is used and the verdict is FAIL
         else: word = _g3_word(c, g1, prem, seed)
     except Void: word = 'FAIL'                           # v6: the candidate breaks a rule on the main view (deterministic: no retry)
@@ -1378,18 +1466,24 @@ def prefix_test(make=None, names=(), end=None, n_rand=60, seed=0, noise=True, st
     (b) kept but filled with noise after it; signal, weights, instrument returns, features and EVERY column of the account
     path on the rows up to the cut must be bit-identical to the full run (`pre`: the same full-calendar result that is scored).
     Cuts: the last row of every block, account rows 0, 62, 63 and 259 and n_rand drawn rows from the whole account (both
-    variants), and, with deletion only, every `step`-th account row (v6: 5) and every event row and the row before it: rows
+    variants), and, with deletion only, every `step`-th account row (5 in the sampled test, with a drawn phase since v7;
+    1 = a cut after EVERY account row, used by run_batch for a score that reaches the G1 size and inside a G3 opening) and
+    every event row and the row before it: rows
     on which the candidate's signal or v1's own signal changes, the first and last row of every run in which the candidate's
     level differs from v1's, and rows on which a target weight or a rebalance flag of a column that is ever held changes
     (v6: columns never held make no event). v6: every event row is cut, without a cap (a candidate that adds changes only
     adds cuts); n_event caps the events only in quick checks outside scoring. Every cut run executes a new copy of the
-    candidate module and of its helpers. A candidate that raises on a cut fails that cut. PASS / FAIL and counts."""
+    candidate module and of its helpers. A candidate that raises on a cut fails that cut. PASS / FAIL and counts.
+    Stated limit (v7): no cut lies inside the warm-up rows, so a look-ahead from one warm-up row to another or to the
+    first account row is not seen (it can carry nothing later than that row)."""
     if account == 'main' and WORLD is None and _G3_PRE[0] is None: raise PermissionError('the main view is tested only by open_g3')
+    if make is None and fresh is None: raise ValueError('prefix_test needs the candidate (make, or fresh for a configuration)')   # v7: with neither, every cut failed
     pre = pre or _prepare(make, names, end, account); X, E, v, m = pre['X'], pre['E'], pre['v'], pre['m']; e = _eng(v)
     if e.account != account: raise PermissionError('view of the other account')
     rec = _run_eng(e, m); i0 = len(X) - e.T; cal = Cal(acc_dates(X)); g = np.random.default_rng(seed)
     ends = set([int(cal.rows(b)[-1]) for b in range(NB) if len(cal.rows(b))][:-1])
     drawn = set(int(q) for q in g.integers(0, cal.n - 1, n_rand)) | set(q for q in (0, 62, 63, 259) if q < cal.n - 1)
+    off = int(g.integers(step)) if step else 0           # v7: the phase of the row grid is drawn (a fixed phase would tell candidate code which rows are cut)
     rB = _refm(e.c, e.T)['B']; held = (m['Wt'] != 0).any(axis=0)                # v6: columns never held are never read by the engine
     ev = np.zeros(e.T, dtype=bool); ev[1:] = (m['B'][1:] != m['B'][:-1]) | (rB[1:] != rB[:-1])
     dif = m['B'] != rB; turn = np.flatnonzero(dif[1:] != dif[:-1]) + 1; ev[turn] = True; ev[turn - 1] = True
@@ -1397,7 +1491,7 @@ def prefix_test(make=None, names=(), end=None, n_rand=60, seed=0, noise=True, st
     evq = np.flatnonzero(ev) - WARM; evq = evq[(evq >= 0) & (evq < cal.n - 1)]
     if n_event is not None and len(evq) > n_event: evq = g.choice(evq, n_event, replace=False)    # quick checks only
     events = set(int(q) for q in evq) | set(int(q) - 1 for q in evq if q >= 1)
-    cuts = sorted(ends | drawn | events | (set(range(0, cal.n - 1, step)) if step else set()))
+    cuts = sorted(ends | drawn | events | (set(range(off, cal.n - 1, step)) if step else set()))
     cells = 0; bad = 0; ncut = 0; mk = fresh() if fresh is not None else make
     for q in cuts:
         r = i0 + WARM + q                                # calendar row of the cut
@@ -1493,13 +1587,49 @@ def raw_extras_test(names, end=None, n_rand=12, seed=0):
 
 
 # ------------------------------------------------------------------------------------------------ ledger and hashes
+def _lock_path(tag): return '/tmp/xv1_%s_%s.lock' % (tag, hashlib.sha256(os.path.realpath(OUT).encode()).hexdigest()[:12])
+
+
+@contextlib.contextmanager
+def _ledger_lock():
+    """v7: one ledger writer at a time on this machine (the lock file is local: locks on the network mount are not relied on)"""
+    with open(_lock_path('ledger'), 'w') as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try: yield
+        finally: fcntl.flock(f, fcntl.LOCK_UN)
+
+
+_RUN_LOCK = {}
+def _run_lock():
+    """v7: one scoring process per output folder on this machine (batch run, G2, G3); held until the process ends"""
+    p = _lock_path('run')
+    if p in _RUN_LOCK: return
+    f = open(p, 'w')
+    try: fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError: f.close(); raise PermissionError('another scoring process is running on this output folder')
+    _RUN_LOCK[p] = f
+
+
+def _mirror_bytes():
+    """the repository copy of the ledger (None when there is none, or in a test world without one)"""
+    if MIRROR is None or not os.path.exists(MIRROR + 'LEDGER.jsonl'): return None
+    return open(MIRROR + 'LEDGER.jsonl', 'rb').read()
+
+
+_CFG_KINDS = ('score', 'g1', 'g0', 'g2', 'owner-auth', 'G3-OPEN', 'G3-ABORT', 'G3-VERDICT', 'out-of-memory')
 def read_ledger():
     """the ledger, with its hash chain verified: every line names the hash of the file as it was before the line was added.
-    An edited, shortened-and-continued or re-ordered ledger raises."""
-    p = OUT + 'LEDGER.jsonl'
-    if not os.path.exists(p): return []
+    An edited, shortened-and-continued or re-ordered ledger raises. v7: so does a ledger that lost lines against its
+    repository copy (the chain alone cannot see a removed tail), and a last line that was cut while it was written."""
+    p = OUT + 'LEDGER.jsonl'; mb = _mirror_bytes()
+    if not os.path.exists(p):
+        if mb: raise PermissionError('the ledger is missing but its repository copy holds lines')
+        return []
+    body = open(p, 'rb').read()
+    if body and not body.endswith(b'\n'): raise PermissionError('the last ledger line is cut (repair_ledger removes the cut piece and logs it)')
+    if mb is not None and not body.startswith(mb): raise PermissionError('the ledger lost or changed lines against its repository copy')
     out = []; h = hashlib.sha256(); first = True
-    for raw in open(p, 'rb').read().splitlines(keepends=True):
+    for raw in body.splitlines(keepends=True):
         e = json.loads(raw)
         if e.get('prev') != ('' if first else h.hexdigest()[:16]): raise PermissionError('the ledger hash chain is broken at line %d' % len(out))
         h.update(raw); first = False; out.append(e)
@@ -1508,12 +1638,38 @@ def read_ledger():
 
 
 def ledger(entry):
-    """append-only, hash-chained (the chain is verified before every append)"""
-    _writable(); os.makedirs(OUT, exist_ok=True); p = OUT + 'LEDGER.jsonl'; L = read_ledger()
-    if WORLD is None and not L and entry.get('kind') != 'registration': raise PermissionError('the first ledger line must be the registration')
-    prev = hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16] if os.path.exists(p) else ''
-    entry = dict(entry); entry['ts'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()); entry['prev'] = prev
-    with open(p, 'a') as f: f.write(json.dumps(entry, ensure_ascii=False) + '\n'); f.flush(); os.fsync(f.fileno())
+    """append-only, hash-chained (the chain is verified before every append). v7: under a write lock; refused in the real
+    world while a test-world module is loaded and for a line about a configuration that names none; copied to the
+    repository folder after every line."""
+    _writable()
+    if WORLD is None and 't_world' in sys.modules: raise PermissionError('a test-world module is loaded: the registered ledger is not written')
+    if entry.get('kind') in _CFG_KINDS and not (isinstance(entry.get('cfg'), str) and re.fullmatch(r'[0-9a-f]{64}', entry['cfg'])):
+        raise PermissionError('a ledger line of kind %s needs a configuration hash' % entry.get('kind'))
+    with _ledger_lock():
+        p = OUT + 'LEDGER.jsonl'; L = read_ledger()
+        if WORLD is None and not L and entry.get('kind') != 'registration': raise PermissionError('the first ledger line must be the registration')
+        os.makedirs(OUT, exist_ok=True)
+        prev = hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16] if os.path.exists(p) else ''
+        entry = dict(entry); entry['ts'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()); entry['prev'] = prev
+        with open(p, 'ab') as f: f.write((json.dumps(entry, ensure_ascii=False) + '\n').encode()); f.flush(); os.fsync(f.fileno())
+        if MIRROR is not None:
+            os.makedirs(MIRROR, exist_ok=True)
+            with open(MIRROR + 'LEDGER.jsonl.tmp', 'wb') as f: f.write(open(p, 'rb').read()); f.flush(); os.fsync(f.fileno())
+            os.replace(MIRROR + 'LEDGER.jsonl.tmp', MIRROR + 'LEDGER.jsonl')
+
+
+def repair_ledger():
+    """v7: a ledger whose last line was cut while it was written (no line end) cannot be read by any function. This removes
+    the cut piece and nothing else, and logs the repair as the next line. A complete line is never removed (the repository
+    copy would refuse the ledger)."""
+    _writable(); p = OUT + 'LEDGER.jsonl'
+    with _ledger_lock():
+        b = open(p, 'rb').read()
+        if not b or b.endswith(b'\n'): raise PermissionError('the ledger has no cut line')
+        keep = b[:b.rfind(b'\n') + 1]
+        with open(p + '.tmp', 'wb') as f: f.write(keep); f.flush(); os.fsync(f.fileno())
+        os.replace(p + '.tmp', p)
+    ledger(dict(kind='repair', dropped_bytes=len(b) - len(keep)))
 
 
 DATA_FILES = ['/mnt/project-files/research/data/' + f for f in (
@@ -1530,6 +1686,21 @@ def _sha(p): return hashlib.sha256(open(p, 'rb').read()).hexdigest()
 def _consts(): return json.loads(json.dumps(_FROZEN, sort_keys=True))
 
 
+def _rel(p):
+    """v7: registry key of a file: its path below research_xv1 or below the project-files folder, wherever those two lie
+    in this session (the registry must still hold when the repository or the mount sits at another path)"""
+    q = os.path.realpath(p)
+    if q.startswith(ROOT + os.sep): return 'research_xv1/' + os.path.relpath(q, ROOT)
+    i = q.find('/project-files/')
+    return 'project-files/' + q[i + len('/project-files/'):] if i >= 0 else q
+
+
+def _abs(k):
+    if k.startswith('research_xv1/'): return os.path.join(ROOT, k[len('research_xv1/'):])
+    if k.startswith('project-files/'): return '/mnt/project-files/' + k[len('project-files/'):]
+    return k
+
+
 def env_hashes():
     """sha256 of every data file of the chain, of the evaluator files and of every project code file loaded so far, the
     package versions and the registered constants. (Candidate files and their helpers are covered by the configuration hashes.)"""
@@ -1540,26 +1711,74 @@ def env_hashes():
               llvmlite=llvmlite.__version__)
     try: import xlrd; pk['xlrd'] = xlrd.__version__
     except Exception: pk['xlrd'] = None
-    return dict(data={p: _sha(p) for p in DATA_FILES}, code={p: _sha(p) for p in sorted(code)}, packages=pk, constants=_consts())
+    return dict(data={_rel(p): _sha(p) for p in DATA_FILES}, code={_rel(p): _sha(p) for p in sorted(code)}, packages=pk, constants=_consts())
+
+
+def script_hashes(code_keys=()):
+    """sha256 of the scripts of the code folder that are not evaluator code files (the checks script's hash is enforced by
+    _checks_passed; the others are recorded)"""
+    d = os.path.join(ROOT, 'code')
+    return {f: _sha(os.path.join(d, f)) for f in sorted(os.listdir(d)) if f.endswith('.py') and _rel(os.path.join(d, f)) not in code_keys}
+
+
+def registry_body(prereg_sha256):
+    """the bytes of HASHES.json for the files, packages and constants in use now"""
+    H = dict(prereg_sha256=prereg_sha256, **env_hashes()); H['scripts'] = script_hashes(H['code'])
+    return json.dumps(H, indent=1, sort_keys=True).encode()
+
+
+def _write_registry(body):
+    with open(OUT + 'HASHES.json.tmp', 'wb') as f: f.write(body); f.flush(); os.fsync(f.fileno())
+    os.replace(OUT + 'HASHES.json.tmp', OUT + 'HASHES.json')
+
+
+def amend(reason_file):
+    """v7: take the registry again after a change that section 7 of the text allows (a data repair, a fix of an evaluator
+    defect, one of the three functions written later, new package versions). Writes AMENDMENT_n.md (a copy of the reason
+    file, which says what changed and lists every output that existed before), a ledger line with its sha256 and the
+    sha256 of the new registry, and then the new HASHES.json. The registered text and ledger line 0 stay as they are.
+    Afterwards the checks must pass again under the new registry before anything is scored, and partial results of an
+    unfinished batch are computed again. Called by m_register.py --amend after the same exercise of the evaluator as at
+    registration. Returns n."""
+    _guard(); _writable()
+    if WORLD is None and OUT != REG_OUT: raise PermissionError('not the registered folder')
+    if os.path.exists(OUT + 'G3.lock'): raise PermissionError('an opening is in progress')
+    L = read_ledger()
+    if not L or L[0].get('kind') != 'registration' or L[0].get('sha256') != _sha(OUT + 'PREREG_XV1_STRUCTURE.md'): raise PermissionError('the structure is not registered')
+    text = open(reason_file, 'rb').read()
+    if len(text.strip()) < 40: raise ValueError('the amendment file must say what changed and list the outputs that existed before')
+    n = 1 + sum(1 for e in L if e.get('kind') == 'amendment'); body = registry_body(L[0]['sha256'])
+    with open(OUT + 'AMENDMENT_%d.md' % n, 'wb') as f: f.write(text)
+    ledger(dict(kind='amendment', n=n, sha256=hashlib.sha256(text).hexdigest(), hashes_sha256=hashlib.sha256(body).hexdigest(), lines_before=len(L)))
+    _write_registry(body)                                # if the run stops between the line and this file the registry is not in force: amend again
+    return n
 
 
 def _check_env():
     """Before anything is scored: the registered data files, code files, package versions and constants are the ones in
     use, and no project code file is loaded that the registry does not hold. In a test world a folder without a registry
-    is not checked."""
+    is not checked. v7: the registry must be the file whose sha256 the ledger names (ledger line 0, or the latest amendment
+    line), and it must hold exactly the data files of the chain."""
     _guard()
     if WORLD is None and 't_world' in sys.modules: raise PermissionError('a test-world module is loaded in a real run')
     if not os.path.exists(OUT + 'HASHES.json'):
         if WORLD is None: raise PermissionError('the structure is not registered')
         return
-    if WORLD is None and not _registered(): raise PermissionError('the registry does not match ledger line 0')
+    if WORLD is None and not _registered(): raise PermissionError('the registry does not match the ledger (line 0 or the latest amendment)')
     reg = json.load(open(OUT + 'HASHES.json')); now = env_hashes()
-    if any(now['data'].get(k) != v for k, v in reg['data'].items()): raise PermissionError('registered hashes changed: a data file')
-    if any((not os.path.exists(k)) or _sha(k) != v for k, v in reg['code'].items()): raise PermissionError('registered hashes changed: a code file')
+    if set(reg['data']) != set(now['data']) or any(now['data'][k] != v for k, v in reg['data'].items()): raise PermissionError('registered hashes changed: a data file')
+    if any((not os.path.exists(_abs(k))) or _sha(_abs(k)) != v for k, v in reg['code'].items()): raise PermissionError('registered hashes changed: a code file')
     new = [k for k in now['code'] if k not in reg['code']]
     if new: raise PermissionError('registered hashes changed: a project code file is loaded that is not registered (%s)' % os.path.basename(new[0]))
     if reg.get('packages') != now['packages']: raise PermissionError('registered hashes changed: package versions')
     if reg.get('constants') != now['constants']: raise PermissionError('registered hashes changed: constants')
+
+
+def _ready():
+    """v7: before anything is scored, recorded or authorised: the registered constants and hashes are in force and, in the
+    real calendar, the data and parity checks have passed under that registry"""
+    _guard(); _check_env()
+    if WORLD is None and not _checks_passed(): raise PermissionError('the data and parity checks have not passed under the registered hashes')
 
 
 def _env_tag():
@@ -1567,11 +1786,17 @@ def _env_tag():
     return _sha(OUT + 'HASHES.json')[:16] if os.path.exists(OUT + 'HASHES.json') else ''
 
 
-def checks_line(passed, detail=None):
-    """ledger line of the data and parity checks (m_checks.py); scoring a batch requires a passed line under the registry in force"""
-    ledger(dict(kind='checks', passed=bool(passed), env=_env_tag(), detail=detail or {}))
+def checks_line(passed, detail=None, script=None):
+    """ledger line of the data and parity checks (m_checks.py); scoring requires a passed line under the registry in force.
+    v7: written only under the registered hashes, with the sha256 of the script that ran the checks."""
+    _guard(); _check_env()
+    ledger(dict(kind='checks', passed=bool(passed), env=_env_tag(), detail=detail or {}, script_sha256=_sha(script) if script else None))
 
 
 def _checks_passed():
+    """the latest checks line under the registry in force passed and (v7, real calendar) was written by the checks script
+    whose sha256 the registry holds"""
     L = [e for e in read_ledger() if e.get('kind') == 'checks' and e.get('env') == _env_tag()]
-    return bool(L) and bool(L[-1].get('passed'))
+    if not (L and L[-1].get('passed')): return False
+    if WORLD is not None: return True
+    return L[-1].get('script_sha256') == json.load(open(OUT + 'HASHES.json')).get('scripts', {}).get('m_checks.py')

@@ -7,8 +7,9 @@
    brake parameters that carry a full-sample number are void by the output rules;
  5 the raw-level test of the extra inputs passes, and fails for a planted backward fill;
  6 a look-ahead planted in the v1 shadow level is caught through a candidate that reads it."""
+import os
 import sys, numpy as np
-sys.path.insert(0, '/home/user/-/research_xv1/code')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xv1, std, xeng, t_world
 from std import bk, beng, ce
 
@@ -35,6 +36,7 @@ def pt(mk):
     try: return xv1.prefix_test(mk, end=xv1.OLD_END, n_rand=25)
     except xv1.Void as e: return 'VOID: %s' % e
 print('4 prefix test, v1:', pt(xv1.ref))
+print('  v1 with a cut after every account row (v7, as the section-3 script runs it):', xv1.prefix_test(xv1.ref, end=xv1.OLD_END, n_rand=200, step=1))
 
 def cheat_future(w):
     o = xv1.ref(w); B = np.array(o['B'], dtype=float).reshape(-1); r = w.c.r[0]

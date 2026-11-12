@@ -16,8 +16,9 @@ When every check passes on the full calendar a 'checks' line is written to the l
  P2   on the <= 2014 calendar: v1's equity on every row bit-identical to std.engine on std.contexts()['real_ndx_86_14'] with
       cspr = 10.0, and its CAGR after final liquidation tax equal to std.engine's (within 1e-9) and within 0.005 pp of 30.53%.
  (P3 gives md.kf, whose index is calendar dates, deletion only.)"""
+import os
 import sys, json, numpy as np, pandas as pd
-sys.path.insert(0, '/home/user/-/research_xv1/code')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xv1, std, xdata
 from std import jp, ov, bk
 import md, mkt
@@ -189,5 +190,5 @@ pay = [(str(ca.dates[days[k]].date()), int(ca.blk[days[k]]), bool(ca.rank[days[k
 print('TAX  design-account payment rows (date, block, inside the 63-row embargo): %d payments, %d inside an embargo' % (len(pay), sum(p[2] for p in pay)))
 print('     ', ' '.join('%s%s' % (p[0], '*' if p[2] else '') for p in pay))
 print('ALL CHECKS', 'PASS' if OK else 'FAIL')
-xv1.checks_line(OK, dict(script='m_checks.py'))
+xv1.checks_line(OK, dict(script='m_checks.py'), script=os.path.abspath(__file__))   # v7: with the sha256 of this script
 sys.exit(0 if OK else 1)

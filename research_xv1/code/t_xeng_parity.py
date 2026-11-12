@@ -1,7 +1,8 @@
 """<= 2014 only: xeng with no extras must be bit-identical to beng.run1 (locked engine) for v1 and for 3x hold, standard and zero cash,
 delay 2 and 3, cost x1 and x2. Also mechanical tests of the extras on synthetic numbers and of the 1x-hold instrument."""
+import os
 import sys, numpy as np
-sys.path.insert(0, '/home/user/-/research_xv1/code')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xv1, std, xeng, t_world
 t_world.old()
 from std import bk, beng
