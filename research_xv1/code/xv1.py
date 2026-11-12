@@ -67,7 +67,10 @@ _FROZEN = dict(CAL_START='1984-01-03', ACC_START='1986-01-02', CAL_END='2026-08-
                G1_STRESS=('cost2', 'delay3', 'delay1', 'tax0'), D_MIN_G1=0.010, D_MIN_G3=0.005, DRAWS=200000,
                OUT=REG_OUT, FEE=0.0095, SPREAD=0.0075, EXACT_SF=20, WARM=int(WARM), T0_WARM_MAX=756, G2_MIN_ROWS=252,
                LVL_OK=('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext'), W_ACT=0.01, G3_END='2031-01-01',
-               F1=dict(delay=2, cost=0.003, tax=0.22, W0=10000000.0, harvest=3, hthr=1.0, cspr=0.02, er3=0.0245, step=0.5, fstep=0.5), CARRY=5)
+               F1=dict(delay=2, cost=0.003, tax=0.22, W0=10000000.0, harvest=3, hthr=1.0, cspr=0.02, er3=0.0245, step=0.5, fstep=0.5), CARRY=5,
+               LIT_INT_MAX=999, LIT_SEQ_MAX=64, LIT_STR_MAX=64)
+_FROZEN_LISTS = ('_NP_OK', '_BI_OK', '_BAN_ATTR', '_BAN_NAME', '_ERRSTATE_KW', '_ONE_X', '_LEV')   # v6: added to _FROZEN once they exist
+def _canon(x): return {k: list(v) for k, v in sorted(x.items())} if isinstance(x, dict) else sorted(x)
 
 
 class Void(Exception):
@@ -81,7 +84,7 @@ def _guard():
     g = globals()
     for k, val in _FROZEN.items():
         if k == 'CARRY': continue
-        if g[k] != val: raise PermissionError('registered constant %s was changed' % k)
+        if (_canon(g[k]) if k in _FROZEN_LISTS else g[k]) != val: raise PermissionError('registered constant %s was changed' % k)
     if dict(beng.F1) != _FROZEN['F1']: raise PermissionError('engine terms (beng.F1) changed')
     if xdata.CARRY != _FROZEN['CARRY']: raise PermissionError('carry limit of the extra inputs changed')
     if abs(beng.F1['er3'] - (FEE + 2 * SPREAD)) > 1e-15: raise PermissionError('fund model terms changed')
@@ -144,6 +147,7 @@ def frame(end=None):
     if end not in _FR:
         if end > OLD_END:
             if WORLD is not None: raise PermissionError('test world %r: no real calendar after %s is built' % (WORLD, OLD_END))
+            if 't_world' in sys.modules: raise PermissionError('a test-world module is loaded: no real calendar after %s' % OLD_END)
             _guard()
             if end not in (REG_END, A_END): raise PermissionError('only the registered calendar ends are built')
             if not _registered(): raise PermissionError('the structure is not registered: no real calendar after %s (tests use t_world.old() or t_world.synth())' % OLD_END)
@@ -359,7 +363,8 @@ def _norm(m, T):
         elif type(a) in (list, tuple):
             if not all(type(x) in (int, float, bool) or isinstance(x, (np.number, np.bool_, np.ndarray)) for x in np.ravel(np.asarray(a, dtype=object))): bad('list of non-numbers')
         elif not (type(a) in (int, float, bool) or isinstance(a, (np.number, np.bool_))): bad('value of type %s' % type(a).__name__)
-    o = dict(B=np.ascontiguousarray(np.asarray(m['B'], dtype=np.float64).reshape(-1)), bfn=m['bfn'],
+    bfn = _REFB if m['bfn'] is _BFN_TOK else std.ident if m['bfn'] is _ID_TOK else m['bfn']     # v6: tokens back to the functions
+    o = dict(B=np.ascontiguousarray(np.asarray(m['B'], dtype=np.float64).reshape(-1)), bfn=bfn,
              bp=np.asarray(m['bp'], dtype=np.float64).reshape(-1), fstep=float(m['fstep']), mode=m.get('mode', 0), inc=m.get('inc', 0))
     if len(o['B']) != T: bad('length of B')
     if not (np.isfinite(o['B']).all() and o['B'].min() >= 0 and o['B'].max() <= 3): bad('B outside 0..3 or not finite')
@@ -693,7 +698,10 @@ _BAN_ATTR = {'sys', 'os', 'modules', 'setflags', 'flags', 'ctypes', 'tofile', 'd
              # v6: string formatting walks attributes inside a string; frames, generators, coroutines and tracebacks reach globals
              'format', 'format_map', 'vformat', 'gi_frame', 'gi_code', 'gi_yieldfrom', 'gi_suspended', 'cr_frame', 'cr_code', 'cr_await',
              'cr_origin', 'ag_frame', 'ag_code', 'ag_await', 'f_globals', 'f_locals', 'f_back', 'f_builtins', 'f_code', 'f_trace',
-             'tb_frame', 'tb_next', 'co_consts', 'co_code', 'co_names', 'func_globals', 'mro', 'seterr', 'seterrcall', 'geterrcall'}
+             'tb_frame', 'tb_next', 'co_consts', 'co_code', 'co_names', 'func_globals', 'mro', 'seterr', 'seterrcall', 'geterrcall',
+             # v6 (second check): attributes of compiled functions that lead to module globals and the real built-ins
+             'globals', 'environment', 'overloads', 'py_func', 'func_code', 'func_id', 'func_ir', 'targetctx', 'typingctx', 'library',
+             'module', 'builtins', 'eval', 'exec', 'open', 'compile'}
 _NP_OK = {   # the numpy attributes candidate code may use (one level: np.X, never np.X.Y)
     'abs', 'absolute', 'all', 'any', 'append', 'arange', 'argmax', 'argmin', 'argsort', 'array', 'array_equal', 'asarray',
     'ascontiguousarray', 'bincount', 'bool_', 'c_', 'ceil', 'clip', 'column_stack', 'concatenate', 'convolve', 'copy', 'cos',
@@ -714,6 +722,8 @@ _STD_MODS = set(sys.stdlib_module_names) | set(sys.builtin_module_names)
 _YEAR = re.compile(r'(19|20)\d\d')
 LIT_INT_MAX = 999                       # v6: an integer literal above this is refused (row numbers and years are not written into a rule)
 LIT_SEQ_MAX = 64                        # v6: a list / tuple / set / dict display with more elements is refused (no data tables in code)
+LIT_STR_MAX = 64                        # v6: a longer string literal (other than a docstring) is refused, and so is any bytes literal
+_FROZEN.update({k: _canon(globals()[k]) for k in _FROZEN_LISTS})   # v6: the allow- and ban-lists are registered constants too
 
 
 def _read_src(path):
@@ -810,8 +820,11 @@ def _gate_src(main, src):
             elif isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == 'errstate':
                 if n.args or any(k.arg not in _ERRSTATE_KW for k in n.keywords): out.append('%s:%d np.errstate with an argument other than %s' % (tag, n.lineno, sorted(_ERRSTATE_KW)))
             elif isinstance(n, ast.Constant):
-                if type(n.value) is int and abs(n.value) > LIT_INT_MAX: out.append('%s:%d integer literal above %d' % (tag, n.lineno, LIT_INT_MAX))
+                if type(n.value) in (int, float) and abs(n.value) > LIT_INT_MAX: out.append('%s:%d number literal above %d' % (tag, n.lineno, LIT_INT_MAX))
+                if type(n.value) is bytes: out.append('%s:%d bytes literal' % (tag, n.lineno))
+                if type(n.value) is str and id(n) not in doc and len(n.value) > LIT_STR_MAX: out.append('%s:%d string literal longer than %d' % (tag, n.lineno, LIT_STR_MAX))
                 if type(n.value) in (str, bytes) and id(n) not in doc and _YEAR.search(n.value if type(n.value) is str else n.value.decode('latin-1')): out.append('%s:%d string literal with a year' % (tag, n.lineno))
+                if type(n.value) in (str, bytes) and id(n) not in doc and ('__' in n.value if type(n.value) is str else b'__' in n.value): out.append('%s:%d string literal with a double underscore' % (tag, n.lineno))
             elif isinstance(n, (ast.List, ast.Tuple, ast.Set)) and len(n.elts) > LIT_SEQ_MAX: out.append('%s:%d display of more than %d elements' % (tag, n.lineno, LIT_SEQ_MAX))
             elif isinstance(n, ast.Dict) and len(n.keys) > LIT_SEQ_MAX: out.append('%s:%d display of more than %d elements' % (tag, n.lineno, LIT_SEQ_MAX))
     return out
@@ -819,9 +832,9 @@ def _gate_src(main, src):
 
 def _param_bad(x, path='params'):
     """v6: the literal rules of the gate applied to a configuration's parameter values"""
-    if isinstance(x, bool) or x is None or isinstance(x, float): return []
-    if isinstance(x, int): return ['%s: integer above %d' % (path, LIT_INT_MAX)] if abs(x) > LIT_INT_MAX else []
-    if isinstance(x, str): return ['%s: string with a year' % path] if _YEAR.search(x) else []
+    if isinstance(x, bool) or x is None: return []
+    if isinstance(x, (int, float)): return ['%s: number above %d' % (path, LIT_INT_MAX)] if abs(x) > LIT_INT_MAX else []
+    if isinstance(x, str): return (['%s: string with a year' % path] if _YEAR.search(x) else []) + (['%s: string longer than %d' % (path, LIT_STR_MAX)] if len(x) > LIT_STR_MAX else [])
     if isinstance(x, (list, tuple)):
         out = ['%s: more than %d elements' % (path, LIT_SEQ_MAX)] if len(x) > LIT_SEQ_MAX else []
         for i, y in enumerate(x): out += _param_bad(y, '%s[%d]' % (path, i))
@@ -835,7 +848,14 @@ def _param_bad(x, path='params'):
 
 def _facade():
     """what `import xv1` gives candidate code: v1 itself and the no-brake function, nothing of the evaluator"""
-    m = types.ModuleType('xv1'); m.ref = ref; m.std = types.SimpleNamespace(ident=std.ident); return m
+    m = types.ModuleType('xv1'); m.ref = _cand_ref; m.std = types.SimpleNamespace(ident=_ID_TOK); return m
+
+
+_BFN_TOK, _ID_TOK = object(), object()  # v6: opaque stand-ins for v1's brake and for no brake. The real ones are numba dispatchers whose
+                                        # attributes reach module globals and the real built-ins; candidate code only passes them back
+def _cand_ref(v):
+    """v1 as candidate code gets it: the same output with the brake function replaced by its token"""
+    o = ref(v); o['bfn'] = _BFN_TOK; return o
 
 
 class Config:
@@ -1225,7 +1245,7 @@ def authorise_g3(c, owner_message_id):
 def close_g3(owner_message_id):
     """the owner closes G3 for good (no further opening); the release function then reports the opened configurations"""
     _guard(); _check_env()
-    if not (isinstance(owner_message_id, str) and owner_message_id.startswith('cmsg_')): raise PermissionError('not a message id')
+    if not (isinstance(owner_message_id, str) and owner_message_id.startswith('cmsg_') and len(owner_message_id) > 10): raise PermissionError('not a message id')
     ledger(dict(kind='G3-CLOSED', message=owner_message_id))
 
 
@@ -1301,6 +1321,7 @@ def _open_g3(c):
         if _pre_t0_sig(prem, c.t0) or prefix_test(None, c.names, n_rand=60, seed=seed, fresh=c.fresh, account='main', pre=prem)['result'] != 'PASS':
             word = 'FAIL'                                # a check of the main view failed: the opening is used and the verdict is FAIL
         else: word = _g3_word(c, g1, prem, seed)
+    except Void: word = 'FAIL'                           # v6: the candidate breaks a rule on the main view (deterministic: no retry)
     except BaseException: word = None                    # nothing of the error (type, text, frames) is kept
     finally: _G3_RUN[0] = None; _G3_PRE[0] = None
     del prem
@@ -1313,46 +1334,56 @@ def _open_g3(c):
 
 # ------------------------------------------------------------------------------------------------ causality test
 def _noise(X, E, r, g):
-    """copy of X and of the extra inputs with every row after position r replaced by noise"""
+    """copy of X and of the extra inputs with every row after position r replaced by noise. v6: the noise of every series
+    keeps the decimal grid its real values lie on (a level quoted in hundredths stays in hundredths, a return quoted in
+    basis points stays in basis points); calendar fields keep their real values (the calendar is known in advance)."""
     Xn = X.copy(); n = len(X) - r - 1
     if n <= 0: return Xn, E
-    Xn.iloc[r + 1:, Xn.columns.get_loc('r')] = np.clip(g.normal(0, 0.03, n), -0.5, 0.5)
+    Xn.iloc[r + 1:, Xn.columns.get_loc('r')] = _keep_grid(np.clip(g.normal(0, 0.03, n), -0.5, 0.5), X['r'].values[:r + 1])
     for c in ('rf', 'y10', 'y3m', 'cs', 'vix'):
         last = Xn[c].values[r]; last = 0.0 if np.isnan(last) else last
         w = last + np.cumsum(g.normal(0, 0.1 if c != 'rf' else 1e-5, n))
-        Xn.iloc[r + 1:, Xn.columns.get_loc(c)] = np.round(w, 2) if _on_grid(X[c].values[:r + 1]) else w   # v6: the noise keeps the grid of the real series
+        Xn.iloc[r + 1:, Xn.columns.get_loc(c)] = _keep_grid(w, X[c].values[:r + 1])
     Xn['rb'] = mkt.bond10(Xn); Xn['p'] = (1 + Xn['r']).cumprod()
     En = {}
     for k, a in E.items():
         b = a.copy()
-        if k.startswith('lvl:'):
-            last = a[r] if np.isfinite(a[r]) else 0.0; w = last + np.cumsum(g.normal(0, 0.1, n))
-            b[r + 1:] = np.round(w, 2) if _on_grid(a[:r + 1]) else w
-        else: b[r + 1:] = g.normal(0, 0.05, n)
+        if k.startswith('cal:'): pass
+        elif k.startswith('lvl:'):
+            last = a[r] if np.isfinite(a[r]) else 0.0; b[r + 1:] = _keep_grid(last + np.cumsum(g.normal(0, 0.1, n)), a[:r + 1])
+        else: b[r + 1:] = _keep_grid(g.normal(0, 0.05, n), a[:r + 1])
         En[k] = b
     return Xn, En
 
 
-def _on_grid(a):
-    """True if the last 252 known values of a series all lie on the 0.01 grid (a level quoted in hundredths)"""
+def _decimals(a):
+    """the number of decimals (0 .. 6) of the grid on which the last 252 known values of a series lie; None if none"""
     a = np.asarray(a, dtype=np.float64); a = a[np.isfinite(a)][-252:]
-    return bool(len(a)) and bool(np.all(np.abs(a * 100 - np.round(a * 100)) < 1e-6))
+    if not len(a): return None
+    for k in range(7):
+        x = a * 10.0 ** k
+        if np.all(np.abs(x - np.round(x)) < 1e-6): return k
+    return None
+
+
+def _keep_grid(w, a):
+    k = _decimals(a); return w if k is None else np.round(w, k)
 
 
 def _same(a, b): return int(a.shape != b.shape) if a.shape != b.shape else int(np.sum(~((a == b) | (np.isnan(a) & np.isnan(b)))))
 
 
-def prefix_test(make=None, names=(), end=None, n_rand=60, seed=0, noise=True, step=0, n_event=1000, fresh=None, account='design', pre=None):
+def prefix_test(make=None, names=(), end=None, n_rand=60, seed=0, noise=True, step=5, n_event=None, fresh=None, account='design', pre=None):
     """A candidate may not read anything after the row it decides on. For each cut row the calendar is (a) cut after it and
     (b) kept but filled with noise after it; signal, weights, instrument returns, features and EVERY column of the account
     path on the rows up to the cut must be bit-identical to the full run (`pre`: the same full-calendar result that is scored).
     Cuts: the last row of every block, account rows 0, 62, 63 and 259 and n_rand drawn rows from the whole account (both
-    variants), and, with deletion only, every `step`-th row and the event rows (the row itself and the row before): level
-    events = rows on which the candidate's signal or v1's own signal changes and the first and last row of every run in which
-    the candidate's level differs from v1's; weight events = rows on which a target weight or a rebalance flag of a column
-    that is ever held changes (v6: columns never held do not make events). All event rows are cut up to n_event: the level
-    events first, then the weight events; above n_event a uniform draw (level events first). With `fresh`, the cut runs use a newly executed
-    copy of the candidate module and of its helpers. A candidate that raises on a cut fails that cut. PASS / FAIL and counts."""
+    variants), and, with deletion only, every `step`-th account row (v6: 5) and every event row and the row before it: rows
+    on which the candidate's signal or v1's own signal changes, the first and last row of every run in which the candidate's
+    level differs from v1's, and rows on which a target weight or a rebalance flag of a column that is ever held changes
+    (v6: columns never held make no event). v6: every event row is cut, without a cap (a candidate that adds changes only
+    adds cuts); n_event caps the events only in quick checks outside scoring. Every cut run executes a new copy of the
+    candidate module and of its helpers. A candidate that raises on a cut fails that cut. PASS / FAIL and counts."""
     if account == 'main' and WORLD is None and _G3_PRE[0] is None: raise PermissionError('the main view is tested only by open_g3')
     pre = pre or _prepare(make, names, end, account); X, E, v, m = pre['X'], pre['E'], pre['v'], pre['m']; e = _eng(v)
     if e.account != account: raise PermissionError('view of the other account')
@@ -1360,14 +1391,11 @@ def prefix_test(make=None, names=(), end=None, n_rand=60, seed=0, noise=True, st
     ends = set([int(cal.rows(b)[-1]) for b in range(NB) if len(cal.rows(b))][:-1])
     drawn = set(int(q) for q in g.integers(0, cal.n - 1, n_rand)) | set(q for q in (0, 62, 63, 259) if q < cal.n - 1)
     rB = _refm(e.c, e.T)['B']; held = (m['Wt'] != 0).any(axis=0)                # v6: columns never held are never read by the engine
-    lv = np.zeros(e.T, dtype=bool); lv[1:] = m['B'][1:] != m['B'][:-1]; lv[1:] |= rB[1:] != rB[:-1]
-    dif = m['B'] != rB; turn = np.flatnonzero(dif[1:] != dif[:-1]) + 1; lv[turn] = True; lv[turn - 1] = True
-    wt = np.zeros(e.T, dtype=bool)
-    if held.any(): wt[1:] = (m['Wt'][1:, held] != m['Wt'][:-1, held]).any(axis=1) | (m['RB'][1:, held] != m['RB'][:-1, held]).any(axis=1)
-    def rows_of(ev): q = np.flatnonzero(ev) - WARM; return q[(q >= 0) & (q < cal.n - 1)]
-    qa = rows_of(lv); qb = np.setdiff1d(rows_of(wt), qa)                          # level events first, then weight / flag events
-    if len(qa) >= n_event: evq = g.choice(qa, n_event, replace=False)
-    else: evq = np.union1d(qa, qb if len(qa) + len(qb) <= n_event else g.choice(qb, n_event - len(qa), replace=False))
+    ev = np.zeros(e.T, dtype=bool); ev[1:] = (m['B'][1:] != m['B'][:-1]) | (rB[1:] != rB[:-1])
+    dif = m['B'] != rB; turn = np.flatnonzero(dif[1:] != dif[:-1]) + 1; ev[turn] = True; ev[turn - 1] = True
+    if held.any(): ev[1:] |= (m['Wt'][1:, held] != m['Wt'][:-1, held]).any(axis=1) | (m['RB'][1:, held] != m['RB'][:-1, held]).any(axis=1)
+    evq = np.flatnonzero(ev) - WARM; evq = evq[(evq >= 0) & (evq < cal.n - 1)]
+    if n_event is not None and len(evq) > n_event: evq = g.choice(evq, n_event, replace=False)    # quick checks only
     events = set(int(q) for q in evq) | set(int(q) - 1 for q in evq if q >= 1)
     cuts = sorted(ends | drawn | events | (set(range(0, cal.n - 1, step)) if step else set()))
     cells = 0; bad = 0; ncut = 0; mk = fresh() if fresh is not None else make

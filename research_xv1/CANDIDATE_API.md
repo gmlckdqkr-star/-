@@ -43,8 +43,9 @@ only; no from-import, no import inside a function, no class; numpy only through 
 `xv1._NP_OK`, one level deep (`np.X`, never `np.X.Y`; no `np.empty`: use `np.zeros` / `np.full`); built-ins only those in
 `xv1._BI_OK` (no print, open, hash, id, type, exit, getattr ...); no name or attribute that begins with `_` except the
 file's own module-level names, none that contains `__`, none of the attributes in `xv1._BAN_ATTR`; no assignment to any
-attribute; no `global` / `nonlocal`; no integer literal above 999, no string literal (other than a docstring) with a
-year 19xx / 20xx, no display of more than 64 elements (the same rules apply to parameter values). The code is executed
+attribute; no `global` / `nonlocal`; no number literal above 999, no bytes literal, no string literal (other than a
+docstring) longer than 64 characters or with a year 19xx / 20xx or a double underscore, no display of more than 64
+elements (the same rules apply to parameter values). The code is executed
 from the gated bytes, never through the import system, and every call runs a new copy of the module (no state survives
 between calls). The object `v` holds write-protected copies; changing or replacing one of its inputs, or raising, voids
 the configuration. Instruments: a model only on an unlevered series; a real fund only spliced with a model of its own
@@ -60,6 +61,8 @@ multiplies `v.c.lvl` by 2 and by 0.5 and voids a candidate whose outputs change.
 - `B` (T,) base level for the 3x Nasdaq fund, values in [0, 3] (v1 uses 0, 1, 3). The brake `bfn` with parameters `bp` runs
   on top inside the engine; keep `bfn`, `bp`, `fstep` exactly as `xv1.ref(v)` returns them (v1's brake), or use
   `bfn=xv1.std.ident, bp=np.zeros(1)` with an order step of your own for no brake. Any other brake or parameter is void.
+  (v6: `bfn` and `xv1.std.ident` are opaque tokens that the evaluator maps back to the functions; pass them through, do not
+  call them or read their attributes.)
 - Extra instruments (optional): `G` (T, J) daily returns net of fund costs (NaN where the instrument does not exist),
   `Wt` (T, J) target weights of total account equity decided at the close of row t (each in 0..1, at most 1 per row in
   total, never on a row where the instrument is missing nor on the four rows before such a row). Every held instrument must
@@ -72,7 +75,7 @@ multiplies `v.c.lvl` by 2 and by 0.5 and voids a candidate whose outputs change.
   priority, the 3x Nasdaq fund gets level/3 of the rest; a change of v1's level leaves the extras untouched.
 - `inc` 0: `Wt` means "hold this share of the account"; between re-sets the position drifts. A re-set happens when `Wt`
   changes, when `RB[t, j] = 1` (rebalance flag decided at close t), or by bands: actual weight above `Wt * (1 + up[j])`
-  (profit skim) or below `Wt * (1 - dn[j])` (refill). Leave `up` / `dn` out (or use `xeng.OFF`) to switch a side off.
+  (profit skim) or below `Wt * (1 - dn[j])` (refill). Leave `up` / `dn` out to switch a side off.
   `inc` 1: tranche rule (a higher `Wt` adds fresh money; a lower one sells pro rata; RB and bands ignored).
 - Everything is traded by the engine two closes after the decision (delay 2), 0.3% cost per side, 22% yearly tax. The
   candidate cannot change engine terms. Do not apply the delay yourself.

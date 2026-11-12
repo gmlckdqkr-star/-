@@ -13,7 +13,9 @@
       last valid row (counts and dates only).
  TAX  dates of the yearly tax payments of the design account.
 When every check passes on the full calendar a 'checks' line is written to the ledger; a batch cannot be registered without it.
-(P2, the identity with the locked MS1 run and the recorded 30.53%, is t_old_end.py.)"""
+ P2   on the <= 2014 calendar: v1's equity on every row bit-identical to std.engine on std.contexts()['real_ndx_86_14'] with
+      cspr = 10.0, and its CAGR after final liquidation tax equal to std.engine's (within 1e-9) and within 0.005 pp of 30.53%.
+ (P3 gives md.kf, whose index is calendar dates, deletion only.)"""
 import sys, json, numpy as np, pandas as pd
 sys.path.insert(0, '/home/user/-/research_xv1/code')
 import xv1, std, xdata

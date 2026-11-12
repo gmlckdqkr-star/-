@@ -125,8 +125,30 @@ start('c'); print('third ledger: no v1 level, constant weight, re-set every 252 
 batch(('static0',))
 print('  G2 static0 pass', xv1.weak_eval(C['static0'])['g2_pass']); xv1.authorise_g3(C['static0'], MSG)
 w5 = tryit('G3 static0 (input-free)', lambda: xv1.open_g3(C['static0']))
+start('d'); print('fourth ledger (v6): main-view checks inside an opening, authorisation order, end date, close')
+def refused(nm, f):
+    try: f(); print('  %-52s not refused' % nm); return False
+    except PermissionError as e: print('  %-52s refused: %s' % (nm, e)); return True
+batch(('good', 'good3'))
+R4 = [refused('authorisation before the G2 pass', lambda: xv1.authorise_g3(C['good'], MSG))]
+for k in ('good', 'good3'): xv1.weak_eval(C[k]); xv1.authorise_g3(C[k], MSG)
+real_pt = xv1.prefix_test
+xv1.prefix_test = lambda *a, **k: dict(result='FAIL') if k.get('account') == 'main' else real_pt(*a, **k)
+w6 = tryit('G3 good, main-view prefix test fails', lambda: xv1.open_g3(C['good'])); xv1.prefix_test = real_pt
+real_prep = xv1._prepare
+def prep_void(make, names=(), end=None, account='design'):
+    if account == 'main': raise xv1.Void('output rule: planted on the main view')
+    return real_prep(make, names, end, account)
+xv1._prepare = prep_void; w7 = tryit('G3 good3, a void on the main view', lambda: xv1.open_g3(C['good3'])); xv1._prepare = real_prep
+end0 = xv1.G3_END; xv1.G3_END = '2000-01-01'
+R4.append(refused('G3 after the end date', lambda: xv1.open_g3(C['good3']))); xv1.G3_END = end0
+R4.append(refused('close G3 with a malformed message id', lambda: xv1.close_g3('cmsg_')))
+xv1.close_g3(MSG); R4.append(refused('G3 after G3 was closed for good', lambda: xv1.open_g3(C['good3'])))
+kinds = [e.get('kind') for e in xv1.read_ledger()]; R4.append(kinds.count('G3-OPEN') == 2 and kinds[-1] == 'G3-CLOSED')
+print('  verdicts', w6, w7, '| refusals and ledger', R4)
 _S.__exit__(None, None, None)
 mc = tryit('model check through its own entry point (outside the script scope)', lambda: len(xv1.model_check()))
 exp = (w1 == 'CONFIRMED', w2 == 'FAIL', w3 in ('FAIL', 'INCONCLUSIVE'), w4 == 'CONSISTENT', r2['good2']['advance'] is False, r2['goodb']['advance'] is False,
-       r3['late'].get('g1_pass') is True, all(ABORT) and len(ABORT) == 5, MARK is None, w5 is None, mc is not None)
+       r3['late'].get('g1_pass') is True, all(ABORT) and len(ABORT) == 5, MARK is None, w5 is None, mc is not None,
+       w6 == 'FAIL', w7 == 'FAIL', all(R4) and len(R4) == 5)
 print('EXPECTED VERDICTS', 'OK' if all(exp) else 'FAIL', exp)

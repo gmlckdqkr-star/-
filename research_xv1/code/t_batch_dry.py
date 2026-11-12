@@ -46,7 +46,7 @@ except PermissionError as e: print('0 test world, calendar after 2014: refused')
 F = '/home/user/-/research_xv1/code/t_cand_dummy.py'; X = xv1.frame(); i0 = len(X) - xv1.View(X).T
 day = lambda row: str(X.index[i0 + row].date())
 cfgs = [xv1.Config('noise', 'noise%d' % i, F, 'noise_cut', dict(seed=i, share=0.05)) for i in range(6)] + \
-       [xv1.Config('leak', 'leak3', F, 'leak', dict(look=3)), xv1.Config('chips', 'chips10', F, 'chips_sleeve', dict(w=0.1), names=('chips',)),
+       [xv1.Config('leak', 'leak3', F, 'leak', dict(look=3)), xv1.Config('jitter', 'jitter_leak', F, 'jitter_leak'), xv1.Config('chips', 'chips10', F, 'chips_sleeve', dict(w=0.1), names=('chips',)),
         xv1.Config('state', 'stateful', F, 'stateful'), xv1.Config('era', 'era', F, 'era'), xv1.Config('invent', 'invent', F, 'invent'),
         xv1.Config('brake', 'own_brake', F, 'own_brake'), xv1.Config('write', 'write_input', F, 'write_input'),
         xv1.Config('swap', 'swap_input', F, 'swap_input'), xv1.Config('crash', 'crash', F, 'crash'),
@@ -62,7 +62,7 @@ for h, o in out['results'].items():
     else: print('  %-14s d %+6.2f d* %+6.2f te %5.1f t63 %+5.2f p_family %.3f active blocks %d n %d span %d harm %s g1 %s type %s advance %s g0 %s | extra w %.3f | skew %+.2f ac1 %+.2f' % (
         o['name'], 100 * o['d'], 100 * o['d_star'], 100 * o['te'], o['t63'], o['p_family'], o['active_blocks'], o['n'], o['n_span'], o['harm'],
         ''.join('Y' if x else 'n' for x in o['g1'].values()), o['kind'], o['advance'], o['g0'], o['extra_weight_mean'], o['skew63'], o['ac1_63']))
-exp = dict(leak3='prefix test', stateful='prefix test', era='level-scale test', invent='instrument return', own_brake='output rule', write_input='error in candidate code',
+exp = dict(leak3='prefix test', jitter_leak='prefix test', stateful='prefix test', era='level-scale test', invent='instrument check', own_brake='output rule', write_input='error in candidate code',
            swap_input='changed or replaced', crash='error in candidate code', late_t0_wrong='differs from the reference before T0', late_t0_far='T0 later')
 R = {o['name']: o for o in out['results'].values()}
 print('1 EXPECTED VOIDS', 'OK' if all(nm in R and wh in R[nm].get('void', '') for nm, wh in exp.items()) and sum('void' in o for o in R.values()) == len(exp) else 'FAIL')

@@ -7,7 +7,7 @@ def noise_cut(v, seed=0, share=0.05):
     """v1 with a fixed pseudo-random share of days capped at level 1 (pure noise; prefix-consistent because the value of a
     row depends only on its position from the start: allowed in a dummy, not in a real candidate)"""
     o = xv1.ref(v); B = np.array(o['B'], dtype=float).reshape(-1)
-    u = np.abs(np.sin(np.cumsum(np.ones(v.T)) * 12.9898 * (seed + 1)) * 43758.5453) % 1.0
+    u = np.abs(np.sin(np.cumsum(np.ones(v.T)) * 12.9898 * (seed + 1)) * 437.585453 * 100.0) % 1.0
     B[u < share] = np.minimum(B[u < share], 1.0); o['B'] = B; return o
 
 
@@ -71,3 +71,15 @@ def late(v, hundreds):
     row = 100 * hundreds
     o = xv1.ref(v); B = np.array(o['B'], dtype=float); k = np.cumsum(np.ones(v.T)) - 1
     q = (k >= row) & (k % 5 == 0); B[q] = np.minimum(B[q], 1.0); o['B'] = B; return o
+
+
+def jitter_leak(v, look=3, thr=-0.08, w=0.5, eps=0.000001):
+    """planted (v6 check of the changed parts): a 3-row look-ahead into a modelled inverse fund, hidden among thousands of
+    sub-step changes of B that the engine never acts on (they make level events; every event row must still be cut)"""
+    o = xv1.ref(v); B = np.array(o['B'], dtype=float); r = v.c.r[0]; T = v.T; m = max(T - look, 0)
+    k = np.zeros(T, dtype=bool)
+    with np.errstate(invalid='ignore'): k[:m] = r[look:look + m] < thr
+    B = np.where((r > 0) & (B >= 1.0), B - eps, B)
+    G = -r + v.c.rf[0] - 0.0095 / 252
+    o.update(B=B, G=G[:, None], Wt=np.where(k, w, 0.0)[:, None], mode=1, inc=0)
+    return o
