@@ -1,0 +1,216 @@
+{
+ "C1c_1991": {
+  "research_IRX_TNX": {
+   "days": 6301,
+   "sign_differs": 0,
+   "y3m_med_diff": 0.0
+  },
+  "IRX_CMT10": {
+   "days": 6243,
+   "sign_differs": 3,
+   "y3m_med_diff": 0.0
+  },
+  "CMT3m_TNX": {
+   "days": 6243,
+   "sign_differs": 83,
+   "y3m_med_diff": 0.08699999809265124
+  },
+  "app_CMT_CMT": {
+   "days": 6243,
+   "sign_differs": 73,
+   "y3m_med_diff": 0.08699999809265124
+  },
+  "DTB3_CMT10": {
+   "days": 6243,
+   "sign_differs": 6,
+   "y3m_med_diff": 0.008000011444091903
+  },
+  "BEY(IRX)_TNX": {
+   "days": 6301,
+   "sign_differs": 77,
+   "y3m_med_diff": 0.07151331283849949
+  }
+ },
+ "C1c_levels_1991": {
+  "research_IRX_TNX": {
+   "cagr": 0.30786334886503197,
+   "mdd": -0.7064517167614457,
+   "trades": 134,
+   "years": 23.32936507936508,
+   "start": "1991-09-03",
+   "mismatch_days": 0,
+   "days": 5879,
+   "mismatch_share": 0.0,
+   "d_cagr_vs_first": 0.0
+  },
+  "IRX_CMT10": {
+   "cagr": 0.31050679310285245,
+   "mdd": -0.706460176806354,
+   "trades": 134,
+   "years": 23.32936507936508,
+   "start": "1991-09-03",
+   "mismatch_days": 6,
+   "days": 5879,
+   "mismatch_share": 0.0010205817315870045,
+   "d_cagr_vs_first": 0.0026434442378204803
+  },
+  "CMT3m_TNX": {
+   "cagr": 0.32100479860125164,
+   "mdd": -0.7130124123695343,
+   "trades": 143,
+   "years": 23.32936507936508,
+   "start": "1991-09-03",
+   "mismatch_days": 301,
+   "days": 5879,
+   "mismatch_share": 0.05119918353461473,
+   "d_cagr_vs_first": 0.013141449736219668
+  },
+  "app_CMT_CMT": {
+   "cagr": 0.3234382191327716,
+   "mdd": -0.7130227060886711,
+   "trades": 143,
+   "years": 23.32936507936508,
+   "start": "1991-09-03",
+   "mismatch_days": 304,
+   "days": 5879,
+   "mismatch_share": 0.05170947440040823,
+   "d_cagr_vs_first": 0.015574870267739627
+  },
+  "DTB3_CMT10": {
+   "cagr": 0.30940148828329317,
+   "mdd": -0.7064548502165923,
+   "trades": 134,
+   "years": 23.32936507936508,
+   "start": "1991-09-03",
+   "mismatch_days": 4,
+   "days": 5879,
+   "mismatch_share": 0.000680387821058003,
+   "d_cagr_vs_first": 0.0015381394182611974
+  },
+  "BEY(IRX)_TNX": {
+   "cagr": 0.3039735741922438,
+   "mdd": -0.7187887100326695,
+   "trades": 142,
+   "years": 23.32936507936508,
+   "start": "1991-09-03",
+   "mismatch_days": 274,
+   "days": 5879,
+   "mismatch_share": 0.04660656574247321,
+   "d_cagr_vs_first": -0.003889774672788171
+  }
+ },
+ "C1c_2002_spread": {
+  "research_IRX_TNX": {
+   "days": 3273,
+   "sign_differs": 0,
+   "y3m_med_diff": 0.0
+  },
+  "app_CMT_CMT": {
+   "days": 3245,
+   "sign_differs": 48,
+   "y3m_med_diff": 0.024999997019767767
+  },
+  "billCSV13w_CMT10": {
+   "days": 3245,
+   "sign_differs": 6,
+   "y3m_med_diff": 0.009999990463256836
+  },
+  "DTB3_CMT10": {
+   "days": 3245,
+   "sign_differs": 6,
+   "y3m_med_diff": 0.009999990463256836
+  }
+ },
+ "C1c_levels_2003": {
+  "research_IRX_TNX": {
+   "cagr": 0.22887140532660832,
+   "mdd": -0.6996797738219349,
+   "trades": 35,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 0,
+   "days": 2872,
+   "mismatch_share": 0.0,
+   "d_cagr_vs_first": 0.0
+  },
+  "app_CMT_CMT": {
+   "cagr": 0.2954716491108642,
+   "mdd": -0.5785498977806994,
+   "trades": 32,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 104,
+   "days": 2872,
+   "mismatch_share": 0.036211699164345405,
+   "d_cagr_vs_first": 0.06660024378425589
+  },
+  "billCSV13w_CMT10": {
+   "cagr": 0.22906855535222514,
+   "mdd": -0.6996797738219348,
+   "trades": 35,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 3,
+   "days": 2872,
+   "mismatch_share": 0.0010445682451253482,
+   "d_cagr_vs_first": 0.00019715002561682127
+  },
+  "DTB3_CMT10": {
+   "cagr": 0.22906855535222514,
+   "mdd": -0.6996797738219348,
+   "trades": 35,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 3,
+   "days": 2872,
+   "mismatch_share": 0.0010445682451253482,
+   "d_cagr_vs_first": 0.00019715002561682127
+  }
+ },
+ "C1c_app_fixed_QQQ_2003": {
+  "research_NDX_IRX_TNX": {
+   "cagr": 0.22887140532660832,
+   "mdd": -0.6996797738219349,
+   "trades": 35,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 0,
+   "days": 2872,
+   "mismatch_share": 0.0,
+   "d_cagr_vs_first": 0.0
+  },
+  "app_QQQclose_CMT": {
+   "cagr": 0.29172860451138716,
+   "mdd": -0.6046431633339724,
+   "trades": 34,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 111,
+   "days": 2872,
+   "mismatch_share": 0.03864902506963788,
+   "d_cagr_vs_first": 0.06285719918477883
+  },
+  "fixed_QQQclose_bill": {
+   "cagr": 0.22113491271534458,
+   "mdd": -0.7289994894000702,
+   "trades": 34,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 21,
+   "days": 2872,
+   "mismatch_share": 0.007311977715877437,
+   "d_cagr_vs_first": -0.0077364926112637455
+  },
+  "fixed_NDX_bill": {
+   "cagr": 0.22906855535222514,
+   "mdd": -0.6996797738219348,
+   "trades": 35,
+   "years": 11.396825396825397,
+   "start": "2003-08-06",
+   "mismatch_days": 3,
+   "days": 2872,
+   "mismatch_share": 0.0010445682451253482,
+   "d_cagr_vs_first": 0.00019715002561682127
+  }
+ }
+}

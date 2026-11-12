@@ -1,0 +1,72 @@
+{
+ "a": {
+  "calls": 252,
+  "errors": 0,
+  "errors_after_event": 0,
+  "calls_after_event": 193,
+  "first_error": null,
+  "last_ok_before_error": null,
+  "start_dates": [
+   "2009-12-31"
+  ],
+  "ok_after_event_levels": [
+   1.0,
+   3.0
+  ]
+ },
+ "b": {
+  "calls": 252,
+  "errors": 0,
+  "errors_after_event": 0,
+  "calls_after_event": 193,
+  "first_error": null,
+  "last_ok_before_error": null,
+  "start_dates": [
+   "2009-12-31"
+  ],
+  "ok_after_event_levels": [
+   1.0,
+   3.0
+  ]
+ },
+ "c": {
+  "calls": 252,
+  "errors": 193,
+  "errors_after_event": 193,
+  "calls_after_event": 193,
+  "first_error": {
+   "date": "2011-03-07",
+   "status": "error",
+   "level": null,
+   "start_after": null,
+   "note": "v1 계산 보류: v1 시작일(2009-12-31 다음 거래일) 전 가격 기록이 252거래일뿐입니다(400 필요). 직전 목표를 유지합니다."
+  },
+  "last_ok_before_error": {
+   "date": "2011-02-28",
+   "status": "ok",
+   "level": 3.0,
+   "start_after": "2009-12-31",
+   "note": "v1 목표 3배 (TQQQ 100%), 2011-02-25 종가 기준"
+  },
+  "start_dates": [
+   "2009-12-31"
+  ],
+  "ok_after_event_levels": []
+ },
+ "d": {
+  "calls": 252,
+  "errors": 0,
+  "errors_after_event": 0,
+  "calls_after_event": 193,
+  "first_error": null,
+  "last_ok_before_error": null,
+  "start_dates": [
+   "2009-12-31",
+   "2011-03-04"
+  ],
+  "ok_after_event_levels": [
+   1.0,
+   3.0
+  ]
+ }
+}
