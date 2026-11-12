@@ -24,3 +24,9 @@ def flat(v, w=0.1): return timed(v, 'flat', w)
 def bad(v, w=0.1): return timed(v, 'bad', w)
 def good2(v, w=0.1): return timed(v, 'good2', w)
 def good3(v, w=0.1): return timed(v, 'good3', w)
+
+
+def static0(v, name='drift', w=1.0):
+    """no v1 level, a constant weight in `name`, a re-set every 252 rows: its holdings depend on no input (may not be opened)"""
+    o = xv1.ref(v); RB = np.zeros((v.T, 1)); RB[::252] = 1.0
+    o.update(B=np.zeros(v.T), G=v.x[name][:, None], Wt=np.full((v.T, 1), w), mode=1, inc=0, RB=RB); return o

@@ -20,8 +20,9 @@ import xv1, std, xdata
 from std import jp, ov, bk
 import md, mkt
 
-DRY = '--dry2014' in sys.argv            # mechanics test on the <= 2014 calendar only (CAL table and P3)
+DRY = '--dry2014' in sys.argv            # mechanics test on the <= 2014 calendar only (CAL table, P2 and P3)
 END = xv1.OLD_END if DRY else xv1.CAL_END
+_S = xv1.scope(); _S.__enter__()        # an evaluator script: it may read the registered calendar
 if not DRY: xv1._check_env()
 OK = True
 def verdict(name, ok, **kw):
@@ -61,6 +62,13 @@ if not DRY:
     d = compare(full, chain(xv1.OLD_END), n14)
     verdict('P1', d == 0, rows_compared=n14, differing_cells=d)
 
+# ---------------------------------------------------------------- P2 (<= 2014 calendar)
+c2 = std.contexts()['real_ndx_86_14']; fin2, EE2 = std.engine(c2, *std.s085(c2), cspr=10.0)
+X14 = xv1.frame(xv1.OLD_END); v14 = xv1.View(X14); rec14 = xv1._run(v14, xv1._call(xv1.ref, v14)); n14d = rec14.shape[0]
+cells2 = int(np.sum(rec14[:, 0] != EE2[0])); cagr2 = 100 * (rec14[-1, 4] ** (252.0 / n14d) - 1)
+verdict('P2', cells2 == 0 and abs(cagr2 - 30.53) < 0.005 and abs(cagr2 - 100 * fin2[0]) < 1e-9,
+        equity_cells_differing_from_std_engine=cells2, cagr_after_liquidation_tax_pct=round(cagr2, 4), record=30.53)
+
 # ---------------------------------------------------------------- P3
 orig = dict(pser=mkt.pser, fred=mkt.fred, gs10=mkt.shiller_gs10, kf=md.kf, spx=mkt.spx)
 state = dict(cut=None, mode='del', g=None, early=False)
@@ -92,6 +100,7 @@ g = np.random.default_rng(20261111)
 cuts = sorted(set([int(cal.rows(b)[-1]) for b in range(xv1.NB) if len(cal.rows(b))][:-1]) | set(int(q) for q in g.integers(260, cal.n - 1, 12)))
 i0 = len(idx) - cal.n - xv1.WARM
 res = {}
+late_bad = False                         # cuts after 2014: one boolean only (counts there would depend on sealed rows)
 for label, early in (('P3', False), ('P3-control', True)):
     cells = 0; bad = 0; runs = 0
     state.update(cut=None, early=early); base = rebuilt(END)
@@ -99,12 +108,15 @@ for label, early in (('P3', False), ('P3-control', True)):
         c = cal.dates[q]; n = i0 + xv1.WARM + q + 1
         for mode in ('del', 'noise'):
             state.update(cut=c, mode=mode, g=np.random.default_rng(q))
-            k = compare(base, rebuilt(END if mode == 'noise' else str(c.date())), n); cells += k; bad += int(k > 0); runs += 1
+            k = compare(base, rebuilt(END if mode == 'noise' else str(c.date())), n)
+            if c > pd.Timestamp(xv1.OLD_END) and not early: late_bad |= k > 0; continue
+            cells += k; bad += int(k > 0); runs += 1
     res[label] = (bad, cells, runs)
 state.update(cut=None, early=False); mkt.macro = _macro
 mkt.pser, mkt.fred, mkt.shiller_gs10, md.kf, mkt.spx = orig['pser'], orig['fred'], orig['gs10'], orig['kf'], orig['spx']
 md._cache.clear(); xv1._FR.clear()
-verdict('P3', res['P3'][0] == 0 and res['P3-control'][0] > 0, rebuilds=res['P3'][2], failed=res['P3'][0], differing_cells=res['P3'][1],
+verdict('P3', res['P3'][0] == 0 and not late_bad and res['P3-control'][0] > 0, cuts_upto2014=dict(rebuilds=res['P3'][2], failed=res['P3'][0], differing_cells=res['P3'][1]),
+        cuts_after2014_all_identical=not late_bad,
         control_y10_5_rows_early=dict(rebuilds=res['P3-control'][2], failed=res['P3-control'][0]))
 if DRY:
     print('DRY RUN (<= 2014 calendar)', 'PASS' if OK else 'FAIL'); sys.exit(0 if OK else 1)

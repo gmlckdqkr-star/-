@@ -2,7 +2,8 @@
 delay 2 and 3, cost x1 and x2. Also mechanical tests of the extras on synthetic numbers and of the 1x-hold instrument."""
 import sys, numpy as np
 sys.path.insert(0, '/home/user/-/research_xv1/code')
-import xv1, std, xeng
+import xv1, std, xeng, t_world
+t_world.old()
 from std import bk, beng
 X = xv1.frame(xv1.OLD_END); v = xv1.View(X); c = v.c; feat = v.feat
 worst = 0

@@ -13,6 +13,32 @@ xv1.SEALED = (10, 12)
 if not os.path.exists(xv1.REG_OUT + 'HASHES.json'):
     try: xv1.frame(xv1.CAL_END); print('0 ERROR: a real calendar after 2014 was built before registration')
     except PermissionError as e: print('0 real world, calendar to %s before registration: refused' % xv1.CAL_END)
+# v6 real-world guards (<= 2014 calendar only)
+from std import beng
+OK0 = []
+def ref0(nm, f):
+    try: f(); print('0 ERROR: %s was allowed' % nm); OK0.append(False)
+    except PermissionError as e: print('0 real world, %-40s refused (%s)' % (nm, str(e)[:70])); OK0.append(True)
+keep = beng.F1['tax']; beng.F1['tax'] = 0.0; ref0('engine term changed (tax 0)', lambda: xv1.View(xv1.frame(xv1.OLD_END))); beng.F1['tax'] = keep
+v0 = xv1.View(xv1.frame(xv1.OLD_END))
+ref0('shadow level read outside candidate code', lambda: v0.ref_target)
+ref0('calendar after 2014 outside an entry point', lambda: xv1.frame(xv1.A_END))
+ref0('registered folder written by hand', lambda: xv1.ledger(dict(kind='g1')))
+seen = []
+def peek(v):                                                     # a function run as candidate code (no gate): numpy's global slots are reset
+    seen.append(np.geterrcall()); seen.append(np.geterr()['under']); return xv1.ref(v)
+np.seterrcall(lambda *a: None); np.seterr(under='raise'); xv1._call(peek, v0); np.seterrcall(None); np.seterr(under='ignore')
+print('0 numpy error callback / state seen by candidate code:', seen, '(expect [None, \'ignore\'])'); OK0.append(seen == [None, 'ignore'])
+def outputs(o):
+    def mk(v):
+        m = xv1.ref(v); m.update(o); return m
+    return mk
+for nm, o in (('a string as order step', dict(fstep='0.012345')), ('None as order step', dict(fstep=None)), ('a dict subclass', None)):
+    mk = outputs(o) if o is not None else (lambda v: type('D', (dict,), {})(xv1.ref(v)))
+    try: xv1._call(mk, v0); print('0 ERROR: %s accepted' % nm); OK0.append(False)
+    except xv1.Void as e: print('0 output %-28s VOID (%s)' % (nm, e)); OK0.append(True)
+    except Exception as e: print('0 ERROR: %s raised %s outside Void' % (nm, type(e).__name__)); OK0.append(False)
+print('0 REAL-WORLD GUARDS', 'OK' if all(OK0) else 'FAIL')
 import t_world
 t_world.old(); tmp = t_world.scratch(sys.argv[1]); xv1.DESIGN = (1, 3, 5, 7, 9)
 try: xv1.frame('2021-12-31'); print('0 ERROR: test world built a calendar after 2014')
@@ -24,9 +50,9 @@ cfgs = [xv1.Config('noise', 'noise%d' % i, F, 'noise_cut', dict(seed=i, share=0.
         xv1.Config('state', 'stateful', F, 'stateful'), xv1.Config('era', 'era', F, 'era'), xv1.Config('invent', 'invent', F, 'invent'),
         xv1.Config('brake', 'own_brake', F, 'own_brake'), xv1.Config('write', 'write_input', F, 'write_input'),
         xv1.Config('swap', 'swap_input', F, 'swap_input'), xv1.Config('crash', 'crash', F, 'crash'),
-        xv1.Config('late', 'late_ok', F, 'late', dict(row=1900), t0=day(1900)),
-        xv1.Config('late', 'late_t0_wrong', F, 'late', dict(row=1900), t0=day(2000)),
-        xv1.Config('late', 'late_t0_far', F, 'late', dict(row=3000), t0=day(3000))]
+        xv1.Config('late', 'late_ok', F, 'late', dict(hundreds=19), t0=day(1900)),
+        xv1.Config('late', 'late_t0_wrong', F, 'late', dict(hundreds=19), t0=day(2000)),
+        xv1.Config('late', 'late_t0_far', F, 'late', dict(hundreds=30), t0=day(3000))]
 t_ = time.time(); k, sha = xv1.register_batch(cfgs); print('1 registered batch', k, sha[:12])
 try: xv1.register_batch(cfgs); print('1 ERROR: second registration accepted')
 except PermissionError as e: print('1 second registration refused:', e)
@@ -62,7 +88,22 @@ G = {'import_os': 'import os\nimport xv1\ndef f(v): return xv1.ref(v)\n', 'from_
      'open_file': 'import xv1\ndef f(v):\n    open("x")\n    return xv1.ref(v)\n', 'getattr': 'import xv1\ndef f(v): return getattr(v, "c")\n',
      'random': 'import numpy as np\nimport xv1\ndef f(v): return np.random.default_rng(0)\n', 'setflags': 'import xv1\ndef f(v):\n    v.c.r.setflags(write=True)\n    return xv1.ref(v)\n',
      'module_attr': 'import numpy as np\nimport xv1\ndef f(v):\n    np.load = None\n    return xv1.ref(v)\n', 'global': 'import xv1\nS = 0\ndef f(v):\n    global S\n    return xv1.ref(v)\n',
+     # v6: routes that passed the v5 gate (verification 2026-11-12)
+     'np_chain': 'import numpy as np\nimport xv1\ndef f(v):\n    b = np.ma.core.builtins\n    return xv1.ref(v)\n',
+     'np_ctypes': 'import numpy as np\nimport xv1\ndef f(v):\n    np.ctypeslib.load_library("x", ".")\n    return xv1.ref(v)\n',
+     'np_fromregex': 'import numpy as np\nimport xv1\ndef f(v):\n    np.fromregex("x", "y", float)\n    return xv1.ref(v)\n',
+     'np_seterrcall': 'import numpy as np\nimport xv1\ndef f(v):\n    np.seterrcall(None)\n    return xv1.ref(v)\n',
+     'errstate_call': 'import numpy as np\nimport xv1\ndef f(v):\n    with np.errstate(call=None):\n        return xv1.ref(v)\n',
+     'format_walk': 'import xv1\ndef f(v):\n    s = "{0.x}".format(xv1.ref)\n    return xv1.ref(v)\n',
+     'gen_frame': 'import xv1\ndef f(v):\n    g = (x for x in [1])\n    b = g.gi_frame.f_builtins\n    return xv1.ref(v)\n',
+     'func_attr_store': 'import xv1\ndef f(v):\n    r = xv1.ref\n    r.stash = 1\n    return xv1.ref(v)\n',
+     'module_value': 'import numpy as np\nimport xv1\ndef f(v):\n    m = np\n    return xv1.ref(v)\n',
+     'class_def': 'import xv1\nclass K:\n    pass\ndef f(v): return xv1.ref(v)\n',
+     'dunder': 'import xv1\ndef f(v):\n    k = v.c.sma.__func__\n    return xv1.ref(v)\n',
+     'ref_attr': 'import xv1\ndef f(v):\n    k = xv1.ref.x\n    return xv1.ref(v)\n',
+     'helper_np': 'import xv1\nimport hlpnp\ndef f(v):\n    k = hlpnp.np.load\n    return xv1.ref(v)\n',
      'clean': 'import numpy as np\nimport xv1\ndef f(v):\n    o = xv1.ref(v); o["bfn"] = xv1.std.ident; o["bp"] = np.zeros(1); o["fstep"] = 0.5\n    return o\n'}
+open(tmp + 'hlpnp.py', 'w').write('import numpy as np\nW = 0.1\n')
 bad = []
 for nm, src in G.items():
     p = tmp + 'g_' + nm + '.py'; open(p, 'w').write(src); v = xv1.gate(p)
@@ -82,4 +123,6 @@ raw = open(xv1.OUT + 'LEDGER.jsonl').read().splitlines(keepends=True)
 open(xv1.OUT + 'LEDGER.jsonl', 'w').write(''.join(raw[:3] + raw[4:])); ok.append(refused('ledger with a line removed', xv1.read_ledger))
 open(xv1.OUT + 'LEDGER.jsonl', 'w').write(''.join(raw[:3] + [raw[3].replace('design', 'DESIGN')] + raw[4:])); ok.append(refused('ledger with a line edited', xv1.read_ledger))
 open(xv1.OUT + 'LEDGER.jsonl', 'w').write(''.join(raw)); print('  restored ledger reads:', len(xv1.read_ledger()) == len(L))
-print('GUARDS', 'OK' if all(ok) else 'FAIL')
+existed = os.path.exists(xv1.REG_OUT); xv1.OUT, keep_out = xv1.REG_OUT, xv1.OUT; ok.append(refused('test world writing into the registered folder', lambda: xv1.ledger(dict(kind='g1')))); xv1.OUT = keep_out
+ok.append(existed or not os.path.exists(xv1.REG_OUT))
+print('GUARDS', 'OK' if all(ok) and all(OK0) else 'FAIL')

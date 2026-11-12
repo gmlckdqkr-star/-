@@ -56,8 +56,9 @@ def write_input(v):
 
 
 def swap_input(v):
-    """planted: replaces an input array of the view by another one (must be voided)"""
-    o = xv1.ref(v); v.c.r = v.c.r * 1.0; return o
+    """planted: replaces an input array of the view by another one (must be voided; v6: through a dict item, since the gate
+    refuses any assignment to an attribute)"""
+    o = xv1.ref(v); m = v.m; m['y10'] = m['y10'] * 1.0; return o
 
 
 def crash(v):
@@ -65,7 +66,8 @@ def crash(v):
     return xv1.ref(v)['nothing']
 
 
-def late(v, row=3000):
-    """mechanics of T0: v1 until a fixed row of the view, then capped at level 1 on every fifth row"""
+def late(v, hundreds):
+    """mechanics of T0: v1 until a fixed row of the view (100 * hundreds), then capped at level 1 on every fifth row"""
+    row = 100 * hundreds
     o = xv1.ref(v); B = np.array(o['B'], dtype=float); k = np.cumsum(np.ones(v.T)) - 1
     q = (k >= row) & (k % 5 == 0); B[q] = np.minimum(B[q], 1.0); o['B'] = B; return o

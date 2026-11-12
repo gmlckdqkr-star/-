@@ -9,9 +9,10 @@
  6 a look-ahead planted in the v1 shadow level is caught through a candidate that reads it."""
 import sys, numpy as np
 sys.path.insert(0, '/home/user/-/research_xv1/code')
-import xv1, std, xeng
+import xv1, std, xeng, t_world
 from std import bk, beng, ce
 
+t_world.old()
 X = xv1.frame(xv1.OLD_END); v = xv1.View(X); m = xv1._call(xv1.ref, v); cal = xv1.Cal(xv1.acc_dates(X))
 print('days', cal.n, cal.dates[0].date(), cal.dates[-1].date())
 c = std.contexts()['real_ndx_86_14']

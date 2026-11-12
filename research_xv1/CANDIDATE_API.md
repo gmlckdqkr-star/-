@@ -37,14 +37,18 @@ All arrays have T rows: 300 warm-up rows, then the account days. Row t holds wha
   spliced with its model, `cm.level`, `cm.sma`, `cm.roll_max`, `cm.roll_min`, `cm.vol`, `cm.lag`, `cm.hyst`, `cm.trend_flag`,
   `cm.consec`, `cm.debounce`, `cm.since`, `cm.breadth(v)` (needs `cm.SECTOR_NAMES` in the configuration's names),
   `cm.semis_level(v)` (needs 'semis'), `cm.ndx_level(v)`. Use them instead of writing your own; all are causal.
-Source gate (evaluator v5; a file that fails it cannot be registered): module-level `import numpy`, `import xv1` and imports
-of files of the candidate's own folder only; no from-import, no import inside a function; no name or attribute that begins
-with `_` except the file's own module-level names; none of open, exec, eval, compile, getattr, setattr, delattr, hasattr,
-globals, locals, vars, dir, input, breakpoint, memoryview, id, type, object, super, print, help, exit, quit, classmethod,
-staticmethod, property; none of the attributes sys, os, modules, setflags, flags, ctypes, tofile, dump, dumps, save, savez,
-savez_compressed, savetxt, load, loadtxt, fromfile, genfromtxt, memmap, random, base, data, ii, keep, account, lib, testing,
-f2py; no `global` / `nonlocal`; no assignment to an attribute of an imported module. The object `v` holds write-protected
-copies; changing or replacing one of its inputs, or raising, voids the configuration.
+Source gate (evaluator v6, an allow-list; a file that fails it cannot be registered): module-level `import numpy`,
+`import xv1` and `import <helper>` (a file of the candidate's own folder whose name is not a standard-library module name)
+only; no from-import, no import inside a function, no class; numpy only through the functions and constants in
+`xv1._NP_OK`, one level deep (`np.X`, never `np.X.Y`; no `np.empty`: use `np.zeros` / `np.full`); built-ins only those in
+`xv1._BI_OK` (no print, open, hash, id, type, exit, getattr ...); no name or attribute that begins with `_` except the
+file's own module-level names, none that contains `__`, none of the attributes in `xv1._BAN_ATTR`; no assignment to any
+attribute; no `global` / `nonlocal`; no integer literal above 999, no string literal (other than a docstring) with a
+year 19xx / 20xx, no display of more than 64 elements (the same rules apply to parameter values). The code is executed
+from the gated bytes, never through the import system, and every call runs a new copy of the module (no state survives
+between calls). The object `v` holds write-protected copies; changing or replacing one of its inputs, or raising, voids
+the configuration. Instruments: a model only on an unlevered series; a real fund only spliced with a model of its own
+leverage (xv1._LEV).
 Forbidden: dates, row numbers as calendar positions, files, caches, module-level data, random numbers,
 anything from the future. No date literal in the source. Use only causal operations: no centred windows, no backward
 fill, no shift to negative lags, no statistic over the whole array (quantile, mean, max, z-score with full-sample moments).

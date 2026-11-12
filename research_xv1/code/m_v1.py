@@ -7,6 +7,7 @@ rows); nothing is produced for the sealed blocks 10 and 12."""
 import sys, os, json
 sys.path.insert(0, '/home/user/-/research_xv1/code')
 import xv1
+_S = xv1.scope(); _S.__enter__()                       # an evaluator script: it may read the registered calendar
 
 reg = json.load(open(xv1.OUT + 'HASHES.json'))
 pre = xv1._prepare(xv1.ref, (), xv1.OLD_END)                # load the whole chain before the hashes are compared

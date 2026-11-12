@@ -89,7 +89,7 @@ def consec(cond):
 
 def debounce(x, n=3):
     """a discrete state that follows x only after x has shown the same new value on n consecutive rows"""
-    out = np.empty(len(x), dtype=np.asarray(x).dtype); cur = x[0]; run = 0; prev = x[0]
+    out = np.zeros(len(x), dtype=np.asarray(x).dtype); cur = x[0]; run = 0; prev = x[0]
     for t in range(len(x)):
         run = run + 1 if (t > 0 and x[t] == prev) else 1; prev = x[t]
         if x[t] != cur and run >= n: cur = x[t]
@@ -99,7 +99,7 @@ def debounce(x, n=3):
 
 def since(event):
     """rows since the last row on which event was True (a large number before the first event)"""
-    out = np.empty(len(event), dtype=np.int64); k = 10 ** 9
+    out = np.zeros(len(event), dtype=np.int64); k = 10 ** 9
     for t in range(len(event)):
         k = 0 if event[t] else min(k + 1, 10 ** 9); out[t] = k
     return out
@@ -114,7 +114,7 @@ SECTOR_NAMES = tuple('ret:' + a for a, _ in SECTORS) + tuple('kf:' + b for _, b 
 
 def sector_returns(v):
     """(T, 9) daily returns of the nine sector slots"""
-    out = np.empty((v.T, len(SECTORS)))
+    out = np.zeros((v.T, len(SECTORS)))
     for j, (a, b) in enumerate(SECTORS):
         e = v.x['ret:' + a]; k = v.x['kf:' + b]; have = np.cumsum(~np.isnan(e)) >= 200
         out[:, j] = np.where(have & ~np.isnan(e), e, k)

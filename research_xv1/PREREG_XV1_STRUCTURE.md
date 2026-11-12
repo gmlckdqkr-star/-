@@ -1,11 +1,18 @@
 # PREREG XV1: interleaved design / validation block structure
 
-Registered text, version 5 (2026-11-11). Version 1 was a candidate text that went through four independent reviews
+Registered text, version 6 (2026-11-12). Version 1 was a candidate text that went through four independent reviews
 (sealing, causality, statistics, engine), a refutation pass on every finding and a final critic (15 further findings);
 versions 2 to 4 carry the fixes that survived. Version 4 and its evaluator then went through an independent verification
 with five lenses (engine, sealing, statistics, causality, text against code) on synthetic worlds and on the <= 2014
-calendar: 50 findings, 3 of them critical. Version 5 and evaluator version 5 carry the fixes; the changed parts were
-verified once more before registration. Versions 1 to 4 were never registered and scored nothing.
+calendar: 50 findings, 3 of them critical; version 5 carries those fixes. Version 5 and evaluator version 5 went through a
+second independent verification with three lenses (sealing, causality, statistics and text) on the <= 2014 calendar and
+on synthetic worlds: 32 findings (sealing 15, causality 10, statistics 7). Among them: an error inside a G3 run could leave
+the main account open; candidate code could reach the real built-in module, a package folder or a stale compiled file
+through the import system, open files, read uninitialised memory, keep numpy's error call-back between calls or stop a
+batch with SystemExit; a modelled 3x fund could be built on a 3x fund; rebalance flags on columns that are never held
+could thin out the event cuts of the prefix test; an always-held tiny sleeve made every row active; checks of the main
+view ran before an opening was logged. Version 6 and evaluator version 6 carry the fixes (each marked "v6" below); the
+changed parts were verified once more before registration. Versions 1 to 5 were never registered and scored nothing.
 
 Status and owner decision. On 2026-11-11 the owner was shown a decision card in the thread (switch to the interleaved
 structure, recommended, with the note that the step cannot be undone) and answered at 12:49:08Z (message id
@@ -170,7 +177,9 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   extra does not fit all extras are scaled; a band compares the close weight after trades with the target in force and
   re-sets to the target of that row, and a breach gives `delay` consecutive re-sets; the fund is bought on the first
   account row, an extra not before the third; V carries no liquidation cost.
-- Output rules, checked on what candidate code returns (a breach voids the configuration): B finite and inside 0 .. 3;
+- Output rules, checked on what candidate code returns (a breach voids the configuration): v6: a dict of plain values only
+  (numbers, number arrays, lists or tuples of numbers, the brake function), a NaN weight or rebalance flag counts as 0;
+  B finite and inside 0 .. 3;
   mode and inc 0 or 1; the brake as above; weights finite, inside 0 .. 1, at most 1 in total per row; instrument returns
   finite and above -100% or missing (NaN); rebalance flags 0 or 1; bands >= 0 and finite; no weight on an instrument on
   a row on which it is missing or on one of the four rows before such a row; the account value finite and positive on
@@ -178,7 +187,10 @@ computed), in which the evaluator cannot build a real calendar after 2014.
 - Instrument check. Every instrument a candidate holds must be one that could be held: a registered return input; the
   modelled daily-reset fund on the index, on the chain's 10-year bond return, on a registered 1x return input or on the
   splice of two of them; or the splice of a registered fund return with such a model (the actual fund where it exists, the
-  model before). Fund model on a 1x return r with cash rate rf: L = 3, 2: L r - (L - 1) rf - (0.0095 + 0.0075 (L - 1)) / 252
+  model before). v6: a model rests only on an unlevered series (the index, the chain's bond return, the Ken French
+  series, chips / semis and the registered 1x funds and sector funds), and a real fund is spliced only with a model of its
+  own leverage (SOXL, TQQQ, TMF, TNA, TECL, FAS, DRN 3; USD, QLD 2; ERX 3 or 2; PSQ -1; 1x funds 1). Fund model on a 1x
+  return r with cash rate rf: L = 3, 2: L r - (L - 1) rf - (0.0095 + 0.0075 (L - 1)) / 252
   (3x: 0.0245 per year, the same drag as the 3x NDX fund); L = -1: -r + rf - 0.0095 / 252; L = 1: r - 0.002 / 252. The
   evaluator rebuilds each of these from its own arrays and compares (tolerance 1e-12); a return column that matches none
   voids the configuration.
@@ -198,9 +210,10 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   a join (decided on the last two rows before it) are executed on the first rows after it.
 - Main account: the full calendar in one account. It scores blocks 10 and 12 only and is run for scoring only inside a G3
   opening: the function refuses unless the last line of the ledger is the G3-OPEN line of an opening in progress, which
-  only the G3 function writes, under its lock. Outside an opening three things run a full-calendar account inside the
-  evaluator and return nothing computed from a sealed row: the prefix test (PASS / FAIL), the v1 shadow levels (a level
-  path that only candidate code reads) and the parity checks P1 and P3 (booleans and counts on rows up to 2014-12-31).
+  only the G3 function writes, under its lock. Outside an opening two things run a full-calendar account inside the
+  evaluator and return nothing computed from a sealed row: the v1 shadow levels (a level path that only candidate code
+  reads) and the parity checks P1 and P3 (booleans, and counts on rows up to 2014-12-31 only). The design-view prefix test
+  runs the candidate's own account on cut calendars (PASS / FAIL); the main-view checks run only inside an opening (v6).
 - Why the design account is spliced and not restarted. v1's brake works on the drawdown from the all-time account peak and
   has one active rule on account age and peak (cush2.ck: after 756 account rows, if ln(peak) / years < 0.12 the cushion is
   multiplied by 0.8). A fresh account at the start of block 11 or 13 starts at its peak with age 0, so it would not measure
@@ -247,9 +260,20 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   scored rows at each held level, number of level changes, mean level, mean extra weight, mean difference of the 3x-fund
   weight against REF, and the drawdown of the curve re-based to 1 on the first scored row of the block; (c) for the design
   set of a configuration: kappa, delta0 and w_j of its benchmark, and the skewness and lag-1 autocorrelation of its 63-row
-  sub-block means; (d) the model check and the data checks; (e) PASS / FAIL of the tests, a void reason, and counts of cuts
-  only where they do not depend on sealed rows. One exception: the 63-row sub-block means of design-block paired
-  differences are kept for the family-wise test; they are design material.
+  sub-block means; (d) the model check and the data checks; (e) PASS / FAIL of the tests and a void reason. v6: in the real
+  calendar the prefix test returns PASS / FAIL only, the raw-level test the names of failing inputs only, and a void
+  reason only its category (the text before its first colon: source gate, output rule, instrument check, error in
+  candidate code, prefix test, ...); counts of cuts, exception names and details exist only in test worlds. One exception:
+  the 63-row sub-block means of design-block paired differences are kept for the family-wise test; they are design
+  material.
+- Kept by code (v6): the real calendar after 2014 is built only inside the scoring entry points (reference table, model
+  check, batch scoring, G2, G3) and refused elsewhere; the v1 shadow levels answer only while candidate code runs; a test
+  world (section 2, tests) cannot write into the registered folder, and the real calendar refuses to run while the
+  test-world module is loaded. Not kept by code: an operator can read the data files with other programs; this text forbids
+  it. Residual channels, stated: a configuration's void category and the time a run takes can depend on how its code
+  behaves on sealed rows (the design view is the full calendar, see Accounts); both are at most a few bits per
+  configuration, every configuration counts in its batch, and code written to act on such a channel is excluded by the
+  source review.
 - It never returns, prints, stores or plots: an equity level or wealth multiple; a running peak; a drawdown measured from a
   peak set before the block's first scored row; cumulative tax, cost, trade count or cost basis; a growth figure over any
   span that contains a sealed row; any quantity that uses equity on two rows with a sealed row between them; any array of
@@ -271,22 +295,39 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   object: it uses the evaluator's own arrays (returns, cash rate, features, design rows, shadow levels), which candidate
   code never receives. After every call the evaluator checks that no input on the candidate's object was changed or
   replaced.
-- Source gate, applied to a candidate file and to every helper file it imports from its own folder before a batch is
-  registered and before every load. Allowed: module-level imports of numpy, of xv1 and of files of the candidate's own
-  folder; of xv1 only xv1.ref (v1 itself) and xv1.std.ident (no brake), and what candidate code imports under that name is
-  a stand-in that holds nothing else. Not allowed: any other import, a from-import, an import inside a function, a name or
-  attribute that begins with an underscore other than the file's own module-level names, the file and reflection built-ins
-  (open, exec, eval, compile, getattr, setattr, delattr, hasattr, globals, locals, vars, dir, input, breakpoint,
-  memoryview, id, type, object, super, print, help, exit, quit, classmethod, staticmethod, property), attributes that reach
-  the interpreter, files, random numbers or an array's memory (sys, os, modules, setflags, flags, ctypes, tofile, dump,
-  dumps, save, savez, savez_compressed, savetxt, load, loadtxt, fromfile, genfromtxt, memmap, random, base, data, ii, keep,
-  account, lib, testing, f2py), `global` and `nonlocal`, and assigning to an attribute of an imported module.
+- Source gate (v6: an allow-list), applied to the bytes of a candidate file and of every helper file it imports from its
+  own folder, before a batch is registered and before code is first executed. Allowed: module-level `import numpy`,
+  `import xv1` and `import <helper>` (a file of the candidate's own folder whose name is plain and is not the name of a
+  standard-library or built-in module); of xv1 only xv1.ref (v1 itself) and xv1.std.ident (no brake), and what candidate
+  code imports under that name is a stand-in that holds nothing else; of numpy only a listed set of array functions and
+  constants (xv1._NP_OK; no np.empty or anything else that hands out uninitialised memory, no submodule, no file, random or
+  error-state function), one level deep (np.X, never np.X.Y); of a helper only its own functions and names, one level deep;
+  of the built-ins only a listed set (xv1._BI_OK: arithmetic, containers, iteration, a few exception names; no open, hash,
+  id, print, exit or import machinery). Not allowed: any other import, a from-import, an import inside a function, a module
+  name used as a value, a class definition, a name or attribute that begins with an underscore other than the file's own
+  module-level names or that contains a double underscore, attributes that reach the interpreter, frames, files, string
+  formatting, random numbers or an array's memory (xv1._BAN_ATTR), assigning to or deleting any attribute, np.errstate
+  with an argument other than divide / invalid / over / under / all, `global` and `nonlocal`, an integer literal above 999,
+  a string literal (other than a docstring) that contains a year 19xx / 20xx, and a list / tuple / set / dict display with
+  more than 64 elements. The same literal rules apply to a configuration's parameter values.
+- Loading (v6). The candidate's bytes are read once per configuration; the gate, the configuration hash and the executed
+  code all come from those bytes. They are compiled and executed directly, never through the import system (no sys.path,
+  no sys.modules entry, no compiled cache file, no package folder), with only the allowed built-ins and an import function
+  that serves numpy, the xv1 stand-in and the configuration's own helper files. Every call of a candidate executes a new
+  copy of its module and helper modules, so no state survives from one call to the next.
 - Reading the calendar position, a date, a file, a cache or a module-level data array is forbidden. Candidate source holds
   no date literal. Periodic calendar fields (month, day of month, weekday, calendar year modulo 4) may be registered as
   inputs; no absolute date, year or row position may be used. The gate and the tests below do not see every way to read
   the calendar position (a row counter, a count on a calendar field, an own cumulative level compared with a fixed number):
   these are excluded by reading the candidate source before registration. A period counted in rows from the first row on
   which an input exists (for example a yearly rebalance every 252 rows) is a periodic rule and is allowed.
+- Hindsight written into code. No test can tell a rule from a rule that carries knowledge of later days as constants (rows
+  or dates of later events, fingerprints of later values): the causality verifier showed such a candidate passing the
+  prefix and level-scale tests. Guards: the literal rules of the gate (v6), and before registration a reader who did not
+  write the candidates reads every candidate and helper file and its parameter values for such constants; the batch is
+  registered only after that reading finds none. What no guard removes: the designers know the broad history of 2016-2024
+  (the 2018 fourth quarter, 2020, the 2022 bear market); a rule chosen because it would have helped in a known year is a
+  selection the sealed blocks cannot detect. Every G3 report carries this sentence.
 - Level-scale test, before the first scored call of a candidate: the index level handed to candidate code (view.c.lvl) is
   multiplied by 2 and by 0.5 (exact in binary arithmetic); every output of the candidate and the features must stay
   bit-identical, else the configuration is void. A rule may use ratios of a price level, never its absolute height: a
@@ -294,32 +335,42 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   inputs are limited to an allow-list of series that carry no price height (lvl:_VIX3M, lvl:_VIX9D, lvl:_TYX, lvl:_FVX);
   every other price series enters only as a daily return. A threshold on a yield, a spread or a volatility index is
   allowed. REF passes this test (self-test: a planted height threshold must be reported as void).
-- Candidate code runs inside the evaluator with its output streams closed. While it runs, the data readers (mkt._panel,
+- Candidate code runs inside the evaluator with its output streams closed and warnings dropped (v6), with numpy's error
+  state set to its defaults and no error call-back (v6), restored afterwards. While it runs, the data readers (mkt._panel,
   mkt.fred, mkt.pser, md.load, md.kf, jp.calendar, jp.build, xdata.get, xdata.read_chips, numpy load, save, fromfile,
   loadtxt and genfromtxt, pandas read_csv) are replaced by functions that raise. A configuration whose code raises in any
-  test or scoring call, or breaks an output rule, is void.
-- One call. The full-calendar call of a configuration is made once, on a newly executed copy of its module and helper
-  files: the same result is tested (prefix test, level-scale test, instrument check, T0 rule) and scored. In the stress
+  test or scoring call (v6: any exception, also one outside Exception such as SystemExit), or breaks an output rule, is
+  void; only an interrupt by the operator stops a run (the batch is then resumed).
+- One call. The full-calendar call of a configuration is made once (like every call, on a newly executed copy of its
+  module and helper files): the same result is tested (prefix test, level-scale test, instrument check, T0 rule) and
+  scored. In the stress
   runs of G1(d) that same output is used: the candidate's signals are held fixed while the engine terms move.
-- Prefix test, before a configuration is scored (design view), once more on the main view before a G3 opening, and once on
-  REF as a control (REF must pass or the evaluator is not used). The cut runs use another newly executed copy of the
-  candidate module and go from the earliest cut to the latest, so nothing kept from a call that saw more rows can reach a
-  call that should see fewer. For each cut row c: (a) deletion: the calendar and every registered input are cut after c
+- Prefix test, before a configuration is scored (design view), once more on the main view inside a G3 opening (v6: after
+  its G3-OPEN line), and once on REF as a control (REF must pass or the evaluator is not used). Every cut run executes a
+  new copy of the candidate module, so nothing kept from a call that saw more rows can reach a call that should see
+  fewer. For each cut row c: (a) deletion: the calendar and every registered input are cut after c
   and the candidate is called again; (b) noise: the rows after c are replaced by random values and everything is rebuilt.
   B, G, Wt, RB, the bands, the brake and its parameters, fstep, mode, inc, the feature rows and every column of the account
   record (equity, level in force, brake target, base level, liquidation value, weights) on the rows up to c must be
   bit-identical to the full run. Cuts: the last row of every block, the account rows 0, 62, 63 and 259 and 60 rows drawn
-  from the whole account (both variants; 200 drawn rows for REF), and, deletion only, the event rows: every row on which
-  the candidate's signal, a target weight or a rebalance flag changes, every row on which v1's own signal changes, and the
-  first and last row of every run in which the candidate's level differs from v1's (the row itself and the row before).
-  All event rows are cut up to 1,000; above that the 500 largest changes and 500 drawn ones. For REF every event row and
-  every 21st row are cut. Event rows are cut because a look-ahead hidden behind a threshold shows only where it acts. The
+  from the whole account (both variants; 200 drawn rows for REF), and, deletion only, the event rows (the row itself and
+  the row before): level events = every row on which the candidate's signal or v1's own signal changes and the first and
+  last row of every run in which the candidate's level differs from v1's; weight events = every row on which a target
+  weight or a rebalance flag of a column that is ever held changes (v6: a column that is never held makes no event, since
+  the engine never reads it). All event rows are cut up to 1,000, level events first; above that a uniform draw, level
+  events first (v6: no ordering by size, which a candidate could use to push its own change into the drawn part). The
+  noise of variant (b) keeps the 0.01 grid of a series quoted in hundredths (v6: yields, the spread, VIX and registered
+  levels), so a candidate cannot tell noise rows from real ones by their grid. For REF every event row and every 21st row
+  are cut. Event rows are cut because a look-ahead hidden behind a threshold shows only where it acts. The
   generator is seeded from the sha256 of the batch hash and the batch's ledger line (which carries its UTC time), for REF
   from the registration hash. A candidate that raises on a cut fails that cut. Output: PASS or FAIL. FAIL = the
   configuration is void, still counts in its batch, and no score is produced. Self-test: a planted 3-row look-ahead, a
   planted full-sample quantile, a planted centred 5-row window, a look-ahead through the v1 shadow level and a candidate
   that keeps the longest array it has seen between calls must all be reported as FAIL; a full-sample number hidden in the
-  brake parameters is void by the output rules.
+  brake parameters is void by the output rules. v6, re-run of the causality verifier's probes: a look-ahead diluted by
+  thousands of flag changes on never-held columns and one that acts only when the future row lies on the 0.01 grid are
+  reported as FAIL; probes through a file named builtins.py or gc.py, a package folder, a stale compiled file, open(),
+  np.empty, str hash, SystemExit and a 3x model on a 3x fund are refused by the gate, voided, or have no effect.
 - Raw-level test of extra inputs, once per batch before any configuration of it is scored: the raw readers behind the
   registered inputs are wrapped in memory; for each cut (a) every raw row dated after it is deleted, (b) it is replaced by
   noise, (c) the input is rebuilt on the calendar cut at that row; the aligned input arrays up to the cut must be
@@ -338,12 +389,13 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   are bit-identical to the <= 2014 calendar run on every row up to 2014-12-31.
 - P2 MS1 identity: on the <= 2014 calendar the REF account is bit-identical to std.engine on
   std.contexts()['real_ndx_86_14'] with cspr = 10.0, and its CAGR after final liquidation tax is 30.53% (difference below
-  0.005 pp). This figure is a constant of this text; the evaluator does not open a results file.
+  0.005 pp). This figure is a constant of this text; the evaluator does not open a results file. v6: the checks script
+  asserts both (0 differing cells, the CAGR equal to std.engine's and within 0.005 pp of 30.53%).
 - P3 raw-level test of the REF chain: the raw readers (mkt.pser, mkt.fred, mkt.shiller_gs10, md.kf, mkt.spx) are wrapped in
   memory; no file is changed. For each cut (the last row of every block and 12 drawn
   rows) every raw row after the cut is (a) deleted and (b) replaced by noise; the chain is rebuilt; every cell of X, F,
   features, B, level path, equity and liquidation value up to the cut must be bit-identical. Control: y10 taken 5 rows
-  early must be reported as FAIL.
+  early must be reported as FAIL. v6: counts are reported only for cuts up to 2014-12-31; for later cuts only a boolean.
 - CAL: last row 2026-08-31; no weekend date; 248..254 rows per full year; after 2014 no NDX panel date missing from the
   calendar and no calendar row without an NDX observation.
 - D1 coverage, per raw series (^NDX, ^IRX, ^TNX, ^VIX, DBAA, DAAA) and per calendar year: number of calendar rows with no
@@ -368,8 +420,8 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   the registered constants. Every function that scores (the reference table, the model check, batch registration, batch
   scoring, G0 line, G2, G3) recomputes all of them and stops on a mismatch, also when a project code file is loaded that
   the registry does not hold. In the real calendar the evaluator also stops if a registered constant (the sealed blocks,
-  the embargo, the block length, the calendar ends, the engine and stress terms, the thresholds) no longer has its
-  registered value. Candidate files and their helper files are covered by the configuration hashes (section 4). Changing
+  the embargo, the block length, the calendar ends, the engine and stress terms including beng.F1 and the carry limit,
+  the thresholds, the active-row weight, the G3 end date, the literal limits) no longer has its registered value. Candidate files and their helper files are covered by the configuration hashes (section 4). Changing
   an evaluator file after registration follows section 7.
 
 ## 3. First measurement after registration (no candidate, no pass / fail)
@@ -382,7 +434,8 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   void). The index has no dividends, so a positive gap is expected. No engine term is changed because of this check.
 - Reading fixed in advance (descriptive; POST3 has about 5.2 scored years, the standard error of each difference is of the
   order of 10 to 20 pp/yr): D_A = REF - 3x hold (what de-risking did) and D_B = REF - 1x hold (the whole package against the
-  index) on POST3, each with the two-sided 90% interval of test T, and each a second time with tax 0 on all three accounts
+  index) on POST3, each with the two-sided 90% interval of test T (the wider of the L = 63 and L = 126 intervals), and each
+  a second time with tax 0 on all three accounts
   (a hold account never sells, so with tax 0.22 both comparisons are tilted against REF; the 1x hold has no harvest, which
   the tax-0 repeat also removes). A sentence is printed only if the whole interval is on the same side of 0 in both
   versions. D_A: below 0 "v1's de-risking cost growth in the post-2014 design blocks", above 0 "v1's de-risking added growth
@@ -397,17 +450,19 @@ computed), in which the evaluator cannot build a real calendar after 2014.
 
 ### Definitions
 - Configuration = candidate source file + function + parameter values + registered inputs + T0. Its hash is the sha256 of
-  the bytes of the source file, of every helper file that the source file imports from its own folder (directly or through
-  another helper), and of the canonical JSON of the rest. Two parameter points are two configurations.
+  canonical JSON of: the module name, the name and sha256 of the bytes of the source file and of every helper file that
+  the source file imports from its own folder (directly or through another helper), in name order, and the rest (v6: the
+  very bytes that are gated and executed). Two parameter points are two configurations.
 - T0 = first date on which all candidate inputs exist plus the candidate's own warm-up. It is registered with the
   configuration and may lie at most 756 calendar rows after the first row on which every registered input and the chain's
   VIX exist (else the configuration is void), so the start of a record cannot be picked. Before T0 the candidate must
   equal REF exactly: the evaluator checks, on every account row before T0 (sealed rows included; in a G3 opening again on
   the main view), that the base level is v1's and that there is no weight and no rebalance flag, and that the paired
   difference is 0; else the configuration is void. All statistics use scored rows on or after T0.
-- Active row = scored row on or after T0 on which the candidate holds a different v1 level than REF or holds an extra
-  instrument. (A non-zero paired difference alone does not count: after the first divergence the two accounts differ a
-  little on every row.) Active block = at least 20 active rows.
+- Active row = scored row on or after T0 on which the candidate holds a different v1 level than REF, or on which its
+  extra instruments (or REF's) make up at least 1% of the account in actual weight (v6: a tiny always-held sleeve does
+  not make every row active). (A non-zero paired difference alone does not count: after the first divergence the two
+  accounts differ a little on every row.) Active block = at least 20 active rows.
 - TE_b = sqrt(252) x standard deviation of the daily paired difference on the scored rows of block b on or after T0.
   TE_D = the same on all scored design rows (reported, used in no gate).
 - Test T (no resampling): the scored rows of each calendar block are cut into consecutive sub-blocks of L rows
@@ -416,8 +471,11 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   few episodes: the sums of the active 63-row sub-blocks (those that contain an active row; A of them) get random signs,
   the other sub-blocks are not flipped; p_sf = share of sign assignments whose total is at least the observed total (all
   2^A assignments up to A = 20, which covers the sealed set; otherwise 100,000 drawn ones, seed = first 8 hex digits of the
-  configuration hash). p = the largest of p_63, p_126 and p_sf. Consequence, stated in advance: with fewer than 6 active
-  sub-blocks in the sealed set a candidate cannot be CONFIRMED.
+  configuration hash). v6: p_sf is at least 2^-A_eff with A_eff = (sum |s_j|)^2 / sum s_j^2 over the active sub-block sums
+  s_j (the number of sub-blocks that carry the difference); a difference that lives in one or two large sub-blocks
+  cannot reach a small p_sf because many small active sub-blocks surround it. p = the largest of p_63, p_126 and p_sf.
+  Consequence, stated in advance: with fewer than 6 effective active sub-blocks in the sealed set a candidate cannot be
+  CONFIRMED.
 - Harm bound for a block: an active block with d_b < -2.0 x TE_b x sqrt(252 / n_b). It bounds harm; it is not a
   significance test (with zero true edge about 85% of candidates stay inside it on seven blocks).
 - Batch = a list of configurations registered together (file with sha256, line in the ledger) before any of them is
@@ -501,19 +559,25 @@ designers have seen. Passing it is never reported as significance.
 - At most 3 openings in the whole project, one per configuration hash. The G3 function opens for hash H only if: the
   results file of its batch (sha256 in the ledger) holds a G1 pass for H and H was selected; the ledger holds its G0 pass
   where G0 exists, its G2 pass and the owner's authorisation for H (the id of the owner's message and where the ledger
-  stood); every registered hash, package version and constant is unchanged; fewer than 3 distinct hashes have a G3-OPEN
-  line; and no other opening is in progress (a lock file). A configuration whose level does not depend on any input
-  (cash, a fixed level, a constant extra weight with no v1 level) may not be opened. A configuration that is one family
+  stood; v6: the message id must be a message id and the authorisation line must come after the G2 pass line); every
+  registered hash, package version and constant is unchanged; fewer than 3 distinct hashes have a G3-OPEN line, and the
+  ledger holds at least as many G3-OPEN lines as the separate marker file G3_OPENINGS.log (v6: a shortened ledger cannot
+  hide an opening); G3 has not been closed (G3-CLOSED, written by close_g3 with the owner's message id); the date is before
+  2031-01-01 (v6: enforced); and no other opening is in progress (a lock file). A configuration whose level does not depend
+  on any input (cash, a fixed level, a constant extra weight with no v1 level; v6: also checked by replacing every input
+  after T0 by noise on the calendar that ends 2015-12-31, twice, and finding B, Wt and RB unchanged) may not be opened. A configuration that is one family
   with an already opened configuration (label, or absolute correlation of the design sub-block means of 0.7 or more) may
   not be opened; the refusal does not consume an opening.
-- Blocks 10 and 12 are scored from the main account (the full calendar in one account), for candidate and REF alike. Before
-  the line G3-OPEN is written, the T0 rule and the prefix test are repeated on the main view (PASS / FAIL); a failure
-  refuses the opening without using it up. The line G3-OPEN H is written and flushed before the main account is run for
-  scoring and consumes one opening whatever follows; if the process ends before the verdict line, the same H with
-  identical hashes may be re-run once and the retry is logged.
+- Blocks 10 and 12 are scored from the main account (the full calendar in one account), for candidate and REF alike. v6:
+  the line G3-OPEN H (and its marker) is written and flushed BEFORE the candidate is first called on the main view, and
+  consumes one opening whatever follows. Then the T0 rule and the prefix test are repeated on the main view; a failure
+  gives the verdict FAIL (a refusal at that point would have been a bit about sealed rows without a used opening). The main
+  account answers only while the G3 function holds the token of that opening. If the run raises anything, the ledger gets
+  G3-ABORT H and the function raises a fixed text (nothing of the error leaves); the same H with identical hashes may be
+  re-run once and the retry is logged.
 - Verdict (p = test T with the sign-flip check; all quantities computed inside the evaluator and never reported):
   - FAIL: set score d <= 0, or an active sealed block with d_b < -1.0 x TE_b x sqrt(252 / n_b) (TE_b from that block's own
-    scored rows).
+    scored rows), or a failed check of the main view (above).
   - CONFIRMED: not FAIL, set score d >= 0.5 pp/yr, p <= 0.05 / 3 on d, and also set score d* > 0 with p <= 0.05 / 3 on d*,
     and the configuration was of type timing at G1 and registers no periodic calendar field as input.
   - CONSISTENT: not FAIL, set score d >= 0.5 pp/yr and p <= 0.05 / 3 on d, but not CONFIRMED. The candidate did better than
@@ -566,8 +630,8 @@ designers have seen. Passing it is never reported as significance.
    level or position computed from a market value after 2014-12-31 is produced before this step.
 4. CAL, P1, P3, P4, D1-D4 on the full calendar (counts, dates and booleans only); their ledger line.
 5. Section 3 measurement on the design account.
-6. Candidate batches: registered, scored on D7, G1; G0 and G2 for the selected passers; G3 only with the owner's
-   authorisation.
+6. Candidate batches: read for hindsight constants by a reader who did not write them (section 2), registered, scored
+   on D7, G1; G0 and G2 for the selected passers; G3 only with the owner's authorisation.
 
 ## 6. Forbidden files (part of this text)
 

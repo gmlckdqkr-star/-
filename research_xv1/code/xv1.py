@@ -1,4 +1,4 @@
-"""XV1 sealed block evaluator, version 5 (see PREREG_XV1_STRUCTURE.md).
+"""XV1 sealed block evaluator, version 6 (see PREREG_XV1_STRUCTURE.md).
 
 Accounts
   design    ONE continuous account on the design calendar = the evaluator calendar with every row of the sealed blocks
@@ -22,7 +22,7 @@ Two sides    The object handed to candidate code holds COPIES. The engine reads 
             features, the design rows, v1's shadow levels), which candidate code never receives. Candidate source is checked
             by an import / name gate before a batch is registered and imports a small stand-in for this module (ref, std.ident).
             The full-calendar call of a configuration is made ONCE: the same result is tested (prefix, scale) and scored."""
-import os, sys, ast, json, time, types, hashlib, weakref, contextlib, importlib.util
+import os, re, sys, ast, json, time, types, hashlib, weakref, builtins, warnings, contextlib
 import numpy as np, pandas as pd
 from scipy import stats as sps
 os.environ.setdefault('NUMBA_CACHE_DIR', '/home/claude/nbcache_xv1')   # own cache: the shared one collides with other sessions
@@ -55,6 +55,9 @@ LVL_OK = ('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext')   
 EXACT_SF = 20                          # sign-flip check: all 2^A assignments up to this many active sub-blocks
 T0_WARM_MAX = 756                      # a registered T0 lies at most this many calendar rows after the first row on which every input exists
 G2_MIN_ROWS = 252                      # fewer scored WEAK rows on or after T0: G2 is not available (and the configuration cannot be opened)
+W_ACT = 0.01                           # an extra holding makes a row active only from this total actual weight on (a tiny sleeve does not)
+G3_END = '2031-01-01'                  # no G3 opening on or after this date
+F1 = dict(delay=2, cost=0.003, tax=0.22, W0=10000000.0, harvest=3, hthr=1.0, cspr=0.02, er3=0.0245, step=0.5, fstep=0.5)   # beng.F1 as registered
 WARM = ov.WARM
 assert WARM == xeng.WARM == beng.WARM
 _FROZEN = dict(CAL_START='1984-01-03', ACC_START='1986-01-02', CAL_END='2026-08-31', REG_END='2026-08-31', A_END='2015-12-31',
@@ -63,7 +66,8 @@ _FROZEN = dict(CAL_START='1984-01-03', ACC_START='1986-01-02', CAL_END='2026-08-
                STRESS=dict(base={}, cost2=dict(cost=0.006), delay3=dict(delay=3), delay1=dict(delay=1), tax0=dict(tax=0.0)),
                G1_STRESS=('cost2', 'delay3', 'delay1', 'tax0'), D_MIN_G1=0.010, D_MIN_G3=0.005, DRAWS=200000,
                OUT=REG_OUT, FEE=0.0095, SPREAD=0.0075, EXACT_SF=20, WARM=int(WARM), T0_WARM_MAX=756, G2_MIN_ROWS=252,
-               LVL_OK=('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext'))
+               LVL_OK=('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext'), W_ACT=0.01, G3_END='2031-01-01',
+               F1=dict(delay=2, cost=0.003, tax=0.22, W0=10000000.0, harvest=3, hthr=1.0, cspr=0.02, er3=0.0245, step=0.5, fstep=0.5), CARRY=5)
 
 
 class Void(Exception):
@@ -76,8 +80,39 @@ def _guard():
     if WORLD is not None: return
     g = globals()
     for k, val in _FROZEN.items():
+        if k == 'CARRY': continue
         if g[k] != val: raise PermissionError('registered constant %s was changed' % k)
+    if dict(beng.F1) != _FROZEN['F1']: raise PermissionError('engine terms (beng.F1) changed')
+    if xdata.CARRY != _FROZEN['CARRY']: raise PermissionError('carry limit of the extra inputs changed')
     if abs(beng.F1['er3'] - (FEE + 2 * SPREAD)) > 1e-15: raise PermissionError('fund model terms changed')
+
+
+def _writable():
+    """a test world never writes into the registered folder"""
+    if WORLD is not None and os.path.realpath(OUT) == os.path.realpath(REG_OUT): raise PermissionError('a test world does not write into the registered folder')
+
+
+_SCOPE = [0]
+@contextlib.contextmanager
+def scope():
+    """Evaluator entry points (and the checks script) run inside this. Outside it no calendar after 2014-12-31 is built or
+    read and no registered input is aligned to such a calendar (in every world)."""
+    _SCOPE[0] += 1
+    try: yield
+    finally: _SCOPE[0] -= 1
+
+
+def _scoped(f):
+    import functools
+    @functools.wraps(f)
+    def w(*a, **k):
+        with scope(): return f(*a, **k)
+    return w
+
+
+_INCALL = [0]                          # > 0 while candidate code runs (the shadow levels answer only then)
+_G3_RUN = [None]                       # the hash of the opening in progress, set by _open_g3 while the main account may run
+_G3_PRE = [None]                       # the hash whose main view open_g3 tests (v6: only after its G3-OPEN line)
 
 
 def _registered():
@@ -96,7 +131,7 @@ def kind_of(b):
     return 'S' if b in SEALED else 'W'
 
 
-def years_of(b): return '%d-%02d' % (Y0 + BLEN * b, (Y0 + BLEN * b + BLEN - 1) % 100)
+def years_of(b): return '%d-%02d' % (Y0 + BLEN * b, min(Y0 + BLEN * b + BLEN - 1, int(CAL_END[:4])) % 100)
 
 
 # ------------------------------------------------------------------------------------------------ calendar and views
@@ -105,6 +140,7 @@ def frame(end=None):
     """X of the MS1 real-path chain on the calendar rows CAL_START..end. A real calendar after 2014 is built only in the
     real world, with the registered constants, after registration, and only to the registered end or to A_END."""
     end = end or CAL_END
+    if end > OLD_END and not _SCOPE[0]: raise PermissionError('outside an evaluator entry point no calendar after %s is read' % OLD_END)
     if end not in _FR:
         if end > OLD_END:
             if WORLD is not None: raise PermissionError('test world %r: no real calendar after %s is built' % (WORLD, OLD_END))
@@ -117,6 +153,7 @@ def frame(end=None):
 
 def extras(names, idx):
     """registered extra inputs as full-length arrays aligned to the calendar idx (fresh copies)."""
+    if len(idx) and idx[-1] > pd.Timestamp(OLD_END) and not _SCOPE[0]: raise PermissionError('outside an evaluator entry point no input after %s is read' % OLD_END)
     for k in names:
         if k.startswith('lvl:') and k not in LVL_OK: raise PermissionError('level input %s is not on the allow-list (a price height names an era)' % k)
     return {k: np.array(xdata.get(k, idx), dtype=np.float64) for k in names}
@@ -190,11 +227,13 @@ class View:
     @property
     def ref_target(s):
         """level v1 wants after its brake, decided at the close of row t (in force two rows later)"""
+        if WORLD is None and not _INCALL[0]: raise PermissionError('the shadow levels are read only by candidate code')
         _ENG[s].touched.add('ref'); a = np.array(_ENG[s].shadow()[0]); a.setflags(write=False); return a
 
     @property
     def ref_held(s):
         """level v1 actually holds on row t"""
+        if WORLD is None and not _INCALL[0]: raise PermissionError('the shadow levels are read only by candidate code')
         _ENG[s].touched.add('ref'); a = np.array(_ENG[s].shadow()[1]); a.setflags(write=False); return a
 
 
@@ -293,14 +332,18 @@ def _deny(*a, **k): raise PermissionError('a data reader was called from candida
 
 @contextlib.contextmanager
 def _sandbox():
-    """while candidate code runs: output streams closed, data readers replaced by functions that raise"""
+    """while candidate code runs: output streams closed, warnings dropped, numpy's error state set to its defaults with no
+    call-back, data readers replaced by functions that raise"""
     spots = [(mkt, '_panel'), (mkt, 'fred'), (mkt, 'pser'), (md, 'load'), (md, 'kf'), (jp, 'calendar'), (jp, 'build'), (np, 'load'), (np, 'save'),
              (np, 'fromfile'), (np, 'loadtxt'), (np, 'genfromtxt'), (pd, 'read_csv'), (xdata, 'get'), (xdata, 'read_chips')]
-    old = [getattr(o, n) for o, n in spots]
-    with open(os.devnull, 'w') as nul, contextlib.redirect_stdout(nul), contextlib.redirect_stderr(nul):
+    old = [getattr(o, n) for o, n in spots]; err, call = np.geterr(), np.geterrcall()
+    with open(os.devnull, 'w') as nul, contextlib.redirect_stdout(nul), contextlib.redirect_stderr(nul), warnings.catch_warnings():
+        warnings.simplefilter('ignore')                  # v6: no warning text or count leaves a candidate call
         for o, n in spots: setattr(o, n, _deny)
+        np.seterr(divide='warn', over='warn', under='ignore', invalid='warn'); np.seterrcall(None); _INCALL[0] += 1   # no state survives in numpy's global slots
         try: yield
         finally:
+            _INCALL[0] -= 1; np.seterr(**err); np.seterrcall(call)
             for (o, n), f in zip(spots, old): setattr(o, n, f)
 
 
@@ -308,7 +351,14 @@ _REFB, _REFP, _REFS = rx.av23s, np.asarray(rx.P_av23s(.85), dtype=np.float64), 0
 def _norm(m, T):
     """normalise and validate what candidate code returned. Anything outside the rules raises Void."""
     def bad(why): raise Void('output rule: ' + why)
-    if not isinstance(m, dict) or any(k not in m for k in ('B', 'bfn', 'bp', 'fstep')): bad('missing B, bfn, bp or fstep')
+    if type(m) is not dict or any(k not in m for k in ('B', 'bfn', 'bp', 'fstep')): bad('missing B, bfn, bp or fstep')
+    for k, a in m.items():                               # plain values only: numbers, number arrays, lists / tuples of them, the brake function
+        if k == 'bfn' or a is None: continue
+        if isinstance(a, np.ndarray):
+            if a.dtype.kind not in 'biuf': bad('array of type %s' % a.dtype.kind)
+        elif type(a) in (list, tuple):
+            if not all(type(x) in (int, float, bool) or isinstance(x, (np.number, np.bool_, np.ndarray)) for x in np.ravel(np.asarray(a, dtype=object))): bad('list of non-numbers')
+        elif not (type(a) in (int, float, bool) or isinstance(a, (np.number, np.bool_))): bad('value of type %s' % type(a).__name__)
     o = dict(B=np.ascontiguousarray(np.asarray(m['B'], dtype=np.float64).reshape(-1)), bfn=m['bfn'],
              bp=np.asarray(m['bp'], dtype=np.float64).reshape(-1), fstep=float(m['fstep']), mode=m.get('mode', 0), inc=m.get('inc', 0))
     if len(o['B']) != T: bad('length of B')
@@ -342,7 +392,7 @@ def _norm(m, T):
     for j in range(J):                                  # a weight may never rest on an instrument that does not exist yet
         if gn[:, j].any():
             on = (W[:, j] != 0).astype(float); held = np.convolve(on, np.ones(5), 'full')[:T] > 0
-            if (held & gn[:, j]).any(): raise Void('weight on a missing instrument')
+            if (held & gn[:, j]).any(): raise Void('output rule: weight on a missing instrument')
     o['Graw'] = np.ascontiguousarray(G); o['G'] = np.ascontiguousarray(np.where(gn, 0.0, G)); o['Wt'] = np.ascontiguousarray(W)
     return o
 
@@ -352,24 +402,37 @@ def _call(make, v):
     d0 = _digest(v)
     try:
         with _sandbox(): m = make(v)
-    except Exception as e: raise Void('error in candidate code: ' + type(e).__name__)
+    except (KeyboardInterrupt, Void): raise              # the operator's stop (candidate code has no name for it); a gate or load Void as it is
+    except BaseException as e: raise Void('error in candidate code: ' + type(e).__name__)
     if _digest(v) != d0: raise Void('candidate code changed or replaced an input')
-    return _norm(m, v.T)
+    try: return _norm(m, v.T)
+    except Void: raise
+    except Exception: pass
+    raise Void('output rule: an output is not a plain number array')
+
+
+_ONE_X = tuple('ret:' + k for k in ('SOXX', 'SMH', 'TLT', 'IEF', 'SHY', 'GLD', 'SPY', 'QQQ', 'IWM', 'IYR', 'DIA', 'VTI', 'EFA', 'EEM',
+                                    'HYG', 'LQD', 'AGG', 'XLK', 'XLE', 'XLF', 'XLV', 'XLU', 'XLP', 'XLI', 'XLY', 'XLB', 'XLC', 'XLRE'))
+_LEV = {'ret:SOXL': (3,), 'ret:USD': (2,), 'ret:TQQQ': (3,), 'ret:QLD': (2,), 'ret:PSQ': (-1,), 'ret:TMF': (3,), 'ret:TNA': (3,),
+        'ret:TECL': (3,), 'ret:FAS': (3,), 'ret:ERX': (2, 3), 'ret:DRN': (3,)}     # v6: leverage of each registered fund (ERX: 3x to 2020, 2x after)
+def _is_1x(k): return k in ('ndx', 'bond', 'chips', 'semis') or k.startswith('kf:') or k.split('@')[0] in _ONE_X
 
 
 def _g_check(v, m):
     """Every instrument return the candidate hands to the engine must be one it could have held: a registered return input,
     the modelled fund (L = 3, 2, 1, -1) on the index, on the chain's bond return, on a registered 1x return input or on the
-    splice of two of them, or the splice of a registered fund return with such a model. Checked on the full view against the
+    splice of two of them, or the splice of a registered fund return with such a model of the fund's own leverage (v6: a
+    model never rests on a leveraged or inverse series, and a real fund is never spliced with a model of other leverage). Checked on the full view against the
     evaluator's own arrays; a column that matches none of these voids the configuration."""
     e = _eng(v); one = {'ndx': e.r}
     if e.rb is not None: one['bond'] = e.rb
     one.update({k: a for k, a in e.x.items() if not (k.startswith('lvl:') or k.startswith('cal:'))})
-    base = dict(one)
-    for a in one:
-        for b in one:
+    unl = {k: a for k, a in one.items() if _is_1x(k)}                               # v6: a fund is modelled only on an unlevered series
+    base = dict(unl)
+    for a in unl:
+        for b in unl:
             if a != b: base[a + '|' + b] = None                                       # splice of two 1x series, built when needed
-    act = {None: None}; act.update({k: a for k, a in e.x.items() if k.startswith('ret:')})
+    act = {None: None}; act.update({k: a for k, a in e.x.items() if k.split('@')[0] in _LEV or k.split('@')[0] in _ONE_X})
     def bser(k):
         if base[k] is None: a, b = k.split('|'); base[k] = np.where(np.isnan(one[a]), one[b], one[a])
         return base[k]
@@ -386,11 +449,12 @@ def _g_check(v, m):
                 for k in base:
                     mod = lev(bser(k), e.rf, L)
                     for ka, a in act.items():
+                        if ka is not None and L not in _LEV.get(ka.split('@')[0], (1,)): continue    # v6: the real fund's own leverage only
                         c = mod[I] if a is None else np.where(np.isnan(a[I]), mod[I], a[I])
                         if eq(g[I], c) and eq(g, mod if a is None else np.where(np.isnan(a), mod, a)): found = (ka, k, L); break
                     if found: break
                 if found: break
-        if found is None: raise Void('instrument return %d is not a registered input, a modelled fund on one, or their splice' % j)
+        if found is None: raise Void('instrument check: return column %d is not a registered input, a modelled fund on one, or their splice' % j)
         how.append(found)
     return how
 
@@ -445,7 +509,7 @@ def _main_account(make=None, names=(), pre=None, **stress):
     """the sealed blocks from the main account (full calendar). Runs only while a G3 opening is in progress: the last
     ledger line must be a G3-OPEN line that has no verdict yet (open_g3 writes it, under its lock)."""
     L = read_ledger()
-    if not L or L[-1].get('kind') != 'G3-OPEN': raise PermissionError('sealed block')
+    if _G3_RUN[0] is None or not L or L[-1].get('kind') != 'G3-OPEN' or L[-1].get('cfg') != _G3_RUN[0]: raise PermissionError('sealed block')
     pre = pre or _prepare(make, names, None, 'main'); X, v, m = pre['X'], pre['v'], pre['m']; e = _eng(v)
     if e.account != 'main': raise PermissionError('not a main view')
     cal = Cal(acc_dates(X)); check_calendar(cal)
@@ -492,7 +556,9 @@ def p_sf(ds, seed=0, act=None):
     = 20 active sub-blocks, so the sealed set, which has 20 sub-blocks, never needs a seed; otherwise 100,000 drawn ones).
     Active sub-block: with `act` (per block, the boolean array of active rows) a sub-block that contains an active row; the
     other sub-blocks are not flipped, however small their sums (after the first divergence two accounts differ a little on
-    every row). Without `act`: a sub-block whose sum is not 0."""
+    every row). Without `act`: a sub-block whose sum is not 0. v6: the result is at least 2^-A_eff, A_eff = (sum |s|)^2 /
+    sum s^2 (the effective number of active sub-blocks), so many tiny active sub-blocks around one or two large ones do
+    not buy a small p."""
     s = []
     for i, d in enumerate(ds):
         if not len(d): continue
@@ -502,8 +568,13 @@ def p_sf(ds, seed=0, act=None):
             k = len(ss); j = np.minimum(np.arange(len(d)) // 63, k - 1)
             s.append(ss[np.bincount(j, weights=np.asarray(act[i], dtype=float), minlength=k) > 0])
     s = np.concatenate(s) if s else np.zeros(0); A = len(s)
-    if A == 0: return 1.0
-    obs = float(s.sum()); tol = 1e-12 * float(np.abs(s).sum())
+    if A == 0 or not np.any(s): return 1.0
+    floor = 2.0 ** -(float(np.abs(s).sum()) ** 2 / float(np.sum(s * s)))   # v6: 2^-A_eff, A_eff = (sum |s|)^2 / sum s^2
+    return max(floor, _p_sf_count(s, seed))
+
+
+def _p_sf_count(s, seed):
+    A = len(s); obs = float(s.sum()); tol = 1e-12 * float(np.abs(s).sum())
     if A <= EXACT_SF:
         cnt = 0; hi = s[10:]; nh = len(hi)                    # the first 10 signs enumerated in one block, the rest in a loop
         lo = (((np.arange(2 ** min(A, 10))[:, None] >> np.arange(min(A, 10))) & 1) * 2.0 - 1.0) @ s[:10]
@@ -572,6 +643,7 @@ def _dd(x):
     c = np.cumsum(x); return float(np.min(c - np.maximum.accumulate(np.r_[0.0, c])[1:])) if len(c) else 0.0
 
 
+@_scoped
 def reference_table():
     """first measurement: v1, 1x hold and 3x hold on every DESIGN and WEAK block. Scalars only. (The 1x hold is an extra
     instrument: the engine's yearly loss harvest and deduction step-up exist for the 3x fund only, so the 1x row has none.)"""
@@ -596,6 +668,7 @@ def reference_table():
     return dict(blocks=rows, sets=sets)
 
 
+@_scoped
 def model_check():
     """modelled 3x fund against the actual TQQQ on the scored rows of non-sealed blocks where the fund exists. Scalars only."""
     _check_env(); X = frame(CAL_END); idx = X.index; cal = Cal(acc_dates(X)); i0 = len(idx) - cal.n
@@ -616,62 +689,148 @@ def model_check():
 _BAN_NAME = {'open', 'exec', 'eval', 'compile', 'getattr', 'setattr', 'delattr', 'hasattr', 'globals', 'locals', 'vars', 'dir', 'input',
              'breakpoint', 'memoryview', 'id', 'type', 'object', 'super', 'print', 'help', 'exit', 'quit', 'classmethod', 'staticmethod', 'property'}
 _BAN_ATTR = {'sys', 'os', 'modules', 'setflags', 'flags', 'ctypes', 'tofile', 'dump', 'dumps', 'save', 'savez', 'savez_compressed', 'savetxt',
-             'load', 'loadtxt', 'fromfile', 'genfromtxt', 'memmap', 'random', 'base', 'data', 'ii', 'keep', 'account', 'lib', 'testing', 'f2py'}
+             'load', 'loadtxt', 'fromfile', 'genfromtxt', 'memmap', 'random', 'base', 'data', 'ii', 'keep', 'account', 'lib', 'testing', 'f2py',
+             # v6: string formatting walks attributes inside a string; frames, generators, coroutines and tracebacks reach globals
+             'format', 'format_map', 'vformat', 'gi_frame', 'gi_code', 'gi_yieldfrom', 'gi_suspended', 'cr_frame', 'cr_code', 'cr_await',
+             'cr_origin', 'ag_frame', 'ag_code', 'ag_await', 'f_globals', 'f_locals', 'f_back', 'f_builtins', 'f_code', 'f_trace',
+             'tb_frame', 'tb_next', 'co_consts', 'co_code', 'co_names', 'func_globals', 'mro', 'seterr', 'seterrcall', 'geterrcall'}
+_NP_OK = {   # the numpy attributes candidate code may use (one level: np.X, never np.X.Y)
+    'abs', 'absolute', 'all', 'any', 'append', 'arange', 'argmax', 'argmin', 'argsort', 'array', 'array_equal', 'asarray',
+    'ascontiguousarray', 'bincount', 'bool_', 'c_', 'ceil', 'clip', 'column_stack', 'concatenate', 'convolve', 'copy', 'cos',
+    'cumprod', 'cumsum', 'diff', 'errstate', 'exp', 'expm1', 'float32', 'float64', 'floor', 'fmax', 'fmin', 'full',
+    'full_like', 'hstack', 'inf', 'int32', 'int64', 'interp', 'isfinite', 'isin', 'isnan', 'log', 'log10', 'log1p', 'log2',
+    'logical_and', 'logical_not', 'logical_or', 'max', 'maximum', 'mean', 'median', 'min', 'minimum', 'nan', 'nan_to_num',
+    'nanmax', 'nanmean', 'nanmedian', 'nanmin', 'nanstd', 'nansum', 'newaxis', 'nonzero', 'ones', 'ones_like', 'pi', 'power',
+    'prod', 'r_', 'ravel', 'repeat', 'reshape', 'roll', 'round', 'searchsorted', 'sign', 'sin', 'sort', 'sqrt', 'square',
+    'stack', 'std', 'sum', 'tanh', 'tile', 'unique', 'var', 'vstack', 'where', 'zeros', 'zeros_like'}
+_ERRSTATE_KW = {'divide', 'invalid', 'over', 'under', 'all'}
 
 
-def _helpers(path):
-    """the files of the candidate's own folder that it imports, directly or through another of them (sorted paths)"""
-    d = os.path.dirname(path); seen = []; todo = [path]
+_BI_OK = ('ArithmeticError', 'Exception', 'FloatingPointError', 'IndexError', 'KeyError', 'StopIteration', 'ValueError',
+          'ZeroDivisionError', 'abs', 'all', 'any', 'bool', 'dict', 'divmod', 'enumerate', 'filter', 'float', 'frozenset', 'int',
+          'isinstance', 'iter', 'len', 'list', 'map', 'max', 'min', 'next', 'pow', 'range', 'reversed', 'round', 'set', 'slice',
+          'sorted', 'str', 'sum', 'tuple', 'zip')   # v6: the only built-ins candidate code gets (no open, hash, id, print, exit, import machinery)
+_STD_MODS = set(sys.stdlib_module_names) | set(sys.builtin_module_names)
+_YEAR = re.compile(r'(19|20)\d\d')
+LIT_INT_MAX = 999                       # v6: an integer literal above this is refused (row numbers and years are not written into a rule)
+LIT_SEQ_MAX = 64                        # v6: a list / tuple / set / dict display with more elements is refused (no data tables in code)
+
+
+def _read_src(path):
+    """v6: the bytes of a candidate file and of every file of its own folder it imports, directly or through another of them.
+    Read once per configuration object: the gate, the hash and the executed code all come from these bytes (no import
+    system, no sys.path, no __pycache__, no package folder is involved)."""
+    d = os.path.dirname(path); main = os.path.splitext(os.path.basename(path))[0]; src = {}; todo = [(main, path)]
     while todo:
-        f = todo.pop()
-        for node in ast.walk(ast.parse(open(f).read())):
-            mods = [a.name for a in node.names] if isinstance(node, ast.Import) else ([node.module] if isinstance(node, ast.ImportFrom) and node.module else [])
-            for nm in mods:
-                if nm.split('.')[0] in ('xv1', 'numpy'): continue             # the stand-in and numpy are never read from the candidate's folder
-                q = os.path.join(d, nm.split('.')[0] + '.py')
-                if os.path.exists(q) and q != path and q not in seen: seen.append(q); todo.append(q)
-    return sorted(seen)
+        nm, f = todo.pop()
+        if nm in src: continue
+        with open(f, 'rb') as fh: src[nm] = fh.read()
+        try: tree = ast.parse(src[nm])
+        except SyntaxError: continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for a in node.names:
+                    q = os.path.join(d, a.name + '.py')
+                    if a.name not in ('numpy', 'xv1') and '.' not in a.name and a.name not in src and os.path.isfile(q): todo.append((a.name, q))
+    return main, src
+
+
+def _docstrings(tree):
+    out = set()
+    for n in ast.walk(tree):
+        if isinstance(n, (ast.Module, ast.FunctionDef)) and n.body and isinstance(n.body[0], ast.Expr) and isinstance(n.body[0].value, ast.Constant):
+            out.add(id(n.body[0].value))
+    return out
 
 
 def gate(path):
-    """Source gate of a candidate file and of the helper files it imports. Returns the list of violations (empty = clean).
-    Allowed: imports at module level of numpy, xv1 and files of the candidate's own folder; of xv1 only xv1.ref and
-    xv1.std.ident. Not allowed: any other import, an import inside a function, a name or attribute that begins with '_'
-    other than the candidate's own module-level names, file / reflection built-ins, attributes that reach the interpreter,
-    files, random numbers or an array's memory, `global` / `nonlocal`, and assigning to an attribute of an imported module."""
-    out = []
-    for f in [path] + _helpers(path):
-        tree = ast.parse(open(f).read()); tag = os.path.basename(f); d = os.path.dirname(f)
+    """Source gate of a candidate file and of the helper files it imports. Returns the list of violations (empty = clean)."""
+    main, src = _read_src(path); return _gate_src(main, src)
+
+
+def _gate_src(main, src):
+    """v6 allow-list. Allowed: module-level `import numpy`, `import xv1` and `import <helper>` (a file of the candidate's own
+    folder whose name is not a standard-library or built-in module name); of xv1 only xv1.ref and xv1.std.ident; of numpy
+    only the attributes in _NP_OK, one level deep (np.X); of a helper file only its own functions and names, one level
+    deep; of the built-ins only _BI_OK. Not allowed: any other import, a from-import, an import inside a function, a
+    module name used as a value, a class definition, a name or attribute that begins with '_' (other than the file's own
+    module-level names) or contains '__', the attributes in _BAN_ATTR, assigning to or deleting any attribute, np.errstate
+    with an argument other than divide / invalid / over / under / all, `global` / `nonlocal`, an integer literal above
+    LIT_INT_MAX, a string literal (other than a docstring) that contains a year 19xx / 20xx, and a list / tuple / set /
+    dict display with more than LIT_SEQ_MAX elements."""
+    out = []; trees = {}
+    for nm, b in sorted(src.items()):
+        try: trees[nm] = ast.parse(b)
+        except SyntaxError as e: out.append('%s.py:%s syntax error' % (nm, e.lineno))
+    for nm, tree in sorted(trees.items()):
+        tag = nm + '.py'; doc = _docstrings(tree)
         own = set(n.name for n in tree.body if isinstance(n, (ast.FunctionDef, ast.ClassDef)))
         own |= set(t.id for n in tree.body if isinstance(n, ast.Assign) for t in n.targets if isinstance(t, ast.Name))
+        bound = set(n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store))
+        bound |= set(a.arg for n in ast.walk(tree) if isinstance(n, ast.arguments) for a in n.args + n.kwonlyargs + n.posonlyargs)
+        bound |= set(n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef))
         par = {}
         for n in ast.walk(tree):
             for ch in ast.iter_child_nodes(n): par[ch] = n
-        alias = {}
+        alias = {}; helper = {}
         for n in ast.walk(tree):
             if isinstance(n, (ast.Import, ast.ImportFrom)):
                 if par.get(n) is not tree: out.append('%s:%d import inside a function' % (tag, n.lineno)); continue
                 if isinstance(n, ast.ImportFrom): out.append('%s:%d from-import' % (tag, n.lineno)); continue
                 for a in n.names:
-                    ok = a.name in ('numpy', 'xv1') or os.path.exists(os.path.join(d, a.name + '.py'))
-                    if not ok: out.append('%s:%d import of %s' % (tag, n.lineno, a.name))
+                    isf = a.name not in ('numpy', 'xv1') and a.name in src and a.name != nm
+                    if not (a.name in ('numpy', 'xv1') or isf): out.append('%s:%d import of %s' % (tag, n.lineno, a.name))
+                    if isf and (a.name in _STD_MODS or not re.fullmatch(r'[a-z][a-z0-9_]*', a.name)): out.append('%s:%d helper name %s is a standard module name or not plain' % (tag, n.lineno, a.name))
                     alias[a.asname or a.name] = a.name
+                    if isf and a.name in trees: helper[a.asname or a.name] = set(x.asname or x.name for y in ast.walk(trees[a.name]) if isinstance(y, ast.Import) for x in y.names)
             elif isinstance(n, (ast.Global, ast.Nonlocal)): out.append('%s:%d global / nonlocal' % (tag, n.lineno))
+            elif isinstance(n, ast.ClassDef): out.append('%s:%d class definition' % (tag, n.lineno))
         for n in ast.walk(tree):
             if isinstance(n, ast.Name):
                 if n.id in _BAN_NAME: out.append('%s:%d name %s' % (tag, n.lineno, n.id))
+                if '__' in n.id: out.append('%s:%d name %s' % (tag, n.lineno, n.id))
                 if n.id.startswith('_') and n.id not in own and not isinstance(n.ctx, ast.Store): out.append('%s:%d name %s' % (tag, n.lineno, n.id))
-                if alias.get(n.id) == 'xv1':
-                    a1 = par.get(n); a2 = par.get(a1)
-                    ok = isinstance(a1, ast.Attribute) and (a1.attr == 'ref' or (a1.attr == 'std' and isinstance(a2, ast.Attribute) and a2.attr == 'ident'))
-                    if not ok: out.append('%s:%d xv1 used for something other than xv1.ref / xv1.std.ident' % (tag, n.lineno))
+                if hasattr(builtins, n.id) and n.id not in _BI_OK and n.id not in bound and n.id not in alias: out.append('%s:%d built-in %s is not allowed' % (tag, n.lineno, n.id))
+                if n.id in alias:
+                    a1 = par.get(n)
+                    if not (isinstance(a1, ast.Attribute) and a1.value is n): out.append('%s:%d module %s used as a value' % (tag, n.lineno, n.id)); continue
+                    a2 = par.get(a1)
+                    if alias[n.id] == 'xv1':
+                        ok = a1.attr == 'ref' or (a1.attr == 'std' and isinstance(a2, ast.Attribute) and a2.attr == 'ident')
+                        if not ok: out.append('%s:%d xv1 used for something other than xv1.ref / xv1.std.ident' % (tag, n.lineno))
+                        if a1.attr == 'ref' and isinstance(a2, ast.Attribute) and a2.value is a1: out.append('%s:%d attribute of xv1.ref' % (tag, n.lineno))
+                        if a1.attr == 'std' and isinstance(par.get(a2), ast.Attribute) and par.get(a2).value is a2: out.append('%s:%d attribute of xv1.std.ident' % (tag, n.lineno))
+                    else:
+                        if isinstance(a2, ast.Attribute) and a2.value is a1: out.append('%s:%d chained attribute %s.%s.%s' % (tag, n.lineno, n.id, a1.attr, a2.attr))
+                        if alias[n.id] == 'numpy' and a1.attr not in _NP_OK: out.append('%s:%d numpy attribute %s is not on the allow-list' % (tag, n.lineno, a1.attr))
+                        if n.id in helper and (a1.attr in helper[n.id] or a1.attr in ('np', 'numpy', 'xv1')): out.append('%s:%d module of a helper reached: %s.%s' % (tag, n.lineno, n.id, a1.attr))
             elif isinstance(n, ast.Attribute):
-                if n.attr.startswith('_') or n.attr in _BAN_ATTR: out.append('%s:%d attribute %s' % (tag, n.lineno, n.attr))
-                if isinstance(n.ctx, (ast.Store, ast.Del)):
-                    r = n
-                    while isinstance(r, ast.Attribute): r = r.value
-                    if isinstance(r, ast.Name) and r.id in alias: out.append('%s:%d assignment to an attribute of module %s' % (tag, n.lineno, r.id))
+                if n.attr.startswith('_') or '__' in n.attr or n.attr in _BAN_ATTR: out.append('%s:%d attribute %s' % (tag, n.lineno, n.attr))
+                if isinstance(n.ctx, (ast.Store, ast.Del)): out.append('%s:%d assignment to an attribute (%s)' % (tag, n.lineno, n.attr))
+            elif isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == 'errstate':
+                if n.args or any(k.arg not in _ERRSTATE_KW for k in n.keywords): out.append('%s:%d np.errstate with an argument other than %s' % (tag, n.lineno, sorted(_ERRSTATE_KW)))
+            elif isinstance(n, ast.Constant):
+                if type(n.value) is int and abs(n.value) > LIT_INT_MAX: out.append('%s:%d integer literal above %d' % (tag, n.lineno, LIT_INT_MAX))
+                if type(n.value) in (str, bytes) and id(n) not in doc and _YEAR.search(n.value if type(n.value) is str else n.value.decode('latin-1')): out.append('%s:%d string literal with a year' % (tag, n.lineno))
+            elif isinstance(n, (ast.List, ast.Tuple, ast.Set)) and len(n.elts) > LIT_SEQ_MAX: out.append('%s:%d display of more than %d elements' % (tag, n.lineno, LIT_SEQ_MAX))
+            elif isinstance(n, ast.Dict) and len(n.keys) > LIT_SEQ_MAX: out.append('%s:%d display of more than %d elements' % (tag, n.lineno, LIT_SEQ_MAX))
     return out
+
+
+def _param_bad(x, path='params'):
+    """v6: the literal rules of the gate applied to a configuration's parameter values"""
+    if isinstance(x, bool) or x is None or isinstance(x, float): return []
+    if isinstance(x, int): return ['%s: integer above %d' % (path, LIT_INT_MAX)] if abs(x) > LIT_INT_MAX else []
+    if isinstance(x, str): return ['%s: string with a year' % path] if _YEAR.search(x) else []
+    if isinstance(x, (list, tuple)):
+        out = ['%s: more than %d elements' % (path, LIT_SEQ_MAX)] if len(x) > LIT_SEQ_MAX else []
+        for i, y in enumerate(x): out += _param_bad(y, '%s[%d]' % (path, i))
+        return out
+    if isinstance(x, dict):
+        out = ['%s: more than %d elements' % (path, LIT_SEQ_MAX)] if len(x) > LIT_SEQ_MAX else []
+        for k, y in x.items(): out += _param_bad(k, path + ' key') + _param_bad(y, '%s[%r]' % (path, k))
+        return out
+    return ['%s: value of type %s' % (path, type(x).__name__)]
 
 
 def _facade():
@@ -679,53 +838,64 @@ def _facade():
     m = types.ModuleType('xv1'); m.ref = ref; m.std = types.SimpleNamespace(ident=std.ident); return m
 
 
-_MOD = {}
 class Config:
     """one configuration = candidate source file + function + parameter values + registered inputs + T0"""
     def __init__(s, family, name, file, func, params=None, names=(), t0=None, **_):
         s.family, s.name, s.file, s.func = family, name, os.path.realpath(file), func
         s.params = dict(params or {}); s.names = tuple(names); s.t0 = t0
 
+    def _src(s):
+        if getattr(s, '_s', None) is None: s._s = _read_src(s.file)
+        return s._s
+
     @property
     def hash(s):
-        """sha256 of the candidate file, of every helper file it imports from its own folder, and of the configuration
-        (computed once per object; load_batch builds new objects and compares them with the registered values)"""
+        """v6: sha256 of the names and sha256 of the candidate file and of every helper file it imports (the very bytes that
+        are gated and executed), and of the configuration (computed once per object; load_batch builds new objects and
+        compares them with the registered values)"""
         if getattr(s, '_h', None) is None:
-            body = json.dumps(dict(func=s.func, params=s.params, names=list(s.names), t0=s.t0), sort_keys=True)
-            h = hashlib.sha256(open(s.file, 'rb').read())
-            for f in _helpers(s.file): h.update(open(f, 'rb').read())
-            h.update(body.encode()); s._h = h.hexdigest()
+            main, src = s._src()
+            body = json.dumps(dict(main=main, files=[[k, hashlib.sha256(b).hexdigest()] for k, b in sorted(src.items())],
+                                   func=s.func, params=s.params, names=list(s.names), t0=s.t0), sort_keys=True)
+            s._h = hashlib.sha256(body.encode()).hexdigest()
         return s._h
 
+    def _code(s):
+        if getattr(s, '_co', None) is None:
+            main, src = s._src(); bad = _gate_src(main, src)
+            if bad: raise Void('source gate: ' + bad[0])
+            try: s._co = {k: compile(b, '<candidate %s>' % k, 'exec', dont_inherit=True) for k, b in src.items()}
+            except Exception as e: raise Void('error while loading candidate code: ' + type(e).__name__)
+        return s._co
+
     def _load(s):
-        """a newly executed copy of the candidate module, with newly executed copies of its helper files and with the
-        stand-in for xv1; nothing of an earlier copy is shared. The source gate is applied first."""
-        bad = gate(s.file)
-        if bad: raise Void('source gate: ' + bad[0])
-        d = os.path.dirname(s.file); hs = [os.path.splitext(os.path.basename(f))[0] for f in _helpers(s.file)]
-        keep = {k: sys.modules.get(k) for k in ['xv1'] + hs}; path0 = list(sys.path)
-        sys.modules['xv1'] = _facade()
-        for k in hs: sys.modules.pop(k, None)
-        sys.path.insert(0, d)
+        """v6: a newly executed copy of the candidate module and of its helper modules, run from the gated and hashed bytes,
+        with only the built-ins in _BI_OK and an import function that serves numpy, the stand-in for xv1 and the helper
+        modules of this load. Nothing of an earlier copy is shared; sys.modules and sys.path are not touched."""
+        main, _ = s._src(); co = s._code(); mods = {}; fac = _facade(); bi = {k: getattr(builtins, k) for k in _BI_OK}
+        def imp(name, glb=None, loc=None, fromlist=(), level=0):
+            if level or '.' in name: raise ImportError('import of ' + name)
+            if name == 'numpy': return np
+            if name == 'xv1': return fac
+            if name in mods: return mods[name]
+            if name not in co or name == main: raise ImportError('import of ' + name)
+            return run(name)
+        bi['__import__'] = imp
+        def run(name):
+            m = types.ModuleType(name); m.__dict__['__builtins__'] = bi; mods[name] = m; exec(co[name], m.__dict__); return m
         try:
-            sp = importlib.util.spec_from_file_location('xv1cand_' + hashlib.sha256(s.file.encode()).hexdigest()[:8], s.file)
-            m = importlib.util.module_from_spec(sp)
-            with _sandbox(): sp.loader.exec_module(m)
-        except Exception as e: raise Void('error while loading candidate code: ' + type(e).__name__)
-        finally:
-            sys.path[:] = path0
-            for k, old in keep.items():
-                if old is None: sys.modules.pop(k, None)
-                else: sys.modules[k] = old
-        return m
+            with _sandbox(): return run(main)
+        except KeyboardInterrupt: raise
+        except BaseException as e: raise Void('error while loading candidate code: ' + type(e).__name__)
 
     def make(s, v):
-        if s.file not in _MOD: _MOD[s.file] = s._load()
-        return getattr(_MOD[s.file], s.func)(v, **s.params)
+        """the candidate's output on view v, from a newly executed copy of its module (no state from earlier calls)"""
+        return getattr(s._load(), s.func)(v, **s.params)
 
     def fresh(s):
-        """the same candidate bound to a newly executed copy of its module (no state left from earlier calls)"""
-        f = getattr(s._load(), s.func); return lambda v: f(v, **s.params)
+        """the candidate as a function of the view (every call executes a new copy of its module)"""
+        return s.make
+
 
     def to_dict(s):
         return dict(family=s.family, name=s.name, file=s.file, func=s.func, params=s.params, names=list(s.names), t0=s.t0, hash=s.hash)
@@ -735,7 +905,7 @@ def register_batch(configs):
     """write the next batch file and its ledger line. Must happen before any configuration of the batch is scored. The batch
     number is the next one in the ledger (it sets the level 0.05 / 2^k and cannot be chosen); a configuration that was scored
     before, a source that fails the gate and a level input off the allow-list are refused. Returns (k, sha256)."""
-    _guard(); _check_env(); L = read_ledger(); os.makedirs(OUT, exist_ok=True)
+    _guard(); _check_env(); _writable(); L = read_ledger(); os.makedirs(OUT, exist_ok=True)
     k = 1 + sum(1 for e in L if e.get('kind') == 'batch'); path = OUT + 'BATCH_%d.json' % k
     if os.path.exists(path): raise FileExistsError(path)
     hs = [c.hash for c in configs]
@@ -750,7 +920,7 @@ def register_batch(configs):
         if fam.setdefault((c.file, c.func), c.family) != c.family: raise PermissionError('one source function under two family labels: %s' % c.name)
     if WORLD is None and not _checks_passed(): raise PermissionError('the data and parity checks have not passed under the registered hashes')
     for c in configs:
-        bad = gate(c.file)
+        bad = _gate_src(*c._src()) + _param_bad(c.params)                     # v6: the very bytes that are hashed and executed
         if bad: raise PermissionError('source gate, %s: %s' % (c.name, '; '.join(bad[:5])))
         if any(n.startswith('lvl:') and n not in LVL_OK for n in c.names): raise PermissionError('level input off the allow-list: %s' % c.name)
     body = json.dumps([c.to_dict() for c in configs], indent=1, sort_keys=True)
@@ -811,11 +981,12 @@ def _neutral(cand, refb, blocks, t0=None, info=None):
 
 def _active_rows(cand, refb, blocks, t0=None):
     """active rows per block (boolean arrays): scored rows on or after T0 on which the candidate holds a different level
-    than the reference or holds an extra instrument (a non-zero paired difference alone does not count: after the first
-    divergence the two accounts differ slightly on every row)"""
+    than the reference or holds extra instruments with a total actual weight of at least W_ACT (a non-zero paired
+    difference alone does not count: after the first divergence the two accounts differ slightly on every row; nor does a
+    sleeve below W_ACT)"""
     out = []
     for b in blocks:
-        a = (cand[b]['lev'] != refb[b]['lev']) | (cand[b]['w'] != 0) | (refb[b]['w'] != 0)
+        a = (cand[b]['lev'] != refb[b]['lev']) | (cand[b]['w'] >= W_ACT) | (refb[b]['w'] >= W_ACT)
         out.append(a if t0 is None else a[cand[b]['date'] >= pd.Timestamp(t0)])
     return out
 
@@ -923,10 +1094,12 @@ def _design(c, stress=True, pre=None):
     plain = not c.names and not (pre['m']['Wt'] != 0).any() and not _eng(pre['v']).touched
     o['g0'] = 'required' if plain else 'not available'   # the simulation screen exists only for a rule on the index chain alone
     inf = {}; dn = _neutral(C, R, DESIGN, c.t0, inf); o['d_star'] = ann(dn); o['t63_star'] = test_t(dn, 63)[0]; o['benchmark'] = inf
-    o['cand'] = ann([C[b]['x'] for b in DESIGN]); o['ref'] = ann([R[b]['x'] for b in DESIGN])
-    o['extra_weight_mean'] = float(np.mean(np.concatenate([C[b]['w'] for b in DESIGN])))
-    o['level_mean'] = float(np.mean(np.concatenate([C[b]['lev'] for b in DESIGN])))
-    o['fund_weight_mean_minus_ref'] = float(np.mean(np.concatenate([C[b]['a0'] - R[b]['a0'] for b in DESIGN])))
+    on = {b: (np.ones(len(C[b]['x']), dtype=bool) if c.t0 is None else np.asarray(C[b]['date'] >= pd.Timestamp(c.t0))) for b in DESIGN}
+    cat = lambda f: np.concatenate([f(b)[on[b]] for b in DESIGN])                    # rows on or after T0
+    o['cand'] = ann([C[b]['x'][on[b]] for b in DESIGN]); o['ref'] = ann([R[b]['x'][on[b]] for b in DESIGN])
+    o['extra_weight_mean'] = float(np.mean(cat(lambda b: C[b]['w']))) if sum(on[b].sum() for b in DESIGN) else 0.0
+    o['level_mean'] = float(np.mean(cat(lambda b: C[b]['lev']))) if sum(on[b].sum() for b in DESIGN) else 0.0
+    o['fund_weight_mean_minus_ref'] = float(np.mean(cat(lambda b: C[b]['a0'] - R[b]['a0']))) if sum(on[b].sum() for b in DESIGN) else 0.0
     if stress:
         for sname in G1_STRESS:
             Cs = _design_account(pre=pre, **STRESS[sname]); o['d_' + sname] = ann(_paired(Cs, _ref_blocks(sname), DESIGN, c.t0))
@@ -943,12 +1116,13 @@ def _advanced_before(k, L):
     return [(e.get('family'), _sub_of(e['cfg'])) for e in L if e.get('kind') == 'g1' and e.get('advance') and e.get('batch', 0) < k]
 
 
+@_scoped
 def run_batch(k, stress=True):
     """Score every configuration of registered batch k on D7 and apply G1. Scalars only (plus the design sub-block means).
     A configuration that breaks a rule (source gate, raw-level, prefix or level-scale test, output rules, an error in its own
     code) is void: it is not scored and the batch level is not refunded. A batch is scored once; a run that was interrupted
     before its results file was written is resumed (finished configurations are kept in results/partial_k/)."""
-    _guard(); _check_env(); cfgs, sha, line = load_batch(k); L = read_ledger(); done = OUT + 'results/batch_%d.json' % k
+    _guard(); _check_env(); _writable(); cfgs, sha, line = load_batch(k); L = read_ledger(); done = OUT + 'results/batch_%d.json' % k
     if os.path.exists(done):
         if any(e.get('kind') == 'batch-done' and e.get('batch') == k for e in L): raise PermissionError('batch %d is already scored: read %s' % (k, done))
         os.remove(done)                                  # interrupted between the results file and its ledger line: rebuilt from the partial files
@@ -967,7 +1141,7 @@ def run_batch(k, stress=True):
                 if scale_test(c.fresh(), c.names, pre=pre) != 'PASS': raise Void('level-scale test')
                 o, sub, sn = _design(c, stress, pre)
                 got = dict(env=env, o=o, sub=[float(x) for x in sub], subn=[float(x) for x in sn])
-            except Void as e: got = dict(env=env, o=dict(void=str(e)), sub=None, subn=None)
+            except Void as e: got = dict(env=env, o=dict(void=str(e) if WORLD is not None else str(e).split(':')[0]), sub=None, subn=None)   # v6: real calendar = the category only
             json.dump(got, open(cp, 'w'))
         res[h] = got['o']; res[h].update(family=c.family, name=c.name, calendar=bool(any(n.startswith('cal:') for n in c.names)))
         if got['sub'] is not None: subs[h] = np.asarray(got['sub']); subn[h] = np.asarray(got['subn'])
@@ -1014,6 +1188,7 @@ def _g0_clear(h, o, L):
     return o.get('g0') == 'not available' or any(e.get('kind') == 'g0' and e.get('cfg') == h and e.get('passed') for e in L)
 
 
+@_scoped
 def weak_eval(c):
     """G2 (old-data no-harm check) on W5: only for a configuration that passed G1 and was selected (and G0 where it exists),
     and only once. With fewer than G2_MIN_ROWS scored WEAK rows on or after T0 the check does not exist: the line says so,
@@ -1037,28 +1212,74 @@ def weak_eval(c):
 
 
 def authorise_g3(c, owner_message_id):
-    """record the owner's authorisation of a G3 opening (the id of the owner's own message, and where the ledger stood)"""
-    L = read_ledger()
-    ledger(dict(kind='owner-auth', cfg=c.hash, message=owner_message_id, at=len(L)))
+    """record the owner's authorisation of a G3 opening (the id of the owner's own message, and where the ledger stood). Only
+    for a configuration that passed G1 and was selected, passed G0 where it exists and passed G2."""
+    _guard(); _check_env(); h = c.hash; L = read_ledger(); g1 = _g1_of(h, L)
+    if not (isinstance(owner_message_id, str) and owner_message_id.startswith('cmsg_') and len(owner_message_id) > 10): raise PermissionError('not a message id')
+    if not (g1.get('g1_pass') and g1.get('advance')): raise PermissionError('no G1 pass')
+    if not _g0_clear(h, g1, L): raise PermissionError('G0 is required and not passed')
+    if not any(e.get('kind') == 'g2' and e.get('cfg') == h and e.get('passed') for e in L): raise PermissionError('no G2 pass')
+    ledger(dict(kind='owner-auth', cfg=h, message=owner_message_id, at=len(L)))
 
 
+def close_g3(owner_message_id):
+    """the owner closes G3 for good (no further opening); the release function then reports the opened configurations"""
+    _guard(); _check_env()
+    if not (isinstance(owner_message_id, str) and owner_message_id.startswith('cmsg_')): raise PermissionError('not a message id')
+    ledger(dict(kind='G3-CLOSED', message=owner_message_id))
+
+
+def _markers():
+    p = OUT + 'G3_OPENINGS.log'
+    return open(p).read().split() if os.path.exists(p) else []
+
+
+@_scoped
 def open_g3(c):
     """one G3 opening: blocks 10 and 12 from the main account (full calendar). Output: one word. One opening at a time: the
     lock file G3.lock is created first and removed at the end (after a crash it is removed by hand, and the retry rule applies)."""
-    _guard(); _check_env(); lock = OUT + 'G3.lock'
+    _guard(); _check_env(); _writable(); lock = OUT + 'G3.lock'
     try: os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
     except FileExistsError: raise PermissionError('another opening is in progress (G3.lock exists)')
     try: return _open_g3(c)
     finally: os.remove(lock)
 
 
+def _input_free(c, t0):
+    """True if the candidate's level, weights and flags from T0 on do not depend on any input: every input (index return,
+    cash rate, macro levels, registered inputs and through them the v1 shadow levels) after T0 is replaced by noise on the
+    calendar that ends 2015-12-31, and B, Wt and RB from T0 on stay bit-identical"""
+    pre = _prepare(c.fresh(), c.names, A_END); X, E, m = pre['X'], pre['E'], pre['m']; i0 = len(X) - pre['v'].T
+    r = i0 + WARM if t0 is None else max(i0 + WARM, int(X.index.searchsorted(pd.Timestamp(t0))))
+    for sd in (1, 2):
+        Xn, En = _noise(X, E, r, np.random.default_rng(sd)); mn = _call(c.fresh(), View(Xn, En)); q = r - i0 + 1
+        if any(_same(mn[k][q:], m[k][q:]) for k in ('B', 'Wt', 'RB')): return False
+    return True
+
+
+def _g3_word(c, g1, prem, seed):
+    """the verdict of one opening: one word, nothing else leaves"""
+    Cs = _main_account(pre=prem); Rs = _main_account(ref, ())
+    ds = _paired(Cs, Rs, SEALED, c.t0); rows = _active_rows(Cs, Rs, SEALED, c.t0); act = [int(np.sum(a)) for a in rows]; d = ann(ds)
+    dn = _neutral(Cs, Rs, SEALED, c.t0)
+    if d <= 0 or any(_harm(x, a, 1.0)[0] for x, a in zip(ds, act)): return 'FAIL'
+    if d >= D_MIN_G3 and p_test(ds, seed, rows) <= 0.05 / 3:
+        timing = g1.get('kind') == 'timing' and not g1.get('calendar') and not any(n.startswith('cal:') for n in c.names)
+        return 'CONFIRMED' if (timing and ann(dn) > 0 and p_test(dn, seed + 1, rows) <= 0.05 / 3) else 'CONSISTENT'
+    return 'INCONCLUSIVE'
+
+
 def _open_g3(c):
     h = c.hash; L = read_ledger(); g1 = _g1_of(h, L)
+    if time.strftime('%Y-%m-%d', time.gmtime()) >= G3_END: raise PermissionError('the G3 budget has ended (%s)' % G3_END)
+    if any(e.get('kind') == 'G3-CLOSED' for e in L): raise PermissionError('G3 is closed for good')
     if not (g1.get('g1_pass') and g1.get('advance')): raise PermissionError('no G1 pass')
     if not _g0_clear(h, g1, L): raise PermissionError('G0 is required and not passed')
-    if not any(e.get('kind') == 'g2' and e.get('cfg') == h and e.get('passed') for e in L): raise PermissionError('no G2 pass')
-    if not any(e.get('kind') == 'owner-auth' and e.get('cfg') == h for e in L): raise PermissionError('no owner authorisation')
-    opened = [e['cfg'] for e in L if e.get('kind') == 'G3-OPEN']
+    g2 = [i for i, e in enumerate(L) if e.get('kind') == 'g2' and e.get('cfg') == h and e.get('passed')]
+    if not g2: raise PermissionError('no G2 pass')
+    if not any(e.get('kind') == 'owner-auth' and e.get('cfg') == h and i > g2[0] for i, e in enumerate(L)): raise PermissionError('no owner authorisation after the G2 pass')
+    opened = [e['cfg'] for e in L if e.get('kind') == 'G3-OPEN']; mk = _markers()
+    if len(mk) > len(opened) or mk != opened[:len(mk)]: raise PermissionError('the ledger shows fewer openings than the marker file')
     if any(e.get('kind') == 'G3-VERDICT' and e.get('cfg') == h for e in L): raise PermissionError('already opened')
     if h in opened:
         if opened.count(h) >= 2: raise PermissionError('retry already used')
@@ -1067,29 +1288,25 @@ def _open_g3(c):
     C = _design_account(pre=pre); R = _ref_blocks(); te = te_of(_paired(C, R, DESIGN, c.t0))
     ma = _prepare(c.fresh(), c.names, A_END)['m']
     fixed = float(np.std(np.concatenate([C[b]['lev'] for b in DESIGN]))) == 0 and float(np.ptp(ma['Wt'], axis=0).max()) == 0 and not ma['RB'].any()
-    if te <= 0 or fixed: raise PermissionError('a configuration whose level does not depend on any input may not be opened')
+    if te <= 0 or fixed or _input_free(c, c.t0): raise PermissionError('a configuration whose level does not depend on any input may not be opened')
     if h not in opened:
         fam = {e['cfg']: e.get('family') for e in L if e.get('kind') == 'g1'}; mine = _sub_of(h)
         for g in set(opened):
             if fam.get(g) == fam.get(h) or _corr(mine, _sub_of(g)) >= FAM_CORR: raise PermissionError('same family as an opened configuration')
-    prem = _prepare(c.fresh(), c.names, None, 'main')
-    if _pre_t0_sig(prem, c.t0): raise PermissionError('differs from the reference before T0 on the main view')
-    seed = int(h[:8], 16)
-    if prefix_test(None, c.names, n_rand=60, seed=seed, fresh=c.fresh, account='main', pre=prem)['result'] != 'PASS':
-        raise PermissionError('prefix test of the main view failed')              # nothing has been opened: no opening is used up
-    ledger(dict(kind='G3-OPEN', cfg=h, retry=h in opened))
+    ledger(dict(kind='G3-OPEN', cfg=h, retry=h in opened))                       # v6: logged BEFORE the candidate first runs on the main view
+    with open(OUT + 'G3_OPENINGS.log', 'a') as f: f.write(h + '\n'); f.flush(); os.fsync(f.fileno())
+    word = None; prem = None; _G3_RUN[0] = h; _G3_PRE[0] = h; seed = int(h[:8], 16)
     try:
-        Cs = _main_account(pre=prem); Rs = _main_account(ref, ())
-        ds = _paired(Cs, Rs, SEALED, c.t0); rows = _active_rows(Cs, Rs, SEALED, c.t0); act = [int(np.sum(a)) for a in rows]; d = ann(ds)
-        dn = _neutral(Cs, Rs, SEALED, c.t0)
-        fail = d <= 0 or any(_harm(x, a, 1.0)[0] for x, a in zip(ds, act))
-        if fail: word = 'FAIL'
-        elif d >= D_MIN_G3 and p_test(ds, seed, rows) <= 0.05 / 3:
-            timing = g1.get('kind') == 'timing' and not g1.get('calendar') and not any(n.startswith('cal:') for n in c.names)
-            word = 'CONFIRMED' if (timing and ann(dn) > 0 and p_test(dn, seed + 1, rows) <= 0.05 / 3) else 'CONSISTENT'
-        else: word = 'INCONCLUSIVE'
-    except Exception as e:                               # no text of an error raised on sealed rows leaves this function
-        raise RuntimeError('G3 run stopped: ' + type(e).__name__) from None
+        prem = _prepare(c.fresh(), c.names, None, 'main')
+        if _pre_t0_sig(prem, c.t0) or prefix_test(None, c.names, n_rand=60, seed=seed, fresh=c.fresh, account='main', pre=prem)['result'] != 'PASS':
+            word = 'FAIL'                                # a check of the main view failed: the opening is used and the verdict is FAIL
+        else: word = _g3_word(c, g1, prem, seed)
+    except BaseException: word = None                    # nothing of the error (type, text, frames) is kept
+    finally: _G3_RUN[0] = None; _G3_PRE[0] = None
+    del prem
+    if word is None:
+        ledger(dict(kind='G3-ABORT', cfg=h))
+        raise RuntimeError('G3 run stopped (the opening is used; the retry rule applies)')
     ledger(dict(kind='G3-VERDICT', cfg=h, verdict=word))
     return word
 
@@ -1102,12 +1319,24 @@ def _noise(X, E, r, g):
     Xn.iloc[r + 1:, Xn.columns.get_loc('r')] = np.clip(g.normal(0, 0.03, n), -0.5, 0.5)
     for c in ('rf', 'y10', 'y3m', 'cs', 'vix'):
         last = Xn[c].values[r]; last = 0.0 if np.isnan(last) else last
-        Xn.iloc[r + 1:, Xn.columns.get_loc(c)] = last + np.cumsum(g.normal(0, 0.1 if c != 'rf' else 1e-5, n))
+        w = last + np.cumsum(g.normal(0, 0.1 if c != 'rf' else 1e-5, n))
+        Xn.iloc[r + 1:, Xn.columns.get_loc(c)] = np.round(w, 2) if _on_grid(X[c].values[:r + 1]) else w   # v6: the noise keeps the grid of the real series
     Xn['rb'] = mkt.bond10(Xn); Xn['p'] = (1 + Xn['r']).cumprod()
     En = {}
     for k, a in E.items():
-        b = a.copy(); b[r + 1:] = g.normal(0, 0.05, n); En[k] = b
+        b = a.copy()
+        if k.startswith('lvl:'):
+            last = a[r] if np.isfinite(a[r]) else 0.0; w = last + np.cumsum(g.normal(0, 0.1, n))
+            b[r + 1:] = np.round(w, 2) if _on_grid(a[:r + 1]) else w
+        else: b[r + 1:] = g.normal(0, 0.05, n)
+        En[k] = b
     return Xn, En
+
+
+def _on_grid(a):
+    """True if the last 252 known values of a series all lie on the 0.01 grid (a level quoted in hundredths)"""
+    a = np.asarray(a, dtype=np.float64); a = a[np.isfinite(a)][-252:]
+    return bool(len(a)) and bool(np.all(np.abs(a * 100 - np.round(a * 100)) < 1e-6))
 
 
 def _same(a, b): return int(a.shape != b.shape) if a.shape != b.shape else int(np.sum(~((a == b) | (np.isnan(a) & np.isnan(b)))))
@@ -1118,24 +1347,27 @@ def prefix_test(make=None, names=(), end=None, n_rand=60, seed=0, noise=True, st
     (b) kept but filled with noise after it; signal, weights, instrument returns, features and EVERY column of the account
     path on the rows up to the cut must be bit-identical to the full run (`pre`: the same full-calendar result that is scored).
     Cuts: the last row of every block, account rows 0, 62, 63 and 259 and n_rand drawn rows from the whole account (both
-    variants), and, with deletion only, every `step`-th row and the event rows: rows on which the candidate's signal, a target
-    weight or a rebalance flag changes, rows on which v1's own signal changes, and the first and last row of every run in
-    which the candidate's level differs from v1's (the row itself and the row before). All event rows are cut up to n_event;
-    above that the n_event / 2 largest changes and n_event / 2 drawn ones. With `fresh`, the cut runs use a newly executed
+    variants), and, with deletion only, every `step`-th row and the event rows (the row itself and the row before): level
+    events = rows on which the candidate's signal or v1's own signal changes and the first and last row of every run in which
+    the candidate's level differs from v1's; weight events = rows on which a target weight or a rebalance flag of a column
+    that is ever held changes (v6: columns never held do not make events). All event rows are cut up to n_event: the level
+    events first, then the weight events; above n_event a uniform draw (level events first). With `fresh`, the cut runs use a newly executed
     copy of the candidate module and of its helpers. A candidate that raises on a cut fails that cut. PASS / FAIL and counts."""
+    if account == 'main' and WORLD is None and _G3_PRE[0] is None: raise PermissionError('the main view is tested only by open_g3')
     pre = pre or _prepare(make, names, end, account); X, E, v, m = pre['X'], pre['E'], pre['v'], pre['m']; e = _eng(v)
     if e.account != account: raise PermissionError('view of the other account')
     rec = _run_eng(e, m); i0 = len(X) - e.T; cal = Cal(acc_dates(X)); g = np.random.default_rng(seed)
     ends = set([int(cal.rows(b)[-1]) for b in range(NB) if len(cal.rows(b))][:-1])
     drawn = set(int(q) for q in g.integers(0, cal.n - 1, n_rand)) | set(q for q in (0, 62, 63, 259) if q < cal.n - 1)
-    rB = _refm(e.c, e.T)['B']; ch = np.zeros(e.T)
-    for a in (m['B'][:, None], m['Wt'], m['RB']): ch[1:] += np.abs(a[1:] - a[:-1]).sum(axis=1)
-    ev = ch > 0; ev[1:] |= rB[1:] != rB[:-1]
-    dif = m['B'] != rB; turn = np.flatnonzero(dif[1:] != dif[:-1]) + 1; ev[turn] = True; ev[turn - 1] = True
-    evq = np.flatnonzero(ev) - WARM; evq = evq[(evq >= 0) & (evq < cal.n - 1)]
-    if len(evq) > n_event:
-        big = evq[np.argsort(-ch[evq + WARM], kind='stable')[:n_event // 2]]; rest = np.setdiff1d(evq, big)
-        evq = np.union1d(big, g.choice(rest, n_event - len(big), replace=False))
+    rB = _refm(e.c, e.T)['B']; held = (m['Wt'] != 0).any(axis=0)                # v6: columns never held are never read by the engine
+    lv = np.zeros(e.T, dtype=bool); lv[1:] = m['B'][1:] != m['B'][:-1]; lv[1:] |= rB[1:] != rB[:-1]
+    dif = m['B'] != rB; turn = np.flatnonzero(dif[1:] != dif[:-1]) + 1; lv[turn] = True; lv[turn - 1] = True
+    wt = np.zeros(e.T, dtype=bool)
+    if held.any(): wt[1:] = (m['Wt'][1:, held] != m['Wt'][:-1, held]).any(axis=1) | (m['RB'][1:, held] != m['RB'][:-1, held]).any(axis=1)
+    def rows_of(ev): q = np.flatnonzero(ev) - WARM; return q[(q >= 0) & (q < cal.n - 1)]
+    qa = rows_of(lv); qb = np.setdiff1d(rows_of(wt), qa)                          # level events first, then weight / flag events
+    if len(qa) >= n_event: evq = g.choice(qa, n_event, replace=False)
+    else: evq = np.union1d(qa, qb if len(qa) + len(qb) <= n_event else g.choice(qb, n_event - len(qa), replace=False))
     events = set(int(q) for q in evq) | set(int(q) - 1 for q in evq if q >= 1)
     cuts = sorted(ends | drawn | events | (set(range(0, cal.n - 1, step)) if step else set()))
     cells = 0; bad = 0; ncut = 0; mk = fresh() if fresh is not None else make
@@ -1154,6 +1386,7 @@ def prefix_test(make=None, names=(), end=None, n_rand=60, seed=0, noise=True, st
             rc = _run_eng(_eng(vc), mc, slice(0, T))
             n += _same(rc, rec[:q + 1])
             cells += n; bad += int(n > 0)
+    if WORLD is None: return dict(result='PASS' if bad == 0 else 'FAIL')   # counts depend on sealed rows: only test worlds see them
     return dict(result='PASS' if bad == 0 else 'FAIL', cuts=ncut, failed_cuts=bad, differing_cells=int(cells))
 
 
@@ -1191,7 +1424,7 @@ def raw_extras_test(names, end=None, n_rand=12, seed=0):
     gap of an input and around every calendar row inside a series' life that has no raw row (a carried-forward value).
     Returns PASS / FAIL per name and counts only."""
     names = tuple(sorted(set(names)))
-    if not names: return dict(result='PASS', rebuilds=0, failed={})
+    if not names: return dict(result='PASS', rebuilds=0, failed={}) if WORLD is not None else dict(result='PASS', failed=[])
     X = frame(end or CAL_END); idx = X.index; cal = Cal(acc_dates(X)); i0 = len(idx) - cal.n; g = np.random.default_rng(seed)
     xdata._c.clear(); base = extras(names, idx)
     cuts = set([int(cal.rows(b)[-1]) for b in range(NB) if len(cal.rows(b))][:-1]) | set(int(q) for q in g.integers(0, cal.n - 1, n_rand))
@@ -1227,6 +1460,7 @@ def raw_extras_test(names, end=None, n_rand=12, seed=0):
     finally:
         mkt.pser, xdata.read_chips, xdata.md.kf = o_pser, o_chips, o_kf; xdata._c.clear()
     failed = {k: v for k, v in bad.items() if v}
+    if WORLD is None: return dict(result='PASS' if not failed else 'FAIL', failed=sorted(failed))   # names only: counts depend on sealed rows
     return dict(result='PASS' if not failed else 'FAIL', rebuilds=runs, failed=failed)
 
 
@@ -1247,7 +1481,7 @@ def read_ledger():
 
 def ledger(entry):
     """append-only, hash-chained (the chain is verified before every append)"""
-    os.makedirs(OUT, exist_ok=True); p = OUT + 'LEDGER.jsonl'; L = read_ledger()
+    _writable(); os.makedirs(OUT, exist_ok=True); p = OUT + 'LEDGER.jsonl'; L = read_ledger()
     if WORLD is None and not L and entry.get('kind') != 'registration': raise PermissionError('the first ledger line must be the registration')
     prev = hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16] if os.path.exists(p) else ''
     entry = dict(entry); entry['ts'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()); entry['prev'] = prev
@@ -1285,6 +1519,8 @@ def _check_env():
     """Before anything is scored: the registered data files, code files, package versions and constants are the ones in
     use, and no project code file is loaded that the registry does not hold. In a test world a folder without a registry
     is not checked."""
+    _guard()
+    if WORLD is None and 't_world' in sys.modules: raise PermissionError('a test-world module is loaded in a real run')
     if not os.path.exists(OUT + 'HASHES.json'):
         if WORLD is None: raise PermissionError('the structure is not registered')
         return

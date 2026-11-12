@@ -15,8 +15,15 @@ import xv1
 from xv1 import jp, mkt
 
 
+DEFAULT_OUT = '/tmp/xv1_world_out/'      # a test world never writes into the registered folder (xv1._writable refuses it too)
+
+
+def _away():
+    if os.path.realpath(xv1.OUT) == os.path.realpath(xv1.REG_OUT): os.makedirs(DEFAULT_OUT, exist_ok=True); xv1.OUT = DEFAULT_OUT
+
+
 def old():
-    xv1.WORLD = 'old'; xv1.CAL_END = xv1.A_END = xv1.OLD_END
+    xv1.WORLD = 'old'; xv1.CAL_END = xv1.A_END = xv1.OLD_END; _away()
 
 
 def _none(names, idx):
@@ -25,7 +32,7 @@ def _none(names, idx):
 
 
 def synth(seed=0, extras=True):
-    xv1.WORLD = 'synth'
+    xv1.WORLD = 'synth'; _away()
     R, M = jp.calendar(xv1.CAL_START, xv1.CAL_END); X = jp.mkX(R, M, 'NDX')
     n0 = int(X.index.searchsorted(pd.Timestamp('2015-01-01'))); n1 = len(X) - n0; sh = 500 + 250 * int(seed)
     for c in ('r', 'rf', 'y10', 'y3m', 'cs', 'vix'): X.iloc[n0:, X.columns.get_loc(c)] = X[c].values[n0 - n1 - sh:n0 - sh]
