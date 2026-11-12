@@ -1,0 +1,490 @@
+{
+ "HK": {
+  "symbol": "^HSI",
+  "first": "1986-12-31",
+  "last": "2014-12-31",
+  "n": 6920,
+  "tz": "Asia/Hong_Kong",
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "TW": {
+  "symbol": "^TWII",
+  "first": "1997-07-02",
+  "last": "2014-12-31",
+  "n": 4315,
+  "tz": "Asia/Taipei",
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "KR": {
+  "symbol": "^KS11",
+  "first": "1996-12-11",
+  "last": "2014-12-30",
+  "n": 4457,
+  "tz": "Asia/Seoul",
+  "IR3TIB01": {
+   "first": "1991-01-01",
+   "n": 288
+  },
+  "IRLTLT01": {
+   "first": "2000-10-01",
+   "n": 171
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "SG": {
+  "symbol": "^STI",
+  "first": "1987-12-28",
+  "last": "2014-12-31",
+  "n": 6740,
+  "tz": "Asia/Singapore",
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "IN": {
+  "symbol": "^BSESN",
+  "first": "1997-07-01",
+  "last": "2014-12-31",
+  "n": 4315,
+  "tz": "Asia/Kolkata",
+  "IR3TIB01": {
+   "error": "ValueError(\"Missing column provided to 'parse_dates': 'observation_date'\")"
+  },
+  "IRLTLT01": {
+   "error": "ValueError(\"Missing column provided to 'parse_dates': 'observation_date'\")"
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "ID": {
+  "symbol": "^JKSE",
+  "first": "1990-04-06",
+  "last": "2014-12-30",
+  "n": 6043,
+  "tz": "Asia/Jakarta",
+  "IR3TIB01": {
+   "first": "1998-01-01",
+   "n": 204
+  },
+  "IRLTLT01": {
+   "error": "ValueError(\"Missing column provided to 'parse_dates': 'observation_date'\")"
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "MY": {
+  "symbol": "^KLSE",
+  "first": "1993-12-03",
+  "last": "2014-12-31",
+  "n": 5191,
+  "tz": "Asia/Kuala_Lumpur",
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "TH": {
+  "symbol": "^SET.BK",
+  "error": "KeyError('timestamp')"
+ },
+ "PH": {
+  "symbol": "PSEI.PS",
+  "error": "KeyError('timestamp')"
+ },
+ "CN": {
+  "symbol": "000001.SS",
+  "first": "1997-07-02",
+  "last": "2014-12-31",
+  "n": 4234,
+  "tz": "Asia/Shanghai",
+  "IR3TIB01": {
+   "first": "1997-06-01",
+   "n": 210
+  },
+  "IRLTLT01": {
+   "error": "ValueError(\"Missing column provided to 'parse_dates': 'observation_date'\")"
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "NZ": {
+  "symbol": "^NZ50",
+  "first": "2003-01-03",
+  "last": "2014-12-31",
+  "n": 2920,
+  "tz": "Pacific/Auckland",
+  "IR3TIB01": {
+   "first": "1973-12-01",
+   "n": 493
+  },
+  "IRLTLT01": {
+   "first": "1970-01-01",
+   "n": 539
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "JP": {
+  "symbol": "^N225",
+  "first": "1970-01-05",
+  "last": "2014-12-30",
+  "n": 11083,
+  "tz": "Asia/Tokyo",
+  "IR3TIB01": {
+   "first": "2002-04-01",
+   "n": 153
+  },
+  "IRLTLT01": {
+   "first": "1989-01-01",
+   "n": 312
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "NL": {
+  "symbol": "^AEX",
+  "first": "1992-10-12",
+  "last": "2014-12-31",
+  "n": 5662,
+  "tz": "Europe/Amsterdam",
+  "IR3TIB01": {
+   "first": "1982-01-01",
+   "n": 396
+  },
+  "IRLTLT01": {
+   "first": "1959-01-01",
+   "n": 672
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "ES": {
+  "symbol": "^IBEX",
+  "first": "1993-07-12",
+  "last": "2014-12-31",
+  "n": 5415,
+  "tz": "Europe/Madrid",
+  "IR3TIB01": {
+   "first": "1977-01-01",
+   "n": 456
+  },
+  "IRLTLT01": {
+   "first": "1980-01-01",
+   "n": 420
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "IT": {
+  "symbol": "FTSEMIB.MI",
+  "first": "1997-12-31",
+  "last": "2014-12-30",
+  "n": 4359,
+  "tz": "Europe/Rome",
+  "IR3TIB01": {
+   "first": "1978-10-01",
+   "n": 435
+  },
+  "IRLTLT01": {
+   "first": "1991-03-01",
+   "n": 286
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "BE": {
+  "symbol": "^BFX",
+  "first": "1991-04-09",
+  "last": "2014-12-31",
+  "n": 6004,
+  "tz": "Europe/Brussels",
+  "IR3TIB01": {
+   "first": "1957-11-01",
+   "n": 686
+  },
+  "IRLTLT01": {
+   "first": "1955-01-01",
+   "n": 720
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "AT": {
+  "symbol": "^ATX",
+  "first": "1992-11-11",
+  "last": "2014-12-30",
+  "n": 5480,
+  "tz": "Europe/Amsterdam",
+  "IR3TIB01": {
+   "first": "1989-06-01",
+   "n": 307
+  },
+  "IRLTLT01": {
+   "first": "1990-01-01",
+   "n": 300
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "SE": {
+  "symbol": "^OMX",
+  "first": "2008-11-20",
+  "last": "2014-12-30",
+  "n": 1531,
+  "tz": "Europe/Stockholm",
+  "IR3TIB01": {
+   "first": "1982-01-01",
+   "n": 396
+  },
+  "IRLTLT01": {
+   "first": "1986-12-01",
+   "n": 337
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "NO": {
+  "symbol": "^OSEAX",
+  "error": "TypeError(\"'NoneType' object is not subscriptable\")",
+  "IR3TIB01": {
+   "first": "1979-01-01",
+   "n": 432
+  },
+  "IRLTLT01": {
+   "first": "1985-01-01",
+   "n": 360
+  }
+ },
+ "DK": {
+  "symbol": "^OMXC20.CO",
+  "error": "TypeError(\"'NoneType' object is not subscriptable\")",
+  "IR3TIB01": {
+   "first": "1987-01-01",
+   "n": 336
+  },
+  "IRLTLT01": {
+   "first": "1987-01-01",
+   "n": 336
+  }
+ },
+ "IE": {
+  "symbol": "^ISEQ",
+  "first": "1997-07-10",
+  "last": "2014-12-31",
+  "n": 4406,
+  "tz": "Europe/Dublin",
+  "IR3TIB01": {
+   "first": "1984-01-01",
+   "n": 372
+  },
+  "IRLTLT01": {
+   "first": "1970-12-01",
+   "n": 529
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "PT": {
+  "symbol": "PSI20.LS",
+  "first": "2013-04-30",
+  "last": "2014-12-31",
+  "n": 427,
+  "tz": "Europe/Lisbon",
+  "IR3TIB01": {
+   "first": "1985-08-01",
+   "n": 350
+  },
+  "IRLTLT01": {
+   "first": "1993-07-01",
+   "n": 258
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "GR": {
+  "symbol": "GD.AT",
+  "first": "1997-07-01",
+  "last": "2014-12-31",
+  "n": 4364,
+  "tz": "Europe/Athens",
+  "IR3TIB01": {
+   "first": "1994-03-01",
+   "n": 250
+  },
+  "IRLTLT01": {
+   "first": "1997-06-01",
+   "n": 211
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "TR": {
+  "symbol": "XU100.IS",
+  "first": "1997-07-01",
+  "last": "2014-12-31",
+  "n": 4367,
+  "tz": "Europe/Istanbul",
+  "IR3TIB01": {
+   "first": "1991-07-01",
+   "n": 133
+  },
+  "IRLTLT01": {
+   "error": "ValueError(\"Missing column provided to 'parse_dates': 'observation_date'\")"
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "RU": {
+  "symbol": "IMOEX.ME",
+  "error": "TypeError(\"'NoneType' object is not subscriptable\")",
+  "IR3TIB01": {
+   "first": "1997-01-01",
+   "n": 216
+  },
+  "IRLTLT01": {
+   "first": "1999-01-01",
+   "n": 192
+  }
+ },
+ "MX": {
+  "symbol": "^MXX",
+  "first": "1991-11-08",
+  "last": "2014-12-31",
+  "n": 5785,
+  "tz": "America/Mexico_City",
+  "IR3TIB01": {
+   "first": "1997-01-01",
+   "n": 216
+  },
+  "IRLTLT01": {
+   "first": "2001-07-01",
+   "n": 130
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "BR": {
+  "symbol": "^BVSP",
+  "first": "1993-04-27",
+  "last": "2014-12-30",
+  "n": 5365,
+  "tz": "America/Sao_Paulo",
+  "IR3TIB01": {
+   "error": "ValueError(\"Missing column provided to 'parse_dates': 'observation_date'\")"
+  },
+  "IRLTLT01": {
+   "error": "ValueError(\"Missing column provided to 'parse_dates': 'observation_date'\")"
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "AR": {
+  "symbol": "^MERV",
+  "error": "TypeError(\"'NoneType' object is not subscriptable\")"
+ },
+ "CL": {
+  "symbol": "^IPSA",
+  "error": "TypeError(\"'NoneType' object is not subscriptable\")",
+  "IR3TIB01": {
+   "first": "1997-07-01",
+   "n": 191
+  },
+  "IRLTLT01": {
+   "first": "2004-07-01",
+   "n": 126
+  }
+ },
+ "IL": {
+  "symbol": "^TA125.TA",
+  "first": "1992-10-08",
+  "last": "2014-12-31",
+  "n": 5620,
+  "tz": "Asia/Jerusalem",
+  "IR3TIB01": {
+   "first": "1992-01-01",
+   "n": 276
+  },
+  "IRLTLT01": {
+   "first": "1997-01-01",
+   "n": 216
+  },
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "ZA": {
+  "symbol": "^J200.JO",
+  "first": "1995-06-30",
+  "last": "2014-12-31",
+  "n": 4939,
+  "tz": "Africa/Johannesburg",
+  "IR3TIB01": {
+   "first": "1980-12-01",
+   "n": 409
+  },
+  "IRLTLT01": {
+   "first": "1957-01-01",
+   "n": 696
+  },
+  "note": "^J203.JO starts 2012 on Yahoo; ^J200.JO (Top 40) used",
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "EG": {
+  "symbol": "^CASE30",
+  "error": "KeyError('timestamp')"
+ },
+ "UK": {
+  "symbol": "^FTSE",
+  "tz": "Europe/London",
+  "first": "1984-01-03",
+  "last": "2014-12-31",
+  "n": 7831,
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "CA": {
+  "symbol": "^GSPTSE",
+  "tz": "America/Toronto",
+  "first": "1979-06-29",
+  "last": "2014-12-31",
+  "n": 8917,
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "AU": {
+  "symbol": "^AORD",
+  "tz": "Australia/Sydney",
+  "first": "1984-08-03",
+  "last": "2014-12-31",
+  "n": 7685,
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "DE": {
+  "symbol": "^GDAXI",
+  "tz": "Europe/Berlin",
+  "first": "1987-12-30",
+  "last": "2014-12-30",
+  "n": 6819,
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "FR": {
+  "symbol": "^FCHI",
+  "tz": "Europe/Paris",
+  "first": "1990-03-01",
+  "last": "2014-12-31",
+  "n": 6286,
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ },
+ "CH": {
+  "symbol": "^SSMI",
+  "tz": "Europe/Zurich",
+  "first": "1990-11-09",
+  "last": "2014-12-30",
+  "n": 6072,
+  "weekend": 0,
+  "dates": "local exchange date (gx1data_local.py)"
+ }
+}
