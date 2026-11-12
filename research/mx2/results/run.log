@@ -1,0 +1,15 @@
+2026-11-12T07:49:22Z R1 mode 0 evals 18408047616 time 1174.1s
+2026-11-12T09:02:32Z R2 mode 1 evals 19920726316 time 1383.0s
+s
+2026-11-12T07:49:50Z SUB_real done (value sealed in sub_real.json until placebos finish)
+2026-11-12T07:54:42Z placebo 10 mode 2 evals 398862588 time 27.5s
+2026-11-12T07:59:33Z placebo 20 mode 2 evals 398862588 time 28.6s
+2026-11-12T08:04:38Z placebo 30 mode 2 evals 398862588 time 34.9s
+2026-11-12T08:09:44Z placebo 40 mode 2 evals 398862588 time 31.8s
+2026-11-12T08:15:04Z placebo 50 mode 2 evals 398862588 time 30.6s
+2026-11-12T08:20:18Z placebo 60 mode 2 evals 398862588 time 31.3s
+2026-11-12T08:25:11Z placebo 70 mode 2 evals 398862588 time 29.4s
+2026-11-12T08:30:05Z placebo 80 mode 2 evals 398862588 time 28.2s
+2026-11-12T08:34:46Z placebo 90 mode 2 evals 398862588 time 27.3s
+2026-11-12T08:39:29Z placebo 100 mode 2 evals 398862588 time 26.8s
+2026-11-12T08:39:29Z SUB placebos done
