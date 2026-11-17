@@ -1,6 +1,6 @@
 # PREREG XV1: interleaved design / validation block structure
 
-Registered text, version 7 (2026-11-12). Version 1 was a candidate text that went through four independent reviews
+Registered text, version 8 (2026-11-17). Version 1 was a candidate text that went through four independent reviews
 (sealing, causality, statistics, engine), a refutation pass on every finding and a final critic (15 further findings);
 versions 2 to 4 carry the fixes that survived. Version 4 and its evaluator then went through an independent verification
 with five lenses (engine, sealing, statistics, causality, text against code) on synthetic worlds and on the <= 2014
@@ -19,15 +19,104 @@ changes of its signal) and 9 minor points, all fixed in version 6; the candidate
 constants. Version 6 and evaluator version 6 then went through a last independent check with four lenses (sealing and
 ledger; candidate separation and look-ahead detection; statistics and text against code; a rehearsal of the whole real
 procedure in a stand-in world with every raw reader disabled). No route was found by which a number from a sealed row
-leaves outside a logged opening. 51 findings on other points, among them: the row grid of the prefix test had a fixed
+leaves outside a logged opening. 46 findings on other points, among them: the row grid of the prefix test had a fixed
 phase, so a look-ahead that only holds a level on a few rows could pass; a list or dict parameter was one object shared
 by all calls of a configuration and could carry what a longer call had seen into a shorter one; the registry file was not
 tied to the ledger and no amendment function existed; batches could be scored out of order, which let two members of one
 family go on; several interruptions (a stopped G2 read, a failed marker write, a cut file, a machine out of memory) left
 states that the code refused for ever; the static-equivalent benchmark of d* counted its constant holdings before tax; a
 calendar end that was not ISO text passed the guards. Version 7 and evaluator version 7 carry the fixes (each marked "v7"
-below); the changed parts were read once more by an independent reader before registration. Versions 1 to 6 were never
-registered and scored nothing.
+below). The changed parts were then read once more by three independent readers (ledger and registry; statistics;
+causality and candidate separation): 17 findings (1 critical, 3 high, 5 medium, 8 low). The critical one was a route by
+which candidate code written for the purpose could have put numbers it computed from sealed rows on the console: an
+out-of-memory error raised by candidate code left the evaluator with its text, and candidate code can choose the array
+shape that text names (no such code is in batch 1, and nothing was registered). None of the others was a route for a
+number from a sealed row. Among them: the one G3 retry was not tied to the registry of the first
+run; the shape condition of the type was computed with the zeros before a registered T0, which read a late T0 as
+dependence, and it removes true timing rules whose states last long (kept, with its cost stated in section 0); the tax
+factor of the d* benchmark was applied to growth of V while its holdings are shares of equity; a ledger that had fallen
+behind its repository copy could be recovered by no function; a set, or the text of an object, let candidate code differ
+between two runs. All are fixed in version 7 (same marks). The fixes were then read by three readers of the same kinds:
+13 findings (ledger 5: 2 medium, 3 low; statistics 4: 3 medium on sentences of this text, 1 low; causality 4: 1 critical,
+1 high, 1 medium, 1 low). The critical one was of the same kind as the one before: an ordinary error raised by candidate
+code kept its text as the context of the evaluator's own error, and a G2 read and the checks before an opening let that
+error leave as it was (again a route only for code written for the purpose: the batch-1 files hold no try statement and
+raise nothing computed from data). The high one: candidate code could tell a batch run from a G2 read by the room left
+on the stack, so G2 could have been computed on an output that no test saw. The medium one: with hash randomisation off,
+code that passes the gate can still read values that differ from one start of python to the next (addresses), so the
+sentence "nothing it can read differs between two runs" was wrong. Version 8 and evaluator version 8 carry the fixes
+(each marked "v8" below): an error of candidate code leaves without text, context or cause, and in the real calendar
+every error that leaves an entry point is reduced to a category; candidate code holds no try statement and finds the
+same room on the stack in every call; a fingerprint of the tested output ties G2 and the opening to it; the checks before
+an opening are logged and limited to two runs; a result that follows a stop says so; three sentences of this text were
+corrected (the history above, the second set of worlds in section 2, the power of a rule with a late T0 in section 0).
+The version 8 fixes were read once more by one reader who had not written them, with the earlier findings in hand: the
+critical and the high finding and the four statistics findings are closed; the medium one is closed as far as it can be
+(Loading, below, says what the gate does not reject). New in that reading: 2 medium and 8 low. Medium: candidate code
+that passes the gate could add a key to a mapping of its view, the evaluator's own fingerprint of the view then failed
+with an error, the batch run stopped on every start, and nothing bounded the number of starts; and the fingerprint of
+the tested output is exact to the last bit, so a G2 read on another machine, under other package versions or other
+data would have been refused with the read used. Low: further forms the gate did not reject; an interrupt that left
+with lines of candidate code in its traceback; a void of the output rules that kept numpy's error as its context; two
+stopped runs of the checks before an opening with no way on; the line that sets the stack room outside its guard; and
+three findings on sentences of this text. All are answered in this version
+(same mark v8): such a view is a void; a configuration on which the run stopped twice is void; G2 and an opening are
+refused before anything is logged under another environment tag (package versions, processor targets, a numeric
+probe) or other data files than those of the batch run; the sentences are corrected. These answers were read by a further reader, limited to the changed lines: six of the seven code fixes
+closed, the seventh in part, and 4 new low points. The tag that says where a tested output can come back bit for bit
+did not see the kernel and the thread count of the linear-algebra library (now part of it through a numeric probe);
+max, min and sum with two arguments returned a view of dict keys or items (now one argument only); an out-of-memory
+error inside the evaluator's own checks of a call became a void, which inside an opening would have been FAIL instead
+of an abort with its retry (answered only in part at first: see the next reading); and the gate refuses some honest forms that
+have a keyword form (stated in the candidate guide). The lines that answer these four were tested by the self-tests.
+Before registration three more readers read the copy, each with one task: the last code changes; every changed
+sentence of this text against the code; and the path of the first real run (registration, checks, v1 table, batch
+run, G2), which had never been executed. No critical and no high finding; 21 findings, 3 medium and 18 low (three
+were found by two readers). Medium: the out-of-memory answer above was incomplete (three conversions inside the
+output check and the compile step still made a void of it); np.array_equal, which the gate allowed, returns False
+when the conversion of an argument fails for any reason, lack of memory included, so candidate code could read
+whether an allocation succeeds and go on (a sentence of this text said memory reaches it only as an error); and a
+batch run resumed without the numeric environment named in this text would have been accepted and would have scored
+part of the batch under another tag. Low: the gate's rules on dict views and type arguments went by the name of a
+built-in, and a file could bind that name itself; the numeric probe did not call every function of the C library that
+candidate code can reach; a read error on the partial result of a finished configuration counted as no result; python
+could run a stale compiled file next to a hashed source; the registered data files could be rewritten by other work
+with no copy of the registered bytes kept; the registration hashes the bytes of a working tree, which was not
+committed (a replaced container would have kept other bytes than the registered ones); and twelve points of the text reader, eleven on sentences of this text and one on the first line of the evaluator
+file (words that said more than the
+code does, one wrong cross-reference, counts in this history). Answers, all in this version: out of memory is
+separated at each of those places; np.array_equal is off the allow-list; the numeric environment is a registered
+constant and a real run is refused without it, as is a real run that python could feed from a compiled file in place
+of a hashed source (at first only for modules already loaded: see the last reading below); a file that binds the name of a built-in is refused; the probe runs every ufunc of the allow-list; only a
+missing or cut partial file counts as missing; a copy of the registered data files with their sha256 lies in
+research/xv1_data_frozen_20261117/; the registration script refuses files of the repository folder that are not
+committed and pushed (pushed by the local record of the upstream branch: it does not ask the server); the ledger and registry operations were run once on the mount of the registered
+folder, in a temporary folder (before, they had run on local disk only); the sentences are corrected. While these
+answers were written the author (no reader) found one more form the gate let through: a match statement. Its class
+patterns read an attribute by a name that no rule of the gate sees (the banned attributes and names with two
+underscores among them), and its captures bind a name that the new rule on built-in names does not see; an async
+function and a type parameter bind names in the same way. No route from there to a value outside the view was
+built or found, and none was ruled out; the gate now refuses a match statement, every async form and every type
+parameter. Last reading: one more reader read the answers of this round and the gate change, limited to the
+changed lines, the functions they touch and the changed sentences. No critical and no high finding; the 21 points
+closed, one of them in part; six new points, one medium and five low, and six sentences that said more than the code.
+Medium: the check on compiled files looked only at modules already loaded, while modules of the locked engine load
+later, and nothing checked that the folder was empty (a real run is now refused if any compiled file lies in that
+folder). Low: a read error on the registry counted as an empty registry, which gave another environment tag and no
+data hashes with no error (now only a missing file counts as none); a read error on a partial result cost a
+configuration not yet begun one of its two starts (the file is now read before the score line); the cache folder of
+the compiler is not checked by the evaluator (stated above: procedure only); an async generator expression in a plain
+function passed the gate (refused); and self-test lines that did not test what they named (a check that would pass
+if the function always said "none", three of the four new out-of-memory lines; tests added). The six sentences are
+corrected. These last answers (a dozen lines of the evaluator and the tests of the dry run) were tested by the
+self-tests and were not read by an independent reader: the reading stops here. No reader checked real rows after 2014
+(first met in the registered run), a second machine, or, in this last reading, text and code outside the changed
+lines.
+Met
+in the last self-test run of version 7: once the cache index of the locked engine's compiled function held about 20 lines, every run
+that had to add one stopped with an error of the compiler (its list of kept function objects is 128 long by default); the
+evaluator now sets that list long enough. Results do not depend on the cache. Versions 1 to 6 were never registered and
+scored nothing.
 
 Status and owner decision. On 2026-11-11 the owner was shown a decision card in the thread (switch to the interleaved
 structure, recommended, with the note that the step cannot be undone) and answered at 12:49:08Z (message id
@@ -100,9 +189,18 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   year then passes the d condition in about 42% of the cases, one of 1.1 x TE in about 49%. Added in v7 (a statement, no new rule):
   CONFIRMED also needs the d* condition and the timing type (section 4), and a candidate that is active on part of the
   rows has fewer effective sub-blocks. In
-  the last check before registration a planted timing rule held on about 30% of the rows was CONFIRMED in about 23% of
-  synthetic worlds at a true edge of 1.0 x TE, 27% at 1.1, 49% at 1.5 and 56% at 1.7; an observed d of about 1.4 to 1.5 x
-  TE was needed. A configuration with fewer than 6 active 63-row sub-blocks in the sealed set can reach neither CONSISTENT
+  the last check before registration (300 synthetic worlds per edge, the registered type rule, one configuration tested at
+  0.025; v8: G1 (a) to (c) required, the stress runs of G1 (d) and G2 not simulated) a planted timing rule held on about
+  30% of the rows in episodes of 20 to 60 rows was CONFIRMED in about 22% of the worlds at a true edge of 1.0 x TE, 25% at
+  1.1, 40% at 1.5 and 44% at 1.8 (65, 74, 121 and 133 of 300). The same rule with a T0 in 2010: 19%, 21%, 36% and 41% (56,
+  62, 108 and 124 of 300): a late T0 costs 3 to 4 points, because the family-wise test of G1 keeps the zeros before T0.
+  By the observed d of a world: 24% were confirmed at 1.2 to 1.4 x TE, about 45% at 1.4 to 1.8 and about 60%
+  above. The shape condition of
+  the type costs part of this: it took the type from 13% to 23% of these planted rules (more at a larger edge). A planted
+  rule whose states last 150 to 400 rows kept the type in 32% of the worlds at a true edge of 1.5 x TE, in 10% at 2.3 and
+  in 6% at 2.7, and was CONFIRMED in 3% to 6%: the sub-block means of its d* are autocorrelated because the rule is, and
+  the structure does not tell that from a dependence that breaks the error rates. Such a rule is reported as exposure
+  type and reaches CONSISTENT at best. A configuration with fewer than 6 active 63-row sub-blocks in the sealed set can reach neither CONSISTENT
   nor CONFIRMED whatever its edge (section 4, test T). By a count on old blocks (target levels and weights up to 2014, two
   blocks at a time) 67 of the 96 configurations of the first batch had a median below 6: rules that act in rare episodes.
   The G1 record carries the number of active sub-blocks per design block, and the report that asks for an authorisation
@@ -274,18 +372,31 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   constant amount of the fund or dilutes v1 with a sleeve is matched without v1's own timing being counted as the
   candidate's; w_j = mean actual weight of extra j over the rows on which the instrument exists. Its daily log return is
   m_t = ln(1 + kappa x (exp(x_REF,t) - 1) + f_t x (delta0 x R3_t + sum_j w_j x G_j,t)), with R3 the modelled daily return
-  of the 3x fund and G_j the daily return of instrument j (no cost on the constant holdings). v7: f_t = 1 - 0.22 on a row
-  before which the candidate's account owes liquidation tax (V below equity at the previous close: a gain or loss of the
-  row then changes V by 78% of it), and 1 otherwise. x is growth after tax; versions up to 6 counted the constant holdings
-  before tax (f = 1), which pushed d* down for a candidate that holds more and up for one that holds less of the fund than
-  kappa x REF (found by the last check). d*_t = x_candidate,t - m_t.
-  A candidate that only holds more, less or something else on average has d* near 0 whatever the market did; a candidate
-  whose gain comes from when it holds keeps it in d*. In the last check (v7 benchmark; 20 planted candidates without timing skill;
-  130 synthetic worlds with independent returns and 64 with a regime shift; one configuration tested at 0.025) such a
-  candidate was typed "timing" in 1.2% of the cases (32 of 2,600; at most 5 of 130 for one candidate) and in 0.2% (3 of
-  1,280). Their d* on the design set, averaged over the worlds, lay between -3.3 and +0.5 pp/yr (half of them below -0.5):
-  the cost of a candidate's own trades stays in d*, which errs against the candidate. A planted timing rule was typed
-  "timing" in every world. For the sealed set kappa, delta0, w_j and d* are computed
+  of the 3x fund and G_j the daily return of instrument j (no cost on the constant holdings). v7: f_t = (1 - 0.22) x E / V
+  at the previous close on a row before which the candidate's account owes liquidation tax (V below equity E at the
+  previous close: a gain or loss of the row then changes V by 78% of it, and the weights are shares of E while x is growth
+  of V), and 1 otherwise. x is growth after tax; versions up to 6 counted the constant holdings before tax (f = 1), which
+  pushed d* down for a candidate that holds more and up for one that holds less of the fund than kappa x REF (found by
+  the last check; the factor E / V by the re-read of version 7). d*_t = x_candidate,t - m_t.
+  A candidate that only holds more, less or something else on average has d* near 0 where the drift has no persistent
+  regimes; a candidate whose gain comes from when it holds keeps it in d*. In the last check (the registered benchmark and
+  type rule; 28 planted candidates without timing skill, 7 of them acting in random episodes; one configuration tested at
+  0.025) such a candidate was typed "timing" in 0.9% of the cases in 130 synthetic worlds with independent returns (32 of
+  3,640; at most 4 of 130 for one candidate) and in 0.2% in 64 worlds made of the real 1990-2014 rows laid cyclically over
+  the calendar from 64 starting points 97 rows apart (3 of 1,792; v8: these 64 worlds overlap almost entirely and are not
+  independent cases). Their d* on the
+  design set, averaged over the worlds, lay between -3.5 and +0.5 pp/yr in the first set (17 of 28 below -0.5) and between
+  -4.2 and +0.3 in the second: the cost of a candidate's own trades stays in d*, which errs against the candidate.
+  Limit, stated in advance: in 130 worlds whose drift itself changes in runs of 250 to 750 rows (built for this check), a
+  candidate without skill that reshapes v1's exposure has a d* that is not 0 (up to +3.3 pp/yr, for a cap on v1's level),
+  and the 28 candidates were typed "timing" in 3.0% of the cases (109 of 3,640; 11 of 130 for the cap; 6.4% without the
+  shape condition). None of the 28 was CONFIRMED in any of the three sets of worlds (0 of 9,072 cases). The type therefore
+  separates timing from average exposure, not from a reshaping of exposure that pays in persistent regimes: a "timing"
+  type on design blocks is no finding by itself. A planted timing rule with episodes of 20 to 60 rows kept the type in
+  83%, 78% and 76% of the worlds of the three sets; one whose states last 150 to 400 rows in about 5% (Power, section 0).
+  A variant of the shape condition that first takes out a line on the sub-block's mean holding difference was examined in
+  the same worlds and not adopted (in the regime worlds it typed 3.7% of the cases without skill); the evaluator prints
+  that value for the reader, and it enters no rule. For the sealed set kappa, delta0, w_j and d* are computed
   inside the evaluator and never reported.
 - Known noise, fixed by this text so that nobody can pick it: the tax-year phase (the account starts on 1986-01-02). In
   synthetic worlds a shift of the start by a few rows moved a set-level paired score by about 1 to 2 pp/yr (standard
@@ -297,11 +408,26 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   scored rows at each held level, number of level changes, mean level, mean extra weight, mean difference of the 3x-fund
   weight against REF, and the drawdown of the curve re-based to 1 on the first scored row of the block; (c) for the design
   set of a configuration: kappa, delta0 and w_j of its benchmark, the skewness and lag-1 autocorrelation of its 63-row
-  sub-block means (of d and of d*), and (v7) the number of active 63-row sub-blocks in each design block; (d) the model
+  sub-block means (of d and of d*; v7: taken from T0 on, and with them the lag-1 autocorrelation of what is left of the
+  means after a line on the sub-block's mean holding difference, which enters no rule), and (v7) the number of active
+  63-row sub-blocks in each design block; (d) the model
   check and the data checks; (e) PASS / FAIL of the tests and a void reason. v6: in the real
   calendar the prefix test returns PASS / FAIL only, the raw-level test the names of failing inputs only, and a void
   reason only its category (the text before its first colon: source gate, output rule, instrument check, error in
-  candidate code, prefix test, ...); counts of cuts, exception names and details exist only in test worlds. One exception:
+  candidate code, prefix test, ...); counts of cuts, exception names and details exist only in test worlds. v8: this now
+  holds at every entry point (batch run, G0 line, G2, authorisation, opening), not only in the batch run. An error of
+  candidate code never becomes the context or the cause of the evaluator's error (its text is written by candidate
+  code); in the real calendar a void leaves an entry point with its category only, an out-of-memory error with a fixed
+  text, any other error with its class name and the line of the evaluator on which it arose; the evaluator's own refusals
+and stops (fixed texts) leave as they are, and so do an interrupt by the operator and the end of the interpreter (an
+interrupt that arrives while candidate code runs leaves as a new error, with no line of candidate code in its
+traceback, and inside an opening after its G3-OPEN line it gives G3-ABORT and the fixed text, section 4; an exit
+raised while candidate code runs counts as an error of candidate code: a void, and inside an opening FAIL). What remains, stated: which category a configuration ends in
+  (or whether a G2 read or the checks before an opening are refused) is itself a small piece of information that
+  candidate code written for the purpose could choose from data; it is bounded, and every run has its ledger line: a batch run starts a configuration at most twice under one
+registry (after two stops the third start makes it void), G2 is read at most twice, and the checks before an opening
+run at most twice per authorisation of the owner and twice more for the one retry of an aborted opening; it costs
+that configuration its place. One exception:
   the 63-row sub-block means of design-block paired differences (of d and of d*) are kept for the family-wise test;
   they are design material.
 - Kept by code (v6): the real calendar after 2014 is built only inside the scoring entry points (reference table, model
@@ -311,7 +437,8 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   after 2014 is built while the test-world module is loaded; v7: a calendar end must be text of the form YYYY-MM-DD (the
   guards compare text), and the registered calendar must end on its end date. These guards stop
   accidental reads, not deliberate ones: the scope is a public switch, and an operator can read the data files with other
-  programs; this text forbids both. Residual channels, stated: a configuration's void category, the time a run takes and (v7) whether G0 exists for it
+  programs; this text forbids both. Residual channels, stated: a configuration's void category, the time a run takes, (v7) whether G0 exists for it
+  and (v7) whether its run stopped once for lack of memory
   can depend on how its code behaves on sealed rows (the design view is the full calendar, see Accounts; the G0 flag is
   set from the weights on the rows of the design account, but also from whether the code asked for view.m or the shadow
   levels, which a branch on a sealed row can change); these are at most a few bits per
@@ -350,7 +477,9 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   constants (xv1._NP_OK; no np.empty or anything else that hands out uninitialised memory, no submodule, no file, random or
   error-state function), one level deep (np.X, never np.X.Y); of a helper only its own functions and names, one level deep;
   of the built-ins only a listed set (xv1._BI_OK: arithmetic, containers, iteration, a few exception names; no open, hash,
-  id, print, exit or import machinery). Not allowed: any other import, a from-import, an import inside a function, a module
+  id, print, exit or import machinery; v7: no set, frozenset or str, and a set display, a set comprehension and a
+  formatted string are refused: the order of a set and the text of an object can differ between two runs of the same
+  code, see Loading). Not allowed: any other import, a from-import, an import inside a function, a module
   name used as a value, a class definition, a name or attribute that begins with an underscore other than the file's own
   module-level names or that contains a double underscore, attributes that reach the interpreter, frames, files, string
   formatting, random numbers or an array's memory (xv1._BAN_ATTR), assigning to or deleting any attribute, np.errstate
@@ -371,7 +500,38 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   parameter values, the input names, T0 and the calendar mark of a configuration are fixed as canonical JSON when its
   object is made; every call receives a new copy of the parameter values (in the last check a list parameter used as a
   memory carried a longer call's returns into the cut calls and passed the prefix test), and a later change of an
-  attribute cannot reach a call or a gate.
+  attribute cannot reach a call or a gate (the file path is read-only as well; an unknown key of a configuration is
+  refused; at batch registration every configuration is built again from the batch file and its hash compared, so a
+  candidate file that was saved again after its object was made is refused before the batch exists). v7, same output
+  in every run: python runs with hash randomisation off (PYTHONHASHSEED=0; in the real calendar the evaluator refuses
+  to run otherwise), and the gate refuses the set type, set displays and formatted strings. v8, corrected: this does not
+  make everything candidate code can read equal between two starts of python. Addresses of objects differ from start to
+  start, and code that passed the version-7 gate could read one (the text of an object through the % operator, through
+  an array of objects turned into text or raw bytes, through the text of a caught error; the order of a set made from
+  two views of dict keys). The gate now also refuses a try statement, a string literal (other than a docstring) with a
+percent sign or equal to "dtype", a type argument written as dtype=... or as the first argument of astype that is not
+a plain number type (the dtype of another array is accepted), a text as a positional argument of a numpy function,
+the attributes tobytes, tostring, getfield, view, decode, encode, type and fill, a file that binds the name of a
+built-in it is given (as a function, an argument, a variable or the alias of an import: the two rules on type
+arguments and on dict views go by these names), a match statement, an async form and a type parameter (a class
+pattern of a match statement reads an attribute by a name that no rule of the gate sees, and a capture, an async
+function or a type parameter binds a name that the rule on built-in names does not see; no candidate file needs
+them), and a view of dict keys or items used other than as the iterable of a loop or as a direct argument
+of list, tuple, sorted, len, dict, enumerate, zip, iter, any or all, or as the only positional argument of max, min
+or sum. These rules reject the listed forms only. Other forms that give the text of an object pass the gate (found in
+the last reading: an array of text that receives an object, a bound method kept and called later with a type text,
+the dtype of a text array handed on); they are for the reader of the source to reject, and the structure does not
+rest on the list being complete: a fingerprint ties G2 and the opening to the output that was tested (One call, below),
+candidate code finds the same room on the stack in every call and holds no try statement, a configuration whose run
+was begun more than once is reported with that fact, and one on which the run stopped twice is void. The evaluator is
+imported before the compiler (it sets the length of the compiler's list of kept function objects and refuses to load
+otherwise). v8, what is executed: the registry holds the sha256 of source files, and python would run a compiled file
+that lies next to a source if the size and the second of the source's last change fit. Every real run is therefore
+started with -B and with PYTHONPYCACHEPREFIX set to an empty folder, and the evaluator refuses a real run
+without -B, without that variable, with any compiled file anywhere in that folder, or with a compiled file that
+exists for a project code module already loaded. (The cache of the compiler of the locked engine is keyed in the
+same way; by procedure the registered runs use a cache folder made for this version, which the evaluator does not
+check.)
 - Reading the calendar position, a date, a file, a cache or a module-level data array is forbidden. Candidate source holds
   no date literal. Periodic calendar fields (month, day of month, weekday, calendar year modulo 4) may be registered as
   inputs; no absolute date, year or row position may be used. The gate and the tests below do not see every way to read
@@ -399,13 +559,69 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   test or scoring call (v6: any exception, also one outside Exception such as SystemExit), or breaks an output rule, is
   void; only an interrupt by the operator stops a run (the batch is then resumed). v7: a machine out of memory is not the
   candidate's rule break either: the batch run stops, the event is logged and the run is resumed; a configuration on
-  which this happens a second time is void. Inside a G3 opening it gives G3-ABORT and the retry rule.
+which this happens a second time is void. Inside a G3 opening it gives G3-ABORT and the retry rule. v8: the same
+holds for out of memory in the evaluator's own work on a call (the fingerprint of the view, the output check, the
+compile step of a candidate file); before, these places made a void of it. The error leaves
+  the evaluator without its text (numpy's text names the array shape that was asked for, and candidate code can choose
+  that shape). Candidate code can cause such a stop and with it one more run of itself; the second run executes the
+  same bytes. v8, corrected: the second run is a new start of python, and code written for the purpose could behave
+  differently in it (Loading); in the last check a planted configuration that stopped its first run was scored in the
+  second. It gains no second look: every run sees the same rows, the batch run keeps one result per configuration, and
+  the result record of a configuration whose run was begun more than once carries the number of starts and the
+  out-of-memory stop (ledger lines restart and out-of-memory; the batch table prints them). The same holds for a
+process that is killed: the configuration it was working on is run again and flagged. v8, bound: under one registry a
+configuration is started at most twice. If the run stopped on it twice (an error it causes in the evaluator's own
+code, a call that never returns and is ended by the operator, the end of the interpreter, the machine), the third
+start writes its ledger line, makes the configuration void (run stopped twice) and the batch goes on. An honest
+configuration is hit only if the machine stops twice while that configuration is the one being worked on. v8: a view
+whose own mappings (m, x) candidate code changed is void like any changed input (before, the evaluator's check of the
+view failed on such a mapping with an error of its own, which stopped the run). The reader of the source
+  rejects an array whose shape is computed from data. v8, stack room: before every call of candidate code the evaluator
+  measures how many frames the interpreter still allows and sets the limit so that the same number remains (1,000
+above the evaluator's own frames; candidate code measured 1,002 at every depth tested), whatever the depth at which
+it was itself called. Only the count of Python frames is made equal. Other limits of the process (the C stack, memory)
+reach candidate code as an error, and candidate code has no try statement, so an error (a recursion that is too deep
+included) ends its call and makes the configuration void, unless a function it may call absorbs the error. Two such
+functions are known. next with a default absorbs the end of an iterator, which carries nothing candidate code did not
+compute itself. np.array_equal returns False when the conversion of an argument fails for any reason, lack of memory
+included: code written for the purpose could read whether an allocation of a size it chooses succeeds (a value of the
+process and the machine, not of the data) and go on; np.array_equal was taken off the allow-list in this version.
+The allow-list was not searched function by function for others of this kind, and the structure does not rest on it
+(the fingerprint, One call).
 - One call. The full-calendar call of a configuration is made once (like every call, on a newly executed copy of its
   module and helper files): the same result is tested (prefix test, level-scale test, instrument check, T0 rule) and
   scored. In the stress
   runs of G1(d) that same output is used: the candidate's signals are held fixed while the engine terms move. v7,
   precisely: once per scoring step. G2 and each step of a G3 opening call the candidate again on a new copy of its
-  module; the code is deterministic and keeps no state, so the output is the same.
+  module. v8, enforced instead of assumed: the batch run stores, with the G1 record, a sha256 fingerprint of the tested
+  output on the rows of the design account (level, weights, instrument returns, flags, bands, brake parameters, order
+  step, modes). G2 and the checks before an opening compute the fingerprint of their own call and refuse another one
+(at G2 the read is used: like an interrupted read it may be run once more, and a second refusal closes G2 for that
+configuration); inside an opening a configuration that does not read the v1 shadow levels gets exactly the
+  inputs of the batch run, so another fingerprint on the main view gives the verdict FAIL. A configuration that reads
+  the shadow levels may differ on the main view (those levels differ there by design); its main-view output is tested by
+  the every-row prefix test of the opening. In the last check a planted configuration told the G2 call from the batch
+run and looked ahead only there: G2 passed it on an output no test had seen. That output is now refused. v8, where
+the tested output can come back: the fingerprint is exact to the last bit, and the last bits of numpy's functions
+depend on the package versions and on the processor targets numpy dispatches to. The batch run stores a tag of both
+with each G1 record, made together with the bytes that numpy returns for fixed operations on fixed numbers (a probe:
+every ufunc of the allow-list on float64, float32 and complex numbers, the operators, the cumulative and reducing
+functions, convolve, dot and matmul, Python's own float and complex powers; it reacts to the processor targets, to
+the kernel and the thread count of the linear-algebra library and to the math functions of the C library that these
+operations call; an operation outside this list is not covered), and the sha256 of every registered data file with its results; G2 and an opening are refused,
+before anything is logged or read, under another tag or where a data file of the batch run has another sha256 (data
+files registered later do not count). Every real run is made with numpy's AVX-512 targets switched off
+(NPY_DISABLE_CPU_FEATURES="X86_V4 AVX512_ICL AVX512_SPR"), with the Haswell kernel of the linear-algebra library and
+with one thread (OPENBLAS_CORETYPE=HASWELL, OPENBLAS_NUM_THREADS=1). These three values are a registered constant
+(RUN_ENV) and the evaluator refuses a real run under others (it reads the variables of the process; that the
+libraries obeyed them shows in the tag and is not checked apart). Another machine of the x86-64-v3 level with the
+same packages should then return the same tag; where it does not, G2 and an opening are refused there with nothing
+used. If a batch run is resumed on a machine that returns another tag, its configurations carry two tags: the batch
+table prints them, and G2 and an opening of a configuration need the tag of its own run. After a data repair or a change of
+packages (section 7) a configuration scored before it is not read at G2 and not opened until its design output has
+been issued again under the new registry (the function for that comes with the amendment, as for an evaluator defect).
+  A copy of the registered data files with their sha256 lies in research/xv1_data_frozen_20261117/ (made before
+  registration), so that the registered bytes can be put back if a file of the chain is rewritten by other work.
 - Prefix test, before a configuration is scored (design view), once more on the main view inside a G3 opening (v6: after
   its G3-OPEN line), and once on REF as a control (REF must pass or the evaluator is not used). Every cut run executes a
   new copy of the candidate module, so nothing kept from a call that saw more rows can reach a call that should see
@@ -578,7 +794,16 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   at registration, before the batch file is written, and so is an empty batch; a batch is registered and scored only when
   every earlier batch is scored (the family rule reads the earlier batches). Batch k (k = 1, 2, ...) has the family-wise
   level alpha_k = 0.05 / 2^k, so all batches together spend less than 0.05 (with 200,000 draws the smallest family-wise p
-  is 1 / 200,001, so a batch after the 13th cannot pass G1). A batch is scored once; an interrupted run is resumed.
+  is 1 / 200,001, so a batch after the 13th cannot pass G1). A batch is scored once; an interrupted run is resumed
+  (finished configurations are kept; v8: the configuration that was being worked on is run again, with a ledger line
+restart, and its result record carries the number of starts; after two stops on one configuration under one registry its
+third start makes it void; a partial result counts as missing only if its file is missing or cut, any other read
+error stops the run (for a configuration not yet begun before its score line, so that it costs no start); after an amendment every configuration without a result under the new registry is begun again, which
+also counts as a start in its record). v8: a configuration with no scored design row on or
+  after its T0 is void (before, such a T0 stopped the batch run with an error on every start). Run time, stated: with
+  the every-row test for each configuration that reaches the G1 size, a batch of about 100 configurations takes about 8 to 10
+hours (one process, one thread; an estimate from the test runs on data to 2014, not a measurement of the registered
+run); it runs detached and is resumed after a stop.
 - Family-wise p of a configuration = single-step max-t over the scored (non-void) configurations of its batch: t_63 of
   every configuration on the 70 design sub-blocks; the null distribution of the maximum from 200,000 draws in which the
   sign of each sub-block is flipped for all configurations together (seed from the sha256 of the batch hash and the
@@ -586,8 +811,8 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   sub-block before a configuration's T0 enters as 0. The same test is run a second time on d* (seed + 1).
 - Assumption behind the stated error rates: under the null the sub-block sums are symmetric around 0 and independent of
   each other. The design blocks contain 2001-03, 2007-09 and 2020. With every G1 line the evaluator prints the skewness
-  and the lag-1 autocorrelation of the configuration's 70 design sub-block means; they are quoted in the report that asks
-  for a G3 authorisation. v7, sizes from the last check (zero true edge, synthetic sub-block sums): with symmetric
+  and the lag-1 autocorrelation of the configuration's design sub-block means (the 70 values; v7: for a configuration with
+  a T0, the values from the sub-block that holds T0 on); they are quoted in the report that asks for a G3 authorisation. v7, sizes from the last check (zero true edge, synthetic sub-block sums): with symmetric
   independent sums the family-wise level of 96 correlated configurations was 2.6% at nominal 2.5% and one opening passed
   the d test in about 1.1%. With left-skewed sums (skewness -0.6 / -1.3) the family-wise level was about 6% / 12%; with a
   lag-1 autocorrelation of +0.1 / +0.2 / +0.4 about 6% / 13% / 41%; one opening passed the d test in about 2% to 5% at a
@@ -609,11 +834,18 @@ computed), in which the evaluator cannot build a real calendar after 2014.
   configuration hash, set, and the hash of the file before the line was added. Line 0 is the registration. The chain of
   hashes is verified on every read; a broken chain stops the evaluator. A number in a report is valid only if its ledger
   line exists. The G1 record of a configuration is read from the results file of its batch, whose sha256 stands in the
-  ledger. A copy of the ledger is committed to the repository after every step. v7: one writer at a time (a lock on the
+  ledger. A copy of the ledger is committed to the repository after every step (v8: and pushed; the registration
+  script refuses to run while a file of the repository folder research_xv1 is not committed and pushed, and prints
+  the commit; "pushed" is read from the local record of the upstream branch, the server is not asked). v7: one writer at a time (a lock on the
   machine that runs the evaluator; the procedure is one container and one process); after every line the evaluator
   copies the ledger to research_xv1/registry/LEDGER.jsonl and from then on refuses a ledger that lost or changed lines
-  against that copy (the hash chain alone cannot see a removed tail); a line about a configuration must name its hash; a
-  last line that was cut while it was written is removed only by repair_ledger, which logs the repair.
+  against that copy (the hash chain alone cannot see a removed tail); a line about a configuration must name its hash
+  and, in the real calendar, is written only from inside an evaluator entry point; while an opening is in progress no
+  line other than the opening's own is written; a last line that was cut while it was written is removed, and lines
+  that the ledger lost against its repository copy are put back from that copy, only by repair_ledger, which logs the
+  repair (it refuses while the lock file of an opening exists, because its line could not be written then; a stale
+  lock file is removed by hand first). If a batch that is resumed after an amendment gives a configuration another G1 outcome, a new G1 line is
+  written and the last line of a configuration counts.
 
 ### G0 simulation (a screen, not evidence; required where it exists)
 - G0 exists for a configuration that registers no extra input, holds no extra instrument and read neither view.m nor the
@@ -643,7 +875,8 @@ A configuration of batch k passes G1 if all hold:
   while the candidate's signals stay as they are: set score d > 0 in all four. (Tax 0 guards against a gain that is only
   tax timing.)
 Type. A passing configuration is of type "timing" if its set score d* > 0, its family-wise p on d* is <= alpha_k and
-(v7) the 63-row design sub-block means of its d* have skewness >= -1.0 and lag-1 autocorrelation <= 0.2;
+(v7) the 63-row design sub-block means of its d*, from the sub-block that holds its T0 on, have skewness >= -1.0 and
+lag-1 autocorrelation <= 0.2 (both are taken as 0 when fewer than 3 such sub-blocks exist or the means do not vary);
 otherwise it is of type "exposure": its design gain is not separated from holding more (or holding something else) on
 average. The type is printed with every figure of the configuration.
 At most one configuration per family goes on. The passing configurations are taken in this order: timing type before
@@ -654,7 +887,9 @@ designers have seen. Passing it is never reported as significance.
 ### G2 old-data no-harm check (W5), not validation
 - Given only to a configuration that passed G1 and was selected (and passed G0 where it exists), once (the evaluator
   refuses a second read; v7: a read that was interrupted before its result line, so that nothing was returned, is run
-  again once and logged as a re-run). On scored WEAK rows on or after T0: set score d >= -1.0 x TE_W x sqrt(252 / n_W) (TE_W from the
+  again once and logged as a re-run; v8: the read is computed only on the output whose fingerprint the G1 record holds,
+  and a call that returns another output is refused with the read used; under other package versions, processor
+targets or data files than those of the batch run the read is refused before it is logged, and nothing is used). On scored WEAK rows on or after T0: set score d >= -1.0 x TE_W x sqrt(252 / n_W) (TE_W from the
   scored WEAK rows) and no active weak block breaks the harm bound.
 - With fewer than 252 scored WEAK rows on or after T0, G2 is not available: nothing is read, the ledger says so, and the
   configuration is not eligible for G3 (it has no old-data check at all); it can only keep a forward record.
@@ -675,17 +910,28 @@ designers have seen. Passing it is never reported as significance.
   on any input (cash, a fixed level, a constant extra weight with no v1 level; v6: also checked by replacing every input
   after T0 by noise on the calendar that ends 2015-12-31, twice, and finding B, Wt and RB unchanged) may not be opened. A configuration that is one family
   with an already opened configuration (label, or absolute correlation of the design sub-block means of 0.7 or more) may
-  not be opened; the refusal does not consume an opening.
+  not be opened; the refusal does not consume an opening. v8: these checks call candidate code (on the design view, on
+  the calendar that ends 2015-12-31 and on the noise calendars), so a ledger line G3-PRE H is written before the first
+  such call, and for one opening (or its one retry) they run at most twice; the design-view call must return the output
+whose fingerprint the G1 record holds. Before version 8 they could be repeated without any trace. If both runs
+stopped without a G3-OPEN line (a machine stop; nothing of the sealed rows was read), a further authorisation of the
+owner, with its own message, allows two more. Like G2, they are refused before anything is logged under other package
+versions, processor targets or data files than those of the batch run.
 - Blocks 10 and 12 are scored from the main account (the full calendar in one account), for candidate and REF alike. v6:
   the line G3-OPEN H (and its marker) is written and flushed BEFORE the candidate is first called on the main view, and
   consumes one opening whatever follows. Then the T0 rule (v7: both parts, the signal and the paired difference) and the prefix test (v7: with a cut after
   every account row) are repeated on the main view; a failure
   gives the verdict FAIL (a refusal at that point would have been a bit about sealed rows without a used opening). The main
   account answers only while the G3 function holds the token of that opening. If the candidate breaks a rule on the main
-  view (an output rule, the instrument check, an error in its own code: a void), the verdict is FAIL (v6; the code is
-  deterministic, so a retry would void again). If the run raises anything else (v7: also a machine out of memory), the ledger gets G3-ABORT H and the
+  view (an output rule, the instrument check, an error in its own code: a void; v8: also an output on the design rows
+  that differs from the tested one although the configuration reads no shadow level), the verdict is FAIL (v6; a rule
+  break is the candidate's own, so no retry follows). If the run raises anything else (v7: also a machine out of memory), the ledger gets G3-ABORT H and the
   function raises a fixed text (nothing of the error leaves); the same H with identical hashes may be re-run once and the
-  retry is logged.
+  retry is logged (v7, enforced: the G3-OPEN line carries the tag of the registry in force, and a retry under another
+  registry is refused; an opening stopped by an evaluator defect falls under section 7). v7: with a cut after every
+  account row an opening takes minutes to tens of minutes. It is started detached, never under a time limit of a
+  shell: a process that is killed inside an opening writes no G3-ABORT line, leaves the lock file and has used the
+  first run.
 - Verdict (p = test T with the sign-flip check; all quantities computed inside the evaluator and never reported):
   - FAIL: set score d <= 0, or an active sealed block with d_b < -1.0 x TE_b x sqrt(252 / n_b) (TE_b from that block's own
     scored rows), or a failed check or a void on the main view (above).
@@ -765,7 +1011,10 @@ pre-registration states that its data end on or before 2014-12-31. The outputs o
 
 - After registration this file is never edited. An amendment is a new file with its own sha256 and a ledger line; it lists
   every output that existed before it and is reported to the owner in the next report (v7: written by xv1.amend together
-  with the new registry; the registered text and ledger line 0 stay as they are).
+  with the new registry, through m_register.py --amend, which first loads every code file of the chain; a new registry
+  that would lose a code file of the registry in force is refused unless that file is named as dropped; the registered
+  text and ledger line 0 stay as they are; an amendment made while an aborted opening still has its one retry pending
+  makes that retry impossible, because the retry needs the registry of its first run, and the function prints a note).
 - Never amendable: the block table and the sets of section 1, the sealing rules, the account definitions, the G3 rules,
   its level and its budget, the definition of d and d*. Amendable only before the first batch is scored: the G1 and G2
   thresholds, i.e. the smallest d of G1 (1.0 pp), the 3 active blocks, the 1,500 rows, the 20 active rows of an active
@@ -778,7 +1027,8 @@ pre-registration states that its data end on or before 2014-12-31. The outputs o
   issued again and the old ones marked superseded in the ledger. A re-issued G2 is logged and replaces the first; the
   corrected verdict governs. A G3 opening made with a defective evaluator stays used up. It is run again once, with the
   owner's authorisation, only if the reproduction shows that the defect can change a verdict; both verdicts are published
-  and the corrected one governs.
+  and the corrected one governs (the evaluator as registered has no function for such a second run: it refuses every
+  further run of an opened configuration, so the function comes with the fix and its amendment).
 - The G3 budget ends at the first of: the third G3 opening, the owner closing G3 for good, or 2031-01-01. Batches, G1, G2
   and forward records may continue after it. Rows of blocks 10 and 12 are released only as section 4 says or by a new
   registration.

@@ -37,12 +37,23 @@ All arrays have T rows: 300 warm-up rows, then the account days. Row t holds wha
   spliced with its model, `cm.level`, `cm.sma`, `cm.roll_max`, `cm.roll_min`, `cm.vol`, `cm.lag`, `cm.hyst`, `cm.trend_flag`,
   `cm.consec`, `cm.debounce`, `cm.since`, `cm.breadth(v)` (needs `cm.SECTOR_NAMES` in the configuration's names),
   `cm.semis_level(v)` (needs 'semis'), `cm.ndx_level(v)`. Use them instead of writing your own; all are causal.
-Source gate (evaluator v7, an allow-list; a file that fails it cannot be registered): module-level `import numpy`,
+Source gate (evaluator v8, an allow-list; a file that fails it cannot be registered): module-level `import numpy`,
 `import xv1` and `import <helper>` (a file of the candidate's own folder whose name is not a standard-library module name)
 only; no from-import, no import inside a function, no class; numpy only through the functions and constants in
 `xv1._NP_OK`, one level deep (`np.X`, never `np.X.Y`, also not through a local name such as `f = np.maximum; f.reduce(...)`:
 the gate sees only the direct form, the reader of the source rejects the other; no `np.empty`: use `np.zeros` / `np.full`); built-ins only those in
-`xv1._BI_OK` (no print, open, hash, id, type, exit, getattr ...); no name or attribute that begins with `_` except the
+`xv1._BI_OK` (no print, open, hash, id, type, exit, getattr ...; v7: no `set`, `frozenset`, `str`, no set display or
+comprehension, no f-string: the order of a set and the text of an object can differ between two runs; use lists, tuples and dicts;
+v8: no `try` statement (an error ends the call and voids the configuration), no string literal with a percent sign or equal to
+`"dtype"`, a type argument (`dtype=...`, the first argument of `.astype`) only as `float`, `int`, `bool`, `np.float64`, `np.float32`,
+`np.int64`, `np.int32`, `np.bool_` or `X.dtype`, no text as a positional argument of a numpy function (write `np.convolve(a, b, mode='full')`),
+no `.tobytes` / `.tostring` / `.getfield` / `.view` / `.decode` / `.encode` / `.type` / `.fill`, and `d.keys()` / `d.items()` only as the
+iterable of a loop, as a direct argument of `list`, `tuple`, `sorted`, `len`, `dict`, `enumerate`, `zip`, `iter`, `any` or `all`, or as the
+only positional argument of `max`, `min` or `sum`; no `match` statement, no `async` form, no type parameter (`def f[T](x)`, `type X = ...`); no name of a built-in may be bound by the
+file (no function, argument, variable or import alias
+named `len`, `max`, `min`, `sum`, `list`, `float`, `int`, `round`, `filter`, `map`, `range`, `slice`, ...: see `xv1._BI_OK`); no
+`np.array_equal` (write `(a == b).all()` on arrays of one shape); never change a mapping of the view (`v.m`, `v.x`): that voids the configuration; the gate rejects these listed forms only,
+and any other way to turn an object into text is rejected by the reader of the source); no name or attribute that begins with `_` except the
 file's own module-level names, none that contains `__`, none of the attributes in `xv1._BAN_ATTR`; no assignment to any
 attribute; no `global` / `nonlocal`; no number literal above 999, no bytes literal, no string literal (other than a
 docstring) longer than 64 characters or with a year 19xx / 20xx or a double underscore, no display of more than 64
@@ -83,7 +94,9 @@ multiplies `v.c.lvl` by 2 and by 0.5 and voids a candidate whose outputs change.
 
 ## What an implementer may run (and nothing else)
 From /home/user, never from under /mnt/project-files:
-`NUMBA_CACHE_DIR=/home/claude/nbcache_xv1 ~/.cache/lab/ms1-venv/bin/python -B script.py`
+`PYTHONHASHSEED=0 NPY_DISABLE_CPU_FEATURES="X86_V4 AVX512_ICL AVX512_SPR" OPENBLAS_CORETYPE=HASWELL OPENBLAS_NUM_THREADS=1 PYTHONPYCACHEPREFIX=<an empty folder> NUMBA_CACHE_DIR=<a folder of your own> ~/.cache/lab/ms1-venv/bin/python -B script.py`
+(v8: the evaluator refuses a real run without these values, see `xv1.RUN_ENV`; test worlds are not held to them)
+(v7: with hash randomisation on, the evaluator refuses to run in the real calendar)
 - First line after the imports: `import t_world; t_world.old()` (declares the <= 2014 test world; nothing after 2014 can be built).
 - The one call: `pre = xv1._prepare(make, names, xv1.OLD_END)` (view, validated output, instrument check); `xv1.gate(path)` must be empty.
 - The causality test: `xv1.prefix_test(make, names, end=xv1.OLD_END, n_rand=25, pre=pre)` and `xv1.scale_test(make, names, pre=pre)` must return PASS

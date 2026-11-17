@@ -1,4 +1,4 @@
-"""XV1 sealed block evaluator, version 7 (see PREREG_XV1_STRUCTURE.md).
+"""XV1 sealed block evaluator, version 8 (see PREREG_XV1_STRUCTURE.md).
 
 Accounts
   design    ONE continuous account on the design calendar = the evaluator calendar with every row of the sealed blocks
@@ -31,8 +31,15 @@ import os, re, sys, ast, json, time, fcntl, types, hashlib, weakref, builtins, w
 import numpy as np, pandas as pd
 from scipy import stats as sps
 os.environ.setdefault('NUMBA_CACHE_DIR', '/home/claude/nbcache_xv1')   # own cache: the shared one collides with other sessions
+os.environ['NUMBA_FUNCTION_CACHE_SIZE'] = '1000000'   # v7: see the check below; read by numba when it is first imported
 sys.path.insert(0, '/mnt/project-files/research/measure_std')
 import std
+import numba.core.dispatcher as _nbd
+# v7: the locked engine takes a compiled function as an argument, so every run adds one line to that function's cache index, and every
+# line read back makes one function object that numba keeps alive in a list of 128 by default. Past that length the next index
+# write stops with ReferenceError ("underlying object has vanished"), in every run that follows (met on 2026-11-12 with 20 lines
+# in ce.runPE and more in other indexes). The list is made long enough never to be the limit; results do not depend on the cache.
+if (_nbd.Dispatcher._recent.maxlen or 10 ** 9) < 10 ** 6: raise ImportError('import xv1 before numba (the function cache size is set by xv1)')
 from std import jp, ov, bk, beng, rx
 import mkt, md
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -60,6 +67,8 @@ MIRROR = os.path.join(ROOT, 'registry', '')   # v7: copy of the ledger inside th
 FEE, SPREAD = 0.0095, 0.0075           # modelled funds: yearly fee, yearly spread per borrowed unit (3x: 0.0245 = beng.F1['er3'])
 LVL_OK = ('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext')   # level inputs that carry no price height
 EXACT_SF = 20                          # sign-flip check: all 2^A assignments up to this many active sub-blocks
+RUN_ENV = dict(NPY_DISABLE_CPU_FEATURES='X86_V4 AVX512_ICL AVX512_SPR', OPENBLAS_CORETYPE='HASWELL', OPENBLAS_NUM_THREADS='1')   # v8: numeric environment of every real run (see _run_env)
+FRAMES = 1000                          # v8: frames candidate code may still open in any of its calls (set from a measurement, see _sandbox)
 T0_WARM_MAX = 756                      # a registered T0 lies at most this many calendar rows after the first row on which every input exists
 G2_MIN_ROWS = 252                      # fewer scored WEAK rows on or after T0: G2 is not available (and the configuration cannot be opened)
 W_ACT = 0.01                           # an extra holding makes a row active only from this total actual weight on (a tiny sleeve does not)
@@ -76,13 +85,19 @@ _FROZEN = dict(CAL_START='1984-01-03', ACC_START='1986-01-02', CAL_END='2026-08-
                OUT=REG_OUT, FEE=0.0095, SPREAD=0.0075, EXACT_SF=20, WARM=int(WARM), T0_WARM_MAX=756, G2_MIN_ROWS=252,
                LVL_OK=('lvl:_VIX3M@ext', 'lvl:_VIX9D@ext', 'lvl:_TYX@ext', 'lvl:_FVX@ext'), W_ACT=0.01, G3_END='2031-01-01', SHAPE_SKEW_MIN=-1.0, SHAPE_AC1_MAX=0.2,
                F1=dict(delay=2, cost=0.003, tax=0.22, W0=10000000.0, harvest=3, hthr=1.0, cspr=0.02, er3=0.0245, step=0.5, fstep=0.5), CARRY=5,
-               LIT_INT_MAX=999, LIT_SEQ_MAX=64, LIT_STR_MAX=64)
+               LIT_INT_MAX=999, LIT_SEQ_MAX=64, LIT_STR_MAX=64, FRAMES=1000,
+               RUN_ENV=dict(NPY_DISABLE_CPU_FEATURES='X86_V4 AVX512_ICL AVX512_SPR', OPENBLAS_CORETYPE='HASWELL', OPENBLAS_NUM_THREADS='1'))
 _FROZEN_LISTS = ('_NP_OK', '_BI_OK', '_BAN_ATTR', '_BAN_NAME', '_ERRSTATE_KW', '_ONE_X', '_LEV')   # v6: added to _FROZEN once they exist
 def _canon(x): return {k: list(v) for k, v in sorted(x.items())} if isinstance(x, dict) else sorted(x)
 
 
 class Void(Exception):
     """a configuration that cannot be scored; it stays in its batch and the batch level is not refunded"""
+
+
+class Stopped(RuntimeError):
+    """v8: the evaluator's own stop. Its text is written by the evaluator (no value of candidate code in it) and leaves an
+    entry point as it is."""
 
 
 def _guard():
@@ -97,6 +112,31 @@ def _guard():
     if xdata.CARRY != _FROZEN['CARRY']: raise PermissionError('carry limit of the extra inputs changed')
     if abs(beng.F1['er3'] - (FEE + 2 * SPREAD)) > 1e-15: raise PermissionError('fund model terms changed')
     if MIRROR != os.path.join(ROOT, 'registry', ''): raise PermissionError('the place of the ledger copy was changed')   # v7
+    if sys.flags.hash_randomization: raise PermissionError('start python with PYTHONHASHSEED=0 (v7: nothing candidate code can read may differ between two runs)')
+    if not _ENV_OK[0]: _run_env(); _ENV_OK[0] = True     # v8: once per process (the variables are read by the libraries when they load)
+
+
+_ENV_OK = [False]
+def _from_pyc():
+    """v8: project code modules that python took from a compiled file (the registry holds the sha256 of the source files;
+    a compiled file next to a source is accepted by python on the size and the second of the source's last change)"""
+    out = []
+    for k, m in list(sys.modules.items()):
+        f, c = getattr(m, '__file__', None), getattr(m, '__cached__', None)
+        if f and c and os.path.exists(c) and ('/project-files/' in os.path.realpath(f) or os.path.dirname(os.path.realpath(f)) == os.path.dirname(os.path.realpath(__file__))): out.append(k)
+    return sorted(out)
+
+
+def _run_env():
+    """v8: every real run has the numeric environment RUN_ENV (numpy's AVX-512 targets off, the Haswell kernel of the
+    linear-algebra library, one thread), so that the tag of _out_env is the same in every registered run and can be met
+    on another machine of the x86-64-v3 level, and executes the hashed source files: python is started with -B and with
+    PYTHONPYCACHEPREFIX set to a folder that holds no compiled file at all (project modules that load after this check,
+    such as the engine's own, are read from that folder too, so a look at the loaded modules alone is not enough)."""
+    bad = [k for k, v in RUN_ENV.items() if os.environ.get(k) != v]
+    if bad: raise PermissionError('a real run is started with ' + ' '.join('%s="%s"' % kv for kv in sorted(RUN_ENV.items())))
+    if not sys.dont_write_bytecode or not sys.pycache_prefix or _from_pyc() or any(f.endswith('.pyc') for _, _, fs in os.walk(sys.pycache_prefix) for f in fs):
+        raise PermissionError('a real run executes the hashed source files: start python with -B and with PYTHONPYCACHEPREFIX set to an empty folder')
 
 
 def _writable():
@@ -115,11 +155,43 @@ def scope():
     finally: _SCOPE[0] -= 1
 
 
+_QUIET = [False]                       # v8: a self-test sets this in a test world to get the real calendar's handling of error text
+_OOM_TEXT = 'out of memory: the batch run stops here and is resumed by running it again'
+def _real(): return WORLD is None or _QUIET[0]
+def _tail(name): return '' if _real() else ': ' + name   # the name of an error of candidate code is shown in test worlds only
+
+
+def _reduced(e):
+    """v8: what leaves an entry point on the real calendar in place of an error whose text candidate code, or a value
+    computed from its output, could shape. A Void keeps its category (the text before the first colon), an out-of-memory
+    error keeps only the evaluator's own fixed text, any other error keeps its class name and the line of xv1.py on which
+    it arose; a refusal (PermissionError) and the evaluator's own stop (Stopped) keep their text, which the evaluator
+    writes. The new error holds no reference to the first one."""
+    if isinstance(e, Void): return Void(str(e).split(':')[0])
+    if isinstance(e, Stopped): return Stopped(str(e))                # the evaluator's own texts, on a new error (no context of whatever was being handled)
+    if isinstance(e, PermissionError): return PermissionError(str(e))
+    if isinstance(e, MemoryError): return MemoryError(_OOM_TEXT if e.args == (_OOM_TEXT,) else 'out of memory')
+    tb, ln = e.__traceback__, None
+    while tb is not None:
+        if os.path.basename(tb.tb_frame.f_code.co_filename) == 'xv1.py': ln = tb.tb_lineno
+        tb = tb.tb_next
+    return Stopped('%s in evaluator code%s (its text is withheld on the real calendar)' % (type(e).__name__, '' if ln is None else ', xv1.py line %d' % ln))
+
+
 def _scoped(f):
+    """an evaluator entry point: runs inside scope(), and (v8) on the real calendar no error leaves it with a text, a
+    context or a cause that candidate code could have shaped (see _reduced)."""
     import functools
     @functools.wraps(f)
     def w(*a, **k):
-        with scope(): return f(*a, **k)
+        err = None
+        try:
+            with scope(): return f(*a, **k)
+        except (KeyboardInterrupt, SystemExit): raise
+        except BaseException as e:
+            if not _real(): raise                        # a test world shows the error as it is
+            err = _reduced(e)
+        raise err                                        # outside the handler: the first error is neither its context nor its cause
     return w
 
 
@@ -169,7 +241,7 @@ def frame(end=None):
             if end not in (REG_END, A_END): raise PermissionError('only the registered calendar ends are built')
             if not _registered(): raise PermissionError('the structure is not registered: no real calendar after %s (tests use t_world.old() or t_world.synth())' % OLD_END)
         R, M = jp.calendar(CAL_START, end); X = jp.mkX(R, M, 'NDX')
-        if WORLD is None and end in (REG_END, A_END) and str(X.index[-1].date()) != end: raise RuntimeError('the calendar does not end on %s' % end)   # v7
+        if WORLD is None and end in (REG_END, A_END) and str(X.index[-1].date()) != end: raise Stopped('the calendar does not end on %s' % end)   # v7
         _FR[end] = X
     return _FR[end]
 
@@ -297,7 +369,7 @@ def check_calendar(cal, upto=None):
     if upto is None: upto = NB if last == _FROZEN['REG_END'] else (10 if last == _FROZEN['A_END'] else 0)
     got = {r['b']: (r['first'], r['first_scored'], r['last'], r['rows']) for r in cal.table()}
     for b, f, fs, l, n in BLOCK_TABLE[:upto]:
-        if got.get(b) != (f, fs, l, n): raise RuntimeError('calendar does not match the registered block table at block %d' % b)
+        if got.get(b) != (f, fs, l, n): raise Stopped('calendar does not match the registered block table at block %d' % b)
 
 
 class Cal:
@@ -332,7 +404,7 @@ def ref(v):
 def _refm(c, T):
     """v1 on the evaluator's own context"""
     B, bfn, bp, fs = std.s085(c)
-    if bfn is not _REFB or not np.array_equal(np.asarray(bp, dtype=np.float64), _REFP) or fs != _REFS: raise RuntimeError('v1 is not the registered rule')
+    if bfn is not _REFB or not np.array_equal(np.asarray(bp, dtype=np.float64), _REFP) or fs != _REFS: raise Stopped('v1 is not the registered rule')
     return _norm(dict(B=B, bfn=bfn, bp=bp, fstep=fs), T)
 
 
@@ -356,20 +428,33 @@ def lev(r1, rf, L):
 def _deny(*a, **k): raise PermissionError('a data reader was called from candidate code')
 
 
+def _left():
+    """v8: how many more frames the interpreter allows from here, measured by recursion (its own count; a walk over the
+    frames would not give it for calls that passed through compiled code)"""
+    def f(n):
+        try: return f(n + 1)
+        except RecursionError: return n
+    return f(0)
+
+
 @contextlib.contextmanager
 def _sandbox():
     """while candidate code runs: output streams closed, warnings dropped, numpy's error state set to its defaults with no
-    call-back, data readers replaced by functions that raise"""
+    call-back, data readers replaced by functions that raise, and (v8) the recursion limit set so that FRAMES more frames
+    can be opened from here, whatever the depth at which the evaluator was called (candidate code cannot tell a batch run
+    from a G2 read or an opening by the room that is left)"""
     spots = [(mkt, '_panel'), (mkt, 'fred'), (mkt, 'pser'), (md, 'load'), (md, 'kf'), (jp, 'calendar'), (jp, 'build'), (np, 'load'), (np, 'save'),
              (np, 'fromfile'), (np, 'loadtxt'), (np, 'genfromtxt'), (pd, 'read_csv'), (xdata, 'get'), (xdata, 'read_chips')]
-    old = [getattr(o, n) for o, n in spots]; err, call = np.geterr(), np.geterrcall()
+    old = [getattr(o, n) for o, n in spots]; err, call = np.geterr(), np.geterrcall(); lim = sys.getrecursionlimit()
     with open(os.devnull, 'w') as nul, contextlib.redirect_stdout(nul), contextlib.redirect_stderr(nul), warnings.catch_warnings():
         warnings.simplefilter('ignore')                  # v6: no warning text or count leaves a candidate call
         for o, n in spots: setattr(o, n, _deny)
         np.seterr(divide='warn', over='warn', under='ignore', invalid='warn'); np.seterrcall(None); _INCALL[0] += 1   # no state survives in numpy's global slots
-        try: yield
+        try:
+            sys.setrecursionlimit(lim - _left() + FRAMES)
+            yield
         finally:
-            _INCALL[0] -= 1; np.seterr(**err); np.seterrcall(call)
+            sys.setrecursionlimit(lim); _INCALL[0] -= 1; np.seterr(**err); np.seterrcall(call)
             for (o, n), f in zip(spots, old): setattr(o, n, f)
 
 
@@ -400,6 +485,7 @@ def _norm(m, T):
     G, W = m.get('G'), m.get('Wt')
     if G is None: G = np.zeros((T, 1)); W = np.zeros((T, 1))
     try: G = np.asarray(G, dtype=np.float64).reshape(T, -1); W = np.asarray(W, dtype=np.float64).reshape(T, -1)
+    except MemoryError: raise                            # v8: the machine, not a shape error (_call turns it into an out-of-memory stop)
     except Exception: bad('shape of G or Wt')
     if G.shape != W.shape: bad('shape of G and Wt')
     W = np.where(np.isnan(W), 0.0, W); J = G.shape[1]
@@ -408,12 +494,14 @@ def _norm(m, T):
     if not (np.isfinite(G[~gn]).all() and (G[~gn] > -1).all()): bad('instrument return not finite or at or below -100%')
     RB = m.get('RB')
     try: RB = np.zeros((T, J)) if RB is None else np.nan_to_num(np.asarray(RB, dtype=np.float64).reshape(T, J))
+    except MemoryError: raise
     except Exception: bad('shape of RB')
     if not np.isin(RB, (0.0, 1.0)).all(): bad('rebalance flag not 0 / 1')
     o['RB'] = np.ascontiguousarray(RB)
     try:
         o['up'] = np.full(J, xeng.OFF) if m.get('up') is None else np.asarray(m['up'], dtype=np.float64).reshape(J)
         o['dn'] = np.full(J, xeng.OFF) if m.get('dn') is None else np.asarray(m['dn'], dtype=np.float64).reshape(J)
+    except MemoryError: raise
     except Exception: bad('shape of the bands')
     if not (np.isfinite(o['up']).all() and np.isfinite(o['dn']).all() and o['up'].min() >= 0 and o['dn'].min() >= 0): bad('band below 0 or not finite')
     for j in range(J):                                  # a weight may never rest on an instrument that does not exist yet
@@ -426,16 +514,29 @@ def _norm(m, T):
 
 def _call(make, v):
     """run candidate code inside the sandbox on a candidate view; its inputs must come back untouched"""
-    d0 = _digest(v)
+    d0 = _digest(v); oom = False; err = None; kbd = False; void = None
     try:
         with _sandbox(): m = make(v)
-    except (KeyboardInterrupt, MemoryError, Void): raise  # the operator's stop and a machine out of memory (candidate code has no name for either; v7); a gate or load Void as it is
-    except BaseException as e: raise Void('error in candidate code: ' + type(e).__name__)
-    if _digest(v) != d0: raise Void('candidate code changed or replaced an input')
+    except Void as e: void = str(e)                      # v8: a gate or load Void, or one of evaluator code that candidate code called (the shadow levels): its text only, as a new error below (no frame of candidate code, no context)
+    except KeyboardInterrupt: kbd = True                 # v8: the operator's stop leaves as a new error, so its traceback holds no line of candidate code
+    except MemoryError: oom = True                       # v7: a machine out of memory is not the candidate's rule break (candidate code has no name for it)
+    except BaseException as e: err = type(e).__name__    # v8: only the class name is kept
+    if oom: raise MemoryError()                          # v7: a new error without text and without the first one as context (numpy's text names the shape that was asked for)
+    if kbd: raise KeyboardInterrupt()
+    if void is not None: raise Void(void)
+    if err is not None: raise Void('error in candidate code' + _tail(err))   # v8: raised outside the handler, so the candidate's error (whose text it writes itself) is not its context
+    same = False; why = None
+    try: same = _digest(v) == d0
+    except MemoryError: oom = True                       # v8: the machine, not the candidate's rule break (inside an opening: an abort with its retry, not a verdict)
+    except Exception: pass                               # v8: a mapping of the view that candidate code changed (v.m[0] = 1) made the fingerprint itself fail: an evaluator error that stopped the run on every start
+    if oom: raise MemoryError()
+    if not same: raise Void('candidate code changed or replaced an input')
     try: return _norm(m, v.T)
-    except Void: raise
-    except Exception: pass
-    raise Void('output rule: an output is not a plain number array')
+    except Void as e: why = str(e)
+    except MemoryError: oom = True
+    except Exception: why = 'output rule: an output is not a plain number array'
+    if oom: raise MemoryError()
+    raise Void(why)                                      # v8: outside the handler (numpy's text names sizes the candidate chose)
 
 
 _ONE_X = tuple('ret:' + k for k in ('SOXX', 'SMH', 'TLT', 'IEF', 'SHY', 'GLD', 'SPY', 'QQQ', 'IWM', 'IYR', 'DIA', 'VTI', 'EFA', 'EEM',
@@ -504,7 +605,8 @@ def _x(V):
 def _blocks_of(e, m, rec, rows, cal, blocks):
     """per-block material on the scored rows: x (daily log growth of V), level in force, total weight of the extras, actual
     weight of the 3x fund (a0) and of each extra (aw), daily return of each extra (g), whether it exists on the row (gok), the
-    3x fund's return (r3), dates, and (v7) whether the account owes liquidation tax at the close before the row (tx).
+    3x fund's return (r3), dates, and (v7) whether the account owes liquidation tax at the close before the row (tx) and the
+    factor by which a return on equity moves V on the row (tf: (1 - tax) x E / V at the previous close where tax is owed, else 1).
     rows = view rows of the account days of rec (after the warm-up)."""
     if not (np.isfinite(rec[:, 4]).all() and (rec[:, 4] > 0).all()): raise Void('account value not finite or not positive')
     days = rows - WARM; x = _x(rec[:, 4]); out = {}
@@ -515,6 +617,7 @@ def _blocks_of(e, m, rec, rows, cal, blocks):
         out[int(b)] = dict(x=x[sc], lev=rec[sc, 1], w=rec[sc, 5], a0=rec[sc, 6], aw=rec[sc, 7:], g=m['G'][rows[sc]],
                            gok=~np.isnan(m['Graw'][rows[sc]]), r3=r3[sc], date=cal.dates[days[sc]],
                            tx=rec[sc - 1, 4] < rec[sc - 1, 0] * (1 - 1e-12))   # v7: at the close before the row the account owes liquidation tax (V below equity)
+        out[int(b)]['tf'] = np.where(out[int(b)]['tx'], (1.0 - beng.F1['tax']) * rec[sc - 1, 0] / rec[sc - 1, 4], 1.0)   # v7: weights are shares of equity E, x is growth of V
     return out
 
 
@@ -523,6 +626,80 @@ def _prepare(make, names=(), end=None, account='design'):
     instruments checked). Everything that tests or scores the configuration afterwards uses this one result."""
     _guard(); X = frame(end or CAL_END); E = extras(names, X.index); v = View(X, E, account); m = _call(make, v); _g_check(v, m)
     return dict(X=X, E=E, v=v, m=m)
+
+
+def _out_sha(pre):
+    """v8: fingerprint of a configuration's validated output on the rows of the design account: what its tests saw and what
+    G1 scored. A G2 read and the checks before an opening refuse an output with another fingerprint, so neither is ever
+    computed on an output that no test saw."""
+    m = pre['m']; q = _eng(pre['v']).keep; h = hashlib.sha256()
+    for k in ('B', 'G', 'Wt', 'RB'):
+        a = np.ascontiguousarray(m[k][q] + 0.0); h.update(('%s%r' % (k, a.shape)).encode()); h.update(a.tobytes())
+    h.update(np.ascontiguousarray(np.isnan(m['Graw'][q])).tobytes())
+    for k in ('bp', 'up', 'dn'): h.update(np.ascontiguousarray(np.asarray(m[k], dtype=np.float64) + 0.0).tobytes())
+    h.update(repr((float(m['fstep']), int(m['mode']), int(m['inc']), m['bfn'] is _REFB)).encode())
+    return h.hexdigest()
+
+
+def _registry():
+    try: return json.load(open(OUT + 'HASHES.json'))
+    except FileNotFoundError: return {}                  # v8: only a missing file (a test world without registry); any other read error is an error, not an empty registry (it would give another environment tag and no data hashes)
+
+
+def _probe():
+    """v8: sha256 of the bytes that numpy returns for fixed operations on fixed numbers: every ufunc on the gate's
+    allow-list (_NP_OK) on float64 numbers of size one and of size 0.01, on float32 and on complex numbers; the
+    operators (power with array and scalar exponents, division, floor division, remainder); the cumulative and reducing
+    functions; convolve, dot and matmul in both float sizes; and Python's own float and complex powers. It differs where
+    the last bits of these differ: the processor targets numpy dispatches to, the kernel and the number of threads of
+    the linear-algebra library, the C library's math functions. (NaN cells are hashed as zero: their sign bit is not a
+    value.)"""
+    x = (np.arange(1, 20001, dtype=np.float64) * 0.6180339887498949) % 1.0 + 0.5; w = x[::-1].copy(); z = x / 50.0 - 0.02
+    y = x.astype(np.float32); yw = w.astype(np.float32); c = x + 1j * w; h = hashlib.sha256()
+    def put(r):
+        r = np.ascontiguousarray(r)
+        if r.dtype.kind in 'fc': r = np.where(np.isnan(r), 0.0, r)
+        h.update(r.dtype.str.encode()); h.update(np.ascontiguousarray(r).tobytes())
+    with np.errstate(all='ignore'):
+        for nm in sorted(_NP_OK):
+            f = getattr(np, nm)
+            if not isinstance(f, np.ufunc): continue
+            for args in (((x,), (z,), (y,), (c,)) if f.nin == 1 else ((x, w), (z, w), (y, yw), (c, w))):
+                try: put(f(*args))
+                except TypeError: h.update(b'-')        # a ufunc that has no loop for this type
+        for r in (x ** 1.7, x ** 0.5, x ** -1.0, x ** w, y ** np.float32(1.7), y ** yw, c ** 1.7, x / w, x // w, x % w, z % 0.007, y / yw, y % yw, abs(c), abs(z),
+                  np.cumsum(x), np.cumprod(x[:300]), np.cumsum(y), np.diff(x), np.interp(z, np.sort(z[:500]), x[:500]), np.round(x, 3), np.clip(z, -0.01, 0.01),
+                  np.convolve(x[:2000], x[:21]), np.convolve(x, np.ones(63) / 63.0, 'valid'), np.convolve(x[:3000], x[:5], 'same'), np.convolve(y[:2000], y[:21]),
+                  x.dot(w), x[:10300].dot(x[1:10301]), y.dot(yw), x.reshape(100, 200) @ x.reshape(200, 100), x.reshape(200, 100).T @ x[:200], x.reshape(200, 100) @ x[:100],
+                  y.reshape(100, 200) @ y.reshape(200, 100),
+                  np.array([x.sum(), x.mean(), x.std(), x.var(), np.median(x), np.prod(x[:300]), x.max() - x.min(), np.nansum(z), np.nanmean(z), np.nanstd(z), np.nanmedian(z)]),
+                  np.array([y.sum(), y.mean(), y.std(), y.var()]), np.array([c.sum(), c.mean(), np.prod(c[:50])]),
+                  np.array([float(u) ** 1.7 for u in x[:300]] + [float(u) ** float(q) for u, q in zip(x[:300], w[:300])] + [pow(float(u), 0.3) for u in z[:300] if u > 0]),
+                  np.array([complex(u, q) ** 1.7 for u, q in zip(x[:100], w[:100])] + [abs(complex(u, q)) for u, q in zip(x[:100], w[:100])])):
+            put(r)
+    return h.hexdigest()
+
+
+def _out_env():
+    """v8: tag of what the last bits of a candidate's output depend on besides its own bytes and the data: the registered
+    package versions (from the registry in force, which _ready has compared with the packages in use), the processor
+    targets numpy dispatches to (np.log1p, np.exp and others return other last bits under another target) and the bytes
+    of a fixed numeric probe (_probe: also the linear-algebra kernel and its threads). Stored with the G1 record of each
+    configuration. The registered runs fix these by their environment (see m_batch1.py)."""
+    um = np._core._multiarray_umath; f = um.__cpu_features__
+    return hashlib.sha256(json.dumps(dict(packages=_registry().get('packages'), base=sorted(um.__cpu_baseline__),
+                                          simd=sorted(d for d in um.__cpu_dispatch__ if f.get(d)), probe=_probe()), sort_keys=True).encode()).hexdigest()[:16]
+
+
+def _env_same(g1):
+    """v8: a G2 read and an opening run only where the output tested at G1 can come back bit for bit: the tag of _out_env
+    is the one of the batch run, and every data file the registry held at the batch run has the same sha256 now (files
+    registered later do not count). Checked BEFORE anything is logged or read, so a change of machine, of packages or of
+    data cannot use up a read or an opening. (Targets the batch run did not have can be switched off with numpy's
+    NPY_DISABLE_CPU_FEATURES, the linear-algebra kernel and its threads are set with OPENBLAS_CORETYPE and
+    OPENBLAS_NUM_THREADS; what a machine lacks cannot be added.)"""
+    now = _registry().get('data') or {}
+    return g1.get('out_env') == _out_env() and all(now.get(k) == s for k, s in (g1.get('data_hashes') or {}).items())
 
 
 def _design_account(make=None, names=(), end=None, pre=None, **stress):
@@ -725,9 +902,11 @@ _BAN_ATTR = {'sys', 'os', 'modules', 'setflags', 'flags', 'ctypes', 'tofile', 'd
              'tb_frame', 'tb_next', 'co_consts', 'co_code', 'co_names', 'func_globals', 'mro', 'seterr', 'seterrcall', 'geterrcall',
              # v6 (second check): attributes of compiled functions that lead to module globals and the real built-ins
              'globals', 'environment', 'overloads', 'py_func', 'func_code', 'func_id', 'func_ir', 'targetctx', 'typingctx', 'library',
-             'module', 'builtins', 'eval', 'exec', 'open', 'compile'}
+             'module', 'builtins', 'eval', 'exec', 'open', 'compile',
+             # v8: the raw bytes of an array of objects are addresses; a view under another type and text coding turn numbers into text
+             'tobytes', 'tostring', 'getfield', 'view', 'decode', 'encode', 'type', 'fill'}
 _NP_OK = {   # the numpy attributes candidate code may use (one level: np.X, never np.X.Y)
-    'abs', 'absolute', 'all', 'any', 'append', 'arange', 'argmax', 'argmin', 'argsort', 'array', 'array_equal', 'asarray',
+    'abs', 'absolute', 'all', 'any', 'append', 'arange', 'argmax', 'argmin', 'argsort', 'array', 'asarray',   # v8: no array_equal (it returns False when the conversion of an argument fails for any reason, lack of memory included: an error read as a value)
     'ascontiguousarray', 'bincount', 'bool_', 'c_', 'ceil', 'clip', 'column_stack', 'concatenate', 'convolve', 'copy', 'cos',
     'cumprod', 'cumsum', 'diff', 'errstate', 'exp', 'expm1', 'float32', 'float64', 'floor', 'fmax', 'fmin', 'full',
     'full_like', 'hstack', 'inf', 'int32', 'int64', 'interp', 'isfinite', 'isin', 'isnan', 'log', 'log10', 'log1p', 'log2',
@@ -739,9 +918,9 @@ _ERRSTATE_KW = {'divide', 'invalid', 'over', 'under', 'all'}
 
 
 _BI_OK = ('ArithmeticError', 'Exception', 'FloatingPointError', 'IndexError', 'KeyError', 'StopIteration', 'ValueError',
-          'ZeroDivisionError', 'abs', 'all', 'any', 'bool', 'dict', 'divmod', 'enumerate', 'filter', 'float', 'frozenset', 'int',
-          'isinstance', 'iter', 'len', 'list', 'map', 'max', 'min', 'next', 'pow', 'range', 'reversed', 'round', 'set', 'slice',
-          'sorted', 'str', 'sum', 'tuple', 'zip')   # v6: the only built-ins candidate code gets (no open, hash, id, print, exit, import machinery)
+          'ZeroDivisionError', 'abs', 'all', 'any', 'bool', 'dict', 'divmod', 'enumerate', 'filter', 'float', 'int',
+          'isinstance', 'iter', 'len', 'list', 'map', 'max', 'min', 'next', 'pow', 'range', 'reversed', 'round', 'slice',
+          'sorted', 'sum', 'tuple', 'zip')   # v6: the only built-ins candidate code gets (no open, hash, id, print, exit, import machinery); v7: no set, frozenset, str (the order of a set and the text of an object can differ between two runs)
 _STD_MODS = set(sys.stdlib_module_names) | set(sys.builtin_module_names)
 _YEAR = re.compile(r'(19|20)\d\d')
 LIT_INT_MAX = 999                       # v6: an integer literal above this is refused (row numbers and years are not written into a rule)
@@ -777,6 +956,18 @@ def _docstrings(tree):
     return out
 
 
+def _plain_type(t, alias):
+    """v8: a type argument written as float / int / bool, np.float64 / float32 / int64 / int32 / bool_, or X.dtype"""
+    if isinstance(t, ast.Name): return t.id in ('float', 'int', 'bool')
+    if isinstance(t, ast.Attribute):
+        if t.attr == 'dtype': return True
+        return isinstance(t.value, ast.Name) and alias.get(t.value.id) == 'numpy' and t.attr in ('float64', 'float32', 'int64', 'int32', 'bool_')
+    return False
+
+
+_VIEW_OK = ('list', 'tuple', 'sorted', 'len', 'dict', 'enumerate', 'zip', 'iter', 'max', 'min', 'sum', 'any', 'all')   # v8: what may take a view of dict keys or items directly
+
+
 def gate(path):
     """Source gate of a candidate file and of the helper files it imports. Returns the list of violations (empty = clean)."""
     main, src = _read_src(path); return _gate_src(main, src)
@@ -790,8 +981,19 @@ def _gate_src(main, src):
     module name used as a value, a class definition, a name or attribute that begins with '_' (other than the file's own
     module-level names) or contains '__', the attributes in _BAN_ATTR, assigning to or deleting any attribute, np.errstate
     with an argument other than divide / invalid / over / under / all, `global` / `nonlocal`, an integer literal above
-    LIT_INT_MAX, a string literal (other than a docstring) that contains a year 19xx / 20xx, and a list / tuple / set /
-    dict display with more than LIT_SEQ_MAX elements."""
+    LIT_INT_MAX, a string literal (other than a docstring) that contains a year 19xx / 20xx, a list / tuple / dict display
+    with more than LIT_SEQ_MAX elements, (v7) a set display, a set comprehension and a formatted string, and (v8) a try
+    statement (candidate code cannot catch an error, so it cannot read the text of one or the room left on the stack), a
+    string literal (other than a docstring) with a percent sign (text of an object) or equal to "dtype", a type argument
+    written as dtype=... or as the first argument of .astype that is not a plain number type (X.dtype is accepted), a text
+    as a positional argument of a numpy function, and a view of dict keys or items used other than as the iterable of a
+    loop or as an argument of one of _VIEW_OK (a set in all but name; max, min and sum with one positional argument
+    only), a file that binds the name of one of _BI_OK (as a function, an argument, a variable or an import alias: the
+    rules on type arguments and on dict views go by these names), and a match statement, an async form or a type
+    parameter (a class pattern reads an attribute by a name, and a capture, an async def or a type parameter binds a
+    name, that no rule here sees). These rules reject the listed forms only: other
+    forms that give the text of an object pass (a text array that receives an object, a bound method called with a type
+    text), and the evaluator does not rest on them (see _out_sha, _sandbox and the restart lines of run_batch)."""
     out = []; trees = {}
     for nm, b in sorted(src.items()):
         try: trees[nm] = ast.parse(b)
@@ -803,6 +1005,8 @@ def _gate_src(main, src):
         bound = set(n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store))
         bound |= set(a.arg for n in ast.walk(tree) if isinstance(n, ast.arguments) for a in n.args + n.kwonlyargs + n.posonlyargs)
         bound |= set(n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef))
+        bound |= set(a.arg for n in ast.walk(tree) if isinstance(n, ast.arguments) for a in (n.vararg, n.kwarg) if a is not None)
+        for b in sorted(bound & set(_BI_OK)): out.append('%s:0 name of a built-in bound by the file (%s)' % (tag, b))   # v8: def len(x): return x would hand a dict view on; float = "U64" would pass the type rule
         par = {}
         for n in ast.walk(tree):
             for ch in ast.iter_child_nodes(n): par[ch] = n
@@ -816,9 +1020,13 @@ def _gate_src(main, src):
                     if not (a.name in ('numpy', 'xv1') or isf): out.append('%s:%d import of %s' % (tag, n.lineno, a.name))
                     if isf and (a.name in _STD_MODS or not re.fullmatch(r'[a-z][a-z0-9_]*', a.name)): out.append('%s:%d helper name %s is a standard module name or not plain' % (tag, n.lineno, a.name))
                     alias[a.asname or a.name] = a.name
+                    if (a.asname or a.name) in _BI_OK: out.append('%s:%d name of a built-in bound by the file (%s)' % (tag, n.lineno, a.asname or a.name))   # v8
                     if isf and a.name in trees: helper[a.asname or a.name] = set(x.asname or x.name for y in ast.walk(trees[a.name]) if isinstance(y, ast.Import) for x in y.names)
             elif isinstance(n, (ast.Global, ast.Nonlocal)): out.append('%s:%d global / nonlocal' % (tag, n.lineno))
             elif isinstance(n, ast.ClassDef): out.append('%s:%d class definition' % (tag, n.lineno))
+            elif isinstance(n, (ast.Try, ast.TryStar)): out.append('%s:%d try statement' % (tag, n.lineno))   # v8
+            elif isinstance(n, (ast.Match, ast.AsyncFunctionDef, ast.AsyncFor, ast.AsyncWith, ast.Await, ast.TypeAlias, ast.TypeVar, ast.ParamSpec, ast.TypeVarTuple)) or (isinstance(n, ast.comprehension) and n.is_async):
+                out.append('%s:%d match statement, async form or type parameter' % (tag, getattr(n, 'lineno', 0)))   # v8: a class pattern reads an attribute by a name, and a capture, an async def or a type parameter binds a name, that no rule here sees
         for n in ast.walk(tree):
             if isinstance(n, ast.Name):
                 if n.id in _BAN_NAME: out.append('%s:%d name %s' % (tag, n.lineno, n.id))
@@ -841,15 +1049,30 @@ def _gate_src(main, src):
             elif isinstance(n, ast.Attribute):
                 if n.attr.startswith('_') or '__' in n.attr or n.attr in _BAN_ATTR: out.append('%s:%d attribute %s' % (tag, n.lineno, n.attr))
                 if isinstance(n.ctx, (ast.Store, ast.Del)): out.append('%s:%d assignment to an attribute (%s)' % (tag, n.lineno, n.attr))
-            elif isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == 'errstate':
-                if n.args or any(k.arg not in _ERRSTATE_KW for k in n.keywords): out.append('%s:%d np.errstate with an argument other than %s' % (tag, n.lineno, sorted(_ERRSTATE_KW)))
+                if n.attr in ('keys', 'items'):          # v8
+                    c1 = par.get(n); c2 = par.get(c1)
+                    if not (isinstance(c1, ast.Call) and c1.func is n and not c1.args and not c1.keywords and (
+                            (isinstance(c2, (ast.For, ast.comprehension)) and c2.iter is c1) or
+                            (isinstance(c2, ast.Call) and isinstance(c2.func, ast.Name) and c2.func.id in _VIEW_OK and any(a is c1 for a in c2.args) and
+                             (len(c2.args) == 1 or c2.func.id not in ('max', 'min', 'sum'))))):   # max(view, view) and sum((), view) return the view itself
+                        out.append('%s:%d dict view used other than as the iterable of a loop or as an argument of %s' % (tag, n.lineno, ' / '.join(_VIEW_OK)))
+            elif isinstance(n, ast.Call):
+                if isinstance(n.func, ast.Attribute) and n.func.attr == 'errstate':
+                    if n.args or any(k.arg not in _ERRSTATE_KW for k in n.keywords): out.append('%s:%d np.errstate with an argument other than %s' % (tag, n.lineno, sorted(_ERRSTATE_KW)))
+                ty = [k.value for k in n.keywords if k.arg == 'dtype'] + (n.args[:1] if isinstance(n.func, ast.Attribute) and n.func.attr == 'astype' else [])   # v8
+                if any(not _plain_type(t, alias) for t in ty): out.append('%s:%d type argument other than a plain number type' % (tag, n.lineno))
+                if isinstance(n.func, ast.Attribute) and isinstance(n.func.value, ast.Name) and alias.get(n.func.value.id) == 'numpy' and any(isinstance(a, ast.Constant) and type(a.value) is str for a in n.args):
+                    out.append('%s:%d text as a positional argument of a numpy function' % (tag, n.lineno))   # v8: np.array(x, 'U64')
             elif isinstance(n, ast.Constant):
                 if type(n.value) in (int, float) and abs(n.value) > LIT_INT_MAX: out.append('%s:%d number literal above %d' % (tag, n.lineno, LIT_INT_MAX))
                 if type(n.value) is bytes: out.append('%s:%d bytes literal' % (tag, n.lineno))
                 if type(n.value) is str and id(n) not in doc and len(n.value) > LIT_STR_MAX: out.append('%s:%d string literal longer than %d' % (tag, n.lineno, LIT_STR_MAX))
                 if type(n.value) in (str, bytes) and id(n) not in doc and _YEAR.search(n.value if type(n.value) is str else n.value.decode('latin-1')): out.append('%s:%d string literal with a year' % (tag, n.lineno))
                 if type(n.value) in (str, bytes) and id(n) not in doc and ('__' in n.value if type(n.value) is str else b'__' in n.value): out.append('%s:%d string literal with a double underscore' % (tag, n.lineno))
-            elif isinstance(n, (ast.List, ast.Tuple, ast.Set)) and len(n.elts) > LIT_SEQ_MAX: out.append('%s:%d display of more than %d elements' % (tag, n.lineno, LIT_SEQ_MAX))
+                if type(n.value) is str and id(n) not in doc and '%' in n.value: out.append('%s:%d string literal with a percent sign' % (tag, n.lineno))   # v8
+                if type(n.value) is str and id(n) not in doc and n.value.strip() == 'dtype': out.append('%s:%d string literal "dtype"' % (tag, n.lineno))   # v8: **{'dtype': ...}
+            elif isinstance(n, (ast.Set, ast.SetComp, ast.JoinedStr)): out.append('%s:%d set display or formatted string' % (tag, n.lineno))   # v7
+            elif isinstance(n, (ast.List, ast.Tuple)) and len(n.elts) > LIT_SEQ_MAX: out.append('%s:%d display of more than %d elements' % (tag, n.lineno, LIT_SEQ_MAX))
             elif isinstance(n, ast.Dict) and len(n.keys) > LIT_SEQ_MAX: out.append('%s:%d display of more than %d elements' % (tag, n.lineno, LIT_SEQ_MAX))
     return out
 
@@ -890,10 +1113,12 @@ class Config:
         views of it and `params` is a new copy on every read, so nothing a caller or candidate code changes later reaches
         a call (a list or dict parameter is no longer one object shared by all calls). A file below research_xv1 is kept
         relative to it (the registry does not depend on where the repository lies)."""
+        if set(_) - {'hash'}: raise TypeError('unknown configuration key: %s' % sorted(set(_) - {'hash'}))   # v7: a misspelled key (calendar, t0, ...) is not dropped silently
         if not os.path.isabs(file): file = os.path.join(ROOT, file)
-        s.family, s.name, s.file = family, name, os.path.realpath(file)
+        s.family, s.name, s._file = family, name, os.path.realpath(file)
         s._pj = json.dumps(dict(func=func, params=dict(params or {}), names=list(names), t0=t0, calendar=bool(calendar)), sort_keys=True)
 
+    file = property(lambda s: s._file)                     # v7: read-only, like the rest
     func = property(lambda s: json.loads(s._pj)['func'])
     params = property(lambda s: json.loads(s._pj)['params'])
     names = property(lambda s: tuple(json.loads(s._pj)['names']))
@@ -919,10 +1144,14 @@ class Config:
 
     def _code(s):
         if getattr(s, '_co', None) is None:
-            main, src = s._src(); bad = _gate_src(main, src)
+            main, src = s._src(); bad = _gate_src(main, src); err = None
             if bad: raise Void('source gate: ' + bad[0])
+            oom = False
             try: s._co = {k: compile(b, '<candidate %s>' % k, 'exec', dont_inherit=True) for k, b in src.items()}
-            except Exception as e: raise Void('error while loading candidate code: ' + type(e).__name__)
+            except MemoryError: oom = True               # v8: the machine, not the candidate's rule break
+            except Exception as e: err = type(e).__name__
+            if oom: raise MemoryError()
+            if err is not None: raise Void('error while loading candidate code' + _tail(err))   # v8: outside the handler
         return s._co
 
     def _load(s):
@@ -940,10 +1169,15 @@ class Config:
         bi['__import__'] = imp
         def run(name):
             m = types.ModuleType(name); m.__dict__['__builtins__'] = bi; mods[name] = m; exec(co[name], m.__dict__); return m
+        oom = False; err = None; kbd = False
         try:
             with _sandbox(): return run(main)
-        except (KeyboardInterrupt, MemoryError): raise
-        except BaseException as e: raise Void('error while loading candidate code: ' + type(e).__name__)
+        except KeyboardInterrupt: kbd = True
+        except MemoryError: oom = True
+        except BaseException as e: err = type(e).__name__
+        if kbd: raise KeyboardInterrupt()                # v8: a new error (no candidate frame in its traceback)
+        if oom: raise MemoryError()                      # v7: without the text of the first one
+        raise Void('error while loading candidate code' + _tail(err))   # v8: outside the handler (no context)
 
     def make(s, v):
         """the candidate's output on view v, from a newly executed copy of its module (no state from earlier calls)"""
@@ -985,6 +1219,8 @@ def register_batch(configs):
     except PermissionError: raise
     except Exception as e: raise ValueError('an input name of this batch cannot be read (%s)' % type(e).__name__)
     body = json.dumps([c.to_dict() for c in configs], indent=1, sort_keys=True)
+    for d in json.loads(body):                           # v7: what load_batch will do: a file saved again after its object was made would give a batch that can never be loaded
+        if Config(**d).hash != d['hash']: raise PermissionError('a candidate file of %s changed since its configuration object was made' % d['name'])
     with open(path + '.tmp', 'w') as f: f.write(body)
     os.replace(path + '.tmp', path)                      # v7: a BATCH file left without its ledger line by an interrupted registration is written again
     sha = hashlib.sha256(body.encode()).hexdigest()
@@ -1004,7 +1240,7 @@ def _batch_done(k, L): return any(e.get('kind') == 'batch-done' and e.get('batch
 def _read_json(path):
     """v7: a file that is missing or was cut while it was written counts as missing"""
     try: return json.load(open(path))
-    except Exception: return None
+    except (FileNotFoundError, ValueError): return None   # v8: only these two; any other read error stops the run (a finished result would be computed again, or its configuration voided as stopped twice)
 
 
 def _write_json(path, obj, **kw):
@@ -1041,9 +1277,11 @@ def _neutral(cand, refb, blocks, t0=None, info=None):
                       amount of the fund or dilutes v1 with a sleeve is matched without v1's own timing being counted;
       w_j           = mean actual weight of extra j over the rows on which it exists.
       m_t = ln(1 + kappa (exp(x_REF,t) - 1) + f_t (delta0 R3_t + sum_j w_j G_j,t));   d*_t = x_cand,t - m_t.
-    v7: f_t = 1 - tax on a row before which the candidate's account owes liquidation tax (V below equity: a gain or loss of
-    the row changes V by 1 - tax of it), 1 otherwise. x is growth of V after tax; without f the constant holdings were
-    counted before tax, which pushed d* down for a candidate that holds more and UP for one that holds less of the fund.
+    v7: f_t = (1 - tax) x E / V at the previous close on a row before which the candidate's account owes liquidation tax (V
+    below equity E: a gain or loss of the row changes V by 1 - tax of it, and the weights are shares of E while x is growth
+    of V), 1 otherwise. Without f the constant holdings were counted before tax, which pushed d* down for a candidate that
+    holds more and UP for one that holds less of the fund; with 1 - tax alone (no E / V) about a tenth of the constant
+    holdings was still missing on tax rows, in favour of a candidate that holds more.
     A candidate that only holds more, less or other things on average has d* near 0; d* keeps what comes from WHEN it holds."""
     sel = {}
     for b in blocks:
@@ -1059,7 +1297,7 @@ def _neutral(cand, refb, blocks, t0=None, info=None):
     if info is not None: info.update(kappa=kap, delta0=d0, w=[float(x) for x in np.atleast_1d(wj)])
     out = []
     for b in blocks:
-        k = sel[b]; c = np.where(cand[b]['tx'][k], 1.0 - beng.F1['tax'], 1.0) * (d0 * cand[b]['r3'][k] + cand[b]['g'][k] @ wj)
+        k = sel[b]; c = cand[b]['tf'][k] * (d0 * cand[b]['r3'][k] + cand[b]['g'][k] @ wj)
         out.append(cand[b]['x'][k] - np.log(np.maximum(1.0 + kap * np.expm1(refb[b]['x'][k]) + c, 1e-12)))
     return out
 
@@ -1161,17 +1399,30 @@ def _g1_of(h, L=None):
     body = open(OUT + 'results/batch_%d.json' % ks[-1], 'rb').read(); sha = hashlib.sha256(body).hexdigest()
     if not any(e.get('kind') == 'batch-done' and e.get('batch') == ks[-1] and e.get('sha256') == sha for e in L):
         raise PermissionError('the results file of batch %d is not the one in the ledger' % ks[-1])
-    o = json.loads(body)['results'].get(h)
+    J = json.loads(body); o = J['results'].get(h)
     if o is None: raise PermissionError('no G1 record for this configuration')
+    o['data_hashes'] = J.get('data_hashes')              # v8: the data files of the batch run (one registry for a whole batch: partial results of another one are computed again)
     return o
 
 
-def _shape(sub):
+def _shape(sub, share=None):
     """skewness and lag-1 autocorrelation of sub-block means (reported with every G1 line: the stated error rates assume
-    sub-block sums that are symmetric around 0 and independent under the null)"""
-    x = np.asarray(sub, dtype=float); x = x - x.mean(); sd = float(x.std())
-    if sd <= 0 or len(x) < 3: return 0.0, 0.0
-    return float(np.mean(x ** 3) / sd ** 3), float(np.sum(x[1:] * x[:-1]) / np.sum(x * x))
+    sub-block sums that are symmetric around 0 and independent under the null). v7: with `share` (per sub-block, how much
+    the candidate's holdings differ from the reference's) the third value is the autocorrelation of the residuals of the
+    least-squares line of the means on it: a rule that earns while it holds something else has means that follow the size
+    of its own difference. That third value is printed for the reader and enters NO rule (in the check before
+    registration a type rule on it let more no-skill candidates through in worlds with drift regimes). Returns (skewness
+    of the means, lag-1 autocorrelation of the means, lag-1 autocorrelation of the residuals)."""
+    x = np.asarray(sub, dtype=float)
+    if len(x) < 3: return 0.0, 0.0, 0.0
+    x = x - x.mean(); sd = float(x.std())
+    if sd <= 0: return 0.0, 0.0, 0.0
+    r = x
+    if share is not None:
+        a = np.asarray(share, dtype=float); a = a - a.mean(); va = float(a @ a)
+        if va > 1e-12: r = x - a * (float(a @ x) / va)
+    rr = float(r @ r)
+    return float(np.mean(x ** 3) / sd ** 3), float(np.sum(x[1:] * x[:-1]) / (x @ x)), (float(np.sum(r[1:] * r[:-1]) / rr) if rr > 0 else 0.0)
 
 
 def _design(c, stress=True, pre=None):
@@ -1181,7 +1432,9 @@ def _design(c, stress=True, pre=None):
     C = _design_account(pre=pre); R = _ref_blocks()
     if not _t0_ok(pre, c.t0): raise Void('T0 later than its inputs plus %d rows' % T0_WARM_MAX)
     if _pre_t0(C, R, c.t0) or _pre_t0_sig(pre, c.t0): raise Void('differs from the reference before T0')
-    ds = _paired(C, R, DESIGN, c.t0); o = _gate_stats(ds, _active(C, R, DESIGN, c.t0), DESIGN)
+    ds = _paired(C, R, DESIGN, c.t0)
+    if not sum(len(d) for d in ds): raise Void('no scored design row on or after T0')   # v8: was an error that stopped the batch run for good
+    o = _gate_stats(ds, _active(C, R, DESIGN, c.t0), DESIGN)
     o['n_span'] = _span(C, R, DESIGN, c.t0)
     o['active_sub63'] = [_active_subs(a) for a in _active_rows(C, R, DESIGN, c.t0)]    # v7: active 63-row sub-blocks per design block (the sealed set needs 6 or more for any verdict above INCONCLUSIVE)
     plain = not c.names and not (pre['m']['Wt'][_eng(pre['v']).keep] != 0).any() and not _eng(pre['v']).touched   # v7: weights on the rows of the design account only
@@ -1200,13 +1453,19 @@ def _design(c, stress=True, pre=None):
     cut = np.cumsum([len(C[b]['x']) for b in DESIGN])[:-1]
     sub = np.concatenate([sub_means(d, 63) for d in np.split(full(ds), cut)])
     subn = np.concatenate([sub_means(d, 63) for d in np.split(full(dn), cut)])
-    o['skew63'], o['ac1_63'] = _shape(sub); o['skew63_star'], o['ac1_63_star'] = _shape(subn)
+    # v7: the shape is taken on the sub-blocks from T0 on (the zeros before T0 would be read as dependence). hd = mean holding
+    # difference of each sub-block (|actual 3x-fund weight minus REF's| plus the actual weight of the extras), for the printed residual value only
+    hd = np.concatenate([sub_means(np.abs(C[b]['a0'] - R[b]['a0']) + C[b]['aw'].sum(axis=1), 63) for b in DESIGN])
+    liv = np.concatenate([sub_means(a, 63) for a in np.split(full([np.ones(len(d)) for d in ds]), cut)]) > 0
+    z = int(np.argmax(liv)) if liv.any() else len(sub)
+    o['skew63'], o['ac1_63'], o['ac1r_63'] = _shape(sub[z:], hd[z:]); o['skew63_star'], o['ac1_63_star'], o['ac1r_63_star'] = _shape(subn[z:], hd[z:])
     return o, sub, subn
 
 
 def _advanced_before(k, L):
     """(family label, design sub-block means) of every configuration that advanced at G1 in a batch before k"""
-    return [(e.get('family'), _sub_of(e['cfg'])) for e in L if e.get('kind') == 'g1' and e.get('advance') and e.get('batch') != k]
+    last = {e['cfg']: e for e in L if e.get('kind') == 'g1' and e.get('batch') != k}      # v7: the last G1 line of a configuration counts (a batch resumed after an amendment writes new ones)
+    return [(e.get('family'), _sub_of(e['cfg'])) for e in last.values() if e.get('advance')]
 
 
 @_scoped
@@ -1225,26 +1484,34 @@ def run_batch(k, stress=True):
     part = OUT + 'results/partial_%d/' % k; os.makedirs(part, exist_ok=True); env = _env_tag()
     raw = raw_extras_test([n for c in cfgs for n in c.names], seed=seed); res = {}; subs = {}; subn = {}
     for c in cfgs:
-        h = c.hash; cp = part + h + '.json'
-        if not any(e.get('kind') == 'score' and e.get('cfg') == h and e.get('batch') == k for e in L): ledger(dict(kind='score', cfg=h, set='design', batch=k))
-        got = _read_json(cp)                                 # v7: a partial file cut while it was written counts as missing
+        h = c.hash; cp = part + h + '.json'; oom = False
+        began = any(e.get('kind') == 'score' and e.get('cfg') == h and e.get('batch') == k for e in L)
+        got = _read_json(cp)                                 # v7: a partial file cut while it was written counts as missing (v8: read before the score line, so that a read error costs a configuration not yet begun none of its two starts)
+        if not began: ledger(dict(kind='score', cfg=h, set='design', batch=k))
         if got is None or got.get('env') != env or (stress and 'void' not in got['o'] and 'd_cost2' not in got['o']):
+            ia = max([i for i, e in enumerate(L) if e.get('kind') == 'amendment'], default=-1)      # starts of this configuration since the last amendment that left no result
+            starts = sum(1 for e in L[ia + 1:] if e.get('cfg') == h and e.get('batch') == k and (e.get('kind') == 'restart' or (e.get('kind') == 'score' and e.get('set') == 'design')))
+            if began: ledger(dict(kind='restart', cfg=h, batch=k))   # v8: an earlier run began this configuration and left no result of this registry: logged, and reported with its result
             try:
+                if starts >= 2: raise Void('run stopped twice')      # v8: whatever stopped the run on this configuration twice (an error it causes in evaluator code, a call that never returns, the end of the interpreter), no third start follows
                 if any(n in raw['failed'] for n in c.names): raise Void('raw-level test of an extra input')
                 pre = _prepare(c.fresh(), c.names)                   # the one full-calendar call (newly executed module): tested below, then scored
                 if prefix_test(None, c.names, n_rand=60, seed=seed, fresh=c.fresh, pre=pre)['result'] != 'PASS': raise Void('prefix test')
                 if scale_test(c.fresh(), c.names, pre=pre) != 'PASS': raise Void('level-scale test')
-                o, sub, sn = _design(c, stress, pre)
+                o, sub, sn = _design(c, stress, pre); o['out_sha256'] = _out_sha(pre); o['out_env'] = _out_env()   # v8: G2 and the opening accept this output only
                 if o['d'] >= D_MIN_G1 and prefix_test(None, c.names, n_rand=0, seed=seed, noise=False, step=1, fresh=c.fresh, pre=pre)['result'] != 'PASS':
                     raise Void('prefix test: every row')   # v7: a score that reaches the G1 size is kept only after a cut after EVERY account row
                 got = dict(env=env, o=o, sub=[float(x) for x in sub], subn=[float(x) for x in sn])
-            except Void as e: got = dict(env=env, o=dict(void=str(e) if WORLD is not None else str(e).split(':')[0]), sub=None, subn=None)   # v6: real calendar = the category only
+            except Void as e: got = dict(env=env, o=dict(void=str(e) if not _real() else str(e).split(':')[0]), sub=None, subn=None)   # v6: real calendar = the category only
             except MemoryError:                              # v7: not the candidate's rule break: the run stops and is resumed; the second time on one configuration it is void
                 if not any(e.get('kind') == 'out-of-memory' and e.get('cfg') == h for e in read_ledger()):
-                    ledger(dict(kind='out-of-memory', cfg=h, batch=k)); raise
-                got = dict(env=env, o=dict(void='error in candidate code: out of memory twice' if WORLD is not None else 'error in candidate code'), sub=None, subn=None)
+                    ledger(dict(kind='out-of-memory', cfg=h, batch=k)); oom = True
+                else: got = dict(env=env, o=dict(void='error in candidate code: out of memory twice' if not _real() else 'error in candidate code'), sub=None, subn=None)
+            if oom: raise MemoryError(_OOM_TEXT)   # v7: a fixed text, raised outside the handler
             _write_json(cp, got)
         res[h] = got['o']; res[h].update(family=c.family, name=c.name, calendar=bool(c.calendar or any(n.startswith('cal:') for n in c.names)))
+        Lh = [e for e in read_ledger() if e.get('cfg') == h]   # v8: a run that did not finish in one go says so in its record (m_batch1 prints it)
+        res[h].update(restarts=sum(1 for e in Lh if e.get('kind') == 'restart' and e.get('batch') == k), oom_stop=any(e.get('kind') == 'out-of-memory' for e in Lh))
         if got['sub'] is not None: subs[h] = np.asarray(got['sub']); subn[h] = np.asarray(got['subn'])
     live = list(subs)
     if live:
@@ -1256,26 +1523,28 @@ def run_batch(k, stress=True):
         o['g1'] = dict(a=bool(o['d'] >= D_MIN_G1 and o['active_blocks'] >= 3 and min(o['n'], o['n_span']) >= 1500), b=bool(not o['harm']), c=bool(o['p_family'] <= alpha),
                        d=bool(all(o['d_' + sn] > 0 for sn in G1_STRESS)) if stress else None)
         o['g1_pass'] = all(v for v in o['g1'].values() if v is not None) and stress
-        o['kind'] = 'timing' if (o['d_star'] > 0 and o['p_star_family'] <= alpha and o['skew63_star'] >= SHAPE_SKEW_MIN and o['ac1_63_star'] <= SHAPE_AC1_MAX) else 'exposure'   # v7: shape condition
+        o['kind'] = 'timing' if (o['d_star'] > 0 and o['p_star_family'] <= alpha and o['skew63_star'] >= SHAPE_SKEW_MIN and o['ac1_63_star'] <= SHAPE_AC1_MAX) else 'exposure'   # v7: shape condition (means from T0 on)
     key = lambda h: (res[h]['kind'] != 'timing', res[h]['p_family'], -res[h]['t63_family'], h)
     prev = _advanced_before(k, L); adv = []          # at most one configuration per family goes on (timing kind first), over all batches
     for h in sorted([h for h in live if res[h]['g1_pass']], key=key):
         if all(res[g]['family'] != res[h]['family'] and _corr(subs[g], subs[h]) < FAM_CORR for g in adv) and \
            all(f != res[h]['family'] and _corr(sm, subs[h]) < FAM_CORR for f, sm in prev): adv.append(h)
-    out = dict(batch=k, sha256=sha, alpha=alpha, n=len(cfgs), raw_extras_test=raw, results=res, sub_means={h: [float(x) for x in subs[h]] for h in live})
+    out = dict(batch=k, sha256=sha, alpha=alpha, n=len(cfgs), raw_extras_test=raw, results=res, sub_means={h: [float(x) for x in subs[h]] for h in live},
+               data_hashes=_registry().get('data'))
     for h in res: res[h]['advance'] = h in adv
     with open(done + '.tmp', 'w') as f: json.dump(out, f, indent=1); f.flush(); os.fsync(f.fileno())
-    have = set(e.get('cfg') for e in read_ledger() if e.get('kind') == 'g1' and e.get('batch') == k)
+    have = {e['cfg']: e for e in read_ledger() if e.get('kind') == 'g1' and e.get('batch') == k}
     for h in res:
-        if h not in have:
-            ledger(dict(kind='g1', cfg=h, batch=k, family=res[h]['family'], passed=bool(res[h].get('g1_pass', False)), advance=res[h]['advance'],
-                        type=res[h].get('kind'), calendar=res[h]['calendar']))
+        new = dict(passed=bool(res[h].get('g1_pass', False)), advance=res[h]['advance'], type=res[h].get('kind'), calendar=res[h]['calendar'])
+        if h not in have or any(have[h].get(q) != x for q, x in new.items()):   # v7: a batch that was resumed after an amendment and now says something else gets a new line, which counts
+            ledger(dict(kind='g1', cfg=h, batch=k, family=res[h]['family'], **new, **(dict(supersedes_earlier_line=True) if h in have else {})))
     os.replace(done + '.tmp', done)                      # the results file appears only after every G1 line is in the ledger
     if not any(e.get('kind') == 'batch-done' and e.get('batch') == k for e in read_ledger()):
         ledger(dict(kind='batch-done', batch=k, sha256=_sha(done)))
     return out
 
 
+@_scoped
 def g0_line(c, passed, code_sha256):
     """ledger line of the simulation screen G0 (its function lives in its own reviewed file; this records the outcome)"""
     _ready(); h = c.hash; L = read_ledger(); o = _g1_of(h, L)
@@ -1300,12 +1569,15 @@ def weak_eval(c):
     nw = sum(1 for e in L if e.get('kind') == 'score' and e.get('cfg') == h and e.get('set') == 'weak')
     if any(e.get('kind') == 'g2' and e.get('cfg') == h for e in L) or nw >= 2:   # v7: a read that was interrupted before its g2 line (nothing was returned) is run again once, logged
         raise PermissionError('weak blocks already read for this configuration')
+    if not _env_same(g1): raise PermissionError('G2 runs under the data files, package versions and processor targets of the batch run (the fingerprint of the tested output is exact to the bit); nothing was read')   # v8
     cal = Cal(acc_dates(frame())); ok = cal.scored & np.isin(cal.blk, WEAK)
     if c.t0 is not None: ok &= np.asarray(cal.dates >= pd.Timestamp(c.t0))
     if int(ok.sum()) < G2_MIN_ROWS:
         ledger(dict(kind='g2', cfg=h, passed=False, available=False)); return dict(g2_pass=False, available=False, n=int(ok.sum()))
     ledger(dict(kind='score', cfg=h, set='weak', rerun=bool(nw)))
-    C = _design_account(c.fresh(), c.names); R = _ref_blocks()
+    pre = _prepare(c.fresh(), c.names)
+    if _out_sha(pre) != g1.get('out_sha256'): raise PermissionError('the output differs from the one tested at G1 (this read is used)')   # v8
+    C = _design_account(pre=pre); R = _ref_blocks()
     o = _gate_stats(_paired(C, R, WEAK, c.t0), _active(C, R, WEAK, c.t0), WEAK)
     o['set_limit'] = float(-1.0 * o['te'] * np.sqrt(252.0 / o['n'])) if o['n'] else 0.0
     o['g2_pass'] = bool(o['d'] >= o['set_limit'] and not o['harm'])        # no-harm check: the reference was chosen on these blocks
@@ -1313,6 +1585,7 @@ def weak_eval(c):
     return o
 
 
+@_scoped
 def authorise_g3(c, owner_message_id):
     """record the owner's authorisation of a G3 opening (the id of the owner's own message, and where the ledger stood). Only
     for a configuration that passed G1 and was selected, passed G0 where it exists and passed G2."""
@@ -1391,8 +1664,16 @@ def _open_g3(c):
     if any(e.get('kind') == 'G3-VERDICT' and e.get('cfg') == h for e in L): raise PermissionError('already opened')
     if h in opened:
         if opened.count(h) >= 2: raise PermissionError('retry already used')
+        if [e for e in L if e.get('kind') == 'G3-OPEN' and e.get('cfg') == h][0].get('env') != _env_tag():   # v7: "the same H with identical hashes"
+            raise PermissionError('the retry needs the registered hashes of the first run (an amendment lies between)')
     elif len(set(opened)) >= 3: raise PermissionError('the three openings are spent')
+    if not _env_same(g1): raise PermissionError('an opening runs under the data files, package versions and processor targets of the batch run; nothing was read')   # v8
+    last = max([i for i, e in enumerate(L) if e.get('kind') in ('G3-OPEN', 'owner-auth') and e.get('cfg') == h], default=-1)
+    if sum(1 for e in L[last + 1:] if e.get('kind') == 'G3-PRE' and e.get('cfg') == h) >= 2:   # v8: two runs per owner authorisation (and two for the retry); a further message of the owner allows two more
+        raise PermissionError('the checks before this opening were already run twice (a further authorisation of the owner, with its own message, allows them again)')
+    ledger(dict(kind='G3-PRE', cfg=h))                   # v8: logged before candidate code runs, so the checks before an opening cannot be repeated without limit
     pre = _prepare(c.fresh(), c.names)
+    if _out_sha(pre) != g1.get('out_sha256'): raise PermissionError('the output differs from the one tested at G1')   # v8
     C = _design_account(pre=pre); R = _ref_blocks(); te = te_of(_paired(C, R, DESIGN, c.t0))
     ma = _prepare(c.fresh(), c.names, A_END)['m']
     fixed = float(np.std(np.concatenate([C[b]['lev'] for b in DESIGN]))) == 0 and float(np.ptp(ma['Wt'], axis=0).max()) == 0 and not ma['RB'].any()
@@ -1401,12 +1682,14 @@ def _open_g3(c):
         fam = {e.get('cfg'): e.get('family') for e in L if e.get('kind') == 'g1'}; mine = _sub_of(h)
         for g in set(opened):
             if fam.get(g) == fam.get(h) or _corr(mine, _sub_of(g)) >= FAM_CORR: raise PermissionError('same family as an opened configuration')
-    ledger(dict(kind='G3-OPEN', cfg=h, retry=h in opened))                       # v6: logged BEFORE the candidate first runs on the main view
+    ledger(dict(kind='G3-OPEN', cfg=h, retry=h in opened, env=_env_tag()))                     # v6: logged BEFORE the candidate first runs on the main view
     with open(OUT + 'G3_OPENINGS.log', 'a') as f: f.write(h + '\n'); f.flush(); os.fsync(f.fileno())
     word = None; prem = None; _G3_RUN[0] = h; _G3_PRE[0] = h; seed = int(h[:8], 16)
     try:
         prem = _prepare(c.fresh(), c.names, None, 'main')
-        if _pre_t0_sig(prem, c.t0) or prefix_test(None, c.names, n_rand=60, seed=seed, step=1, fresh=c.fresh, account='main', pre=prem)['result'] != 'PASS':   # v7: every account row
+        if 'ref' not in _eng(prem['v']).touched and _out_sha(prem) != g1.get('out_sha256'):
+            word = 'FAIL'                                # v8: without the shadow levels candidate code reads the same inputs as at G1: another output on the design rows breaks the rules
+        elif _pre_t0_sig(prem, c.t0) or prefix_test(None, c.names, n_rand=60, seed=seed, step=1, fresh=c.fresh, account='main', pre=prem)['result'] != 'PASS':   # v7: every account row
             word = 'FAIL'                                # a check of the main view failed: the opening is used and the verdict is FAIL
         else: word = _g3_word(c, g1, prem, seed)
     except Void: word = 'FAIL'                           # v6: the candidate breaks a rule on the main view (deterministic: no retry)
@@ -1415,7 +1698,7 @@ def _open_g3(c):
     del prem
     if word is None:
         ledger(dict(kind='G3-ABORT', cfg=h))
-        raise RuntimeError('G3 run stopped (the opening is used; the retry rule applies)')
+        raise Stopped('G3 run stopped (the opening is used; the retry rule applies)')
     ledger(dict(kind='G3-VERDICT', cfg=h, verdict=word))
     return word
 
@@ -1616,40 +1899,49 @@ def _mirror_bytes():
     return open(MIRROR + 'LEDGER.jsonl', 'rb').read()
 
 
-_CFG_KINDS = ('score', 'g1', 'g0', 'g2', 'owner-auth', 'G3-OPEN', 'G3-ABORT', 'G3-VERDICT', 'out-of-memory')
+_CFG_KINDS = ('score', 'g1', 'g0', 'g2', 'owner-auth', 'G3-PRE', 'G3-OPEN', 'G3-ABORT', 'G3-VERDICT', 'out-of-memory', 'restart')
 def read_ledger():
     """the ledger, with its hash chain verified: every line names the hash of the file as it was before the line was added.
     An edited, shortened-and-continued or re-ordered ledger raises. v7: so does a ledger that lost lines against its
     repository copy (the chain alone cannot see a removed tail), and a last line that was cut while it was written."""
     p = OUT + 'LEDGER.jsonl'; mb = _mirror_bytes()
     if not os.path.exists(p):
-        if mb: raise PermissionError('the ledger is missing but its repository copy holds lines')
+        if mb: raise PermissionError('the ledger is missing but its repository copy holds lines (repair_ledger restores it from the copy)')
         return []
     body = open(p, 'rb').read()
-    if body and not body.endswith(b'\n'): raise PermissionError('the last ledger line is cut (repair_ledger removes the cut piece and logs it)')
-    if mb is not None and not body.startswith(mb): raise PermissionError('the ledger lost or changed lines against its repository copy')
+    if body and not body.endswith(b'\n'): raise PermissionError('the last ledger line is cut (repair_ledger removes the cut piece, or restores the line from the repository copy, and logs it)')
+    if mb is not None and not body.startswith(mb):
+        raise PermissionError('the ledger lost or changed lines against its repository copy' + (' (repair_ledger restores lost lines from the copy)' if mb.startswith(body) else ''))
+    out = _chain(body)
+    if WORLD is None and out and out[0].get('kind') != 'registration': raise PermissionError('ledger line 0 is not the registration')
+    return out
+
+
+def _chain(body):
     out = []; h = hashlib.sha256(); first = True
     for raw in body.splitlines(keepends=True):
         e = json.loads(raw)
         if e.get('prev') != ('' if first else h.hexdigest()[:16]): raise PermissionError('the ledger hash chain is broken at line %d' % len(out))
         h.update(raw); first = False; out.append(e)
-    if WORLD is None and out and out[0].get('kind') != 'registration': raise PermissionError('ledger line 0 is not the registration')
     return out
 
 
 def ledger(entry):
     """append-only, hash-chained (the chain is verified before every append). v7: under a write lock; refused in the real
-    world while a test-world module is loaded and for a line about a configuration that names none; copied to the
-    repository folder after every line."""
+    world while a test-world module is loaded, for a line about a configuration that names none or that is written
+    outside an evaluator entry point, and, while an opening is in progress, for every line that is not the opening's own
+    (the main account needs the G3-OPEN line to be the last one); copied to the repository folder after every line."""
     _writable()
     if WORLD is None and 't_world' in sys.modules: raise PermissionError('a test-world module is loaded: the registered ledger is not written')
     if entry.get('kind') in _CFG_KINDS and not (isinstance(entry.get('cfg'), str) and re.fullmatch(r'[0-9a-f]{64}', entry['cfg'])):
         raise PermissionError('a ledger line of kind %s needs a configuration hash' % entry.get('kind'))
+    if WORLD is None and entry.get('kind') in _CFG_KINDS and not _SCOPE[0]: raise PermissionError('a ledger line about a configuration is written only by an evaluator entry point')
     with _ledger_lock():
         p = OUT + 'LEDGER.jsonl'; L = read_ledger()
         if WORLD is None and not L and entry.get('kind') != 'registration': raise PermissionError('the first ledger line must be the registration')
+        if os.path.exists(OUT + 'G3.lock') and entry.get('kind') not in ('G3-PRE', 'G3-OPEN', 'G3-ABORT', 'G3-VERDICT'): raise PermissionError('an opening is in progress: no other ledger line is written')
         os.makedirs(OUT, exist_ok=True)
-        prev = hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16] if os.path.exists(p) else ''
+        prev = hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16] if os.path.exists(p) and os.path.getsize(p) else ''
         entry = dict(entry); entry['ts'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()); entry['prev'] = prev
         with open(p, 'ab') as f: f.write((json.dumps(entry, ensure_ascii=False) + '\n').encode()); f.flush(); os.fsync(f.fileno())
         if MIRROR is not None:
@@ -1659,17 +1951,25 @@ def ledger(entry):
 
 
 def repair_ledger():
-    """v7: a ledger whose last line was cut while it was written (no line end) cannot be read by any function. This removes
-    the cut piece and nothing else, and logs the repair as the next line. A complete line is never removed (the repository
-    copy would refuse the ledger)."""
+    """v7: a ledger whose last line was cut while it was written (no line end), or that is behind its repository copy (lines
+    lost on the mount, or the file missing), cannot be read by any function. This removes the cut piece, puts back the
+    lines that the repository copy holds beyond the complete lines of the ledger (only if the copy starts with exactly
+    those lines and its own chain holds), and logs the repair as the next line. A complete line is never removed. A
+    ledger that is left empty (line 0 itself was cut and there is no copy) gets no line: the registration is run again.
+    Refused while G3.lock exists (the line of the repair could not be written): a stale lock is removed by hand first."""
     _writable(); p = OUT + 'LEDGER.jsonl'
+    if os.path.exists(OUT + 'G3.lock'):                   # v7: under the lock the repair line would be refused after the file was changed
+        raise PermissionError('an opening is in progress (G3.lock): if no opening is running, remove the stale lock file first, then repair')
     with _ledger_lock():
-        b = open(p, 'rb').read()
-        if not b or b.endswith(b'\n'): raise PermissionError('the ledger has no cut line')
-        keep = b[:b.rfind(b'\n') + 1]
-        with open(p + '.tmp', 'wb') as f: f.write(keep); f.flush(); os.fsync(f.fileno())
+        b = open(p, 'rb').read() if os.path.exists(p) else b''
+        keep = b[:b.rfind(b'\n') + 1]; mb = _mirror_bytes() or b''
+        if len(mb) > len(keep) and mb.startswith(keep) and mb.endswith(b'\n') and _chain(mb): new = mb
+        elif b != keep: new = keep
+        else: raise PermissionError('the ledger has no cut line and is not behind its repository copy')
+        os.makedirs(OUT, exist_ok=True)
+        with open(p + '.tmp', 'wb') as f: f.write(new); f.flush(); os.fsync(f.fileno())
         os.replace(p + '.tmp', p)
-    ledger(dict(kind='repair', dropped_bytes=len(b) - len(keep)))
+    if new: ledger(dict(kind='repair', dropped_bytes=len(b) - len(keep), restored_bytes=len(new) - len(keep)))
 
 
 DATA_FILES = ['/mnt/project-files/research/data/' + f for f in (
@@ -1732,14 +2032,15 @@ def _write_registry(body):
     os.replace(OUT + 'HASHES.json.tmp', OUT + 'HASHES.json')
 
 
-def amend(reason_file):
+def amend(reason_file, drop=()):
     """v7: take the registry again after a change that section 7 of the text allows (a data repair, a fix of an evaluator
     defect, one of the three functions written later, new package versions). Writes AMENDMENT_n.md (a copy of the reason
     file, which says what changed and lists every output that existed before), a ledger line with its sha256 and the
     sha256 of the new registry, and then the new HASHES.json. The registered text and ledger line 0 stay as they are.
     Afterwards the checks must pass again under the new registry before anything is scored, and partial results of an
     unfinished batch are computed again. Called by m_register.py --amend after the same exercise of the evaluator as at
-    registration. Returns n."""
+    registration: a direct call would hash only the project code files loaded so far, so a code file of the registry in
+    force that is missing from the new one is refused unless `drop` names its key (a file that left the chain). Returns n."""
     _guard(); _writable()
     if WORLD is None and OUT != REG_OUT: raise PermissionError('not the registered folder')
     if os.path.exists(OUT + 'G3.lock'): raise PermissionError('an opening is in progress')
@@ -1748,6 +2049,13 @@ def amend(reason_file):
     text = open(reason_file, 'rb').read()
     if len(text.strip()) < 40: raise ValueError('the amendment file must say what changed and list the outputs that existed before')
     n = 1 + sum(1 for e in L if e.get('kind') == 'amendment'); body = registry_body(L[0]['sha256'])
+    if os.path.exists(OUT + 'HASHES.json'):
+        try: old = json.load(open(OUT + 'HASHES.json')).get('code', {})
+        except ValueError: old = {}                       # v7: a registry file that was cut while it was written is no registry in force
+        gone = sorted(set(old) - set(json.loads(body)['code']) - set(drop))
+        if gone: raise PermissionError('code files of the registry in force are not loaded: %s. Run m_register.py --amend FILE (it loads every code file); for a file that left the chain add --drop KEY[,KEY]' % ', '.join(gone))
+    pend = [e['cfg'] for e in L if e.get('kind') == 'G3-OPEN' and not any(x.get('cfg') == e['cfg'] and (x.get('kind') == 'G3-VERDICT' or (x.get('kind') == 'G3-OPEN' and x is not e)) for x in L)]
+    if pend: print('NOTE: an opening without a verdict exists (%s). Its one retry needs the registry of its first run: under the amended registry it is refused.' % ', '.join(sorted(set(c[:12] for c in pend))))
     with open(OUT + 'AMENDMENT_%d.md' % n, 'wb') as f: f.write(text)
     ledger(dict(kind='amendment', n=n, sha256=hashlib.sha256(text).hexdigest(), hashes_sha256=hashlib.sha256(body).hexdigest(), lines_before=len(L)))
     _write_registry(body)                                # if the run stops between the line and this file the registry is not in force: amend again
@@ -1764,7 +2072,10 @@ def _check_env():
     if not os.path.exists(OUT + 'HASHES.json'):
         if WORLD is None: raise PermissionError('the structure is not registered')
         return
-    if WORLD is None and not _registered(): raise PermissionError('the registry does not match the ledger (line 0 or the latest amendment)')
+    if WORLD is None:
+        read_ledger()                                    # v7: a ledger that is cut or behind its copy says so here (repair_ledger), not as a registry mismatch
+        if not _registered(): raise PermissionError('the registry does not match the ledger (line 0 or the latest amendment)')
+    if WORLD is None and _from_pyc(): raise PermissionError('a project code file was loaded from a compiled file (start python with -B and with PYTHONPYCACHEPREFIX set to an empty folder)')   # v8: also files loaded after the first check
     reg = json.load(open(OUT + 'HASHES.json')); now = env_hashes()
     if set(reg['data']) != set(now['data']) or any(now['data'][k] != v for k, v in reg['data'].items()): raise PermissionError('registered hashes changed: a data file')
     if any((not os.path.exists(_abs(k))) or _sha(_abs(k)) != v for k, v in reg['code'].items()): raise PermissionError('registered hashes changed: a code file')

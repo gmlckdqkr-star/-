@@ -4,7 +4,9 @@ goes to a scratch folder. Only the calendar DATES after 2014 are real. Nothing h
 Planted: every instrument has its own on/off signal (on about 30% of rows, in runs) and earns a drift only while its signal
 was on two rows earlier (a timing edge), with the sign chosen per era; 'drift' earns the same drift on every row (pure
 exposure); 'late' exists only from 2013 on. v7: also a marker write that failed, a G2 read that was interrupted, a
-message id used twice, a machine out of memory inside an opening, and the tie between registry and ledger with an amendment."""
+message id used twice, a machine out of memory inside an opening, and the tie between registry and ledger with an amendment.
+v8: also the logged limit on the checks before an opening and the fingerprint that ties G2 and the opening to the output
+tested at G1."""
 import sys, os, json, time, hashlib, numpy as np, pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import xv1, t_world
@@ -131,6 +133,13 @@ start('c'); print('third ledger: no v1 level, constant weight, re-set every 252 
 batch(('static0',))
 print('  G2 static0 pass', xv1.weak_eval(C['static0'])['g2_pass']); xv1.authorise_g3(C['static0'], MSG('static0'))
 w5 = tryit('G3 static0 (input-free)', lambda: xv1.open_g3(C['static0']))
+w5b = tryit('G3 static0 again (the checks before an opening, second run)', lambda: xv1.open_g3(C['static0']))     # v8: logged, at most twice
+try: xv1.open_g3(C['static0']); PRE = [False]
+except PermissionError as e: PRE = ['already run twice' in str(e)]; print('  %-52s refused: %s' % ('G3 static0 a third time', e))
+PRE.append(w5b is None and [e.get('kind') for e in xv1.read_ledger()].count('G3-PRE') == 2 and not any(e.get('kind') == 'G3-OPEN' for e in xv1.read_ledger()))
+xv1.authorise_g3(C['static0'], MSG('static0_again'))      # v8 (second check): a further message of the owner allows the checks again (two more runs)
+w5c = tryit('G3 static0 after a further authorisation', lambda: xv1.open_g3(C['static0']))
+PRE.append(w5c is None and [e.get('kind') for e in xv1.read_ledger()].count('G3-PRE') == 3 and not any(e.get('kind') == 'G3-OPEN' for e in xv1.read_ledger()))
 start('d'); print('fourth ledger (v6): main-view checks inside an opening, authorisation order, end date, close')
 batch(('good', 'good3'))
 R4 = [refused('authorisation before the G2 pass', lambda: xv1.authorise_g3(C['good'], MSG('good')))]
@@ -155,6 +164,15 @@ xv1._prepare = prep_mem                                 # v7: a machine out of m
 try: xv1.open_g3(C['good3']); w8 = 'no abort'
 except RuntimeError: w8 = 'abort' if xv1.read_ledger()[-1]['kind'] == 'G3-ABORT' else 'no abort line'
 print('  %-52s -> %s' % ('G3 good3, the machine runs out of memory', w8))
+xv1._prepare = real_prep
+reg0 = open(xv1.OUT + 'HASHES.json', 'rb').read() if os.path.exists(xv1.OUT + 'HASHES.json') else None
+xv1._write_registry(xv1.registry_body('0' * 64))        # v7: as if an amendment lay between the abort and the retry ("the same H with identical hashes")
+try: xv1.open_g3(C['good3']); R4.append(False); print('  G3 good3 retry under another registry was NOT refused')
+except PermissionError as e: R4.append('registered hashes of the first run' in str(e)); print('  %-52s refused: %s' % ('G3 good3 retry under another registry', e))
+if reg0 is None: os.remove(xv1.OUT + 'HASHES.json')     # back to the registry of the first run (the retry is tied to it)
+else: xv1._write_registry(reg0)
+open(xv1.OUT + 'G3.lock', 'w').close()                  # v7: while an opening is in progress no other ledger line is written
+R4.append(refused('a ledger line from elsewhere during an opening', lambda: xv1.checks_line(True))); os.remove(xv1.OUT + 'G3.lock')
 xv1._prepare = prep_void; w7 = tryit('G3 good3 retry, a void on the main view', lambda: xv1.open_g3(C['good3'])); xv1._prepare = real_prep
 end0 = xv1.G3_END; xv1.G3_END = '2000-01-01'
 R4.append(refused('G3 after the end date', lambda: xv1.open_g3(C['good3']))); xv1.G3_END = end0
@@ -163,6 +181,18 @@ R4.append(refused('close G3 with a message id used before', lambda: xv1.close_g3
 xv1.close_g3(MSG('close')); R4.append(refused('G3 after G3 was closed for good', lambda: xv1.open_g3(C['good3'])))
 kinds = [e.get('kind') for e in xv1.read_ledger()]; R4.append(kinds.count('G3-OPEN') == 3 and kinds[-1] == 'G3-CLOSED')
 print('  verdicts', w6, w7, '| refusals and ledger', R4)
+start('f'); print('sixth ledger (v8): G2 and the opening accept only the output that was tested at G1')
+batch(('good',)); real_sha = xv1._out_sha; real_env = xv1._out_env; n9 = len(xv1.read_ledger())
+xv1._out_env = lambda: 'another machine'                 # v8 (second check): refused before anything is logged or read
+P9 = [refused('G2 good under other processor targets or packages', lambda: xv1.weak_eval(C['good'])) and len(xv1.read_ledger()) == n9]; xv1._out_env = real_env
+xv1._out_sha = lambda pre: 'f' * 64
+try: xv1.weak_eval(C['good']); P9.append(False)
+except PermissionError as e: P9.append('differs from the one tested at G1' in str(e)); print('  %-52s refused: %s' % ('G2 good on another output than the tested one', e))
+xv1._out_sha = real_sha; P9.append(bool(xv1.weak_eval(C['good'])['g2_pass'])); xv1.authorise_g3(C['good'], MSG('good'))
+n9 = len(xv1.read_ledger()); xv1._out_env = lambda: 'another machine'
+P9.append(refused('G3 good under other processor targets or packages', lambda: xv1.open_g3(C['good'])) and len(xv1.read_ledger()) == n9); xv1._out_env = real_env
+xv1._out_sha = lambda pre: 'f' * 64 if xv1._eng(pre['v']).account == 'main' else real_sha(pre)
+w9 = tryit('G3 good, another output on the main view (no shadow level read)', lambda: xv1.open_g3(C['good'])); xv1._out_sha = real_sha
 print('fifth ledger (v7): the registry file is tied to the ledger; amendment')
 xv1.OUT = tmp + 'e/'; os.makedirs(xv1.OUT)
 txt = b'stand-in for the registered text\n'; open(xv1.OUT + 'PREREG_XV1_STRUCTURE.md', 'wb').write(txt); sha = hashlib.sha256(txt).hexdigest()
@@ -186,5 +216,6 @@ _S.__exit__(None, None, None)
 mc = tryit('model check through its own entry point (outside the script scope)', lambda: len(xv1.model_check()))
 exp = (w1 == 'CONFIRMED', w2 == 'FAIL', w3 in ('FAIL', 'INCONCLUSIVE'), w4 == 'CONSISTENT', r2['good2']['advance'] is False, r2['goodb']['advance'] is False,
        r3['late'].get('g1_pass') is True, all(ABORT) and len(ABORT) == 5, MARK is None, w5 is None, mc is not None,
-       w6 == 'FAIL', w7 == 'FAIL', all(R4) and len(R4) == 9, w8 == 'abort', all(E) and len(E) == 8)
+       w6 == 'FAIL', w7 == 'FAIL', all(R4) and len(R4) == 11, w8 == 'abort', all(E) and len(E) == 8,
+       all(PRE) and len(PRE) == 3, all(P9) and len(P9) == 4, w9 == 'FAIL')
 print('EXPECTED VERDICTS', 'OK' if all(exp) else 'FAIL', exp)
