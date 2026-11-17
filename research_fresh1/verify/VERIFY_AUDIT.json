@@ -1,0 +1,747 @@
+{
+ "lane": "FRESH1",
+ "role": "independent adversarial verifier",
+ "written": "2026-11-11",
+ "data_cut": "all inputs <= 2014-12-31; nothing later computed or printed",
+ "scripts": [
+  "/home/user/verify_fresh1/v00_explore.py",
+  "/home/user/verify_fresh1/v10_v1_checks.py",
+  "/home/user/verify_fresh1/myh1.py",
+  "/home/user/verify_fresh1/v21_c4_core.py",
+  "/home/user/verify_fresh1/v22_c4_sim.py",
+  "/home/user/verify_fresh1/v23_gates.py",
+  "/home/user/verify_fresh1/v24_extras.py",
+  "/home/user/verify_fresh1/v25_last.py",
+  "/home/user/verify_fresh1/v26_tr70.py",
+  "/home/user/verify_fresh1/v27_timing.py",
+  "/home/user/verify_fresh1/v90_write_audit.py",
+  "/home/user/verify_fresh1/v91_update_audit.py"
+ ],
+ "method": "C1-C3: own script around the locked std engine, plus independent re-implementations of the alarm-off signal, the block index and the path alarm rebuild. C4: own plain-Python engine and signal (myh1.py, no numba, nothing imported from the lane); lane engine called only for comparison.",
+ "summary_verdicts": {
+  "C1": "REPRODUCED, with one BUG FOUND (mislabelled statistic)",
+  "C2": "REPRODUCED",
+  "C3": "REPRODUCED (near-equality is genuine)",
+  "C4": "REPRODUCED; the H1 failure is real; no engine or look-ahead bug found"
+ },
+ "C1": {
+  "verdict": "REPRODUCED except one statistic (BUG FOUND)",
+  "reproduced": {
+   "v1_real_ndx_86_14": 0.3108146630765727,
+   "dev250_path": {
+    "median": 0.16159280018394773,
+    "p10": 0.052333024947242346,
+    "p90": 0.3219140989172343,
+    "mean": 0.1735935030003846,
+    "pct_strict": 89.0,
+    "pct_weak": 89.0,
+    "share_ge_30": 0.124,
+    "share_ge_real": 0.11,
+    "hold1x_median": 0.11643356682063832,
+    "share_lt_MEDIAN_hold1x": 0.302,
+    "share_lt_SAMEPATH_hold1x": 0.216,
+    "dd80": 0.732
+   },
+   "dev250_glued": {
+    "median": 0.2703017870333557,
+    "p10": 0.16788049049408707,
+    "p90": 0.39683746469795866,
+    "mean": 0.27776449348398535,
+    "pct_strict": 67.2,
+    "pct_weak": 67.2,
+    "share_ge_30": 0.356,
+    "share_ge_real": 0.328,
+    "hold1x_median": 0.11643356682063832,
+    "share_lt_MEDIAN_hold1x": 0.024,
+    "share_lt_SAMEPATH_hold1x": 0.002,
+    "dd80": 0.066
+   }
+  },
+  "max_abs_diff_vs_claim": 0.0,
+  "bug": {
+   "file": "/home/user/-/research_fresh1/code/a2b_alarm_share.py",
+   "lines": "13 and 17",
+   "what": "h1 = std.row(*std.hold(c, 1))[0][cagr] is ONE number (the median 1x-hold CAGR over the 500 paths, 11.64%). np.mean(f1 < h1) is therefore the share of paths below the pool-median 1x hold, not below the 1x hold of the same path as the claim says.",
+   "reported": {
+    "dev250_path": 0.302,
+    "dev250_glued": 0.024
+   },
+   "corrected_same_path": {
+    "dev250_path": 0.216,
+    "dev250_glued": 0.002
+   },
+   "changes_pass_fail": false,
+   "changes_headline_number": "yes: 30.2% -> 21.6% (path); 2.4% -> 0.2% (glued)"
+  }
+ },
+ "C2": {
+  "verdict": "REPRODUCED",
+  "reproduced_alarms_off": {
+   "real_ndx_86_14": 0.12481683136156141,
+   "real_spx_55_85": 0.08321269744471382,
+   "real_spx_70_85": 0.015666605221821728,
+   "dev250_path": 0.09758836200847132,
+   "dev250_glued": 0.09758836200847132
+  },
+  "v1": {
+   "real_ndx_86_14": 0.3108146630765727,
+   "real_spx_55_85": 0.11935470352055622,
+   "real_spx_70_85": 0.12633407400836472,
+   "dev250_path": 0.16159280018394773,
+   "dev250_glued": 0.2703017870333557
+  },
+  "alarm_share_pp": {
+   "real_ndx_86_14": 0.18599783171501127,
+   "real_spx_55_85": 0.03614200607584239,
+   "real_spx_70_85": 0.11066746878654299,
+   "dev250_path": 0.06400443817547641,
+   "dev250_glued": 0.1727134250248844
+  },
+  "max_abs_diff_vs_claim": 0.0,
+  "alarm_removal_checks": {
+   "signal": "bk.C3sig -> strat.fam4 reads c.F through ov.macro_cond for the gate (inv, shock6m) and the caution tier (shock6m): all off",
+   "brake_features": "std.engine recomputes bk.features(c) on every call; only feature columns 7 (gate_cond) and 8 (shock6m) change and both sum to 0",
+   "cache": "c._c only holds sma/vol/hi/ewvol arrays keyed by window; none depends on c.F, so copying it is harmless",
+   "fresh_context_no_shared_cache_max_abs_path_diff": 0.0,
+   "independent_vol_switch_only_signal_identical_B": true,
+   "independent_signal_max_abs_path_diff": 0.0
+  },
+  "interpretation_caveat": {
+   "what": "In v1 the trend exit only fires while an alarm is on. Forcing alarms off therefore removes the trend exit itself, the caution cap and the brake warned mode: what is left is the volatility switch plus brake (on S&P 1955-85 that is a constant 3x). So the gap is the value of the alarm-switched exit, not of the alarm information alone.",
+   "unconditional_trend_exit_without_alarm_information": {
+    "real_ndx_86_14": 0.08383855168417975,
+    "real_spx_55_85": 0.12029769494320042,
+    "real_spx_70_85": 0.12478951804234795,
+    "dev250_path": 0.08588888525720562,
+    "dev250_glued": 0.08588888525720562
+   },
+   "reading": "S&P eras: an always-on trend exit gives 12.03% (1955-85) and 12.48% (1970-85) against v1 11.94% / 12.63%, so alarm information adds about 0 there. NDX 1986-2014: always-on exit 8.38% against v1 31.08%, so the alarm timing is worth about 22.7 points on the path it was designed on."
+  }
+ },
+ "C3": {
+  "verdict": "REPRODUCED; near-equality of path and glued is genuine, not a bug",
+  "reproduced": {
+   "spx_55_85": {
+    "glued": {
+     "median": 0.12025992245060968,
+     "p25": 0.07133407600109776,
+     "p75": 0.17137744647225772,
+     "p10": 0.04177945061254016,
+     "p90": 0.23007308411980965,
+     "real_percentile": 49.4
+    },
+    "path": {
+     "median": 0.12438136019203871,
+     "p25": 0.07532746655392492,
+     "p75": 0.18057509076955924,
+     "p10": 0.047754875039232175,
+     "p90": 0.23031829082992952,
+     "real_percentile": 47.0
+    },
+    "real_v1": 0.11935470352055622
+   },
+   "spx_70_85": {
+    "glued": {
+     "median": 0.0701613564077419,
+     "p25": 0.04256242750324052,
+     "p75": 0.10341080448451462,
+     "p10": 0.017256066594275903,
+     "p90": 0.15389603285394926,
+     "real_percentile": 85.0
+    },
+    "path": {
+     "median": 0.07217309311325881,
+     "p25": 0.047070582151154505,
+     "p75": 0.10686335524555429,
+     "p10": 0.01611978450292686,
+     "p90": 0.15609169210079857,
+     "real_percentile": 82.39999999999999
+    },
+    "real_v1": 0.12633407400836472
+   }
+  },
+  "max_abs_diff_vs_claim": 0.0,
+  "independent_checks": {
+   "own_block_index_equals_ov_boot_idx": true,
+   "own_path_alarm_rebuild_agreement": {
+    "spx_55_85": {
+     "inv": 1.0,
+     "shock6m": 0.9999697201017812
+    },
+    "spx_70_85": {
+     "inv": 1.0,
+     "shock6m": 0.9999875318066158
+    }
+   },
+   "v1_with_own_path_alarms": {
+    "spx_55_85": {
+     "median": 0.12438136019203871,
+     "p25": 0.07532746655392492,
+     "p75": 0.18057509076955924,
+     "p10": 0.04772857353897862,
+     "p90": 0.23022477466529867,
+     "real_percentile": 47.0
+    },
+    "spx_70_85": {
+     "median": 0.07217309311325881,
+     "p25": 0.047070582151154505,
+     "p75": 0.10686335524555429,
+     "p10": 0.01611978450292686,
+     "p90": 0.15609169210079857,
+     "real_percentile": 82.39999999999999
+    }
+   },
+   "note": "shock6m differs on 0.001-0.003% of days (a 6-month change of exactly 1.00 point is rounding sensitive); medians, quartiles and percentiles identical",
+   "no_missing_rate_data": {
+    "spx_55_85": [
+     0,
+     0
+    ],
+    "spx_70_85": [
+     0,
+     0
+    ]
+   }
+  },
+  "why_genuine": {
+   "flags": {
+    "spx_55_85": {
+     "inv_on_glued": 0.38942248677248675,
+     "inv_on_path": 0.5385608465608466,
+     "shock6m_on_glued": 0.07636931216931217,
+     "shock6m_on_path": 0.08775026455026455,
+     "cond_on_glued": 0.4078984126984127,
+     "cond_on_path": 0.5552772486772487,
+     "inv_differs": 0.31489338624338625,
+     "shock6m_differs": 0.04850952380952381,
+     "cond_differs": 0.3100010582010582,
+     "B_differs": 0.111010582010582
+    },
+    "spx_70_85": {
+     "inv_on_glued": 0.6215693121693122,
+     "inv_on_path": 0.7491542328042328,
+     "shock6m_on_glued": 0.14336402116402117,
+     "shock6m_on_path": 0.1604,
+     "cond_on_glued": 0.6574100529100529,
+     "cond_on_path": 0.7705256613756614,
+     "inv_differs": 0.29667010582010583,
+     "shock6m_differs": 0.08435978835978836,
+     "cond_differs": 0.27719867724867725,
+     "B_differs": 0.1193042328042328
+    }
+   },
+   "ndx_dev250_flags": {
+    "inv_on_glued": 0.21560820105820105,
+    "inv_on_path": 0.28167804232804233,
+    "shock6m_on_glued": 0.05895026455026455,
+    "shock6m_on_path": 0.0624058201058201,
+    "cond_on_glued": 0.27343518518518517,
+    "cond_on_path": 0.33295185185185183,
+    "cond_differs": 0.2456547619047619,
+    "B_differs": 0.12542354497354496
+   },
+   "paired_path_minus_glued": {
+    "spx_55_85": {
+     "median": 0.003547276220120188,
+     "mean": 0.004328321206231019,
+     "sd": 0.025512863899509894,
+     "corr": 0.9343671792526409,
+     "share_path_gt_glued": 0.568
+    },
+    "spx_70_85": {
+     "median": 0.00395226346875599,
+     "mean": 0.003496564949029729,
+     "sd": 0.019129421468907618,
+     "corr": 0.9366915305901098,
+     "share_path_gt_glued": 0.586
+    }
+   },
+   "alarms_off_on_same_paths": {
+    "spx_55_85": 0.10132064775471938,
+    "spx_70_85": 0.032961658825691464
+   },
+   "unconditional_trend_exit_on_same_paths": {
+    "spx_55_85": 0.11680433701508397,
+    "spx_70_85": 0.060163556807453444
+   },
+   "explanation": "path_flags keeps the original daily changes of the 10-year yield and the original yield spread, and re-accumulates them along the path. Inside a block the 6-month shock flag equals the original after 126 days; the inversion flag is a 378-day memory, longer than a 250-day block, so it smears across blocks (on 54% of days on the path against 39% glued in 1955-85). The two flag sets differ on 28-31% of days and the v1 signal on 11-12% of days, about as much as on the NDX pool (25% / 12.5%), where the same scrambling costs 10.9 points. In the S&P era it costs nothing because the alarm timing carries no extra information there: alarms are on 41-77% of days, and an always-on trend exit earns almost the same (11.7% / 6.0% median) as path (12.4% / 7.2%) and glued (12.0% / 7.0%)."
+  },
+  "caveats": {
+   "power": "Because both distributions coincide in this era, A6 cannot tell the path yardstick from the glued one: the real 11.94% sits at the 47th percentile of path AND the 49th of glued. It does not show that dev250_path (16.2%) is the fair central expectation for NDX.",
+   "horizon_1970_85": {
+    "real": 0.12633407400836472,
+    "horizon_days": 4043,
+    "glued": {
+     "median": 0.0674213663372688,
+     "p25": 0.023908935402289,
+     "p75": 0.12710066918151341,
+     "real_percentile": 74.6
+    },
+    "path": {
+     "median": 0.07392044108173124,
+     "p25": 0.03181236928626341,
+     "p75": 0.12990285698438564,
+     "real_percentile": 73.8
+    },
+    "note": "real path is 16 years, the claim compares it with 30-year paths; at a matching 16-year horizon the percentile is 74-75, not 82-85"
+   },
+   "pool": "pools start 300 trading days before the era start (1953-10-21 and 1968-10-07), not exactly 1955 / 1970"
+  }
+ },
+ "C4": {
+  "verdict": "REPRODUCED; failure is real and not caused by a bug that hurts H1",
+  "a_parity": {
+   "mine": 0.038712781616948355,
+   "locked": 0.038712781616948355,
+   "diff": 0.0,
+   "lane_engine": {
+    "cagr": 0.038712781616948355,
+    "diff": 0.0
+   },
+   "locked_engine_recomputed": 0.038712781616948355
+  },
+  "b_sealed_TR": {
+   "1927_54": {
+    "primary_mine": 0.01877145150717663,
+    "primary_reported": 0.01877145150717663,
+    "B0_mine": 0.049892337329688896,
+    "B0_reported": 0.049892337329688896
+   },
+   "1955_85": {
+    "primary_mine": 0.18538725600264838,
+    "primary_reported": 0.18538725600264838,
+    "B0_mine": 0.11092285999045615,
+    "B0_reported": 0.11092285999045615
+   },
+   "1986_14": {
+    "primary_mine": 0.1626374980967209,
+    "primary_reported": 0.1626374980967209,
+    "B0_mine": 0.1206600309698691,
+    "B0_reported": 0.1206600309698691
+   },
+   "full": {
+    "primary_mine": 0.11748817309618587,
+    "primary_reported": 0.11748817309618587,
+    "B0_mine": 0.09197308839854723,
+    "B0_reported": 0.09197308839854723
+   }
+  },
+  "b_boot_p_vs_B0": {
+   "p_same_seed": 0.7545,
+   "p_reported": 0.7545,
+   "p_own_circular_5000": 0.7516,
+   "mean_dlog_per_252d": 0.021852632701821736,
+   "mean_dlog_reported": 0.021852632701821736,
+   "naive_t": 0.789232086442815,
+   "n_days": 23084
+  },
+  "c_sim_all_500_paths_own_engine": {
+   "v1_median": 0.16159280018394773,
+   "primary": {
+    "median": 0.031904750234530876,
+    "p10": -0.06852168099106527,
+    "p90": 0.14100367173381737,
+    "mean": 0.03437692805966482
+   },
+   "primary_dd80": 0.922,
+   "d_vs_v1_median": -0.13726554637622723,
+   "win_share": 0.034,
+   "B0": {
+    "median": 0.10431808310478785,
+    "p10": 0.02311989312969669,
+    "p90": 0.19782432617941192,
+    "mean": 0.10702381876345739
+   },
+   "B0_dd80": 0.608,
+   "diff_vs_reported": {
+    "primary_median": 0.0,
+    "d_vs_v1": 0.0,
+    "win_share": 0.0,
+    "dd80": 0.0,
+    "B0_median": 0.0
+   }
+  },
+  "d_real_legs_ms1_px": {
+   "real_ndx_86_14": {
+    "primary_mine": 0.12426593346791881,
+    "primary_reported": 0.12426593346791881,
+    "B0_mine": 0.16097210132840756
+   },
+   "real_spx_55_85": {
+    "primary_mine": 0.10791715228300736,
+    "primary_reported": 0.10791715228300736,
+    "B0_mine": 0.11976457800443141
+   },
+   "real_spx_70_85": {
+    "primary_mine": 0.017691950482496832,
+    "primary_reported": 0.017691950482496832,
+    "B0_mine": 0.10564197507221995
+   }
+  },
+  "e_fair_gate_i": {
+   "p_same_seed": 0.024,
+   "p_reported": 0.024,
+   "p_own_circular_5000": 0.0254,
+   "mean_dlog": -0.08155959039183927,
+   "mean_dlog_reported": -0.08155959039183927,
+   "te": 0.3504199153723561,
+   "te_reported": 0.3504199153723561,
+   "per_leg_mean_dlog": {
+    "real_ndx_86_14": -0.15709111395554606,
+    "real_spx_55_85": -0.010681529966443176
+   },
+   "per_leg_p": {
+    "real_ndx_86_14": 0.011,
+    "real_spx_55_85": 0.4105
+   }
+  },
+  "first20_paths": {
+   "mine": [
+    -0.062240867814147616,
+    -0.07564307836932338,
+    0.10644240394280602,
+    0.15994354133268773,
+    0.14153041068290273,
+    0.012701888165368436,
+    -0.09123351928229606,
+    -0.009790188214726547,
+    0.10042271045304108,
+    0.057015835241764456,
+    0.13848042956605888,
+    0.04324434551184542,
+    -0.052546927006649535,
+    0.024325553663382182,
+    0.08404228414824244,
+    0.15425590202319128,
+    0.02934879799376966,
+    0.02060411387609018,
+    -0.07317229380322232,
+    -0.017517247498901822
+   ],
+   "lane_engine": [
+    -0.062240867814147616,
+    -0.07564307836932338,
+    0.10644240394280602,
+    0.15994354133268773,
+    0.14153041068290273,
+    0.012701888165368436,
+    -0.09123351928229606,
+    -0.009790188214726547,
+    0.10042271045304108,
+    0.057015835241764456,
+    0.13848042956605888,
+    0.04324434551184542,
+    -0.052546927006649535,
+    0.024325553663382182,
+    0.08404228414824244,
+    0.15425590202319128,
+    0.02934879799376966,
+    0.02060411387609018,
+    -0.07317229380322232,
+    -0.017517247498901822
+   ],
+   "max_abs_diff": 0.0,
+   "sec_per_path_plain_python": 0.04558576345443725
+  },
+  "max_abs_diff": {
+   "b_eras_primary_and_B0": 0.0,
+   "d_real_legs": 0.0,
+   "first_20_paths_vs_lane_engine": 0.0,
+   "c_all_500_paths_summary": 0.0,
+   "bootstrap_p_same_seed": 0.0,
+   "bootstrap_p_own_circular_5000_draws": {
+    "sealed_vs_B0": 0.0028999999999999027,
+    "fair_gate_i": 0.0013999999999999985
+   }
+  },
+  "code_review": {
+   "look_ahead": "none found: level includes day t, 200-day average is days t-199..t, momentum is level[t-21]/level[t-252]-1, decision at close t",
+   "delay_queue": "order decided at close t is filled at the close of t+2 after that day return; same convention as beng.run1 (traced by hand); one pending slot is enough (decisions >= 15 days apart, delay <= 7)",
+   "month_end": "last trading day of each month, never the final row, forced first decision at day 299; my own detector gives identical trade counts",
+   "dividend_removal": "own reconstruction identical; price-basis daily series compounded per month matches the monthly ex-dividend file (mean abs 0.0002, signed -0.013%/yr)",
+   "calendar": "project calendar and French file have identical trading days 1928-2014 (22,934 days, 0 missing either way); X rows = calendar rows; v1 and H1 use identical days on every path",
+   "tax_cost": "mirrors the locked engine; parity exact; cost charged on traded notional including the monthly drift rebalance",
+   "data_file": "daily file compounded per month matches the monthly file for all 12 industries (correlation >= 0.9997, mean abs diff 0.00016), so date cut, column order and units are right"
+  },
+  "minor_deviations_not_bugs": [
+   "h1_run.py line 64: Rpx_f is built but never used; AMEND_A1 said the phenomenon test \"also reports the price basis\" and it does not",
+   "CAGR uses trading days / 252. In 1927-54 the market traded about 290 days a year, so that era is 27.5 calendar years counted as 31.7; per calendar year the sealed values are primary 0.0216 vs B0 0.0577 (1927-54) and 0.1233 vs 0.0965 (full). Fund fee, cash spread and the tax year also run per 252 trading days there. Ranking unchanged.",
+   "monthly drift rebalance to equal weight is not what hurts: trading only when the target set changes gives 0.1219 (real 1986-2014) and 0.0313 (path median)"
+  ],
+  "sanity_sim_vs_real": {
+   "answer": "plausible, not a bug",
+   "real_1986_2014_3x_px": {
+    "month_end": 0.12426593346791881,
+    "same_code_path_21_day_grid_all_21_phases": {
+     "min": 0.04909851850424274,
+     "median": 0.08918131496030224,
+     "max": 0.12488399342945655,
+     "phase0": 0.0983312429115013
+    },
+    "static_refs": {
+     "ew7_monthly_rebal": 0.07624574776097703,
+     "mkt_hold": 0.09914683113945921,
+     "primary": 0.12426593346791881,
+     "B0": 0.16097210132840756
+    }
+   },
+   "lev1_real_1986_2014": {
+    "px": {
+     "primary": 0.084631934806219,
+     "B0": 0.09425287892458156,
+     "ew7": 0.08694392606768808,
+     "mkt_hold": 0.09741074038361686
+    },
+    "tr": {
+     "primary": 0.1041543478061091,
+     "B0": 0.0833706639700098,
+     "ew7": 0.10932302050674148,
+     "mkt_hold": 0.09712947505255776
+    }
+   },
+   "lev1_500_paths_px": {
+    "primary": {
+     "median": 0.054308372677895456,
+     "p10": 0.02048431996931186,
+     "p90": 0.08997104309654758,
+     "mean": 0.05439501894473214,
+     "dd80": 0.006,
+     "mdd_median": -0.46952628144896935
+    },
+    "B0": {
+     "median": 0.07591304752419681,
+     "p10": 0.048400786198206425,
+     "p90": 0.10481013960835153,
+     "mean": 0.07671693863673719,
+     "dd80": 0.0,
+     "mdd_median": -0.34373104620724965
+    },
+    "ew7": {
+     "median": 0.08699662714483436,
+     "p10": 0.05181133849321375,
+     "p90": 0.11828125068105744,
+     "mean": 0.08625699420869018,
+     "dd80": 0.0,
+     "mdd_median": -0.4895199666770015
+    },
+    "mkt_hold": {
+     "median": 0.09505457142980978,
+     "p10": 0.0595788692758079,
+     "p90": 0.13377480772260505,
+     "mean": 0.09672989704263678,
+     "dd80": 0.006,
+     "mdd_median": -0.4952194419380114
+    }
+   },
+   "lev3_500_paths_px_static_refs": {
+    "equal_weight_7_sectors": {
+     "median": 0.08210284441074533,
+     "p10": -0.04320195667192172,
+     "p90": 0.18700553020919228,
+     "mean": 0.0792839013799117,
+     "dd80": 0.878
+    },
+    "market_hold": {
+     "median": 0.09976082197712122,
+     "p10": -0.039796389429428446,
+     "p90": 0.2385906659879061,
+     "mean": 0.10182668401393336,
+     "dd80": 0.944
+    }
+   },
+   "block_length_own_seeds_300_paths": {
+    "250": {
+     "primary_3x_median": 0.036934629501133354,
+     "B0_3x_median": 0.10063089397870406,
+     "primary_1x_median": 0.05656676832882679,
+     "ew7_1x_median": 0.08876678077506284,
+     "primary_1x_minus_ew7_1x_median": -0.03248450619877519
+    },
+    "500": {
+     "primary_3x_median": 0.04417180186027114,
+     "B0_3x_median": 0.11292368825651433,
+     "primary_1x_median": 0.05784996354918459,
+     "ew7_1x_median": 0.0810819645712012,
+     "primary_1x_minus_ew7_1x_median": -0.021854978707335437
+    },
+    "1000": {
+     "primary_3x_median": 0.06170996907663251,
+     "B0_3x_median": 0.11494236661739565,
+     "primary_1x_median": 0.06529427799419074,
+     "ew7_1x_median": 0.08245713818459965,
+     "primary_1x_minus_ew7_1x_median": -0.017047121560335277
+    },
+    "2000": {
+     "primary_3x_median": 0.081793579643762,
+     "B0_3x_median": 0.1353551597404784,
+     "primary_1x_median": 0.0720383635341405,
+     "ew7_1x_median": 0.08292462155118452,
+     "primary_1x_minus_ew7_1x_median": -0.012165927688448597
+    }
+   },
+   "annual_vol_86_14": {
+    "BusEq": 0.2565997519587983,
+    "Enrgy": 0.2338198189935439,
+    "Hlth": 0.1868770749418798,
+    "Money": 0.2363008758144689,
+    "Utils": 0.1578033672684242,
+    "Shops": 0.18873963924982926,
+    "Manuf": 0.1996417419894698,
+    "SPXpx": 0.1848837371141659,
+    "NDXpx": 0.2728394989664215
+   },
+   "reading": "At 1x on real history the rule earns 8.5% against 8.7% for a static equal-weight hold of the same sectors; on the paths 5.4% against 8.7%. So scrambling alone costs about 3 points a year before leverage: the 252-day lookback is longer than the 250-day block, so the ranking mostly describes a different block from the one being traded. At 3x that loss is multiplied (static 3x equal weight 8.2%, rule 3.2%). With longer blocks the 3x median rises 3.7 -> 4.4 -> 6.2 -> 8.2% (250/500/1000/2000 days) toward the real figure on the same 21-day grid (median 8.9%)."
+  },
+  "fairness_sensitivities": {
+   "total_return_basis_500_paths": {
+    "primary": {
+     "median": 0.08043213898806967,
+     "p10": -0.02158425977382275,
+     "p90": 0.1972080405033676,
+     "mean": 0.08482193432415458,
+     "dd80": 0.886,
+     "d_vs_v1": -0.08459859125137137,
+     "win": 0.138
+    },
+    "B0": {
+     "median": 0.09748064500865594,
+     "p10": 0.017446988599001803,
+     "p90": 0.18928600574303975,
+     "mean": 0.10109901854376378,
+     "dd80": 0.622
+    }
+   },
+   "total_return_basis_real_legs_H1": {
+    "real_ndx_86_14": {
+     "primary_tr": 0.18194339086543287,
+     "B0_tr": 0.13277157213221513
+    },
+    "real_spx_55_85": {
+     "primary_tr": 0.19932981245100456,
+     "B0_tr": 0.12264404993563316
+    },
+    "real_spx_70_85": {
+     "primary_tr": 0.11805375262112228,
+     "B0_tr": 0.11092327508994937
+    }
+   },
+   "v1_on_total_return_market_SP_era": {
+    "real_spx_55_85": {
+     "spx_price_index": 0.11935470352055622,
+     "french_market_total_return": 0.14436634850068564
+    },
+    "real_spx_70_85": {
+     "spx_price_index": 0.12633407400836472,
+     "french_market_total_return": 0.162812639276942
+    }
+   },
+   "fair_gate_i_with_H1_on_total_return": {
+    "p": 0.357,
+    "mean_dlog": -0.016129306304060172,
+    "legs": {
+     "real_ndx_86_14": {
+      "h1_tr": 0.18194339086543287,
+      "v1_px": 0.3108146630765727
+     },
+     "real_spx_55_85": {
+      "h1_tr": 0.19932981245100456,
+      "v1_px": 0.11935470352055622
+     }
+    }
+   },
+   "long_blocks_2000_v1_vs_H1": {
+    "2000": {
+     "v1_median": 0.2823698160956146,
+     "px": {
+      "h1_median": 0.081793579643762,
+      "d_vs_v1_median": -0.19235114848905077,
+      "win_share": 0.0
+     },
+     "tr": {
+      "h1_median": 0.12254180914698454,
+      "d_vs_v1_median": -0.15800921466188556,
+      "win_share": 0.013333333333333334
+     }
+    }
+   },
+   "phase_robustness_sealed_TR": {
+    "1927_54": {
+     "primary_min": 0.015033754227045337,
+     "primary_median": 0.06369625679377156,
+     "primary_max": 0.10406501588131523,
+     "B0_min": 0.03990048409400604,
+     "B0_median": 0.06515607572419069,
+     "B0_max": 0.11212778779285637,
+     "phases_primary_beats_B0": 8,
+     "month_end_primary": 0.01877145150717663,
+     "month_end_B0": 0.049892337329688896
+    },
+    "1955_85": {
+     "primary_min": 0.15576810575027866,
+     "primary_median": 0.1861434510794966,
+     "primary_max": 0.2099863563681461,
+     "B0_min": 0.06558151259368539,
+     "B0_median": 0.103945353259427,
+     "B0_max": 0.12870321690639663,
+     "phases_primary_beats_B0": 21,
+     "month_end_primary": 0.18538725600264838,
+     "month_end_B0": 0.11092285999045615
+    },
+    "1986_14": {
+     "primary_min": 0.05279128847098802,
+     "primary_median": 0.10478052403233207,
+     "primary_max": 0.1510488195043489,
+     "B0_min": 0.0874014174190294,
+     "B0_median": 0.11686884871189096,
+     "B0_max": 0.14492046871155018,
+     "phases_primary_beats_B0": 8,
+     "month_end_primary": 0.1626374980967209,
+     "month_end_B0": 0.1206600309698691
+    },
+    "full": {
+     "primary_min": 0.088399087679919,
+     "primary_median": 0.11717271910889404,
+     "primary_max": 0.14487380124376092,
+     "B0_min": 0.07877552145576483,
+     "B0_median": 0.09359225415788575,
+     "B0_max": 0.11311187277307777,
+     "phases_primary_beats_B0": 19,
+     "month_end_primary": 0.11748817309618587,
+     "month_end_B0": 0.09197308839854723
+    }
+   }
+  },
+  "timing_cross_check": {
+   "what": "market-trend benchmark 1986-2014, zero cost and zero tax, closed-form daily product with \"decision at close s earns from day s+3\" (no shared loop logic)",
+   "closed_form": 0.155381138450577,
+   "my_engine": 0.15538113845057433,
+   "lane_engine": 0.15538113845057433,
+   "max_abs_diff": 2.7e-15,
+   "no_delay_variant_for_contrast": 0.15826300681476724
+  }
+ },
+ "bugs_found": [
+  {
+   "id": "B1",
+   "severity": "minor",
+   "file": "/home/user/-/research_fresh1/code/a2b_alarm_share.py",
+   "lines": "13, 17",
+   "what": "share_lt_hold1x compares each path with the pool-median 1x hold, not with the same path",
+   "corrected": "21.6% (dev250_path), 0.2% (dev250_glued)",
+   "changes_pass_fail": false
+  }
+ ],
+ "stated_more_strongly_than_evidence": [
+  "C1: \"below the same-path 1x hold 30.2%\" is 21.6% when actually paired.",
+  "C1: the 89th percentile is against the path yardstick, which removes alarm timing by construction; against glued it is 67th, under the pre-registered 75th-percentile line. \"Lucky draw\" holds on one of the two yardsticks.",
+  "C2: \"alarms account for 18.6 points\" measures the alarm-switched trend exit as a whole. In the S&P eras an always-on trend exit reproduces v1 (12.03 / 12.48 vs 11.94 / 12.63), so alarm information adds about nothing there.",
+  "C3: A6 cannot separate path from glued in that era (they coincide), so it is not evidence that 16.2% is the right central expectation for NDX. The 1970-85 percentile (82-85) falls to 74-75 at the matching 16-year horizon.",
+  "C4(c): -13.7 points and 3.4% wins are on the price basis, which removes 1.0-4.9%/yr of sector dividends (x3) while NDX loses under 1%. On total returns the primary median is 8.04%, the gap -8.5 points, wins 13.8%. v1 still wins.",
+  "C4(c): 250-day blocks cannot carry a 252-day ranking, so the simulation is close to uninformative about sector momentum; it is a harsh test rather than a neutral one. Direction is unchanged with 2000-day blocks (v1 28.2% vs H1 8.2% px / 12.3% TR).",
+  "C4(d): \"S&P 1955-85 10.79% vs 11.94%\" flips on a like-for-like total-return basis: H1 19.93% vs v1 14.44% (v1 on the French total-return market). 1970-85 stays v1 ahead (11.81% vs 16.28%), 1986-2014 too (18.19% vs 31.08%).",
+  "C4(b): era values depend on the decision day. On 21-day grids (21 phases) the primary beats B0 in 8/21 phases in 1927-54 (median 6.4% vs 6.5%), 21/21 in 1955-85, 8/21 in 1986-2014 (median 10.5% vs 11.7%); the month-end 16.26% for 1986-2014 is above every one of the 21 phases and the month-end 1.88% for 1927-54 is near the bottom. Only 1955-85 is robust. The fail verdict does not depend on this.",
+  "C4(d): the real 1986-2014 value 12.43% is at the top of its phase range (4.9-12.5%, median 8.9%).",
+  "C4(e): P = 2.4% is price basis; with H1 on total returns against v1 on price (upper bound for H1) it is 35.7%. Both are far under the 90% line."
+ ],
+ "not_reviewed": "Files that appeared in the lane code folder during this audit (a6b_era_pools.py, a7_real_leg_bias.py, c_kn.py, c_vt.py) and the raw French folder were not opened. No lane file was edited."
+}

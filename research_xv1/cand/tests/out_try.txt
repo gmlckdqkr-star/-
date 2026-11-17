@@ -1,0 +1,2 @@
+SBC_P1 | SBC-CAP | rows_B_differs 114 rows_w_nonzero 0 w_changes 0 episodes 0 weight_or_B_before_t0 0 t0 None rebuild_mismatch_vs_v1 0 {'result': 'PASS', 'cuts': 236, 'failed_cuts': 0, 'differing_cells': 0} 9s
+CHIP_P1 | CHIP-LEAD-12M | rows_B_differs 0 rows_w_nonzero 771 w_changes 26 episodes 13 weight_or_B_before_t0 0 t0 None  {'result': 'PASS', 'cuts': 306, 'failed_cuts': 0, 'differing_cells': 0} 15s

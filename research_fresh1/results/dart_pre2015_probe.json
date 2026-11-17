@@ -1,0 +1,29 @@
+{
+ "what": "Feasibility probe: can real Korean company fundamentals before 2015 be built from free public filings (OpenDART)? Run 2026-11-11 10:38-10:58Z. No strategy numbers; only <=2014 filings were opened.",
+ "confirmed": {
+  "filing_list_api": "list.json returns periodic reports back to 1999 with filing dates (Samsung Electronics 1999-04-03 annual report for 1998 is listed)",
+  "structured_financial_api": "fnlttSinglAcnt.json: business years 2012 and 2014 -> status 013 (no data); 2015 and 2016 -> 26 rows each. Structured figures start at business year 2015.",
+  "original_documents_filed_2004_03_or_later": {
+   "tested": ["20040330001899 Samsung Electronics FY2003", "20050331002046 Samsung Electronics FY2004", "20050331001023 Sungkwang Bend FY2004 (KOSDAQ)", "20050330000492 Mobase Electronics FY2004 (KOSDAQ)", "20090331001631 Unison FY2008 (KOSDAQ)", "20090330000753 Jaeyoung Solutec FY2008 (KOSDAQ)", "20090331002605 DnShop FY2008 (later delisted)"],
+   "result": "7 of 7 complete; total assets, total liabilities, total equity, operating profit and net income are present with 3 fiscal years of columns; assets = liabilities + equity holds exactly in all 7"
+  },
+  "original_documents_filed_2003_or_earlier": {
+   "tested": ["19990403000009", "20000330000796", "20000515000739", "20030331001534", "20030407000694"],
+   "result": "5 of 5 (all Samsung Electronics) arrive cut off before the financial section; only a 5-year net income / dividend table is present"
+  },
+  "delisted_firms": "list.json with corp_cls=E returns later-delisted companies with their old stock codes (784 periodic reports in 2009-03 under class E); corpCode.xml holds 119,989 companies of which 4,014 carry a stock code",
+  "volume": "periodic reports filed per year by currently listed companies (classes Y+K, latest versions): 4,192 in 2005, 5,017 in 2009, 5,945 in 2014; class E adds delisted firms",
+  "speed_from_cloud": "about 6-8 seconds per report (17 s for a 5 MB one); corpCode.xml (3.6 MB) took 246 s"
+ },
+ "not_verified": [
+  "parser accuracy at scale (units won / thousand won / million won, layout differences; the quick pattern picked the wrong cell for sales in several reports)",
+  "whether small companies' reports filed in 2004 are all complete (only Samsung tested for that year)",
+  "the daily request limit of the service",
+  "quarterly and half-year reports (not opened)"
+ ],
+ "size_estimate_inference": "annual reports only, about 1,700-2,000 companies x 11 filing years (2004-2014) = about 20,000 documents = about 40 hours of continuous download from this environment; quarterly reports would be about 4x",
+ "caveats": [
+  "design window would be fiscal 2003-2013 (11 years) for point-in-time values; comparison columns reach back to fiscal 2001 but may be restated",
+  "the 2015+ period was already opened once for Korean stock selection (IS5, verdict REJECT), so it is no longer a clean final check for that family"
+ ]
+}
