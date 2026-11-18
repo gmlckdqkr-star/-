@@ -1,0 +1,100 @@
+== base  147s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 8 union v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src v1|s0.1|L1.0|K1|RB adopt_path v1|s0.1|L1.0|K1|RB gate {}
+  T30 n_in 106 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB df1 v1|s0.2|L1.0|K1|RB adopt_src v1|s0.2|L1.0|K1|RB adopt_path v1|s0.2|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.07597, 'bondx0_path': 0.07939, 'cost2x': 0.10317}, 'df1': {'bondx0_src': 0.08084, 'bondx0_path': 0.08332, 'cost2x': 0.07494}}
+  T40 n_in 431 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src v1|s0.3|L1.0|K2|RB adopt_path DF2|M2|b1|v1|s0.3|L1.5|K2|RB gate {'df2': {'bondx0_src': 0.09546, 'bondx0_path': 0.09987, 'cost2x': 0.11818}, 'df1': {'bondx0_src': 0.09816, 'bondx0_path': 0.09969, 'cost2x': 0.0912}}
+  pick T25          path 0.08972 mddp10 -0.24055 ndx 0.10357/-0.19054 spx29 -0.23965 WD -0.24055
+  pick T30          path 0.10177 mddp10 -0.29973 ndx 0.11611/-0.21022 spx29 -0.27168 WD -0.29973
+  pick T40          path 0.13239 mddp10 -0.39256 ndx 0.16295/-0.30898 spx29 -0.36930 WD -0.39256
+  pick T40_gatefix  path 0.11424 mddp10 -0.34777 ndx 0.14758/-0.25641 spx29 -0.30313 WD -0.34777
+== W0_30M  209s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 8 union v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src v1|s0.1|L1.0|K1|RB adopt_path v1|s0.1|L1.0|K1|RB gate {}
+  T30 n_in 99 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB df1 v1|s0.15|L1.0|K1|RB adopt_src v1|s0.15|L1.0|K1|RB adopt_path DF2|M2|b1|v1|s0.15|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.07134, 'bondx0_path': 0.07532, 'cost2x': 0.09892}, 'df1': {'bondx0_src': 0.0721, 'bondx0_path': 0.07373, 'cost2x': 0.07182}}
+  T40 n_in 426 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src v1|s0.3|L1.0|K2|RB adopt_path v1|s0.3|L1.0|K2|RB gate {'df2': {'bondx0_src': 0.08891, 'bondx0_path': 0.09486, 'cost2x': 0.11382}, 'df1': {'bondx0_src': 0.0932, 'bondx0_path': 0.09537, 'cost2x': 0.08602}}
+  pick T25          path 0.08491 mddp10 -0.24304 ndx 0.09851/-0.19635 spx29 -0.23565 WD -0.24304
+  pick T30          path 0.09578 mddp10 -0.30442 ndx 0.10875/-0.21179 spx29 -0.25749 WD -0.30442
+  pick T40          path 0.12662 mddp10 -0.39131 ndx 0.16091/-0.30986 spx29 -0.36268 WD -0.39131
+  pick T40_gatefix  path 0.10909 mddp10 -0.34816 ndx 0.14161/-0.26071 spx29 -0.30313 WD -0.34816
+== W0_100M  179s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 6 union v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src v1|s0.1|L1.0|K1|RB adopt_path v1|s0.1|L1.0|K1|RB gate {}
+  T30 n_in 97 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB df1 v1|s0.15|L1.0|K1|RB adopt_src DF2|M2|b1|v1|s0.15|L1.0|K1|RB adopt_path DF2|M2|b1|v1|s0.15|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.06836, 'bondx0_path': 0.07297, 'cost2x': 0.09624}, 'df1': {'bondx0_src': 0.06828, 'bondx0_path': 0.07087, 'cost2x': 0.06794}}
+  T40 n_in 426 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src v1|s0.3|L1.0|K2|RB adopt_path v1|s0.3|L1.0|K2|RB gate {'df2': {'bondx0_src': 0.08672, 'bondx0_path': 0.09098, 'cost2x': 0.11083}, 'df1': {'bondx0_src': 0.09064, 'bondx0_path': 0.0921, 'cost2x': 0.08406}}
+  pick T25          path 0.08143 mddp10 -0.24445 ndx 0.09559/-0.19309 spx29 -0.23590 WD -0.24445
+  pick T30          path 0.09221 mddp10 -0.30329 ndx 0.10762/-0.21107 spx29 -0.25519 WD -0.30329
+  pick T40          path 0.12433 mddp10 -0.39119 ndx 0.15672/-0.31139 spx29 -0.36293 WD -0.39119
+  pick T40_gatefix  path 0.10615 mddp10 -0.35360 ndx 0.13785/-0.26143 spx29 -0.30313 WD -0.35360
+== W0_300M  144s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 6 union v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src v1|s0.1|L1.0|K1|RB adopt_path v1|s0.1|L1.0|K1|RB gate {}
+  T30 n_in 95 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB df1 v1|s0.15|L1.0|K1|RB adopt_src DF2|M2|b1|v1|s0.15|L1.0|K1|RB adopt_path DF2|M2|b1|v1|s0.15|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.06724, 'bondx0_path': 0.07187, 'cost2x': 0.09503}, 'df1': {'bondx0_src': 0.0672, 'bondx0_path': 0.06993, 'cost2x': 0.06684}}
+  T40 n_in 425 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src v1|s0.3|L1.0|K2|RB adopt_path v1|s0.3|L1.0|K2|RB gate {'df2': {'bondx0_src': 0.08469, 'bondx0_path': 0.08953, 'cost2x': 0.10974}, 'df1': {'bondx0_src': 0.08909, 'bondx0_path': 0.09135, 'cost2x': 0.08377}}
+  pick T25          path 0.08045 mddp10 -0.24597 ndx 0.09447/-0.19586 spx29 -0.24012 WD -0.24597
+  pick T30          path 0.09174 mddp10 -0.30461 ndx 0.10454/-0.21087 spx29 -0.25359 WD -0.30461
+  pick T40          path 0.12400 mddp10 -0.39217 ndx 0.15696/-0.31041 spx29 -0.36168 WD -0.39217
+  pick T40_gatefix  path 0.10559 mddp10 -0.35384 ndx 0.13702/-0.26167 spx29 -0.30313 WD -0.35384
+== bond7y  143s  ex_src 1.253e-04 ex_path 1.144e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 34 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src DF2|M2|b1|v1|s0.15|L1.0|K1|RB adopt_path DF2|M2|b1|v1|s0.15|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.07724, 'bondx0_path': 0.08039, 'cost2x': 0.10082}, 'df1': {'bondx0_src': 0.06884, 'bondx0_path': 0.07079, 'cost2x': 0.06944}}
+  T30 n_in 172 union DF2|M2|b1|v1|s0.2|L1.0|K1|RB df1 v1|s0.15|L1.0|K2|RB adopt_src v1|s0.15|L1.0|K2|RB adopt_path v1|s0.15|L1.0|K2|RB gate {'df2': {'bondx0_src': 0.07959, 'bondx0_path': 0.08326, 'cost2x': 0.10527}, 'df1': {'bondx0_src': 0.08767, 'bondx0_path': 0.08914, 'cost2x': 0.08097}}
+  T40 n_in 486 union DF2|M2|b2|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src DF2|M2|b2|v1|s0.3|L1.5|K2|RB adopt_path DF2|M2|b2|v1|s0.3|L1.5|K2|RB gate {'df2': {'bondx0_src': 0.09656, 'bondx0_path': 0.09943, 'cost2x': 0.1189}, 'df1': {'bondx0_src': 0.09538, 'bondx0_path': 0.0968, 'cost2x': 0.0869}}
+  pick T25          path 0.08755 mddp10 -0.22076 ndx 0.10152/-0.18012 spx29 -0.24165 WD -0.24165
+  pick T30          path 0.09691 mddp10 -0.27820 ndx 0.11344/-0.21600 spx29 -0.25060 WD -0.27820
+  pick T40          path 0.12843 mddp10 -0.37028 ndx 0.15861/-0.30223 spx29 -0.35688 WD -0.37028
+  pick T40_gatefix  path 0.11106 mddp10 -0.33079 ndx 0.14483/-0.25604 spx29 -0.30000 WD -0.33079
+== bondER25  141s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 8 union v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src v1|s0.1|L1.0|K1|RB adopt_path v1|s0.1|L1.0|K1|RB gate {}
+  T30 n_in 101 union DF2|M2|b1|v1|s0.2|L1.0|K1|RB df1 v1|s0.15|L1.0|K1|RB adopt_src DF2|M2|b1|v1|s0.2|L1.0|K1|RB adopt_path DF2|M2|b1|v1|s0.2|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.07882, 'bondx0_path': 0.08203, 'cost2x': 0.10788}, 'df1': {'bondx0_src': 0.07687, 'bondx0_path': 0.07937, 'cost2x': 0.07548}}
+  T40 n_in 431 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src v1|s0.3|L1.0|K2|RB adopt_path v1|s0.3|L1.0|K2|RB gate {'df2': {'bondx0_src': 0.0956, 'bondx0_path': 0.0997, 'cost2x': 0.118}, 'df1': {'bondx0_src': 0.09778, 'bondx0_path': 0.10023, 'cost2x': 0.09178}}
+  pick T25          path 0.08909 mddp10 -0.24125 ndx 0.10309/-0.19096 spx29 -0.23641 WD -0.24125
+  pick T30          path 0.10099 mddp10 -0.30150 ndx 0.11543/-0.20967 spx29 -0.25838 WD -0.30150
+  pick T40          path 0.13149 mddp10 -0.39232 ndx 0.16303/-0.30706 spx29 -0.36412 WD -0.39232
+  pick T40_gatefix  path 0.11360 mddp10 -0.34782 ndx 0.14615/-0.25950 spx29 -0.30038 WD -0.34782
+== harvest0  139s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 8 union v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src v1|s0.1|L1.0|K1|RB adopt_path v1|s0.1|L1.0|K1|RB gate {}
+  T30 n_in 104 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB df1 v1|s0.15|L1.0|K1|RB adopt_src v1|s0.15|L1.0|K1|RB adopt_path v1|s0.15|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.0751, 'bondx0_path': 0.0797, 'cost2x': 0.10337}, 'df1': {'bondx0_src': 0.07737, 'bondx0_path': 0.08015, 'cost2x': 0.07711}}
+  T40 n_in 431 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src v1|s0.3|L1.0|K2|RB adopt_path DF2|M2|b1|v1|s0.3|L1.5|K2|RB gate {'df2': {'bondx0_src': 0.09448, 'bondx0_path': 0.0989, 'cost2x': 0.11822}, 'df1': {'bondx0_src': 0.09697, 'bondx0_path': 0.0989, 'cost2x': 0.09037}}
+  pick T25          path 0.09029 mddp10 -0.24125 ndx 0.10318/-0.19054 spx29 -0.23598 WD -0.24125
+  pick T30          path 0.10118 mddp10 -0.30033 ndx 0.11510/-0.21078 spx29 -0.25353 WD -0.30033
+  pick T40          path 0.13016 mddp10 -0.39295 ndx 0.16209/-0.30779 spx29 -0.36913 WD -0.39295
+  pick T40_gatefix  path 0.11189 mddp10 -0.35115 ndx 0.14512/-0.26007 spx29 -0.30313 WD -0.35115
+== cost020  142s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 12 union v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L1.0|K1|RB adopt_src v1|s0.1|L1.0|K1|RB adopt_path v1|s0.1|L1.0|K1|RB gate {}
+  T30 n_in 120 union DF2|M2|b1|v1|s0.2|L1.0|K1|RB df1 v1|s0.2|L1.0|K1|RB adopt_src v1|s0.2|L1.0|K1|RB adopt_path v1|s0.2|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.08278, 'bondx0_path': 0.08658, 'cost2x': 0.11474}, 'df1': {'bondx0_src': 0.09026, 'bondx0_path': 0.09273, 'cost2x': 0.09319}}
+  T40 n_in 592 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.5|K2|RB adopt_src v1|s0.3|L1.5|K2|RB adopt_path v1|s0.3|L1.5|K2|RB gate {'df2': {'bondx0_src': 0.10098, 'bondx0_path': 0.10419, 'cost2x': 0.12823}, 'df1': {'bondx0_src': 0.1047, 'bondx0_path': 0.10565, 'cost2x': 0.1007}}
+  pick T25          path 0.09564 mddp10 -0.23406 ndx 0.10931/-0.18609 spx29 -0.23073 WD -0.23406
+  pick T30          path 0.11132 mddp10 -0.29776 ndx 0.12389/-0.21411 spx29 -0.24801 WD -0.29776
+  pick T40          path 0.13789 mddp10 -0.38951 ndx 0.16804/-0.30848 spx29 -0.35995 WD -0.38951
+  pick T40_gatefix  path 0.12193 mddp10 -0.34380 ndx 0.15504/-0.25365 spx29 -0.30079 WD -0.34380
+== cost045  140s  ex_src 1.399e-04 ex_path 1.256e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 2 union v1|s0.1|L1.0|K1|RC df1 v1|s0.1|L1.0|K1|RC adopt_src v1|s0.1|L1.0|K1|RC adopt_path v1|s0.1|L1.0|K1|RC gate {}
+  T30 n_in 88 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB df1 v1|s0.15|L1.0|K1|RB adopt_src DF2|M2|b1|v1|s0.15|L1.0|K1|RB adopt_path DF2|M2|b1|v1|s0.15|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.07168, 'bondx0_path': 0.07552, 'cost2x': 0.09545}, 'df1': {'bondx0_src': 0.0661, 'bondx0_path': 0.06764, 'cost2x': 0.05404}}
+  T40 n_in 399 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src DF2|M2|b1|v1|s0.3|L1.5|K2|RB adopt_path DF2|M2|b1|v1|s0.3|L1.5|K2|RB gate {'df2': {'bondx0_src': 0.08887, 'bondx0_path': 0.09245, 'cost2x': 0.10557}, 'df1': {'bondx0_src': 0.08605, 'bondx0_path': 0.08892, 'cost2x': 0.06848}}
+  pick T25          path 0.08087 mddp10 -0.25243 ndx 0.09630/-0.19387 spx29 -0.25673 WD -0.25673
+  pick T30          path 0.08869 mddp10 -0.30995 ndx 0.10356/-0.21225 spx29 -0.26913 WD -0.30995
+  pick T40          path 0.12608 mddp10 -0.39571 ndx 0.16021/-0.30815 spx29 -0.37552 WD -0.39571
+  pick T40_gatefix  path 0.10295 mddp10 -0.35296 ndx 0.13780/-0.25959 spx29 -0.31007 WD -0.35296
+== combo_mid  150s  ex_src 1.253e-04 ex_path 1.144e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 27 union DF2|M2|b2|v1|s0.1|L1.0|K1|RB df1 v1|s0.1|L3.0|K1|RB adopt_src DF2|M2|b2|v1|s0.1|L1.0|K1|RB adopt_path DF2|M2|b2|v1|s0.1|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.06477, 'bondx0_path': 0.06781, 'cost2x': 0.09194}, 'df1': {'bondx0_src': 0.06371, 'bondx0_path': 0.06532, 'cost2x': 0.06583}}
+  T30 n_in 161 union DF2|M2|b1|v1|s0.15|L1.0|K2|RB df1 v1|s0.15|L1.0|K2|RB adopt_src v1|s0.15|L1.0|K2|RB adopt_path DF2|M2|b1|v1|s0.15|L1.0|K2|RB gate {'df2': {'bondx0_src': 0.08153, 'bondx0_path': 0.08449, 'cost2x': 0.10104}, 'df1': {'bondx0_src': 0.08194, 'bondx0_path': 0.08304, 'cost2x': 0.07601}}
+  T40 n_in 478 union DF2|M2|b2|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src v1|s0.3|L1.0|K2|RB adopt_path DF2|M2|b2|v1|s0.3|L1.5|K2|RB gate {'df2': {'bondx0_src': 0.08898, 'bondx0_path': 0.09283, 'cost2x': 0.11225}, 'df1': {'bondx0_src': 0.08973, 'bondx0_path': 0.09135, 'cost2x': 0.08169}}
+  pick T25          path 0.08219 mddp10 -0.22167 ndx 0.09670/-0.17891 spx29 -0.22957 WD -0.22957
+  pick T30          path 0.09055 mddp10 -0.28008 ndx 0.10753/-0.21384 spx29 -0.26019 WD -0.28008
+  pick T40          path 0.12110 mddp10 -0.37314 ndx 0.15297/-0.30182 spx29 -0.35901 WD -0.37314
+  pick T40_gatefix  path 0.10540 mddp10 -0.33347 ndx 0.13973/-0.26215 spx29 -0.29837 WD -0.33347
+== combo_adv  143s  ex_src 1.253e-04 ex_path 1.144e-04
+  A20 n_in 0 union None df1 None adopt_src None adopt_path None gate {}
+  T25 n_in 16 union DF2|M2|b2|v1|s0.1|L1.0|K1|RB df1 always|s0.1|L2.0|K1|RB adopt_src DF2|M2|b2|v1|s0.1|L1.0|K1|RB adopt_path DF2|M2|b2|v1|s0.1|L1.0|K1|RB gate {'df2': {'bondx0_src': 0.06026, 'bondx0_path': 0.0627, 'cost2x': 0.08562}, 'df1': {'bondx0_src': 0.03598, 'bondx0_path': 0.03778, 'cost2x': 0.03251}}
+  T30 n_in 135 union DF2|M2|b1|v1|s0.15|L1.0|K2|RB df1 v1|s0.2|L1.0|K1|RB adopt_src DF2|M2|b1|v1|s0.15|L1.0|K2|RB adopt_path DF2|M2|b1|v1|s0.15|L1.0|K2|RB gate {'df2': {'bondx0_src': 0.07487, 'bondx0_path': 0.0774, 'cost2x': 0.09261}, 'df1': {'bondx0_src': 0.05199, 'bondx0_path': 0.05438, 'cost2x': 0.03946}}
+  T40 n_in 407 union DF2|M2|b3|v1|s0.3|L1.5|K2|RB df1 v1|s0.3|L1.0|K2|RB adopt_src DF2|M2|b3|v1|s0.3|L1.5|K2|RB adopt_path DF2|M2|b3|v1|s0.3|L1.5|K2|RB gate {'df2': {'bondx0_src': 0.08139, 'bondx0_path': 0.08467, 'cost2x': 0.10097}, 'df1': {'bondx0_src': 0.07388, 'bondx0_path': 0.07657, 'cost2x': 0.05884}}
+  pick T25          path 0.07087 mddp10 -0.23190 ndx 0.08607/-0.19077 spx29 -0.25919 WD -0.25919
+  pick T30          path 0.07406 mddp10 -0.29052 ndx 0.08944/-0.22175 spx29 -0.27009 WD -0.29052
+  pick T40          path 0.11258 mddp10 -0.37628 ndx 0.14483/-0.30333 spx29 -0.38424 WD -0.38424
+  pick T40_gatefix  path 0.09018 mddp10 -0.34160 ndx 0.12834/-0.26075 spx29 -0.30193 WD -0.34160
+DONE

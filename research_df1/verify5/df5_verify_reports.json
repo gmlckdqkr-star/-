@@ -1,0 +1,446 @@
+{
+  "summary": "Independently verify the DF5 0-pass result and the crash-free-world drawdown finding",
+  "agentCount": 5,
+  "logs": [
+    "verifiers done: 4/4"
+  ],
+  "result": {
+    "verifiers": [
+      {
+        "key": "audit",
+        "res": {
+          "verdict": "mixed",
+          "summary": "The precommit hash matches (23ff354b...). The headline result holds and survives every convention change I tested: 0 of the 2,318 unique configs pass G1-G5. My own recount from /tmp/df5w/df5_arr.npz gives single-gate passes G1 167, G2 23, G3 13, G4 0, G5 0, with 0 mismatches against df5_gate. I reran QQQ X30 and got the same figures (median 21.78%, p10 MDD -38.30%), and the three quoted \"closest X30 points\" also match. The gate code matches the precommit exactly. The REAL window is the same for QQQ and candidates (1986-01-02 to 2014-12-31). The 2-day delay, horizon cuts and liquidation tax are identical in dfe and dfk; dfk parity for QQQ is 0. Neutralization uses all paths with t >= 300 in each world. DEF3, LTT and GOLD have no calendar gaps. I re-implemented the A5 ladder independently, and it matches df5fam._ladder exactly (0 weight differences, 0 event mismatches on 6 X paths x 4 configs). The v1 held-path shift in BV has no look-ahead: beng's rec[:,1] is the level in force, so shifting it back 2 days gives the decision-day level.\n\nWhy \"0 pass\" is robust: the binding gate is the X-world drawdown margin. All 13 configs that pass G1-G3 have X p10 MDD 20-68% deeper than QQQ, against a required 10% shallower. The near-misses that do have a 10% DD margin in both X30 and X10 are A5 ladders. They are short of QQQ's return by at least 0.98pp/yr, and the convention changes below do not move them.\n\nWhat is misleading: the secondary claim that in X30 no config beats QQQ on both return and drawdown even at zero margin is literally true, but it rests on a tie. A3|e1.00|c0.20|GOLD+LTT+DEF3|none is -0.005pp pair and +0.25% DD margin. Any of these flips it:\n- passing NDX dividends through to TQQQ/QLD;\n- a 1%/yr term premium on the bonds;\n- measuring before tax.\nThe dividend change is supported by ETF data up to 2014, where actual QLD and TQQQ beat the model by 1.0 to 3.65%/yr.\n\nThe X-world drawdown finding is also largely built into the design. Removing the crash windows removes exactly the periods when bonds and defensive assets paid off. Together with zero-excess neutralization of bonds and gold, diversifiers in X can only cost return or add drawdown.",
+          "issues": [
+            {
+              "severity": "major",
+              "what": "The X30 claim 'no config has both paired median > 0 and a shallower p10 MDD, even at zero margin' rests on a tie, not a finding. The best point, A3|e1.00|c0.20|GOLD+LTT+DEF3|none, sits at pair -0.005pp and DD margin +0.25%. Several defensible conventions flip it to pair > 0 with a shallower DD. X10 is a similar tie (DD margin -0.04%). Only the zero-margin statement changes; G4 still fails because it needs a 10% DD margin.",
+              "where": "df5_main.json rows['A3|e1.00|c0.20|GOLD+LTT+DEF3|none']['X30']; reproduced with /tmp/df5v/audit/s_x.py",
+              "direction": "against candidates",
+              "evidence": "CONFIRMED by my own runs on the X world, in X30 pair pp / DD margin %: baseline -0.005 / +0.25 (matches stored). TQQQ/QLD with NDX dividend 0.55%x(1-0.154) passed through: +0.162 / +0.43. +1%/yr term premium on LTT and B10: +0.067 / +0.32. Both together: +0.235 / +0.50. tax=0 for both QQQ and candidate: +0.375 / +0.47. X10 margin stays between -0.04 and +0.04 in every variant.",
+              "changes_conclusion": true
+            },
+            {
+              "severity": "major",
+              "what": "Leveraged ETFs are modelled conservatively: QLD = 2r-rf-1.70% and TQQQ = 3r-2rf-2.45% on the NDX price return. That is no dividends plus a 0.75% spread per borrowed unit on top of the 0.95% fee. QQQ itself gets the 0.55% dividend proxy, so every TQQQ-financed allocation is penalized by about 3x0.55% = 1.65%/yr per unit of TQQQ weight. This follows the precommit as written, but ETF data up to 2014 says it understates actual returns.",
+              "where": "df5data.py:70-72 (also SSO/UPRO at 82-84); dfe.py:62 er3=0.0245; precommit section 2 table",
+              "direction": "against candidates (leveraged)",
+              "evidence": "CONFIRMED with research/data/panel_f32.npz.xz adjclose, cut to <=2014 at load. QQQ model vs actual total return, 1999-2014: -0.07%/yr (the dividend proxy is accurate). Actual minus model, mean daily difference x252: QLD 2006-06..2014 +0.99%/yr; QLD 2010-02..2014 +2.45%/yr; TQQQ 2010-02..2014 +3.65%/yr. QQQ dividend yield 2010-14 was 1.18%. It does not flip '0 pass': the G4/G5 near-misses are A5 ladders, which hold little QLD/TQQQ, and the dividend variant left A5|DEF3|U0|D2|T200|d0.3 unchanged (X30 pair -0.736).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "major",
+              "what": "The X-world drawdown result is largely produced by how X is built. Dropping the peak-to-trough+250d windows removes exactly the states where bonds and defensive assets hedge NDX, and it oversamples 1986-99, when stocks and bonds moved together. Bonds and gold are also neutralized to zero excess return and equity sleeves to the SPX mean, so any diversifier in X can only cost return or add drawdown. Statements like 'new candidates draw down more than QQQ even without crashes' describe the construction, not independent evidence.",
+              "where": "df5lib._xworld; df5data.panel neutralization",
+              "direction": "against candidates (diversified/defensive)",
+              "evidence": "CONFIRMED (s_xw.py). Exclusion windows: 1987-10-05..1988-10-20, 2000-03-27..2003-10-03, 2007-10-31..2009-11-18. 21-day corr(QQQ, LTT): P -0.094, X -0.011. Mean LTT return in months with NDX below -10%: P +1.59%, X +0.29%. Share of sampled days from 1986-99: P 48.6%, X 60.6%. Arithmetic means in X: QQQ 22.7%, SPX/DEF3 16.5%, LTT 3.5% (P: 16.0/11.6/11.6/3.4).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "The 0.3% per-side cost is charged on both legs of a QQQ to T-bill ETF switch, so each switch costs 0.6% (1.2% per round trip). Together with tax, this explains why the trend filters look so bad. It is a literal reading of the precommit, but harsh, since a real T-bill ETF spread is around 0.01%.",
+              "where": "dfe.py:81-84; dfk.py:62-65 (cost on every asset leg, including TBILL)",
+              "direction": "against candidates (timing)",
+              "evidence": "CONFIRMED, REAL world, A1|T200|F1.0|TBILL. Engine: 4.88% CAGR / -65.5% MDD. tax=0: 5.72% / -60.8%. tax=0, cost=0: 10.71% / -46.4%. My independent version, before tax with cost only on the QQQ leg: 8.33% / -51.1%. 222 switches in 29 years. It cannot flip G4: T200-gated configs trail QQQ by about 10pp/yr in X30.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "Bonds are neutralized to zero term premium, so LTT, B10 and TMF earn the T-bill rate minus fees. The coupon is also taxed at 15.4% on y10 or y30, which is usually above rf. This removes a long-run term premium of roughly 1-2%/yr.",
+              "where": "df5data.py:75-78, 97-104",
+              "direction": "against candidates (bond holders)",
+              "evidence": "CONFIRMED: removed shifts were B10 2.75%/yr and LTT 4.79%/yr in X (3.16% and 4.70% in P). Adding back 1%/yr moves A3|e1.00|c0.20|LTT|none X30 pair from -1.00 to -0.78. A6 TMF mixes would gain about 1.35pp/yr, but their X30 DD margin is about -90%, so nothing flips.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "Precommit deviation: the A4 momentum and 200-day-average signals use asset levels from X.lv('QQQ'). In REAL, those levels are not S&P-filled before 1985-10-01 (236 of the 300 warm-up days). The precommit says track A signals should use the S&P fill.",
+              "where": "df5run.py:134-135, 164",
+              "direction": "mostly against candidates (20 of 23 affected configs improve when filled)",
+              "evidence": "CONFIRMED (s_a4.py): the largest change is +0.33pp REAL CAGR (A4|TOP|core|k2|lb252|L1.5, 8.81% to 9.14%). G1 is unchanged for all 23 A4 configs whose REAL result moves.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "MDD is measured on account equity after yearly tax payments. Rebalancing candidates pay tax every year, while QQQ's tax liability stays deferred, so candidates show slightly deeper drawdowns.",
+              "where": "dfe.py:49-57,107-108; dfk.py:24-34,88-90",
+              "direction": "against candidates",
+              "evidence": "CONFIRMED: with tax=0, the DD margin moves by about 0.2pp (A3 c0.20 GOLD+LTT+DEF3: +0.25 to +0.47; A5 D2 T200: +10.31 to +10.11).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Checked and correct: the gate formulas (median, paired median, p10, 0.9 margin); the REAL window being the same for QQQ and candidates; the 2-day delay (decision at close t, executed at close t+2) in both engines; the 63-day forced rebalance charged on turnover; identical horizon cuts and liquidation tax; neutralization on t >= 300 per world; dedupe; and no look-ahead in the ladder or the v1 held path.",
+              "where": "df5gate.gate_row; dfe.run1; dfk.run1; df5fam._ladder/_vladder; df5run.v1_held",
+              "direction": "neutral",
+              "evidence": "CONFIRMED: recount from the arrays matches df5_gate (167/23/13/0/0, 0 mismatches); independent ladder gives 0 weight differences and 0 event mismatches; REAL QQQ engine MDD -0.8279 vs independent -0.8278; dfk/dfe QQQ parity 0. INFERRED from reading beng.run1: rec[:,1] is the level in force (decided at t-2), so the 2-day back-shift in v1_held is correct.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Small spec ambiguities and fills. The USD sleeve has 7 calendar gaps filled with 0 (it is used only in the A4 'wide' universe). A10 50/50 at L1.5 is built as NDX 1.0 / SOX 0.5, with leverage only in the NDX slot. The A5 'confirm on 200-day recovery' fires on any day the index is above its 200-day average, not on a cross from below. The QQQ dividend is credited net of 15.4% but never added to cost basis, so it is taxed again at 22% on sale (about 0.1%/yr deferred, against QQQ).",
+              "where": "df5data._on_cal; df5run.py:122-126; df5fam._ladder line 135; dfe/dfk QQQ leg",
+              "direction": "neutral",
+              "evidence": "Gap counts CONFIRMED from panel meta; the rest INFERRED by reading. None of it affects the X30 frontier.",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "Recomputed gate counts on 2,318 unique configs: G1 167, G2 23, G3 13, G4 0, G5 0; all five 0. 0 mismatches against df5_gate.\n\nQQQ (from my reruns):\n- X30: median 0.2178, p10 MDD -0.3830\n- X10: 0.2046 / -0.3326\n- REAL: CAGR 0.1215, MDD -0.8279\n\nConfigs with pair > 0 and a shallower p10 MDD at zero margin: X30 0, X10 0 (P30 58, P10 60).\n\nX30 sensitivity for A3|e1.00|c0.20|GOLD+LTT+DEF3|none, pair pp / DD margin %:\n- base: -0.005 / +0.25\n- TQQQ dividend passed through: +0.162 / +0.43\n- +1% term premium: +0.067 / +0.32\n- both: +0.235 / +0.50\n- tax=0: +0.375 / +0.47\n- X10 margin in all variants: -0.04 to +0.04\n\nA5|DEF3|U0|D2|T200|d0.3: X30 pair -0.74 in every variant (tax=0: -0.72); DD margin +10.1 to +10.3.\n\nThe 13 configs that pass G1-G3 have X30 DD margins of -20% to -68% (G4 needs +10%).\n\nETF calibration, data cut at <=2014 (actual minus model, %/yr):\n- QQQ 1999-2014: -0.07\n- QLD 2006-14: +0.99\n- QLD 2010-14: +2.45\n- TQQQ 2010-14: +3.65\n\nREAL A1|T200|F1.0|TBILL, CAGR / MDD:\n- engine: 4.88% / -65.5%\n- tax=0: 5.72% / -60.8%\n- tax=0, cost=0: 10.71% / -46.4%\n- independent, before tax, cost on the QQQ leg only: 8.33% / -51.1%\n- 222 switches\n\nX vs P:\n- 21-day corr(QQQ, LTT): -0.011 vs -0.094\n- mean LTT return in NDX < -10% months: 0.29% vs 1.59%\n- share of days from 1986-99: 60.6% vs 48.6%\n\nA4 REAL fill deviation: max change 0.33pp, no change to G1.\n\nLadder re-implementation: 0 differences.\n\nScripts are in /tmp/df5v/audit/ (s_x.py, s_lev2.py, s_real.py, s_xw.py, s_lad.py, s_a4.py, a3.py, a6.py, a7.py)."
+        }
+      },
+      {
+        "key": "repro",
+        "res": {
+          "verdict": "mixed",
+          "summary": "I reproduced the numbers with my own numpy simulator (/tmp/df5v/repro/sim.py and ladder.py; I did not call dfe, dfk, df5fam or run_job for any portfolio accounting). It matches df5_main.json exactly, so the computation is correct. Per path it matches /tmp/df5w/df5_arr.npz to within 3e-8, which is float32 storage precision. QQQ matches bit for bit. I checked all four requested items in X30, P30, P10 and REAL. Recomputed from the stored rows, the pre-registered result also holds: 2,324 configs, 2,318 unique, 0 pass all of G1-G5, single-gate counts G1 167 / G2 23 / G3 13 / G4 0 / G5 0. No stored config has paired median > 0 together with a shallower X30 p10 MDD, even at zero margin. The three quoted 'closest points' are correct.\n\nThe frontier claim is wrong outside the tested grid. The A3 grid only covers NDX exposure e >= 1.0 with diversifier weight c <= 0.5, and no other family pairs TQQQ with an equity sleeve at e < 1. In X30 my own TQQQ+QQQ+DEF3 mixes with e 0.6-0.8 and c 0.45-0.75 beat QQQ on paired median, median and p10 CAGR, and also have a p10 MDD 10-20% shallower (both with zero margin and with the 10% margin). They use the same 63-day rebalance, 0.3% cost and tax rules. Five of the 17 DEF3 mixes I tried pass G4. Two of them pass every gate G1-G5 in my simulator, and also pass H1 (cost x2) and H3 (P125):\n- TQQQ .175 / QQQ .075 / DEF3 .75\n- TQQQ .15 / QQQ .25 / DEF3 .60\n\nCaveats on that finding:\n- It is post-hoc. I picked these mixes after seeing the data, so they carry the same in-sample bias the precommit warns about and must not be adopted without a new pre-registration.\n- It depends on the DEF3 rule. The precommit moves DEF3's mean to the SPX mean, but DEF3's volatility is about 11.6% against NDX's 20.7%. That gives DEF3 a higher excess-return-to-volatility ratio than NDX: 1.10 vs 0.92 in X, 0.57 vs 0.45 in P. If DEF3 is instead set to SPX's ratio, both mixes fail on return in X30, P30 and REAL. With raw, unshifted DEF3, the .15/.25/.60 mix still passes X30, but only by +0.08pp.\n- Mixes using LTT, GOLD, GOLD+LTT(+DEF3), TBILL, SPX or VALUE sleeves at e 0.7-1.3 do follow the claimed frontier: none dominates QQQ in X30.\n\nConclusion: '0 of the pre-registered set pass' is true. 'Nothing beats QQQ in X30 on both return and drawdown' is an artifact of the grid boundaries, and it hinges on an assumption.",
+          "issues": [
+            {
+              "severity": "major",
+              "what": "The X30 'frontier' and 'no config has both' result comes from where the grid stops, not from the X30 world itself. A3 only spans e in {1,1.25,1.5,2} and c in {0.2,0.35,0.5}. No family combines TQQQ with an equity diversifier at NDX exposure below 1 (A1/A2 use DEF3 only as an unlevered QQQ L + DEF3 (1-L) split). Lowering e below 1 with a large DEF3 sleeve gives higher return and a shallower p10 MDD at the same time. Two simple static mixes outside the grid pass all of G1-G5.",
+              "where": "df5fam.py:33-40 (A3 grid ES=[1.0,1.25,1.5,2.0], CS=[0.2,0.35,0.5]); PRECOMMIT_DF5.md sec 3 A3 row",
+              "direction": "against candidates (the region that dominates QQQ was never tested)",
+              "evidence": "Confirmed by my own simulator (frontier.py). Results in /tmp/df5v/repro/front_def3_X30.json and front_win_*.json. X30 QQQ: median 21.78%, p10 16.67%, p10 MDD -38.30%.\nX30 mixes that pass G4:\n- e0.80 c0.45 DEF3 (TQQQ .125 / QQQ .425): pair +1.17pp, p10 MDD -34.45% (10.1% shallower)\n- e0.70 c0.60 (TQQQ .15 / QQQ .25): pair +1.07pp, -32.43% (15.3% shallower)\n- e0.60 c0.75 (TQQQ .175 / QQQ .075): pair +1.01pp, -30.48% (20.4% shallower)\n- e0.70 c0.75 (TQQQ .225 / QQQ .025): pair +2.39pp, -33.86% (11.6% shallower)\n- e0.90 c0.45: pair +2.47pp, but only 1.4% shallower (passes at zero margin, not at 10%)\n\ne0.60 c0.75 DEF3 across all gates:\n- REAL: +1.27pp, MDD -64.9% vs -82.8% (21.6% shallower)\n- P30: pair +0.78, median +1.05, p10 +2.02, DD 17.1% shallower\n- P10: pair +1.07, median +1.17, p10 +2.46, DD 14.9% shallower\n- X10: pair +2.31, median +1.85, p10 +2.38, DD 19.0% shallower\n- Cost x2 (X30 / P30 / REAL): still passes\n- P125 (H3): pair +0.78, DD 13.3% shallower\n\ne0.70 c0.60 DEF3 also passes REAL, P30, P10, X30, X10, cost x2 and P125. In P125 it passes the DD margin only just (DD rel +0.100).",
+              "changes_conclusion": true
+            },
+            {
+              "severity": "major",
+              "what": "The dominating DEF3 mixes depend on how DEF3 is neutralized. The precommit moves DEF3's mean to the SPX mean while DEF3's volatility stays well below SPX's, so DEF3 ends up with a higher excess-return-to-volatility ratio than SPX or NDX (a built-in low-volatility premium). In X the shift also raises DEF3's mean by 1.44%/yr. Change the neutralization and the post-hoc passers disappear. Whichever way the analysis is reported, it should say so explicitly.",
+              "where": "df5data.py:96-105 (kind 'eq': sh = mean(A) - mspx); PRECOMMIT sec 2 'equity-neutral' rule",
+              "direction": "for candidates (it makes DEF3 an unusually strong diversifier)",
+              "evidence": "Confirmed by my own computation of pre-tax stats over sampled days, world X:\n- NDX: excess/vol 0.92, vol 20.7%\n- DEF3: excess/vol 1.10, vol 11.6%, correlation with NDX 0.68\n- SPX: excess/vol 0.91\n- VALUE: excess/vol 0.96\n\nIn P: DEF3 0.57 vs NDX 0.45.\n\nSharpe-neutral DEF3 (excess/vol set equal to SPX's):\n- e0.60 c0.75, pair: X30 -0.88pp, P30 -0.68pp, REAL -0.23pp → fails\n- e0.70 c0.60, pair: X30 -0.44pp, P30 -0.38pp, REAL 0.00pp → fails\n\nRaw DEF3 (no shift):\n- e0.70 c0.60: X30 +0.08pp, still passes G4\n- e0.60 c0.75: X30 -0.21pp, fails\n\nSPX or VALUE sleeves at the same e and c do not dominate: e0.70 c0.60 SPX is 1.9% deeper, VALUE 5.0% deeper.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "MDD is measured on account value after the yearly tax payments, so paying tax counts as drawdown. QQQ buy-and-hold harvests gains only up to the 0.25 deduction and pays essentially no yearly tax. Rebalanced mixes pay every year, so their MDD includes those withdrawals.",
+              "where": "dfk.py:24-34 and 88-90 (tax sale, then E/gpk); same in dfe.py:49-57 and 107-108",
+              "direction": "against candidates",
+              "evidence": "Confirmed by my own computation, using a time-weighted index that excludes the tax withdrawals. X30 p10 MDD relative to QQQ, account-value vs time-weighted:\n- A3 e1 c0.5 DEF3: -0.079 → -0.065\n- A3 e1 c0.2 DEF3: -0.018 → -0.016\n- e0.6 c0.75 DEF3: +0.204 → +0.218\n\nNo pre-registered X30 config changes result.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Reproduction of the requested items is exact (identical to 5 decimals; per-path difference at most 3e-8, float32 storage).",
+              "where": "df5_main.json qqq and rows; /tmp/df5w/df5_arr.npz",
+              "direction": "neutral",
+              "evidence": "Confirmed by my own computation (run_abcd.py), 4 configs × 4 worlds, plus the 'now' ladder variant. Every listed value matched the stored one:\n- QQQ: X30 21.776 / 16.674 / -38.298; P30 12.199 / 6.050 / -84.541; REAL 12.152 / -82.787\n- A3 e1 c0.5 DEF3: X30 26.041 / 20.445 / -41.337, pair +4.200; P30 13.924 / 6.833 / -85.264, pair +1.711\n- A5 DEF3 U0 D2 T200 d0.3: X30 21.128 / 16.369 / -34.350, pair -0.737; P30 12.208 / 6.348 / -82.785, pair -0.032\n- A3 e1 c0.2 GOLD+LTT+DEF3: X30 21.744 / 16.802 / -38.203, pair -0.005\n\nI also recomputed the gate counts and dedupe (2,318 unique; 167/23/13/0/0; 0 all-pass) from the stored rows with my own gate code.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Tax and dividend conventions add small biases against TQQQ-heavy, rebalanced mixes:\n- TQQQ and QLD get no dividend.\n- The QQQ dividend is added after tax but never to the cost basis.\n- The deduction is fixed at 0.25 of initial capital, so in X30, where accounts grow 300x or more, tax deferral favours buy-and-hold.",
+              "where": "df5data.py:12-13, 66-68; dfe.py:142",
+              "direction": "against candidates",
+              "evidence": "Mostly from reading the code. One computed check: switching the e0.6 c0.75 DEF3 mix from 63-day to annual rebalancing raised its X30 pair from +1.01pp to +1.35pp, and e0.7 c0.6 from +1.07pp to +1.39pp. Rebalancing turnover and its taxes therefore cost about 0.3pp a year.",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "REPRODUCTION. All numbers are mine (identical to stored values unless noted). Format: median CAGR / p10 CAGR / p10 MDD, in percent.\n\nQQQ:\n- X30: 21.776 / 16.674 / -38.298\n- P30: 12.199 / 6.050 / -84.541\n- P10: 13.295 / 2.021 / -71.726\n- REAL: 12.152, MDD -82.787\n\nA3|e1.00|c0.50|DEF3|none:\n- X30: 26.041 / 20.445 / -41.337, pair +4.200pp, DD 7.9% deeper\n- P30: 13.924 / 6.833 / -85.264, pair +1.711pp\n- REAL: 14.167, MDD -83.058\n\nA5|DEF3|U0|D2|T200|d0.3:\n- X30: 21.128 / 16.369 / -34.350, pair -0.737pp, DD 10.3% shallower\n- P30: 12.208 / 6.348 / -82.785, pair -0.032pp\n- REAL: 11.946, MDD -81.875\n\nA3|e1.00|c0.20|GOLD+LTT+DEF3|none:\n- X30: 21.744 / 16.802 / -38.203, pair -0.005pp, DD 0.25% shallower\n\nPer-path max difference against df5_arr.npz is 3e-8 or less; QQQ is exactly 0. Gate recount: 2,324 configs, 2,318 unique; G1 167, G2 23, G3 13, G4 0, G5 0; 0 pass all.\n\nX30 FRONTIER, my static mixes (63-day rebalance). Each line: median vs QQQ, pair, p10 MDD shallower than QQQ.\n\nDEF3 sleeve, e < 1:\n- e0.8 c0.3: -0.12pp, pair -0.17pp, +13.0%\n- e0.9 c0.3: +1.37pp, pair +1.28pp, +4.3%\n- e0.7 c0.45: -0.30pp, pair -0.25pp, +19.1%\n- e0.8 c0.45: +1.17pp, pair +1.17pp, +10.1% (passes G4)\n- e0.9 c0.45: +2.52pp, pair +2.47pp, +1.4%\n- e0.6 c0.6: -0.41pp, pair -0.32pp, +24.5%\n- e0.7 c0.6: +1.06pp, pair +1.07pp, +15.3% (passes G4)\n- e0.8 c0.6: +2.44pp, pair +2.41pp, +6.6%\n- e0.9 c0.6: +3.79pp, pair +3.67pp, -1.7%\n- e0.5 c0.75: -0.57pp, pair -0.36pp, +28.9%\n- e0.6 c0.75: +0.91pp, pair +1.01pp, +20.4% (passes G4)\n- e0.7 c0.75: +2.32pp, pair +2.39pp, +11.6% (passes G4)\n\nOther sleeves (pair, DD vs QQQ):\n- TBILL e0.9 c0.1: pair -1.98pp, DD +9.8%\n- TBILL e1.1 c0.2: pair +0.38pp, DD -7.3%\n- LTT e1.0 c0.2: pair -1.00pp, DD -2.7%\n- LTT e1.1 c0.3: pair -0.23pp, DD -13.8%\n- LTT e1.2 c0.35: pair +0.74pp, DD -24.6%\n- GOLD e1.0 c0.2: pair -0.99pp, DD +1.5%\n- GOLD+LTT e1.1 c0.3: pair -0.15pp, DD -9.9%\n- GOLD+LTT+DEF3 e1.3 c0.35: pair +3.64pp, DD -27.5%\n- SPX e0.9 c0.4: pair +1.70pp, DD -9.6%\n- SPX e0.7 c0.6: pair +0.58pp, DD -1.9%\n- VALUE e0.7 c0.6: pair +0.70pp, DD -5.0%\n- VALUE e0.6 c0.75: pair +0.55pp, DD -6.9%\n\nALL-GATE CHECK, e0.6 c0.75 DEF3:\n- G1 REAL: +1.27pp, DD +21.6%\n- G2 P30: pair +0.78pp, median +1.05pp, p10 +2.02pp, DD +17.1%\n- G3 P10: pair +1.07pp, median +1.17pp, p10 +2.46pp, DD +14.9%\n- G4 X30: pair +1.01pp, median +0.91pp, p10 +2.01pp, DD +20.4%\n- G5 X10: pair +2.31pp, median +1.85pp, p10 +2.38pp, DD +19.0%\n- H1 cost x2 (X30 / P30 / REAL): pair +0.97 / +0.71 / +1.20pp\n- H3 P125: pair +0.78pp, DD +13.3%\n\nALL-GATE CHECK, e0.7 c0.6 DEF3:\n- G1 REAL: +1.19pp, DD +15.1%\n- G2 P30: pair +0.79pp, DD +12.6%\n- G3 P10: pair +1.06pp, DD +11.7%\n- G4 X30: pair +1.07pp, DD +15.3%\n- G5 X10: pair +2.20pp, DD +14.1%\n- H1 cost x2: passes\n- H3 P125: pair +0.78pp, DD +10.0%, right at the margin\n\nSENSITIVITY, X30 pair under different DEF3 rules (e0.6 c0.75 / e0.7 c0.6):\n- Sharpe-neutral DEF3: -0.88 / -0.44pp (fail). Also fails in P30 and REAL.\n- Raw DEF3: -0.21 / +0.08pp\n\nPRE-TAX STATS, X world (arithmetic mean, volatility, correlation with NDX):\n- NDX: 22.7%, 20.7%\n- DEF3: 16.5%, 11.6%, 0.68\n- SPX: 16.5%, 14.1%, 0.81\n- LTT: 3.5%, 11.1%, -0.05\n- GOLD: 3.3%, 14.9%, -0.03\n- rf: 3.7%\n\nAbout 110 config-world evaluations in total. Scripts and outputs are in /tmp/df5v/repro (sim.py, ladder.py, run_abcd.py, frontier.py, front_*.json)."
+        }
+      },
+      {
+        "key": "gates",
+        "res": {
+          "verdict": "claims_hold",
+          "summary": "I recomputed everything below myself from /tmp/df5v/gates scripts (g1-g6.py, xw.py, xq.py, xs.py). I did not import df5gate. I used jp.calendar, which cuts data at 2014-12-31, and nothing after 2014 was printed or saved.\n\n(1) Gates. Statistics rebuilt from /tmp/df5w/df5_arr.npz match df5_main.json. The largest gap is 3e-8 for cagr, p10, mdd_med, mdd_p10 and pair, and 0 for REAL. Using either the json or my own array statistics, the single-gate counts on the 2,318 unique configs are G1 167, G2 23, G3 13, G4 0, G5 0. Zero configs pass all five gates. Passing G1 through G3 together gives 13 configs, and G1+G2 gives 23. The distribution of gates passed per config is 0:2151, 1:144, 2:10, 3:13. With the drawdown margin relaxed to 5% or 0%, G4 and G5 still have 0 passers and nothing passes all five. The 13 configs that pass G1-G3 fail X30 badly on drawdown: their p10 MDD is 20% to 69% deeper than QQQ's -38.3%, and most also have a negative paired median.\n\n(2) X30 claim. Counting configs with paired median > 0 and p10 MDD shallower than QQQ gives 0 at the 0%, 5% and 10% margins, in both X30 and X10. Swapping p10 MDD for median MDD also gives 0 at every margin in both worlds. Requiring better paired-median MDD gives 0 in X30 and 1 in X10 (the near-QQQ A3 GOLD+LTT+DEF3 config). Using P(MDD < -50%) gives 1 in X30 and 8 in X10, but that measure means nothing in X: QQQ's own probability is 0.2% in X30 and 0% in X10. At -40% and -35% thresholds the X30 count is 0.\n\nThe three closest X30 points quoted in the claim are exact. Ranked by shortfall from the both-better corner, the five closest are:\n- A3|e1.00|c0.20|GOLD+LTT+DEF3|none: pair -0.005pp, DD +0.25%\n- A5|DEF3|U0|D1|now|d0.3: -0.37pp, +3.5%\n- A5|VALUE|U0|D1|now|d0.3: -0.38pp, +1.3%\n- A5|DEF3|U0|D1|T200|d0.3: -0.41pp, +5.1%\n- A5|VALUE|U0|D1|T200|d0.3: -0.44pp, +2.4%\n\nCaveat: the zero-margin miss is a tie, not a gap. The A3 GOLD+LTT+DEF3 config behaves like QQQ within noise in every world. At the pre-registered 10% margin the gap is real: the best X30 return among configs at least 10% shallower is -0.74pp.\n\n(3) Dedupe. There are exactly 2 groups and 6 dropped configs: A1|N|F1.5 and A1|N|F2.0, each with B10/GOLD/DEF3 dropped in favour of TBILL. Their arrays are identical in all five worlds (max difference 0.0). These are true duplicates: with the signal always on and L > 1 there is no hedge sleeve, so the hedge choice does nothing. No near-duplicates exist (log difference < 1e-6).\n\n(4) X world. Calling df5lib._xworld on its own and my own reimplementation give the same result: 4,645 starts and an identical ii matrix, with no excluded day ever sampled.\n- 1987: peak 1987-10-05, trough 1987-10-26, -39.9%, excluded through 1988-10-20.\n- 2000-02: peak 2000-03-27, trough 2002-10-07, -82.9%, excluded through 2003-10-03. The 2001-2002 second leg is fully excluded.\n- 2007-09: peak 2007-10-31, trough 2008-11-20, -53.7%, excluded through 2009-11-18.\n- 1,669 of 7,312 days (22.8%) are excluded, and 34.2% of the 7,061 block starts available in P.\n- The kept stretches are 1986-01-02 to 1987-10-02, 1988-10-21 to 2000-03-24, 2003-10-06 to 2007-10-30, and 2009-11-19 to 2014-12-31.\n- Drawdowns that remain inside X: 1990 -32.9% (also the worst drawdown inside any single block), 1998 -23.0%, 1992 -18.5%, 1997 -18.2% and -15.3%, 1986 -18.0%, 2006 -17.4%, 1989-90 -16.5%, 2011 -16.1%, 2004 -16.0%, 1994 -15.9%, 2010 -15.9%.\n\nThe construction matches the pre-registration and DF3. It is asymmetric, though. It keeps each bubble run-up up to 1-3 days before the peak (1999: +102%, 1998: +85%), but drops the crash and the 250 days of rebound after the trough (most of 2003's +49%, and March to November 2009). In the X sample, NDX's annualised mean is 22.45% against 15.67% in the source data, its volatility is 20.7% against 27.3%, and bubble days (1995-01 to 2000-03-10) make up 25.3% of path days against 18.5% in P. The NDX-SPX gap widens to 5.8pp (16.6% SPX) from 4.0pp in P. So X is not neutral \"minus the worst\": it removes the crashes but keeps the gains that came before them. That works against any diversified or defensive config. It does not change the 0-pass result.\n\n(5) QQQ in X30 from the path arrays: MDD p10/p50/p90 is -38.30 / -32.85 / -25.01, with a minimum of -50.5% and a maximum of -19.8%. CAGR median is 21.78% and p10 is 16.67%. My own rebuilt X paths, using a pre-tax QQQ proxy, give MDD -38.2 / -32.85 / -25.01, with a path-level correlation of 0.9998 to the stored arrays. That confirms the stored world is the one the code builds.\n\nNot checked: whether neutralization, dividends and tax are correct. I only observed that X-world SPX drift is 16.6% and rf is 3.7%.",
+          "issues": [
+            {
+              "severity": "major",
+              "what": "The X world is asymmetric. It keeps each bubble run-up up to 1-3 trading days before the peak and removes the crash plus 250 days of post-trough rebound. This inflates QQQ's drift and lowers its volatility, so beating QQQ on both return and drawdown becomes structurally very hard for any diversifying or defensive rule.",
+              "where": "df5lib.py _xworld lines 22-34 (excl[p_ : t_+BLK]); same construction as df3.py lines 21-30; PRECOMMIT_DF5.md section 1",
+              "direction": "against candidates",
+              "evidence": "My computation: annualised NDX mean over X-sampled days is 22.45%, against 15.67% in the source data and 15.70% in P. Volatility is 20.7% against 27.3%. Bubble days (1995-01 to 2000-03-10) make up 25.3% of path days in X, against 17.9% in the source and 18.5% in P. The 1998 and 1999 sampling shares are 5.25% and 3.73%. Kept segments end on 2000-03-24 (peak 2000-03-27), 1987-10-02 (peak 1987-10-05) and 2007-10-30 (peak 2007-10-31). The NDX minus SPX drift gap is 5.8pp in X against 4.0pp in P. QQQ median CAGR is 21.78% in X30 against 12.20% in P30. The report-only XSYM30 world gives QQQ 19.25% and p10 MDD -39.5%. This follows the pre-registration and is not a bug.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "The phrase 'even with zero margin' overstates the gap. At zero margin the nearest config ties QQQ: A3|e1.00|c0.20|GOLD+LTT+DEF3|none behaves like QQQ within noise in every base. A slightly different grid point, such as a smaller c or another blend, could plausibly land in the zero-margin both-better quadrant. At the pre-registered 10% margin the gap is real.",
+              "where": "df5_main.json rows['A3|e1.00|c0.20|GOLD+LTT+DEF3|none']",
+              "direction": "neutral",
+              "evidence": "My computation for this config: X30 pair -0.0054pp, p10 MDD +0.25% shallower. X10 pair +0.44pp, p10 MDD 0.04% deeper. P30 pair -0.05pp, DD +0.5%. P10 pair +0.05pp, DD +1.1%. REAL CAGR 12.33% against 12.15%, MDD -82.1% against -82.8%. Best X30 pair among configs with DD at least 10% shallower: -0.74pp (A5|DEF3|U0|D2|T200|d0.3). Best X10: -0.84pp (A5|DEF3|U3|D1|T200|d0.3). The interpolation point about other grid configs is inferred, not computed.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The X windows also remove the strongest rebound periods and the 2001-02 second leg. Moderate drawdowns stay in the X world.",
+              "where": "df5lib._xworld",
+              "direction": "neutral",
+              "evidence": "Excluded windows: 1987-10-05 to 1988-10-20, 2000-03-27 to 2003-10-03, 2007-10-31 to 2009-11-18. These cover most of 2003 (+49.1%) and 2009 (+53.5%); the 2001-02 leg is excluded. Remaining drawdowns of at least 15% on real history: 1990-07-16 to 1990-10-11 -32.9%, 1998-07-20 to 1998-10-08 -23.0%, 1992 -18.5%, 1997-10 -18.2%, 1986 -18.0%, 2006 -17.4%, 1989-90 -16.5%, 2011-07-22 to 2011-08-19 -16.1%, 2004 -16.0%, 1994 -15.9%, 2010 -15.9%, 1997-01 -15.3%. The worst drawdown inside a single 250-day block is -32.9% (1990). Concatenated QQQ paths reach -50.5% at worst.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "P(MDD < -50%) is a meaningless drawdown measure in the X worlds because QQQ almost never hits that level. It is the only measure under which any config 'beats' QQQ with a positive paired median in X.",
+              "where": "alternate-metric check (my g4.py/g5.py)",
+              "direction": "for candidates",
+              "evidence": "QQQ P(MDD<-50%) is 0.002 in X30 and 0.000 in X10. With pair > 0 and P at or below QQQ's, the counts are 1 in X30 (A3|e1.00|c0.20|DEF3) and 8 in X10. At -40% and -35% thresholds the X30 count is 0, and X10 gives 1-2 (A3 GOLD+LTT+DEF3 variants).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The json 'win' field differs from win rates recomputed from the float32 arrays, by up to 0.148 in P10. These are tie effects for configs whose CAGR is close to QQQ's. 'win' is not used in any gate.",
+              "where": "df5_main.json rows[*][world]['win'] vs df5_arr.npz",
+              "direction": "neutral",
+              "evidence": "Max |win difference| is 0.02 in P30, 0.148 in P10, 0.102 in X30 and 0.292 in X10. Every gate-relevant field (cagr, p10, mdd_med, mdd_p10, pair) matches within 3e-8.",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "Everything below is my own computation.\n\n**Gates (2,318 unique configs)**\n- Single-gate counts at the 10% margin: G1 167, G2 23, G3 13, G4 0, G5 0. Configs passing all five: 0. G1 to G3 only: 13.\n- At 5% margin: G1 179, G2 45, G3 31, G4 0, G5 0. All five: 0.\n- At 0% margin: G1 189, G2 58, G3 52, G4 0, G5 0. All five: 0.\n- Gates passed per config: 0:2151, 1:144, 2:10, 3:13.\n- Arrays vs json: largest difference 3e-8.\n\n**Dedupe**\n- 2 groups, 6 configs dropped (A1|N|F1.5 and A1|N|F2.0, each with B10, GOLD, DEF3). Identical in all worlds (max difference 0.0). No near-duplicates.\n\n**X30 and X10: configs with paired median > 0 and p10 MDD shallower than QQQ**\n- 0 at the 0%, 5% and 10% margins in both worlds.\n- With median MDD instead of p10 MDD: 0 in both.\n- With paired-median MDD: X30 0, X10 1.\n- With P(MDD < -50%): X30 1, X10 8 (QQQ's own value is 0.002 / 0).\n\n**Closest configs**\n- X30: A3|e1.00|c0.20|GOLD+LTT+DEF3|none, pair -0.0054pp, DD +0.25%.\n- X30 best pair with DD at least 10% shallower: -0.74pp.\n- X30 best DD with pair > 0: -1.8% (A3|e1.00|c0.20|DEF3|none, +1.75pp).\n- X10: same A3 config, pair +0.44pp, DD -0.04%.\n\n**QQQ distribution (from the arrays)**\n\n| World | MDD p10 / p50 / p90 | MDD min / max | CAGR p10 / p50 / p90 |\n|---|---|---|---|\n| X30 | -38.30 / -32.85 / -25.01 | -50.5 / -19.8 | 16.67 / 21.78 / 26.99 |\n| X10 | -33.26 / -25.40 / -18.44 | | |\n| P30 | -84.54 / -67.39 | | |\n\n- Rebuilt X paths match the stored QQQ path MDD with correlation 0.9998.\n\n**X world construction**\n- Valid starts: 4,645 out of 7,061 (34.2% excluded).\n- Excluded days: 1,669 of 7,312 (22.8%).\n\n| Episode | Peak | Trough | Depth | Excluded through |\n|---|---|---|---|---|\n| 1987 | 1987-10-05 | 1987-10-26 | -39.9% | 1988-10-20 |\n| 2000-02 | 2000-03-27 | 2002-10-07 | -82.9% | 2003-10-03 |\n| 2007-09 | 2007-10-31 | 2008-11-20 | -53.7% | 2009-11-18 |\n\n- Annualised NDX mean: 22.45% in X, 15.67% in the source data. Volatility: 20.7% vs 27.3%.\n- Annualised SPX mean in X: 16.63%. rf in X: 3.69%.\n- Bubble days as a share of path days: 25.3% in X, 18.5% in P.\n- Largest remaining drawdown: 1990 at -32.9%."
+        }
+      },
+      {
+        "key": "limit",
+        "res": {
+          "verdict": "mixed",
+          "summary": "I checked the claimed counts myself and they hold on the pre-registered grid. Running df5gate.analyse() on df5_main.json plus /tmp/df5w/df5_arr.npz gives N_raw 2324, N_unique 2318, single-gate passes G1 167 / G2 23 / G3 13 / G4 0 / G5 0, and 0 passers. In X30 and X10, no unique config has paired median > 0 together with a p10 MDD at least as shallow as QQQ's. Rerunning the 16 baseline configs I picked in X30 gave the json values exactly (for example A3|e1.00|c0.20|DEF3 pair +1.747pp, p10 MDD -39.0%; QQQ 21.78% / -38.3%).\n\nThe structural-limit test does not support the reading \"no rule can beat QQQ on both in the crash-free world\":\n\n(1) Conventions are not what blocks a pass. I relaxed them one at a time and all together: dividends added to QLD/TQQQ (and to SSO/UPRO), cost 0, delay 1, tax 0, and raw un-neutralized sleeves. None of the 16 frontier configs reaches paired median > 0 with a p10 MDD 10% shallower than QQQ. The zero-margin claim is knife-edge, though. A3|e1.00|c0.20|GOLD+LTT+DEF3 sits at -0.01pp / +0.3% and flips to paired > 0 with a shallower drawdown under the dividend fix (+0.19pp / +0.5%), cost 0 (+0.04pp), raw sleeves (+0.21pp) and tax 0 (+0.43pp).\n\n(2) What blocks a pass is the grid's coverage. The A3 static family only has NDX exposure e in {1, 1.25, 1.5, 2} and sleeve weight c in {0.2, 0.35, 0.5}, and the A1/A5 DEF3 mixes use no leverage. Off-grid levered defensive mixes run through the unchanged DF5 engine (tax 22%, cost 0.3%, delay 2, 63-day rebalance, TQQQ without dividend, DEF3 neutralized) pass both G4 and G5. Example: TQQQ 0.20 / DEF3 0.80 (A3 builder with e=0.60, c=0.80) gets X30 median 23.12% vs 21.78%, paired +1.43pp, p10 CAGR 19.01% vs 16.67%, p10 MDD -31.2% (18.5% shallower). In X10 the same mix gets paired +2.83pp with a drawdown 17.8% shallower. With raw DEF3 it still passes G4, but only just: paired +0.13pp, drawdown 16.7% shallower. I tested these mixes only in X. They are post-hoc, cannot become candidates, and I did not check them against G1-G3.\n\n(3) Volatility timing really cannot do it in X30, even with no frictions. Frictionless pre-tax vol targeting on NDX with a 1-day lag is dominated by plain constant leverage: at the same p10 MDD it earns about 1.8-2pp less. The 1998-99 run-up alone accounts for -1.7%/yr of the -2.1%/yr timing loss. Recomputing with continuous source-calendar volatility gives the same result, so the joins between 250-day blocks are not the cause. In P30 the same vol-targeting rules pass easily, for example paired +3.78pp with a drawdown 22% shallower.\n\nE5 theory:\n- X drops each NDX crash from peak to trough + 250 days but keeps the run-ups before the crashes (1987 H1, 1996-99). So it selects on NDX's own outcome, and high volatility in X points to high returns rather than to danger. Any rule that cuts NDX exposure on a trend, volatility or drawdown signal gives up return in exactly those run-ups and has no crash left to avoid.\n- Bonds and gold neutralized to zero excess return are also uncorrelated with NDX in X (correlation -0.05 to 0). They only add variance: the best (tangency) portfolio of NDX plus these improves the Sharpe ratio by 0.9%. Beating QQQ's drawdown by 10% at equal return needs roughly 11% more Sharpe, plus about 1.2-1.8%/yr per unit of leverage bought through TQQQ.\n- The only way through is a sleeve with a higher Sharpe ratio than NDX. Neutralized DEF3 has 12.8% excess return at 11.6% volatility (Sharpe 1.10, vs QQQ 0.92; raw 0.98), with correlation 0.68 to NDX. Levering a DEF3-heavy mix through TQQQ does beat QQQ on both.\n- So the zero is a fact about the timing rules tested and the grid boundaries, not an economic impossibility. The one route that works rests on DEF3's in-sample low-volatility premium, which the equity-neutral convention enlarges (in X it lifts DEF3 by 1.44%/yr).\n\nScripts and JSON outputs are in /tmp/df5v/limit: exp_main.py/.json (E1-E3), exp_e4.py/.json, exp_static.py/.json, exp_static_engine.py/.json, exp_static_engine_raw.py/.json, exp_sharpe.py/.json, exp_diag.py. I ran about 170 engine evaluations in total, slightly over the ~150 guideline.",
+          "issues": [
+            {
+              "severity": "major",
+              "what": "Grid coverage, not economics, produces '0 pass in X30/X10'. A3 static mixes were limited to NDX exposure e>=1.0 and sleeve weight c<=0.5, and the A1/A5 DEF3 mixes use no leverage, so levered low-NDX / high-DEF3 mixes were never tested. Those mixes pass G4 and G5 under the unchanged DF5 engine.",
+              "where": "df5fam.py configs(): A3 ES=[1.0,1.25,1.5,2.0], CS=[0.2,0.35,0.5]; df5run.job A3 builder (a=(e-1+c)/2, b=1-c-a) works for e<1",
+              "direction": "against candidates",
+              "evidence": "Confirmed by my own computation (/tmp/df5v/limit/exp_static_engine.py), full conventions, X30 (QQQ med 21.78%, p10 16.67%, p10 MDD -38.3%). TQQQ .20/DEF3 .80: med 23.12%, pair +1.43pp, p10 19.01%, p10 MDD -31.2%, 18.5% shallower, G4 pass. TQQQ .175/QQQ .125/DEF3 .70: +1.24pp, 17.5% shallower. TQQQ .15/QQQ .25/DEF3 .60: +1.07pp, 15.3% shallower. 8 of 10 off-grid mixes pass G4 and all 10 pass G5 (X10: TQQQ .20/DEF3 .80 pair +2.83pp, 17.8% shallower). With raw DEF3: TQQQ .20/DEF3 .80 X30 pair +0.13pp, 16.7% shallower, G4 pass; X10 +1.57pp, 16.8% shallower. Not tested in REAL/P (out of scope). Post-hoc only.",
+              "changes_conclusion": true
+            },
+            {
+              "severity": "major",
+              "what": "The X world selects on NDX's own outcome: it drops each crash from peak to trough + 250 days but keeps the run-ups before it. High volatility therefore predicts high returns in X, so every timing rule (trend, vol-target, drawdown knee, ladder) is structurally penalized. G2 (P30) rewards de-risking while G4 (X30) punishes it, which makes the gates close to contradictory for timing rules.",
+              "where": "df5lib._xworld (excl[pk:tr+BLK]); E4 exp_e4.py / exp_diag.py",
+              "direction": "against candidates",
+              "evidence": "Confirmed by my own computation. Frictionless pre-tax vol targeting on NDX in X30 is dominated by constant leverage: VT s0.20 w20 Lmax1.0 gives med 19.53%, 10.0% shallower; constant L0.90 gives 21.38%, 8.9% shallower; L0.85 gives 20.45%, 13.6% shallower. No VT config has pair > 0 and a drawdown at least 10% shallower, or even any shallower drawdown with pair > 0. Arithmetic timing P&L is -2.07%/yr, of which source-year 1998 is -1.02% and 1999 is -0.69%; 1996-97 adds -0.46%. In the X sample, 1998-99 path-days have mean excess return 55-62%/yr while VT holds 0.60-0.74x. Recomputing with continuous source-calendar volatility (no block-junction staleness) gives the same results (pair -3.70 vs -3.61pp). In P30 the same VT passes the X-type gate (s0.25 w20 L1.5: pair +3.78pp, 22.2% shallower; 26 of 48 VT configs pass).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "The 'zero margin' claim (no X30 config with paired > 0 and a shallower p10 MDD) is knife-edge. The closest point flips under any one of several small convention changes.",
+              "where": "df5_main.json rows['A3|e1.00|c0.20|GOLD+LTT+DEF3|none']['X30']",
+              "direction": "against candidates",
+              "evidence": "Confirmed by my own computation. Baseline: pair -0.01pp, drawdown 0.3% shallower (matches json). With TQQQ/QLD dividends: +0.19pp, 0.5% shallower. Cost 0: +0.04pp, 0.3% shallower. Raw sleeves: +0.21pp, 0.4% shallower. Tax 0: +0.43pp, 0.6% shallower. All relaxations with raw sleeves: +0.88pp, 1.3% shallower. A3|e1.00|c0.20|B10 and A3|e1.00|c0.20|LTT also flip under all relaxations with raw sleeves (+0.25pp / 2.1% shallower and +0.71pp / 0.1% shallower). None reaches the 10% margin.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "Leveraged ETFs omit the dividends of their underlying index. QLD/TQQQ are built on the NDX price return with no dividend, and SSO/UPRO on the S&P price return (spx - 2%/252), so UPRO misses about 6%/yr of its notional.",
+              "where": "df5data.panel: out['QLD'], out['TQQQ'], out['SSO'], out['UPRO']; dfe er3=0.0245 on 3r-2rf",
+              "direction": "against candidates",
+              "evidence": "Confirmed by my own computation. E1 (TQQQ +3*0.55%/yr, QLD +2*0.55%/yr) adds +0.19 to +0.78pp pair: A3 e1.25 c0.50 DEF3 +7.38 to +8.16pp; A6 N10 -3.41 to -2.89pp; A1 V0.30 +1.25 to +1.60pp. The drawdown margin barely moves (at most +1pp). Also fixing SSO/UPRO raises A9|MIX|N|L1.5 from +1.89 to +3.02pp; its drawdown is still 14.3% deeper. Does not change the 0 count.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Equity-neutral DEF3 is favoured by the convention: matching arithmetic means lifts DEF3 to SPX's mean (+1.44%/yr in X) while its volatility stays low, giving it a higher Sharpe ratio than NDX. The only structure that passes X30 depends on this in-sample low-volatility premium.",
+              "where": "df5data.panel eq branch sh = mean(A) - mspx; X shift DEF3 = -0.0144/yr",
+              "direction": "for candidates",
+              "evidence": "Confirmed by my own computation (exp_sharpe.py, pooled X paths, t>=300). Excess return / volatility / Sharpe: QQQ 19.03% / 20.71% / 0.919; DEF3 neutral 12.79% / 11.62% / 1.101; DEF3 raw 11.35% / 0.977. Correlation with QQQ is 0.68. Tangency QQQ+DEF3 Sharpe ratio is 1.224x QQQ's (neutral) and 1.128x (raw). The off-grid pass margin drops from +1.43pp to +0.13pp when DEF3 is raw.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Neutralized bonds and gold cannot help in X by construction: zero excess return and roughly zero correlation with NDX. Even raw bonds with frictionless leverage fall short of the 10% margin.",
+              "where": "df5data.panel bond/zx neutralization",
+              "direction": "neutral",
+              "evidence": "Confirmed by my own computation. Correlation with QQQ in X: B10 -0.002, LTT -0.05, GOLD -0.027; tangency QQQ+B10+LTT+GOLD Sharpe ratio is 1.009x QQQ's (neutral) and 1.124x (raw). Static pre-tax daily-rebalanced sweep, raw LTT, frictionless: best pair at a drawdown at least 10% shallower is -1.01pp (n0.80 d0.5); raw B10: -1.24pp.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Tax is the largest convention drag on trading and leveraged rules, but removing it still produces no pass at the 10% margin.",
+              "where": "dfe/dfk tax=0.22 with yearly realization",
+              "direction": "against candidates",
+              "evidence": "Confirmed by my own computation (cost 0, delay 1, tax 0). A7|HAL151 pair +2.19 to +5.36pp, drawdown 16.8% to 12.0% deeper. A1|N|V0.30w20L1.5|DEF3 +1.25 to +4.38pp, 29.9% to 26.0% deeper. QQQ itself goes 21.78 to 22.89%. Cost 0 and delay 1 alone change pair by at most 0.6pp.",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "All values are X30 unless marked; 'shallower/deeper' is p10 MDD vs QQQ's.\n\nRecomputed from df5_main.json and the npz: G1 167, G2 23, G3 13, G4 0, G5 0; N_unique 2318; no unique config in X30 or X10 has pair > 0 with a drawdown at least as shallow as QQQ's. Best pair among configs at least 10% shallower: X30 A5|DEF3|U0|D2|T200|d0.3 -0.74pp (10.3% shallower); X10 A5|DEF3|U3|D1|T200|d0.3 -0.84pp (13.1% shallower).\n\nE1-E3 engine runs (config: median% | pair pp | margin %; positive margin = shallower).\nConditions: base; E1 = TQQQ/QLD dividends; c0 = cost 0; c0d1 = cost 0 and delay 1; t0 = cost 0, delay 1 and tax 0; ALLn = t0 plus all leveraged-ETF dividends; E3raw = raw sleeves; ALLraw = ALLn with raw sleeves.\nQQQ median / p10 MDD: base and E1 21.78 / -38.3; c0 and c0d1 21.89 / -38.2; t0 and ALL 22.89 / -38.2; E3raw 21.78 / -38.3.\n- A3 e1.00 c0.20 GOLD+LTT+DEF3: base 21.74 | -0.01 | +0.3; E1 21.94 | +0.19 | +0.5; c0 +0.04 | +0.3; t0 23.24 | +0.43 | +0.6; ALLn +0.64 | +0.9; E3raw +0.21 | +0.4; ALLraw 23.69 | +0.88 | +1.3\n- A3 e1.00 c0.20 DEF3: base 23.67 | +1.75 | -1.8; E1 +1.95 | -1.8; t0 +2.31 | -1.5; E3raw +1.41 | -2.9; ALLraw +2.18 | -1.9\n- A3 e1.00 c0.50 DEF3: base 26.04 | +4.20 | -7.9; E1 +4.69 | -7.5; ALLn +6.28 | -6.2; E3raw +3.34 | -8.8\n- A3 e1.25 c0.50 DEF3: base +7.38 | -27.9; ALLn +10.37 | -24.7\n- A3 e1.00 c0.20 B10: base -0.96 | +0.1; E3raw -0.34 | +1.3; ALLraw +0.25 | +2.1\n- A3 e1.00 c0.20 LTT: base -1.00 | -2.7; E3raw +0.05 | -0.8; ALLraw +0.71 | +0.1\n- A5 DEF3 U0 D1 now d0.3: base -0.37 | +3.5; ALLraw -0.43 | +2.8\n- A5 DEF3 U0 D2 T200 d0.3: base 21.13 | -0.74 | +10.3; c0d1 -0.71 | +10.0; ALLn -0.71 | +10.1; E3raw -0.88 | +8.5\n- A5 DEF3 U0 D0 d0.3 (70/30 QQQ/DEF3, drifting): base 20.73 | -1.08 | +14.2; ALLraw -1.21 | +11.7\n- A9 MIX N L1.5: base +1.89 | -14.8; E1 +2.13 | -14.8; E1 with SSO/UPRO dividends +3.02 | -14.3; ALLn +4.08 | -13.0\n- A7 HAL151: base +2.19 | -16.8; t0 +5.36 | -12.0; ALLn +5.63 | -11.1\n- A1 N V0.30w20L1.5 DEF3: base +1.25 | -29.9; c0 +1.76 | -28.6; ALLn +4.82 | -25.3\n- A1 N V0.20w60L1.5 DEF3: base -2.61 | -13.6; c0d1 -2.11 | -11.9; ALLn -0.42 | -11.1\n- A6 N10: base -3.41 | -16.2; E3raw -0.47 | -8.8; ALLraw +1.81 | -5.8\nResult: under every condition, 0 of 16 pass G4 and 0 reach pair > 0 with a drawdown at least 10% shallower.\n\nE4, frictionless pre-tax vol targeting (NDX + 0.55%/yr dividend, 1-day lag, cash and borrowing at rf).\n- X30 QQQ: median 23.24%, p10 MDD -38.0%; NDX volatility 20.7%.\n- Constant leverage: L0.85 20.45% (13.6% shallower); L0.90 21.38% (8.9% shallower); L1.10 25.05% (9.0% deeper).\n- VT s0.20 w20 L1.0: 19.53%, pair -3.61, 10.0% shallower. s0.30 w20 L1.0: -1.26, 1.8% deeper. s0.30 w60 L1.0: -0.95, 0.1% shallower. s0.35 w60 L1.0: -0.42, 0.1% shallower. s0.25 w20 L1.5: +1.45, 20.2% deeper.\n- X30 result: 0 of 48 VT configs pass, and 0 have pair > 0 with a shallower drawdown.\n- P30 QQQ: median 13.40%, p10 MDD -84.4%. 26 of 48 VT configs pass the X-type gate, e.g. s0.20 w20 L1.0 +0.47pp (35.4% shallower); s0.25 w20 L1.5 +3.78pp (22.2% shallower).\n- X timing P&L: -2.07%/yr in total; source-year 1998 -1.02, 1999 -0.69, 1996 -0.24, 1997 -0.22, 2011 -0.24.\n\nStatic sweep, X30, pre-tax, daily rebalanced, feasible with TQQQ only (DEF3 <= 1 - NDX/3), financing rf + 1.225%/yr + 0.55%/yr missing dividend. QQQ frictionless 23.24%, p10 MDD -38.0%.\n- Neutral DEF3: 13 of 123 pass, e.g. NDX 0.60 / DEF3 0.80 +2.68pp, 14.9% shallower.\n- Raw DEF3: 7 pass, e.g. same mix +1.23pp, 13.5% shallower.\n- SPX and VALUE sleeves: 0 pass (best -0.67pp at 10.7% shallower).\n\nOff-grid mixes through the full DF5 engine, X30 (QQQ 21.78 / p10 16.67 / p10 MDD -38.3):\n- TQQQ .20 / DEF3 .80: 23.12 | +1.43 | p10 19.01 | -31.2, 18.5% shallower, PASS\n- TQQQ .175 / QQQ .125 / DEF3 .70: +1.24 | 17.5% shallower, PASS\n- TQQQ .15 / QQQ .25 / DEF3 .60: +1.07 | 15.3% shallower, PASS\n- TQQQ .175 / QQQ .025 / DEF3 .80: +0.77 | 22.7% shallower, PASS\n- TQQQ .075 / QQQ .525 / DEF3 .40: +0.01 | 15.6% shallower, PASS (median 21.81 vs 21.78)\n- TQQQ .05 / QQQ .65 / DEF3 .30: -0.17 | 13.0% shallower, fail\n- X10 (QQQ 20.46 / 14.39 / -33.3): all 10 pass; TQQQ .20 / DEF3 .80 +2.83pp, 17.8% shallower.\n- Raw DEF3, X30: TQQQ .20 / DEF3 .80 median 21.80 vs 21.78, +0.13pp, 16.7% shallower, PASS; X10 +1.57pp, 16.8% shallower, PASS.\n\nSharpe ratios (X, pooled): QQQ 0.919; DEF3 neutral 1.101, raw 0.977; SPX 0.914; B10, LTT and GOLD neutral about 0 (raw B10 0.38, LTT 0.42). Tangency vs QQQ: with bonds and gold 1.009x neutral, 1.124x raw; with DEF3 1.224x neutral, 1.128x raw.\n\nNeutralization shifts in X (annual mean removed): B10 2.75%, LTT 4.79%, GOLD -0.36%, DEF3 -1.44% (DEF3 is raised)."
+        }
+      }
+    ],
+    "critic": {
+      "verdict": "mixed",
+      "summary": "(1) CONFIRMED BY INDEPENDENT COMPUTATION (several verifiers, plus my own runs):\n- The precommit sha256 is 23ff354b... (I recomputed it).\n- 2,324 raw configs, 2,318 unique, 6 true duplicates. My family count matches the precommit exactly: A1 436, A2 72, A3 160, A4 36, A5 175, A6 10, A7 5, A8 16, A9 18, A10 4 (932 in total), B 1,367, BV 25.\n- 0 configs pass G1-G5. Single-gate counts are 167/23/13/0/0, confirmed by four verifiers.\n- QQQ figures (X30 median 21.78%, p10 MDD -38.3%) are exact. repro's own simulator reproduces them bit for bit, and my harness reproduces stored QQQ and a stored A3 control config with 0 difference in all five worlds.\n- The three \"closest X30 points\" are exact.\n- No pre-registered config has pair > 0 with a shallower X30/X10 p10 MDD, even at zero margin.\n- Gate code, 2-day delay, ladder and dedupe are correct.\n\nREAD-CHECKED ONLY:\n- P-world construction (only X was rebuilt independently).\n- Track B values (taken from stored arrays, never recomputed).\n- Source-data splices (KF industries to SPDR for DEF3, synthetic LTT and gold, rf). Only QQQ/QLD/TQQQ were calibrated against ETF data.\n- No look-ahead in the v1 held path.\n\nCONTRADICTED OR MISLEADING: the generalisation \"no rule beats QQQ on both in all three bases\".\n\n(2) The changes_conclusion=true issue on grid coverage (repro, limit) is credible, and I confirmed it with the UNCHANGED DF5 engine and gate code, which neither verifier did across all worlds. I fed off-grid configs to df5run.job's own A3 builder with e < 1:\n- e0.70/c0.60 DEF3 (TQQQ .15 / QQQ .25 / DEF3 .60) passes G1-G5, H1 (cost x2) and H2 (delay 4).\n- e0.60/c0.75 (TQQQ .175 / QQQ .075 / DEF3 .75) passes the same.\n- In a step-0.05 neighbour scan, 4 of 7 neighbours also pass all five gates, so this is a region, not a single point.\nThe audit/limit \"zero-margin tie\" issue is also credible: two verifiers independently got the same flips. Given the off-grid passers it is moot anyway.\n\n(3) STILL UNVERIFIED AND MATERIAL:\n- Whether DEF3's in-sample low-volatility premium is real. The off-grid pass depends on it: it fails under Sharpe-neutral DEF3 (repro); with raw DEF3 the X30 margin is only +0.08pp.\n- Source-data integrity of the DEF3, LTT and GOLD series.\n- Independent rebuild of the P world.\n- Placebo and selection-stability tests (section 6) for any passer.\n- Any truly independent data. All three bases come from one 1986-2014 NDX history, so a pass is not three confirmations.\n\n(4) VERDICT: The narrow statement holds and is robust: none of the 2,318 pre-registered rules beats QQQ on both return and drawdown in all of REAL, simulation and crash-free. The binding wall is the X-world drawdown margin, and pure timing rules really do fail in X (limit's E4). The broad statement \"no rule beats QQQ on both in all three bases\" is NOT supported. Simple quarterly-rebalanced static mixes that keep NDX exposure at 0.65-0.70 through a 15-20% TQQQ sleeve and put 55-75% in DEF3 pass all five gates and H1/H2 under the precommit's own engine and conventions. The A3 grid simply stopped at e >= 1 and c <= 0.5.\n\nThat counterexample must carry these caveats:\n- It was found post hoc.\n- It rests on DEF3 (staples/utilities/health, mean-matched to SPX at roughly half NDX's volatility), whose high Sharpe ratio is an in-sample 1986-2014 feature. It fails if DEF3 is given SPX's Sharpe ratio.\n- Its margins are modest: +0.8 to +1.3pp/yr, and the binding drawdown margin is 11.7% (P10) against the 10% required.\n- In report-only pre-1986 S&P worlds the same mixes draw down more than the index. Those use a different benchmark, so this is only a hint.\n- It cannot be adopted without a new pre-registration.\n\nThe user should therefore hear \"0 of the pre-registered rules pass\", not \"no rule can\".",
+      "issues": [
+        {
+          "severity": "critical",
+          "what": "The user-facing generalisation 'no rule beats QQQ on both return and drawdown in all three bases' is contradicted. Static TQQQ/QQQ/DEF3 mixes just outside the pre-registered A3 grid (NDX exposure e < 1, DEF3 weight c > 0.5) pass every gate G1-G5, and also H1 and H2, under the unchanged DF5 engine, gates and conventions. 'Zero passers' describes the grid boundary (A3 ES >= 1.0, CS <= 0.5; A1/A2 DEF3 mixes are unlevered), not the three worlds.",
+          "where": "df5fam.configs A3 grid; PRECOMMIT_DF5.md section 3 A3 row (e {1.0, 1.25, 1.5, 2.0}, c {0.2, 0.35, 0.5}); built with df5run.job A3 branch, run_job, qqq, df5gate.gate_row. Script /tmp/df5v/critic/offgrid.py, output /tmp/df5v/critic/offgrid.json",
+          "direction": "against candidates (the dominating region was never tested)",
+          "evidence": "CONFIRMED by my own runs of the unchanged engine. Control A3|e1.00|c0.50|DEF3|none and QQQ reproduce stored values with 0 difference in all five worlds.\n\ne0.70/c0.60 DEF3 (TQQQ .15 / QQQ .25 / DEF3 .60), base run:\n- G1: +1.19pp, MDD 15.1% shallower\n- G2: pair +0.79, median +1.00, p10 +1.80, DD +12.6%\n- G3: pair +1.06, DD +11.7%\n- G4: pair +1.07, median +1.06, p10 +1.88, DD +15.3%\n- G5: pair +2.20, DD +14.1%\nH1 (cost x2): REAL +1.13pp / 14.9%; P30 pair +0.73 / 12.4%; X30 +1.01 / 15.2%.\nH2 (delay 4): REAL +1.19pp / 15.1%; P30 +0.79 / 12.6%; X30 +1.07 / 15.3%.\n\ne0.60/c0.75 (TQQQ .175 / QQQ .075 / DEF3 .75), base run:\n- G1: +1.27pp, DD 21.6% shallower\n- G2: pair +0.78, DD 17.1%\n- G3: pair +1.07, DD 14.9%\n- G4: pair +1.01, DD 20.4%\n- G5: pair +2.31, DD 19.0%\nH1 (cost x2): REAL +1.20pp; P30 +0.71; X30 +0.97, all passing.\n\nThis agrees with repro's own simulator (all gates, H3 P125) and with limit's X-only engine runs.",
+          "changes_conclusion": true
+        },
+        {
+          "severity": "major",
+          "what": "The counterexample is post-hoc and rests on one sleeve convention. DEF3 is mean-shifted to SPX's arithmetic mean but keeps roughly half of NDX's volatility, which gives it a higher Sharpe ratio than NDX. The pass disappears if DEF3 is given SPX's Sharpe ratio. With raw DEF3, the X30 margin is only +0.08pp. The neutralisation lowers DEF3 in REAL and P and raises it only in X.",
+          "where": "df5data.panel 'eq' branch (sh = mean(A) - mspx); stored shifts in df5_main.json['shifts']",
+          "direction": "for candidates (it makes DEF3 an unusually strong diversifier)",
+          "evidence": "CONFIRMED (mine), stored DEF3 shifts: REAL +0.84%/yr (lowered), P +0.37%/yr (lowered), X -1.44%/yr (raised).\n\nFrom repro's outputs, which I read (/tmp/df5v/repro/front_rob_*_raw_c1.json), for e0.70/c0.60 with raw DEF3:\n- REAL: +1.74pp, DD 15.6% shallower\n- P30: pair +1.03, DD 13.0%\n- X30: pair +0.08, DD 14.2%\n\nrepro's Sharpe-neutral DEF3 fails in X30, P30 and REAL.\n\nMy runs in report-only pre-1986 worlds (benchmark is the S&P itself, so not a like-for-like test), pair / DD margin:\n- S55: +0.62pp, 29.6% deeper\n- S29: +1.97pp, 1.5% deeper\n- S29 raw: -2.44pp, 3.8% deeper\n- OLD: pair +0.85pp but p10 -0.21pp, 9.0% deeper\nSo the effect needs a concentrated, high-volatility benchmark like NDX plus DEF3's in-sample Sharpe ratio.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "major",
+          "what": "The secondary claim 'in X30 no config has both pair > 0 and a shallower p10 MDD, even at zero margin' is literally true for the grid, but it rests on a tie. A3|e1.00|c0.20|GOLD+LTT+DEF3|none sits at pair -0.005pp with a +0.25% DD margin and flips under defensible conventions. The off-grid mixes dominate QQQ in X30 by a wide margin anyway.",
+          "where": "df5_main.json rows['A3|e1.00|c0.20|GOLD+LTT+DEF3|none']['X30']",
+          "direction": "against candidates",
+          "evidence": "Two verifiers agree independently (audit, limit). Flips:\n- QLD/TQQQ dividends passed through: +0.16 / +0.19pp\n- 1% term premium on bonds: +0.07pp\n- tax 0: +0.38 / +0.43pp\n- raw sleeves: +0.21pp\nMy off-grid X30 runs: pair +1.07pp with DD 15.3% shallower, and pair +1.01pp with DD 20.4% shallower.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "major",
+          "what": "The X world is asymmetric by construction. It keeps the bubble run-ups and drops each crash plus 250 days of rebound, and bonds and gold are neutralised to zero excess return. So in X, timing rules and unlevered defensive rules can only lose. That pure timing fails in X is a real result, but it partly describes the design rather than independent evidence.",
+          "where": "df5lib._xworld excl[p_:t_+BLK]; df5data neutralisation",
+          "direction": "against candidates (timing and defensive)",
+          "evidence": "From the gates, limit and audit reports, which agree: NDX mean in X is 22.45% against 15.67% in the source data, and volatility 20.7% against 27.3%. Frictionless volatility targeting is dominated by constant leverage in X30 but passes in P30. corr(QQQ, LTT) is -0.011 in X against -0.094 in P. Not re-run by me.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "minor",
+          "what": "The off-grid passing region is real but bounded. The P10 drawdown margin binds on the high-exposure side and the X30/P30 paired return binds on the low-exposure side, so the margins are thin.",
+          "where": "/tmp/df5v/critic/nbr.py, nbr.json",
+          "direction": "neutral",
+          "evidence": "CONFIRMED (mine, unchanged engine), step-0.05 neighbours of e0.70/c0.60:\n- Pass all five gates: e0.65/c0.60 (X30 pair only +0.39pp), e0.70/c0.55, e0.70/c0.65, e0.65/c0.70\n- e0.75/c0.60 fails G2 and G3 on DD (9.4%, 8.4%)\n- e0.75/c0.50 fails G3 (9.8%)\n- e0.70/c0.75 fails G3 (8.5%)\n- e0.80/c0.45 passes only G4\nThe immediate neighbours of e0.70/c0.60 pass in 3 of 4 cases, so a step-0.05 version of H4 would pass. The smallest DD margin is 11.7% (G3), against the 10% required.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "minor",
+          "what": "Leveraged-ETF modelling (no dividend, 0.75% spread per borrowed unit) and the tax-inclusive MDD both penalise TQQQ-financed rebalanced mixes. Fixing either would only widen the off-grid passers' margins.",
+          "where": "df5data.py QLD/TQQQ lines; dfk/dfe yearly tax sale before the MDD update",
+          "direction": "against candidates",
+          "evidence": "From audit and repro, not re-run by me. ETF data to 2014 shows actual minus model of +0.99 to +3.65%/yr for QLD/TQQQ. With a time-weighted MDD, the margin of e0.6/c0.75 rises from 20.4% to 21.8%.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "note",
+          "what": "Gaps that still matter, not verified by any verifier:\n- No independent rebuild of the P world (dev250_path); only X was rebuilt.\n- Track B values never recomputed; they are far from the X frontier, so this is low risk.\n- Source-data splices (KF STAP/UTIL/HLTH to SPDR in 2002 for DEF3, synthetic LTT and gold, rf) not checked against external references.\n- Placebo and selection-stability tests (section 6) not run for any passer.\n- All three bases come from the same 1986-2014 NDX data, so passing all three is not three independent confirmations (precommit section 6).",
+          "where": "df5lib.world('P'); df5run.run_B; research/df5/data/clean; PRECOMMIT section 6",
+          "direction": "unknown",
+          "evidence": "My computation from stored rows: Track B's best X30 pair among configs at least 10% shallower is -5.72pp (static|QQQ70|bond). Its best DD margin with pair > 0 is -21.9% (BV|DEF3|U1|d0.3). A Track B error would have to be very large to hide a passer.",
+          "changes_conclusion": false
+        }
+      ],
+      "numbers": "All numbers are my own computation with the unchanged DF5 engine and gate code. About 107 config-world evaluations; data <= 2014 (the S55/S29/OLD worlds are <= 1985). Scripts and outputs are in /tmp/df5v/critic: offgrid.py/.json, nbr.py/.json, oos.py/.json.\n\nFormat: pair or return in pp, DD = p10 MDD margin vs QQQ (shallower is positive).\n\n**Harness control:** QQQ and A3|e1.00|c0.50|DEF3|none show 0 difference from df5_main.json in REAL, P30, P10, X30 and X10.\n\n**Config counts:** A1 436, A2 72, A3 160, A4 36, A5 175, A6 10, A7 5, A8 16, A9 18, A10 4 (932 in total); B 1,367; BV 25; 2,324 overall. Precommit sha256 is 23ff354b3b8b...bfe2.\n\n**Off-grid e0.70/c0.60 DEF3 (TQQQ .15 / QQQ .25 / DEF3 .60): passes 5/5**\n- G1 REAL: +1.19, DD +15.1%\n- G2 P30: pair +0.79, median +1.00, p10 +1.80, DD +12.6%\n- G3 P10: pair +1.06, median +1.18, p10 +1.89, DD +11.7%\n- G4 X30: pair +1.07, median +1.06, p10 +1.88, DD +15.3%\n- G5 X10: pair +2.20, median +1.88, p10 +2.38, DD +14.1%\n- H1 (cost x2): REAL +1.13 / 14.9%; P30 +0.73 / 12.4%; X30 +1.01 / 15.2%\n- H2 (delay 4): REAL +1.19 / 15.1%; P30 +0.79 / 12.6%; X30 +1.07 / 15.3%\n\n**Off-grid e0.60/c0.75 DEF3 (TQQQ .175 / QQQ .075 / DEF3 .75): passes 5/5**\n- G1: +1.27, DD +21.6%\n- G2: pair +0.78, DD +17.1%\n- G3: pair +1.07, DD +14.9%\n- G4: pair +1.01, median +0.91, p10 +2.01, DD +20.4%\n- G5: pair +2.31, DD +19.0%\n- H1: REAL +1.20, P30 +0.71, X30 +0.97\n- H2: same as base\n\n**e0.80/c0.45:** passes G4 only; DD margins elsewhere are 7.3-9.2%.\n\n**Step-0.05 neighbours of e0.70/c0.60:**\n- Pass 5/5: e0.65/c0.60, e0.70/c0.55, e0.70/c0.65, e0.65/c0.70\n- e0.75/c0.60: 3/5 (G2 DD 9.4%, G3 DD 8.4%)\n- e0.75/c0.50: 4/5 (G3 DD 9.8%)\n- e0.70/c0.75: 4/5 (G3 DD 8.5%)\n\n**DEF3 neutralisation shifts:** REAL +0.84%/yr (lowered), P +0.37%/yr (lowered), X -1.44%/yr (raised).\n\n**Report-only pre-1986 worlds (benchmark is the S&P itself), pair / DD margin:**\n\n| World | e0.70/c0.60 | e0.60/c0.75 | A3 e1/c0.5 |\n|---|---|---|---|\n| S55 | +0.62 / -29.6% | +0.69 / -34.3% | +1.01 / -41.8% |\n| S55 raw | +1.64 / -27.9% | | |\n| S29 | +1.97 / -1.5% | | |\n| S29 raw | -2.44 / -3.8% | -3.20 / -4.1% | |\n| OLD | +0.85 (p10 -0.21) / -9.0% | | |\n| OLD raw | +0.51 / -9.3% | | |\n\n**Track B in X30 (stored rows):** best pair among configs with DD >= 10% shallower is -5.72pp (static|QQQ70|bond). Best DD margin with pair > 0 is -21.9% (BV|DEF3|U1|d0.3).\n\n**Pre-registered X30 frontier, confirmed from stored rows:** best pair with DD >= 10% is -0.74pp (A5|DEF3|U0|D2|T200|d0.3, DD +10.3%). Best DD with pair > 0 is -1.8% (A3|e1.00|c0.20|DEF3|none, pair +1.75)."
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Verify"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Critic"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "verify:audit",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a2d9d35459c7eb484",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1794992928128,
+      "queuedAt": 1794992928095,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "mixed",
+      "promptPreview": "CONTEXT (DF5 research, already computed; you are an independent verifier, not the author):\n- Goal of DF5: find a trading rule that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in each of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap world (same 1986-2014 NDX …",
+      "promptFramed": true,
+      "lastProgressAt": 1794993886740,
+      "tokens": 287925,
+      "toolCalls": 39,
+      "durationMs": 958611,
+      "resultPreview": "{\"verdict\":\"mixed\",\"summary\":\"The precommit hash matches (23ff354b...). The headline result holds and survives every convention change I tested: 0 of the 2,318 unique configs pass G1-G5. My own recount from /tmp/df5w/df5_arr.npz gives single-gate passes G1 167, G2 23, G3 13, G4 0, G5 0, with 0 mismatches against df5_gate. I reran QQQ X30 and got the same figures (median 21.78%, p10 MDD -38.30%), a…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "verify:repro",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a2e30b4f097bf7e1a",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1794992928128,
+      "queuedAt": 1794992928095,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "mixed",
+      "promptPreview": "CONTEXT (DF5 research, already computed; you are an independent verifier, not the author):\n- Goal of DF5: find a trading rule that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in each of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap world (same 1986-2014 NDX …",
+      "promptFramed": true,
+      "lastProgressAt": 1794993601251,
+      "tokens": 232202,
+      "toolCalls": 28,
+      "durationMs": 672387,
+      "resultPreview": "{\"verdict\":\"mixed\",\"summary\":\"I reproduced the numbers with my own numpy simulator (/tmp/df5v/repro/sim.py and ladder.py; I did not call dfe, dfk, df5fam or run_job for any portfolio accounting). It matches df5_main.json exactly, so the computation is correct. Per path it matches /tmp/df5w/df5_arr.npz to within 3e-8, which is float32 storage precision. QQQ matches bit for bit. I checked all four r…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "verify:gates",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "aebeb512a34646a14",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1794993603249,
+      "queuedAt": 1794992928095,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "claims_hold",
+      "promptPreview": "CONTEXT (DF5 research, already computed; you are an independent verifier, not the author):\n- Goal of DF5: find a trading rule that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in each of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap world (same 1986-2014 NDX …",
+      "promptFramed": true,
+      "lastProgressAt": 1794993960460,
+      "tokens": 187025,
+      "toolCalls": 26,
+      "durationMs": 357210,
+      "resultPreview": "{\"verdict\":\"claims_hold\",\"summary\":\"I recomputed everything below myself from /tmp/df5v/gates scripts (g1-g6.py, xw.py, xq.py, xs.py). I did not import df5gate. I used jp.calendar, which cuts data at 2014-12-31, and nothing after 2014 was printed or saved.\\n\\n(1) Gates. Statistics rebuilt from /tmp/df5w/df5_arr.npz match df5_main.json. The largest gap is 3e-8 for cagr, p10, mdd_med, mdd_p10 and pa…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "verify:limit",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a61dac4f8a8086873",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1794993889264,
+      "queuedAt": 1794992928095,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "mixed",
+      "promptPreview": "CONTEXT (DF5 research, already computed; you are an independent verifier, not the author):\n- Goal of DF5: find a trading rule that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in each of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap world (same 1986-2014 NDX …",
+      "promptFramed": true,
+      "lastProgressAt": 1794994841279,
+      "tokens": 260838,
+      "toolCalls": 40,
+      "durationMs": 952014,
+      "resultPreview": "{\"verdict\":\"mixed\",\"summary\":\"I checked the claimed counts myself and they hold on the pre-registered grid. Running df5gate.analyse() on df5_main.json plus /tmp/df5w/df5_arr.npz gives N_raw 2324, N_unique 2318, single-gate passes G1 167 / G2 23 / G3 13 / G4 0 / G5 0, and 0 passers. In X30 and X10, no unique config has paired median > 0 together with a p10 MDD at least as shallow as QQQ's. Rerunnin…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "critic",
+      "phaseIndex": 2,
+      "phaseTitle": "Critic",
+      "agentId": "addd193cf0e7b0e34",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1794994843379,
+      "queuedAt": 1794994843371,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "mixed",
+      "promptPreview": "CONTEXT (DF5 research, already computed; you are an independent verifier, not the author):\n- Goal of DF5: find a trading rule that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in each of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap world (same 1986-2014 NDX …",
+      "promptFramed": true,
+      "lastProgressAt": 1794995184065,
+      "tokens": 201943,
+      "toolCalls": 21,
+      "durationMs": 340685,
+      "resultPreview": "{\"verdict\":\"mixed\",\"summary\":\"(1) CONFIRMED BY INDEPENDENT COMPUTATION (several verifiers, plus my own runs):\\n- The precommit sha256 is 23ff354b... (I recomputed it).\\n- 2,324 raw configs, 2,318 unique, 6 true duplicates. My family count matches the precommit exactly: A1 436, A2 72, A3 160, A4 36, A5 175, A6 10, A7 5, A8 16, A9 18, A10 4 (932 in total), B 1,367, BV 25.\\n- 0 configs pass G1-G5. Si…"
+    }
+  ],
+  "totalTokens": 1169933,
+  "totalToolCalls": 154
+}

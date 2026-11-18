@@ -1,0 +1,78 @@
+[    5s] parity dev250_path 1986-2014 pool  RC 0.1316/-0.5681 Q 0.1172/-0.6780 dRC 0.0e+00 dQ 0.0e+00
+[    5s] parity real_ndx_86_14 1986-01-02 2014-12-31 RC 0.1724/-0.4448 Q 0.1166/-0.8299 dRC 0.0e+00 dQ 0.0e+00
+[    5s] parity real_spx_55_85 1955-01-03 1985-12-31 RC 0.0922/-0.3601 Q 0.0900/-0.4523 dRC 0.0e+00 dQ 0.0e+00
+[    5s] parity real_spx_70_85 1970-01-02 1985-12-31 RC 0.0941/-0.2927 Q 0.0900/-0.4516 dRC 0.0e+00 dQ 0.0e+00
+[    5s] parity real_spx_29_54 1929-03-15 1954-12-31 RC 0.1122/-0.6340 Q 0.0643/-0.8370 dRC 0.0e+00 dQ 0.0e+00
+[    5s] parity real_spx_29_54_B 1929-03-15 1954-12-31 RC 0.1171/-0.6337 Q 0.0643/-0.8370 dRC nan dQ nan
+[    6s] parity UK 1985-07-02 2014-12-31 RC 0.0790/-0.5192 Q 0.0877/-0.4751 dRC 0.0e+00 dQ 0.0e+00
+[    6s] parity CA 1981-01-06 2014-12-31 RC 0.1029/-0.5212 Q 0.0753/-0.4903 dRC 0.0e+00 dQ 0.0e+00
+[    6s] parity AU 1986-02-10 2014-12-30 RC 0.0870/-0.6340 Q 0.0924/-0.5225 dRC 0.0e+00 dQ 0.0e+00
+[    6s] parity DE 1989-07-05 2014-12-30 RC 0.1027/-0.5434 Q 0.0703/-0.7290 dRC 0.0e+00 dQ 0.0e+00
+[    6s] parity FR 1991-09-10 2014-12-31 RC 0.0496/-0.7432 Q 0.0637/-0.6285 dRC 0.0e+00 dQ 0.0e+00
+[    6s] parity JP 1988-01-08 2014-12-30 RC -0.0109/-0.8406 Q -0.0007/-0.7821 dRC 0.0e+00 dQ 0.0e+00
+[    7s] stress dev250_path base 13.16/11.72 cost0.15 13.75/11.76 cost0.45 12.55/11.64 cost0.6 11.96/11.57 cost0.9 10.85/11.50 delay1 13.37/11.72 delay3 13.43/11.72 delay4 13.13/11.72 delay5 13.14/11.72 cost0.6_delay4 11.91/11.57
+[    8s] stress real_ndx_86_14 base 17.24/11.66 cost0.15 17.72/11.73 cost0.45 16.76/11.58 cost0.6 16.29/11.50 cost0.9 15.38/11.42 delay1 17.34/11.66 delay3 17.67/11.66 delay4 17.09/11.66 delay5 16.99/11.66 cost0.6_delay4 16.14/11.50
+[    8s] stress real_spx_55_85 base 9.22/9.00 cost0.15 9.49/9.12 cost0.45 8.95/8.93 cost0.6 8.68/8.87 cost0.9 8.12/8.75 delay1 9.42/9.00 delay3 9.03/9.00 delay4 8.56/9.00 delay5 8.26/9.00 cost0.6_delay4 7.99/8.87
+[    8s] stress real_spx_70_85 base 9.41/9.00 cost0.15 9.86/9.13 cost0.45 8.96/8.92 cost0.6 8.50/8.79 cost0.9 7.59/8.53 delay1 9.75/9.00 delay3 9.11/9.00 delay4 8.45/9.00 delay5 8.08/9.00 cost0.6_delay4 7.54/8.79
+[    8s] stress real_spx_29_54 base 11.22/6.43 cost0.15 11.59/6.49 cost0.45 10.89/6.40 cost0.6 10.54/6.35 cost0.9 9.86/6.24 delay1 10.23/6.43 delay3 11.17/6.43 delay4 11.34/6.43 delay5 11.68/6.43 cost0.6_delay4 10.67/6.35
+[    9s] tax dev250_path D0.25_std 13.16/11.72 D0.10 12.77/11.65 D0.025 12.48/11.65 D0 12.34/11.64 D0.025_noharvest 12.31/11.64 pretax 15.72/12.54
+[    9s] tax real_ndx_86_14 D0.25_std 17.24/11.66 D0.10 16.83/11.57 D0.025 16.51/11.57 D0 16.39/11.56 D0.025_noharvest 16.48/11.56 pretax 20.39/12.48
+[    9s] tax real_spx_55_85 D0.25_std 9.22/9.00 D0.10 8.66/9.03 D0.025 8.25/8.95 D0 8.10/8.92 D0.025_noharvest 8.17/8.92 pretax 10.05/9.74
+[    9s] tax real_spx_29_54 D0.25_std 11.22/6.43 D0.10 10.73/6.26 D0.025 10.35/6.15 D0 10.17/6.12 D0.025_noharvest 10.29/6.13 pretax 12.45/6.95
+[    9s] cash {'dev250_path': (13.16, 13.8), 'real_ndx_86_14': (17.24, 17.97), 'real_spx_55_85': (9.22, 10.71), 'real_spx_29_54': (11.22, 11.37), 'UK': (7.9, 9.22), 'CA': (10.29, 11.81), 'AU': (8.7, 10.18), 'DE': (10.27, 11.37), 'FR': (4.96, 5.67), 'JP': (-1.09, -0.52)}
+[    9s] paired 5 {'rc_med': 0.1557, 'q_med': 0.137, 'rc_mdd_p10': -0.524, 'q_mdd_p10': -0.6673, 'rc_ploss': 0.1, 'q_ploss': 0.16, 'win_cagr': 0.612, 'win_mdd': 0.518, 'win_both': 0.386, 'lose_both': 0.256, 'dcagr_med': 0.0182, 'dcagr_p10': -0.0546, 'dcagr_p90': 0.1128, 'dmdd_med': 0.012, 'dmdd_p10': -0.1019, 'parity_rc': 0.0, 'parity_q': 0.0, 'parity_rc_mddp10': 0.0, 'parity_q_mddp10': 0.0}
+[   10s] paired 10 {'rc_med': 0.1442, 'q_med': 0.1283, 'rc_mdd_p10': -0.5959, 'q_mdd_p10': -0.7207, 'rc_ploss': 0.038, 'q_ploss': 0.086, 'win_cagr': 0.674, 'win_mdd': 0.64, 'win_both': 0.524, 'lose_both': 0.21, 'dcagr_med': 0.0161, 'dcagr_p10': -0.0343, 'dcagr_p90': 0.0826, 'dmdd_med': 0.0432, 'dmdd_p10': -0.094, 'parity_rc': 0.0, 'parity_q': 0.0, 'parity_rc_mddp10': 0.0, 'parity_q_mddp10': 0.0}
+[   10s] paired 20 {'rc_med': 0.133, 'q_med': 0.1218, 'rc_mdd_p10': -0.6628, 'q_mdd_p10': -0.8168, 'rc_ploss': 0.006, 'q_ploss': 0.034, 'win_cagr': 0.684, 'win_mdd': 0.75, 'win_both': 0.582, 'lose_both': 0.148, 'dcagr_med': 0.0147, 'dcagr_p10': -0.0246, 'dcagr_p90': 0.0607, 'dmdd_med': 0.0787, 'dmdd_p10': -0.0644, 'parity_rc': 0.0, 'parity_q': 0.0, 'parity_rc_mddp10': 0.0, 'parity_q_mddp10': 0.0}
+[   10s] paired 30 {'rc_med': 0.1316, 'q_med': 0.1172, 'rc_mdd_p10': -0.6937, 'q_mdd_p10': -0.8501, 'rc_ploss': 0.0, 'q_ploss': 0.012, 'win_cagr': 0.688, 'win_mdd': 0.768, 'win_both': 0.606, 'lose_both': 0.15, 'dcagr_med': 0.0129, 'dcagr_p10': -0.0191, 'dcagr_p90': 0.0528, 'dmdd_med': 0.11, 'dmdd_p10': -0.0482, 'parity_rc': 0.0, 'parity_q': 0.0, 'parity_rc_mddp10': 0.0, 'parity_q_mddp10': 0.0}
+[   10s] lookahead 1987-10-30 {'n_days': 763, 'st_v1_equal': True, 'vol20_equal': True, 'target_equal': True, 'equity_maxabsdiff': 0.0}
+[   10s] lookahead 2000-03-31 {'n_days': 3901, 'st_v1_equal': True, 'vol20_equal': True, 'target_equal': True, 'equity_maxabsdiff': 0.0}
+[   10s] lookahead 2002-10-31 {'n_days': 4549, 'st_v1_equal': True, 'vol20_equal': True, 'target_equal': True, 'equity_maxabsdiff': 0.0}
+[   10s] lookahead 2008-09-30 {'n_days': 6037, 'st_v1_equal': True, 'vol20_equal': True, 'target_equal': True, 'equity_maxabsdiff': 0.0}
+[   10s] lookahead 2011-08-31 {'n_days': 6773, 'st_v1_equal': True, 'vol20_equal': True, 'target_equal': True, 'equity_maxabsdiff': 0.0}
+[   10s] alarm dev250_path rc 13.16/-56.8 always_trend 9.01/-52.9 pure_voltarget 13.86/-65.0 qqq 11.72/-67.8
+[   10s] alarm real_ndx_86_14 rc 17.24/-44.5 always_trend 10.06/-41.7 pure_voltarget 13.73/-76.8 qqq 11.66/-83.0
+[   10s] alarm real_spx_55_85 rc 9.22/-36.0 always_trend 8.29/-33.5 pure_voltarget 9.83/-61.9 qqq 9.00/-45.2
+[   10s] alarm real_spx_70_85 rc 9.41/-29.3 always_trend 8.76/-28.4 pure_voltarget 8.59/-61.8 qqq 9.00/-45.2
+[   10s] alarm real_spx_29_54 rc 11.22/-63.4 always_trend 8.74/-63.0 pure_voltarget 8.56/-84.0 qqq 6.43/-83.7
+[   10s] alarm real_spx_29_54_B rc 11.71/-63.4 always_trend 8.74/-63.0 pure_voltarget 8.56/-84.0 qqq 6.43/-83.7
+[   10s] alarm UK rc 7.90/-51.9 always_trend 5.94/-51.9 pure_voltarget 8.42/-68.0 qqq 8.77/-47.5
+[   10s] alarm CA rc 10.29/-52.1 always_trend 8.50/-35.6 pure_voltarget 7.51/-65.0 qqq 7.53/-49.0
+[   10s] alarm AU rc 8.70/-63.4 always_trend 6.43/-63.4 pure_voltarget 10.18/-64.5 qqq 9.24/-52.3
+[   10s] alarm DE rc 10.27/-54.3 always_trend 8.28/-41.5 pure_voltarget 6.21/-81.0 qqq 7.03/-72.9
+[   10s] alarm FR rc 4.96/-74.3 always_trend 4.97/-50.9 pure_voltarget 5.46/-75.2 qqq 6.37/-62.9
+[   10s] alarm JP rc -1.09/-84.1 always_trend 1.28/-63.9 pure_voltarget -3.20/-92.5 qqq -0.07/-78.2
+[   10s] exposure dev250_path {'med_share_L0': 0.11527777777777778, 'med_share_Lge1': 0.698478835978836, 'med_share_Lmax': 0.48723544973544974, 'med_mean_L': 1.1198216769817302}
+[   10s] exposure real_ndx_86_14 {'med_share_L0': 0.14209518599562362, 'med_share_Lge1': 0.7077407002188184, 'med_share_Lmax': 0.5077954048140044, 'med_mean_L': 1.1115788825175974}
+[   13s] xworld X5 {'rc_med': 0.2064, 'q_med': 0.2007, 'rc_mdd_med': -0.2902, 'q_mdd_med': -0.215, 'rc_mdd_p10': -0.422, 'q_mdd_p10': -0.3293, 'win_cagr': 0.59, 'win_mdd': 0.03, 'win_both': 0.026, 'parity_rc': 0.0, 'parity_q': 0.0}
+[   13s] xworld X10 {'rc_med': 0.2044, 'q_med': 0.1995, 'rc_mdd_med': -0.3733, 'q_mdd_med': -0.2559, 'rc_mdd_p10': -0.473, 'q_mdd_p10': -0.3336, 'win_cagr': 0.48, 'win_mdd': 0.014, 'win_both': 0.012, 'parity_rc': 0.0, 'parity_q': 0.0}
+[   14s] xworld X20 {'rc_med': 0.1953, 'q_med': 0.205, 'rc_mdd_med': -0.4209, 'q_mdd_med': -0.3293, 'rc_mdd_p10': -0.5375, 'q_mdd_p10': -0.3751, 'win_cagr': 0.32, 'win_mdd': 0.012, 'win_both': 0.006, 'parity_rc': 0.0, 'parity_q': 0.0}
+[   14s] xworld X30 {'rc_med': 0.1944, 'q_med': 0.2121, 'rc_mdd_med': -0.4504, 'q_mdd_med': -0.3293, 'rc_mdd_p10': -0.5572, 'q_mdd_p10': -0.3872, 'win_cagr': 0.196, 'win_mdd': 0.006, 'win_both': 0.004, 'parity_rc': 0.0, 'parity_q': 0.0}
+[   14s] gates {"n_all_pass_R1toE3": 0, "us_pass": ["v1|s0.3|L1.5|K0|RB", "v1|s0.3|L1.5|K0|RBT", "v1|s0.3|L1.5|K0|RC", "v1|s0.3|L1.5|K0|RT"], "r3_pass_n": 73, "r3_pass_us_fail_counts": {"R1": 51, "R2": 70, "V1": 73, "V2": 0, "E1": 53, "E2": 0, "E3": 54}, "r3_pass_min_us_fails": 2, "rank_P0_rc": 48, "n_beat_qqq_spx55_cagr": 135}
+[   14s]   nb v1|s0.2|L1.5|K0|RC {'us_fails': ['R2', 'V1'], 'P0': 0.10552319601647686, 'R3n': 3}
+[   14s]   nb v1|s0.3|L1.0|K0|RC {'us_fails': ['R2', 'V1'], 'P0': 0.1027243892356372, 'R3n': 3}
+[   14s]   nb v1|s0.3|L2.0|K0|RC {'us_fails': ['R2'], 'P0': 0.13354270801596457, 'R3n': 1}
+[   14s]   nb v1|s0.3|L1.5|K1|RC {'us_fails': ['R1', 'R2', 'V1', 'E1'], 'P0': 0.030228104818667223, 'R3n': 1}
+[   14s]   nb v1|s0.3|L1.5|K2|RC {'us_fails': ['R1', 'R2', 'V1', 'E1', 'E3'], 'P0': 0.06521054111516655, 'R3n': 1}
+[   14s]   nb always|s0.3|L1.5|K0|RC {'us_fails': ['R1', 'R2', 'V1', 'E1'], 'P0': 0.09012441547904326, 'R3n': 3}
+[   14s]   nb v1|s0.2|L1.5|K0|RB {'us_fails': ['V1'], 'P0': 0.11095527528073679, 'R3n': 3}
+[   14s]   nb v1|s0.3|L1.0|K0|RB {'us_fails': ['R2', 'V1', 'E3'], 'P0': 0.10770302912767349, 'R3n': 3}
+[   14s]   nb v1|s0.3|L2.0|K0|RB {'us_fails': ['R2'], 'P0': 0.13885659155558783, 'R3n': 1}
+[   14s]   nb v1|s0.3|L1.5|K1|RB {'us_fails': ['R1', 'R2', 'V1', 'E1', 'E3'], 'P0': 0.04892172576548204, 'R3n': 2}
+[   14s]   nb v1|s0.3|L1.5|K2|RB {'us_fails': ['R2', 'V1', 'E1', 'E3'], 'P0': 0.09149231653797618, 'R3n': 3}
+[   14s]   nb always|s0.3|L1.5|K0|RB {'us_fails': ['R1', 'V1', 'E1'], 'P0': 0.0984118557829069, 'R3n': 3}
+[   14s]   nb DF3|N1|M0|v1|s0.4|L1.5|K0|RB {'us_fails': ['V2'], 'P0': 0.14054758805569179, 'R3n': 1}
+[   14s]   nb v1|s0.2|L1.5|K0|RT {'us_fails': ['V1'], 'P0': 0.10513189439920068, 'R3n': 3}
+[   14s]   nb v1|s0.3|L1.0|K0|RT {'us_fails': ['R2', 'V1', 'E3'], 'P0': 0.10123514268308487, 'R3n': 3}
+[   14s]   nb v1|s0.3|L2.0|K0|RT {'us_fails': ['R2'], 'P0': 0.13352114627757894, 'R3n': 1}
+[   14s]   nb v1|s0.3|L1.5|K1|RT {'us_fails': ['R1', 'R2', 'V1', 'E1', 'E3'], 'P0': 0.03714145706516647, 'R3n': 2}
+[   14s]   nb v1|s0.3|L1.5|K2|RT {'us_fails': ['R1', 'R2', 'V1', 'E1', 'E3'], 'P0': 0.07459968117352123, 'R3n': 2}
+[   14s]   nb always|s0.3|L1.5|K0|RT {'us_fails': ['R1', 'V1', 'E1'], 'P0': 0.09036179016684476, 'R3n': 3}
+[   14s]   nb v1|s0.2|L1.5|K0|RBT {'us_fails': ['V1'], 'P0': 0.10130658745638876, 'R3n': 3}
+[   14s]   nb v1|s0.3|L1.0|K0|RBT {'us_fails': ['R2', 'V1', 'E3'], 'P0': 0.0996197112443662, 'R3n': 4}
+[   14s]   nb v1|s0.3|L2.0|K0|RBT {'us_fails': ['R2'], 'P0': 0.13161076919546855, 'R3n': 1}
+[   14s]   nb v1|s0.3|L1.5|K1|RBT {'us_fails': ['R1', 'R2', 'V1', 'E1', 'E3'], 'P0': 0.013811555893640026, 'R3n': 1}
+[   14s]   nb v1|s0.3|L1.5|K2|RBT {'us_fails': ['R1', 'R2', 'V1', 'E1', 'E3'], 'P0': 0.048160463807674914, 'R3n': 2}
+[   14s]   nb always|s0.3|L1.5|K0|RBT {'us_fails': ['R1', 'R2', 'V1', 'E1'], 'P0': 0.08445178887065918, 'R3n': 3}
+[   14s]   nb DF3|N1|M0|v1|s0.4|L1.5|K0|RBT {'us_fails': ['V2'], 'P0': 0.1333866030061277, 'R3n': 1}
+[   14s] abroad {'real_spx_55_85': (0.22, 9.2), 'real_spx_70_85': (0.41, 15.9), 'real_spx_29_54': (4.79, 20.3), 'real_spx_29_54_B': (5.28, 20.3), 'UK': (-0.87, -4.4), 'CA': (2.76, -3.1), 'AU': (-0.54, -11.1), 'DE': (3.23, 18.6), 'FR': (-1.41, -11.5), 'JP': (-1.02, -5.8)}
+[   14s] saved /tmp/v4_refute/refute_numbers.json
