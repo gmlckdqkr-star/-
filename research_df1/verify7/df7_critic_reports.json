@@ -1,0 +1,194 @@
+[
+ {
+  "type": "result",
+  "key": "v2:f3f1e44c1a5ea353d0edc42e69eb8687e31651c4b508479d62f35b75b0d0cd10",
+  "agentId": "a42a39064735cf27d",
+  "result": {
+   "claims_checked": 246,
+   "errors": [
+    {
+     "severity": "high",
+     "quote": "P3\ub294 \uc8fc \uad00\ub840\uc5d0\uc11c \uc138 \uae30\uc900 \ubaa8\ub450 \uc218\uc775\uc740 QQQ\ubcf4\ub2e4 \uc870\uae08 \ub192\uace0(+0.1~0.7%p) \ub099\ud3ed\ub3c4 \uc595\uc9c0\ub9cc \uac00\uc0c1 30\ub144 \ub099\ud3ed \uc5ec\uc720 9%\ub85c 10% \uae30\uc900 \ubbf8\ub2ec. (line 10)",
+     "problem": "This line makes P3 look like a near-miss that fails only because the P30 drawdown margin is 9%. That is wrong. Running the df5gate.gate_row gates on df7_final.json report.PRIM.rows['U|P3'] gives G1 fail (REAL median-MDD margin 7.8%), G2 fail (P30 9.4%), G3 pass, G4 fail (X30 2.6%) and G5 fail (X10 1.5%). So P3 passes only 1 of 5 gates, and its crash-free drawdown margins (1.5-2.6%) are far below 10%. The return range is also wrong: REAL is +1.12%p (cagr = pair). Median differences: P30 +0.67, P10 +0.88, X30 +0.13, X10 +0.91. Paired differences: P30 +0.41, P10 +0.54, X30 +0.14, X10 +0.66. No pass count, tier, selection or f* changes, because P3 is not one of the 198 rules. It does change the conclusion's statement about the user's own portfolio.",
+     "correct_value": "P3 (PRIM) beats QQQ on return at every base: about +0.1 to +1.1%p (REAL +1.1, P30 +0.7 median / +0.4 pair, X30 +0.1, P10 +0.9 / +0.5, X10 +0.9 / +0.7). It passes 1 of 5 gates (G3 only). Drawdown margins: REAL 7.8%, P30 9.4%, P10 10.5%, X30 2.6%, X10 1.5%."
+    },
+    {
+     "severity": "low",
+     "quote": "\ucd94\uc138 \uc218\uc775 0(ZERO)\uc774\uba74 \uc704 \ub124 \uc870\ud569 \ubaa8\ub450 \uc138 \uae30\uc900\uc5d0\uc11c QQQ\ubcf4\ub2e4 \uc218\uc775\uc774 1~6%p \ub0ae\ub2e4 (line 32)",
+     "problem": "The range is wrong at both ends (report.ZERO in df7_final.json and picks.report.ZERO in df7_post.json). P3 trails by less than 1%p: REAL -0.69, P10 -0.71, X10 -0.79, X5 -0.87, P30 -0.97. The most defensive combo trails by more than 6%p: X20 -6.21, X30 -6.87 (pair -6.20 and -6.70). The direction (all below QQQ) is correct.",
+     "correct_value": "0.7 to 6.9%p below QQQ in median CAGR over REAL, P5-P30 and X5-X30 (0.7 to 6.2%p using only the table's columns)."
+    },
+    {
+     "severity": "low",
+     "quote": "100%\u00b7RAW QLD20\u00b7RSST40\u00b7GDE10\u00b7DBMF30(16.8/\u221251, f* 0.95) (line 50)",
+     "problem": "16.8/-51 is the RAW REAL value (16.80/-50.6). At the 100% neutral-panel fraction the same rule's REAL is 16.60/-50.9 (df7_post.json conv['1.0'].rows). The gap is 0.2%p, more than rounding. The pick and f* 0.95 are correct.",
+     "correct_value": "100%: 16.6/\u221251; RAW: 16.8/\u221251"
+    },
+    {
+     "severity": "low",
+     "quote": "\uadf9\uc545 \uc81c\uc678 \uc138\uacc4\uc5d0\uc11c QQQ\ub294 \uc5f0 21~22%\ub97c \ub0b8\ub2e4 (line 54)",
+     "problem": "QQQ median CAGR in the crash-free world is X5 20.56, X10 20.46, X20 21.05, X30 21.78 (df7_final report qqq). X5 and X10 fall below 21.",
+     "correct_value": "about 20.5~21.8% per year"
+    },
+    {
+     "severity": "low",
+     "quote": "\uc804\ubd80 QLD + RSST + GDE + DBMF \uc870\ud569(\uc0ac\uc6a9\uc790 \ubc29\uc2dd) (line 8; also '\uc804\ubd80 F2' line 48)",
+     "problem": "'All F2' is correct, but many passers do not hold all four assets. At 60% the only passer is QLD20\u00b7GDE20\u00b7RSST60, with no DBMF. At 100% and RAW, 17 of the 30 passers leave out at least one asset, for example QLD20\u00b7RSST80, QLD40\u00b7GDE10\u00b7DBMF50 and QLD20\u00b7RSST40\u00b7DBMF40.",
+     "correct_value": "All 30 are F2-family weights (drawn from QLD/RSST/GDE/DBMF), but not all hold all four; the 60% passer has no DBMF."
+    },
+    {
+     "severity": "low",
+     "quote": "\ube44\uc728\ubcc4 \ub099\ud3ed \uc5ec\uc720\uac00 \uac00\uc7a5 \ud070 \ud1b5\uacfc \uc870\ud569: 70% ..., 80% ..., 100%\u00b7RAW ... (line 49-50)",
+     "problem": "The list is incomplete: the picks at 60% and 90% are missing. 60%: QLD20\u00b7GDE20\u00b7RSST60 (ddm 11.2%, REAL 14.5/\u221266). 90%: QLD20\u00b7RSST40\u00b7GDE20\u00b7DBMF20 (ddm 23.0%, REAL 15.5/\u221257). The 70%, 80% and 100% picks and their REAL values otherwise match.",
+     "correct_value": "60% QLD20\u00b7RSST60\u00b7GDE20 (14.5/\u221266); 90% QLD20\u00b7RSST40\u00b7GDE20\u00b7DBMF20 (15.5/\u221257)"
+    },
+    {
+     "severity": "low",
+     "quote": "\ucd94\uc138\ub294 \ub300\uc6a9 \ud3c9\uade0\uc758 50%(\uc5f0 5.05%, DBMF \uc218\uc218\ub8cc \ud6c4 4.2%) (line 36)",
+     "problem": "5.05% is the REAL world only. PRIM uses 50% of each world's own proxy mean, so the P world gets 4.68% (3.83% after fee) and the X world 4.91% (4.06% after fee) (df7_user.json meta *_HALF trend_mean_ann).",
+     "correct_value": "REAL 5.05% (4.20% net), P 4.68% (3.83%), X 4.91% (4.06%)"
+    },
+    {
+     "severity": "low",
+     "quote": "\ub300\uc6a9\uc758 \ub098\uc2a4\ub2e5 \uc0c1\uad00 \u22120.03 (line 56)",
+     "problem": "\u22120.03 is the daily correlation (df7_trend_stats corr_ndx \u22120.032). The proxy verifier reports a monthly correlation of +0.055 (SPX +0.144). The draft does not say which frequency it uses.",
+     "correct_value": "daily \u22120.03, monthly +0.06"
+    },
+    {
+     "severity": "low",
+     "quote": "5\uac1c \uad00\ubb38 \uc911 4\uac1c \ud1b5\uacfc, \uadf9\uc545 \uc81c\uc678 10\ub144 \ub099\ud3ed \uc5ec\uc720 7.5%(\uae30\uc900 10%)\ub85c \ud0c8\ub77d (line 6)",
+     "problem": "The rule also fails G5 on the X10 p10 CAGR (\u22120.11%p vs QQQ; fail list ['p10','dd']). Line 42 gives this correctly. Similarly, line 42 cites only the pair \u22120.48%p for QLD20\u00b7RSST50\u00b7GDE30 G4, but the median also fails (\u22120.64%p).",
+     "correct_value": "G5 fails on p10 CAGR \u22120.11%p and drawdown margin 7.5%; G4 for r0.5/g0.3 fails on pair \u22120.48%p and median \u22120.64%p"
+    },
+    {
+     "severity": "low",
+     "quote": "\ub3c5\ub9bd \uac80\uc99d 3\uac74(\uc804\ubd80 \uc7ac\uc2e4\ud589, ...) (line 11)",
+     "problem": "'All re-ran' overstates what was done. The audit verifier recomputed the gates from the stored rows plus REAL spot checks and trade counts; it did not do a full re-run. The repro verifier itself notes that its re-run shares the engine and panel with the original. 'Numerical difference 0' is correct.",
+     "correct_value": "One full re-run (repro), one proxy re-implementation, and one code/spec audit with gate recomputation"
+    },
+    {
+     "severity": "low",
+     "quote": "\ub204\uc801 \uc2dc\ud5d8: DF1~DF6 \uc57d 2,600\uac1c (line 71)",
+     "problem": "This cannot be checked against the DF7 JSON files. RESULT_DF6_KO.md line 13 already gives DF5 2,318 + DF6 main 322 = 2,640, before counting DF6's 1,904 report rows and the DF1-DF4 tests. So 'about 2,600' looks like an undercount.",
+     "correct_value": "At least 2,640 counting DF5 and DF6 main only (4,544 with DF6 report rows), plus DF1-DF4"
+    }
+   ],
+   "verdict": "I found 1 high-severity error (line 10, the P3 claim) and 10 low ones. None changes a pass count, tier, selection, f* or headline count. I checked everything else against the JSON files and it matches within rounding:\n- Both user tables, cell by cell: QQQ, P2, P3, nearest and most-defensive under PRIM; P2, P3, nearest and most-defensive under RAW. The PRIM rows match df7_final report.PRIM, not the step-A HALF rows, as intended.\n- v1 and v2 rows against RESULT_DF6_KO.md lines 20-40.\n- 198 rules split 76/110/12; per-gate passes F1 G1 3, F2 45/27/25/1/1, F3 0; 0 passers, tier 1 = tier 2 = 0.\n- Both 4/5 rules (\u22120.11%p, 7.5%, \u22120.48%p; 7 neighbours each, 0 passing) and the family bests with their gate counts.\n- f*: 0.70 for the nearest rule, 0.80 for P2, 0.95 for the most-defensive pick; F1 and F3 never pass up to 1.0.\n- Post-hoc passes 0/1/8/14/21/30/30, all F2, with F1 and F3 at 0; the 70% and 80% picks and their REAL values.\n- F3 REAL values: 4.9/\u221290 and 11.9/\u221278.\n- Trend stats: 10.1%, 13.0%, Sharpe 0.78 / 0.997 / 0.606.\n- All the verifier numbers quoted in the draft.\n\nThe one material problem is line 10's description of P3. P3 passes only G3. Its drawdown margins are REAL 7.8%, P30 9.4%, X30 2.6% and X10 1.5%, not just a 9% P30 shortfall. Its REAL return edge is +1.1%p, outside the stated +0.1 to +0.7.\n\nScripts are in /tmp/df7c_numbers (chk.py, chk2.py, chk3.py, chk4.py). Nothing was written under /mnt/project-files."
+  },
+  "remoteControlDeviceReport": false,
+  "toolsUsed": [
+   "Read",
+   "Bash",
+   "StructuredOutput"
+  ],
+  "sessionId": "6f3e91de-e49a-5fe5-84c0-235a69554919"
+ },
+ {
+  "type": "result",
+  "key": "v2:674b99f468797ae26984f97058ec7cc1b150152c2ad3bdd143c3199050914f7e",
+  "agentId": "a1d1c811a8d49e9cd",
+  "result": {
+   "claims_checked": 36,
+   "errors": [
+    {
+     "severity": "high",
+     "quote": "P3\ub294 \uc8fc \uad00\ub840\uc5d0\uc11c \uc138 \uae30\uc900 \ubaa8\ub450 \uc218\uc775\uc740 QQQ\ubcf4\ub2e4 \uc870\uae08 \ub192\uace0(+0.1~0.7%p) \ub099\ud3ed\ub3c4 \uc595\uc9c0\ub9cc \uac00\uc0c1 30\ub144 \ub099\ud3ed \uc5ec\uc720 9%\ub85c 10% \uae30\uc900 \ubbf8\ub2ec. (line 10)",
+     "problem": "The return part holds. Under PRIM, P3's median CAGR beats QQQ at every horizon and on REAL: P5 +0.37, P10 +0.88, P20 +0.17, P30 +0.67, X5 +0.74, X10 +0.91, X20 +0.70, X30 +0.13, REAL +1.12. But '+0.1~0.7' is the paired-median range with REAL left out; the median gaps shown in the table reach +0.9 and +1.1. The drawdown part frames P3 as a near miss, and the files contradict that. P3's p10 MDD margins are REAL 7.8%, P30 9.4%, P10 10.5%, X30 2.6%, X10 1.5% (X5 8.2%, X20 2.6%). P3 therefore fails the 10% rule on 4 of 5 gate keys (G1, G2, G4, G5) and passes only G3. In the crash-free world its tail drawdown is essentially QQQ's: X10 -32.8 vs -33.3, X30 -37.3 vs -38.3. Its median MDD is deeper than QQQ at X5 (-22.8 vs -21.4) and X10 (-27.3 vs -25.4). Even under RAW, the optimistic upper bound, the X10/X20/X30 margins are only 5.4/5.6/6.8%, so P3 fails at every trend level tested. The first table itself shows X10 -33 vs -33, which contradicts this sentence. Pass counts, tiers, selection and f* do not change, but the headline statement about the user's portfolio does.",
+     "correct_value": "P3\ub294 \uc8fc \uad00\ub840\uc5d0\uc11c \ubaa8\ub4e0 \uae30\uac04\uacfc \uc2e4\uc81c \uacbd\ub85c\uc5d0\uc11c \uc218\uc775\uc774 QQQ\ubcf4\ub2e4 \ub192\ub2e4(\uc911\uc559\uac12 +0.1~1.1%p, \uc9dd \ube44\uad50 +0.1~0.7%p, \uc2e4\uc81c +1.1%p). \uadf8\ub7ec\ub098 \ub099\ud3ed \uc5ec\uc720\ub294 \uc2e4\uc81c 7.8%, \uac00\uc0c1 30\ub144 9.4%, \uadf9\uc545 \uc81c\uc678 10\ub144 1.5%, \uadf9\uc545 \uc81c\uc678 30\ub144 2.6%\ub85c 5\uac1c \uad00\ubb38 \uc911 4\uac1c\uc5d0\uc11c 10% \uae30\uc900\uc5d0 \ubabb \ubbf8\uce5c\ub2e4. \uadf9\uc545 \uc81c\uc678 \uc138\uacc4\uc758 \ud558\uc704 10% \ub099\ud3ed\uc740 \uc0ac\uc2e4\uc0c1 QQQ\uc640 \uac19\ub2e4. \ucd94\uc138 100% + \uc6d0\uc790\ub8cc(RAW)\uc5d0\uc11c\ub3c4 \uadf9\uc545 \uc81c\uc678 \ub099\ud3ed \uc5ec\uc720\uac00 5~7%\ub77c \uae30\uc900\uc5d0 \ubabb \ubbf8\uce5c\ub2e4."
+    },
+    {
+     "severity": "high",
+     "quote": "\ucd5c\ubc29\uc5b4 QLD20\u00b7RSST40\u00b7GDE10\u00b7DBMF30 (\uc0ac\ud6c4) (line 23); \ucd5c\ubc29\uc5b4 QLD20\u00b7RSST40\u00b7GDE10\u00b7DBMF30 (line 31, no \uc0ac\ud6c4 label)",
+     "problem": "This row was picked after the fact. df7post.py PICKS chose it as the largest-drawdown-margin passer at trend 100% and RAW, and its f* is 0.95, which is beyond the 70~80% the proxy verifier already calls optimistic. It is not the most defensive rule: under PRIM, 54 of the 198 pre-registered rules have a larger minimum drawdown margin, and F1 QLD20 mixes have REAL MDD of about -41% against its -56%. Under PRIM it passes only G1 and trails QQQ on median return at every P and X horizon (P5 -1.54, X5 to X30 -2.2 to -3.3%p). The name \ucd5c\ubc29\uc5b4 echoes DF5's pre-registered '\ubc29\uc5b4 \ub300\uc548', so a reader of the first table may take it as a pre-registered defensive alternative. The RAW table carries no \uc0ac\ud6c4 label at all, and the condition behind the pick (trend 100%) appears only at line 50. Nothing in the pass counts, selection or f* changes.",
+     "correct_value": "Rename the row in both tables to: \uc0ac\ud6c4 \ucc38\uace0(\ucd94\uc138 100%\u00b7RAW \ud1b5\uacfc 30\uac1c \uc911 \ub099\ud3ed \uc5ec\uc720 \ucd5c\ub300, f* 0.95) QLD20\u00b7RSST40\u00b7GDE10\u00b7DBMF30. Add a note: \uc8fc \uad00\ub840\uc5d0\uc11c\ub294 \uad00\ubb38 1/5 \ud1b5\uacfc, \uac00\uc0c1\u00b7\uadf9\uc545 \uc81c\uc678 \uc218\uc775\uc774 QQQ\ubcf4\ub2e4 0.0~3.3%p \ub0ae\uc74c; \uc0ac\uc804 \ub4f1\ub85d \ubc29\uc5b4 \ub300\uc548 \uc544\ub2d8."
+    },
+    {
+     "severity": "medium",
+     "quote": "\ucd94\uc138 \uc218\uc775 \ube44\uc728 60/70/80/90/100%\uc5d0\uc11c \ud1b5\uacfc 1/8/14/21/30\uac1c, \uc804\ubd80 QLD + RSST + GDE + DBMF \uc870\ud569(\uc0ac\uc6a9\uc790 \ubc29\uc2dd). (line 8)",
+     "problem": "Every passer is in the F2 family, but not every passer holds all four products. The only 60% passer, F2|q0.2|r0.6|g0.2|m0.0, holds no DBMF. At 70%, 3 of 8 passers have DBMF 0% and 1 has GDE 0%. At 100%/RAW, 5 have no DBMF, 11 no GDE and 2 no RSST. The low-fraction passers are QLD 20% with RSST 50~70%, which are not the user's P2/P3 weights (P2 f* 0.80; P3 fails the X drawdown margin even under RAW). The label '\uc0ac\uc6a9\uc790 \ubc29\uc2dd' invites the reader to think the user's own allocation passes at 60~70%.",
+     "correct_value": "\uc804\ubd80 F2 \uacc4\uc5f4(QLD 20~40% + RSST\u00b7GDE\u00b7DBMF \uc313\uae30)\uc774\ub2e4. DBMF 0% \uc870\ud569\ub3c4 \ub4e4\uc5b4 \uc788\ub2e4. 60~70%\uc5d0\uc11c \ud1b5\uacfc\ud55c \uc870\ud569\uc740 QLD 20%, RSST 50~70%\uc774\uace0, \uc0ac\uc6a9\uc790 P2\u00b7P3 \ube44\uc911 \uadf8\ub300\ub85c\ub294 \uc544\ub2c8\ub2e4(P2 f* 0.80, P3\ub294 RAW\uc5d0\uc11c\ub3c4 \ud0c8\ub77d)."
+    },
+    {
+     "severity": "medium",
+     "quote": "\ub3c5\ub9bd \uac80\uc99d 3\uac74(\uc804\ubd80 \uc7ac\uc2e4\ud589, \ucf54\ub4dc\u00b7\uc0ac\uc804 \ub4f1\ub85d \ub300\uc870, \ucd94\uc138 \ub300\uc6a9 \ubbf8\ub798 \uc815\ubcf4\u00b7\ubcf4\uc815 \uc810\uac80): \uc218\uce58 \ucc28\uc774 0, \uacb0\ub860 \ubcc0\ud654 \uc5c6\uc74c. (line 11)",
+     "problem": "The three verifier outputs (df7_verify_reports.json, 13:23) came before df7post.py was edited (13:35, when picks() was added) and before df7_post.json was written (13:38). The audit says outright that df7_post.json did not exist when it ran. So line 8, lines 47-51 and both \ucd5c\ubc29\uc5b4 rows are unverified, yet this sentence sits right after them in the conclusion. '\uc804\ubd80 \uc7ac\uc2e4\ud589' also overstates the work: only the repro verifier re-ran all 198 rules.",
+     "correct_value": "\ub3c5\ub9bd \uac80\uc99d 3\uac74(\uc7ac\ud604: 198\uac1c \uc804\ubd80 \uc7ac\uc2e4\ud589 \ucc28\uc774 0, \uac10\uc0ac: \ucf54\ub4dc\u00b7\uc0ac\uc804 \ub4f1\ub85d \ub300\uc870, \ucd94\uc138 \ub300\uc6a9 \uc810\uac80). \uc0ac\ud6c4 \ube44\uc728 \uc2a4\uce94\uacfc \uc0ac\ud6c4 \ucc38\uace0 \uc870\ud569 \ud589\uc740 \uac80\uc99d \ub4a4\uc5d0 \uacc4\uc0b0\ub418\uc5b4 \ubbf8\uac80\uc99d."
+    },
+    {
+     "severity": "medium",
+     "quote": "\uae08\u00b7\uad6d\ucc44\ub294 \ucd08\uacfc\uc218\uc775 0 \uac00\uc815\uc774\ub77c \uc218\uc775\uc744 \ubcf4\ud0dc\uc9c0 \ubabb\ud55c\ub2e4. (line 51); \uae08\u00b7\uad6d\ucc44\ub294 \uc7a5\uae30 \ucd08\uacfc\uc218\uc775 0\uc73c\ub85c \ub450\uc5c8\uc73c\ubbc0\ub85c \uc774 \uc218\uc775\uc744 \ub530\ub77c\uac00\ub824\uba74 \ub098\uc2a4\ub2e5 \ub808\ubc84\ub9ac\uc9c0\uac00 \ud544\uc694\ud588\ub2e4(DF1~DF6). (line 55)",
+     "problem": "The files do not support the zero-excess assumption as the cause. In the post-hoc RAW run, gold earns +2.07%/yr and LTT +5.50%/yr raw, yet F1 still has 0 passers. The best F1 at 100% and at RAW is QLD40\u00b7DBMF60, which holds 0% gold and 0% bonds and passes 4 of 5 gates; every F1 mix that adds gold or LTT lowers the X-world return. The binding hurdle is QQQ's crash-free-world median of 20.5~21.8%. The DF1~DF6 attribution is also loose. Zero gold/bond excess applies to DF5 and DF6; DF3 and DF4 had bond-neutral gates; DF1 and DF2 judged with raw bonds (bond neutral only as sensitivity). The 'beat QQQ on all three bases' criterion began in DF4 (user 07:15Z); DF1~DF3 used defence-ladder plus max-median selection.",
+     "correct_value": "DF4 \uc774\ud6c4 \uad00\ubb38\uc740 \uadf9\uc545 \uc81c\uc678 \uc138\uacc4 QQQ \uc218\uc775(\uc5f0 20.5~21.8%)\uc744 \ub118\uc73c\ub77c\uace0 \uc694\uad6c\ud55c\ub2e4. DF5\u00b7DF6\ub294 \uae08\u00b7\uad6d\ucc44 \ucd08\uacfc\uc218\uc775\uc744 0\uc73c\ub85c \ub450\uc5c8\uace0, DF7 \uc0ac\ud6c4 RAW(\uae08\u00b7\uad6d\ucc44 \uc6d0\uc790\ub8cc)\uc5d0\uc11c\ub3c4 F1 \ucd5c\uc120\uc740 \uae08\u00b7\uad6d\ucc44 0%(QLD40\u00b7DBMF60)\uc600\ub2e4. \uadf8\ub798\uc11c \uae08\u00b7\uad6d\ucc44\ub85c\ub294 \uc774 \uc218\uc775\uc744 \ub530\ub77c\uac00\uc9c0 \ubabb\ud574 \ub098\uc2a4\ub2e5 \ub178\ucd9c\uc774 \ud544\uc694\ud588\ub2e4. DF1~DF3\ub294 \ub2e4\ub978 \uae30\uc900(\ubc29\uc5b4 \ub4f1\uae09 + \uc218\uc775 \ucd5c\ub300)\uc774\uc5c8\uace0 v1 \uae30\ubc18 \ub098\uc2a4\ub2e5 \ub808\ubc84\ub9ac\uc9c0 \ud6c4\ubcf4\uac00 \uc911\uc2ec\uc774\uc5c8\ub2e4."
+    },
+    {
+     "severity": "medium",
+     "quote": "QQQ\uc640 \uc0c1\uad00\uc774 \uc5c6\ub294 \uc218\uc775\uc6d0\uc740 \ucd94\uc138\ucd94\uc885\ubfd0\uc774\ub2e4(\ub300\uc6a9\uc758 \ub098\uc2a4\ub2e5 \uc0c1\uad00 \u22120.03, \ub098\uc2a4\ub2e5 \ucd5c\uc545 10% \ub2ec\uc5d0 \uc6d4 +1.8%). DF1~DF6\uc5d0\ub294 \uc774 \ucd95\uc774 \uc5c6\uc5c8\ub2e4(\ud55c\uc815 \uac80\ud1a0\uc600\uc74c\uc744 \uc778\uc815). (line 56)",
+     "problem": "Trend is the only uncorrelated return source only by convention: gold and LTT are also weakly correlated with NDX but were assigned zero excess. DF1~DF6 did contain trend rules: v1's 200-day trend, the T200 and M252 Nasdaq signals, and DF5's A4 per-asset 200-day (Faber) rules on Nasdaq/LTT/GOLD/DEF3 plus momentum rotation. What was missing was a multi-market long/short managed-futures axis, and PRECOMMIT_DF7 line 5 claims that only for DF5 and DF6. The +1.8%/month figure belongs to the 100% proxy; at PRIM it is about +1.35%/month.",
+     "correct_value": "\uc774\ubc88 \uad00\ub840\uc5d0\uc11c QQQ\uc640 \uc0c1\uad00\uc774 \ub0ae\uc73c\uba74\uc11c T-bill\ubcf4\ub2e4 \ub192\uc740 \uc218\uc775\uc744 \uac00\uc815\ud55c \uc790\uc0b0\uc740 \ucd94\uc138\ucd94\uc885(\uad00\ub9ac\ud615 \uc120\ubb3c)\ubfd0\uc774\ub2e4(\uae08\u00b7\uad6d\ucc44\ub294 \ucd08\uacfc\uc218\uc775 0 \uac00\uc815; \ub300\uc6a9 100% \uae30\uc900 \ub098\uc2a4\ub2e5 \ucd5c\uc545 10% \ub2ec \uc6d4 +1.8%, \uc8fc \uad00\ub840 \uc57d +1.3%). DF1~DF6\uc5d0\ub3c4 \ub098\uc2a4\ub2e5 \uc790\uccb4 \ucd94\uc138 \uc2e0\ud638\uc640 DF5 \uc790\uc0b0\ubcc4 200\uc77c\uc120 \uaddc\uce59\uc740 \uc788\uc5c8\uc9c0\ub9cc, \ub2e4\uc790\uc0b0 \ub871\u00b7\uc20f \ucd94\uc138\ucd94\uc885(\uad00\ub9ac\ud615 \uc120\ubb3c) \ucd95\uc740 \uc5c6\uc5c8\ub2e4."
+    },
+    {
+     "severity": "low",
+     "quote": "\uae08\u00b7\uad6d\ucc44 \uc9c1\uc811 \ubcf4\uc720(F1), \ucd94\uc138 \uc2e0\ud638 \uac08\uc544\ud0c0\uae30(F3)\ub294 \ucd94\uc138 \uc218\uc775 100%\uc5d0\uc11c\ub3c4 0\uac1c. (line 9)",
+     "problem": "F1's best rule under both PRIM and 100%/RAW is QLD40\u00b7DBMF60, with no gold or bonds, and at 100%/RAW it passes 4 of 5 gates. Calling F1 '\uae08\u00b7\uad6d\ucc44 \uc9c1\uc811 \ubcf4\uc720' pins the failure on gold and bonds, and the bare '0\uac1c' hides that F1 comes within one gate.",
+     "correct_value": "F1(QLD + \uae08\u00b7\uad6d\ucc44\u00b7DBMF \uc815\uc801 \ud63c\ud569; \ucd5c\uc120\uc740 \uae08\u00b7\uad6d\ucc44 0%\uc778 QLD40\u00b7DBMF60, \ucd94\uc138 100%\uc5d0\uc11c \uad00\ubb38 4/5)\uacfc F3(\uc2e0\ud638 \uc804\ud658, \ucd94\uc138 100%\uc5d0\uc11c \ucd5c\ub300 1/5)\ub294 \ucd94\uc138 100%\uc5d0\uc11c\ub3c4 5\uac1c \ubaa8\ub450 \ud1b5\uacfc 0\uac1c."
+    },
+    {
+     "severity": "low",
+     "quote": "\ucd94\uc138 \uc218\uc775\uc774 \ub300\uc6a9\uc758 70% \uc774\uc0c1\uc774\uba74 \ud1b5\uacfc(f* = 0.70). (line 7); \uc0ac\uc6a9\uc790 P2\ub294 \ucd94\uc138 80% \uc774\uc0c1(f* = 0.80) (line 10)",
+     "problem": "'\ud1b5\uacfc' here means G1~G5 only; H1, H3 and H4 were never tested at that fraction, and at PRIM 0 of its 7 neighbours pass. Both margins are thin. At 0.65 the F2 best fails only on the X10 drawdown margin (9.76% vs 10%), and P2 passes G4 at 0.80 by just +0.037%p, as the repro verifier flagged (low).",
+     "correct_value": "\ucd94\uc138 \uc218\uc775\uc774 \ub300\uc6a9\uc758 \uc57d 70% \uc774\uc0c1\uc774\uba74 G1~G5\ub97c \ud1b5\uacfc\ud55c\ub2e4(f* = 0.70, \uacbd\uacc4\uc120; \uac15\uac74\uc131 \uc2dc\ud5d8\uc740 \ud558\uc9c0 \uc54a\uc74c). P2\ub294 \uc57d 80%(f* = 0.80, \uadf9\uc545 \uc81c\uc678 30\ub144 \uc9dd \ube44\uad50 +0.04%p\ub85c \uacbd\uacc4\uc120)."
+    },
+    {
+     "severity": "low",
+     "quote": "5\uac1c \uad00\ubb38 \uc911 4\uac1c \ud1b5\uacfc, \uadf9\uc545 \uc81c\uc678 10\ub144 \ub099\ud3ed \uc5ec\uc720 7.5%(\uae30\uc900 10%)\ub85c \ud0c8\ub77d. (line 6)",
+     "problem": "The rule also fails the X10 p10 CAGR condition (-0.11%p vs QQQ), and none of its 7 neighbours pass. The conclusion mentions only the drawdown failure, so the rule reads as more of a near-candidate than it is.",
+     "correct_value": "5\uac1c \uad00\ubb38 \uc911 4\uac1c \ud1b5\uacfc. \uadf9\uc545 \uc81c\uc678 10\ub144 \ub099\ud3ed \uc5ec\uc720 7.5%(\uae30\uc900 10%)\uc640 \ud558\uc704 10% \uc218\uc775 \u22120.11%p\ub85c \ud0c8\ub77d. \uc774\uc6c3 7\uac1c\ub294 \ubaa8\ub450 \ubd88\ud1b5(\uace0\ub9bd\uc810)."
+    },
+    {
+     "severity": "low",
+     "quote": "\ucd94\uc138 \uc218\uc775 0(ZERO)\uc774\uba74 \uc704 \ub124 \uc870\ud569 \ubaa8\ub450 \uc138 \uae30\uc900\uc5d0\uc11c QQQ\ubcf4\ub2e4 \uc218\uc775\uc774 1~6%p \ub0ae\ub2e4 (line 32)",
+     "problem": "On the horizons shown, the shortfalls run from 0.69 to 6.21%p. P3 is under 1%p on REAL (-0.69), P10 (-0.71) and X10 (-0.79); the post-hoc pick reaches -6.21 at X20 and -6.87 at X30.",
+     "correct_value": "0.7~6.2%p \ub0ae\ub2e4(30\ub144 \ud3ec\ud568 \ucd5c\ub300 6.9%p)."
+    },
+    {
+     "severity": "low",
+     "quote": "\uadf9\uc545 \uc81c\uc678 \uc138\uacc4\uc5d0\uc11c QQQ\ub294 \uc5f0 21~22%\ub97c \ub0b8\ub2e4. (line 54)",
+     "problem": "QQQ's X-world medians are X5 20.56, X10 20.46, X20 21.05 and X30 21.78.",
+     "correct_value": "\uc5f0 20.5~21.8%"
+    },
+    {
+     "severity": "low",
+     "quote": "\ucd94\uc138\ub294 \ub300\uc6a9 \ud3c9\uade0\uc758 50%(\uc5f0 5.05%, DBMF \uc218\uc218\ub8cc \ud6c4 4.2%). (line 36); \ud544\uc694\ud55c \ud06c\uae30(\ub300\uc6a9\uc758 70~80%, \uc218\uc218\ub8cc \uc804 \uc5f0 7~8%...) (line 57)",
+     "problem": "5.05% and 7~8% are REAL-world values. Each world is shifted to its own proxy mean (P 9.36%, X 9.83%), so PRIM is 4.68% in P and 4.91% in X, and 70~80% works out to 6.6~7.5% in P.",
+     "correct_value": "\uc5f0 5.05%(\uc2e4\uc81c \uacbd\ub85c \uae30\uc900; \uac00\uc0c1 4.7%, \uadf9\uc545 \uc81c\uc678 4.9%); \ud544\uc694\ud55c \ud06c\uae30\ub294 \uc218\uc218\ub8cc \uc804 \uc5f0 \uc57d 6.6~8.1%(\uc138\uacc4\ubcc4)."
+    },
+    {
+     "severity": "low",
+     "quote": "| v1 (DF3 \uac12) | 19.9 / \u221280 | ... | 30.5 / \u221270 | (first table, line 18-19)",
+     "problem": "v1 and v2 use TQQQ, which DF7 excludes, and they are on the DF3 basis (no QQQ dividend or world corrections). On REAL, v1 beats QQQ on both return and drawdown (30.5/-70 vs 12.2/-83), and the conclusion never mentions v1/v2. A reader who sees only the conclusion and the first table may ask why v1 is not the answer.",
+     "correct_value": "Label the rows 'v1 (DF3 \uac12, TQQQ \uc0ac\uc6a9\u00b7DF7 \uc870\uac74 \ubc16\u00b7\ubcf4\uc815 \ub2e4\ub984)' and add one conclusion line: v1\u00b7v2\ub294 TQQQ\ub97c \uc368\uc11c \uc774\ubc88 \uc870\uac74 \ubc16\uc774\uace0, \uac00\uc0c1\u00b7\uadf9\uc545 \uc81c\uc678 \ud558\uc704 10% \ub099\ud3ed\uc774 QQQ\ubcf4\ub2e4 \uae4a\ub2e4."
+    },
+    {
+     "severity": "low",
+     "quote": "\ucd94\uc138 \uc218\uc775\uc774 1986~2014 \uadf8\ub300\ub85c(RAW, \ub099\uad00 \uc0c1\ud55c)\uc77c \ub54c: (line 25)",
+     "problem": "RAW also uses the raw gold/bond panel, not only the 100% trend. The table also has no QQQ row; QQQ is identical across conventions.",
+     "correct_value": "\ucd94\uc138 100% + \uae08\u00b7\uad6d\ucc44 \uc6d0\uc790\ub8cc(RAW, \ub099\uad00 \uc0c1\ud55c)\uc77c \ub54c. QQQ \uac12\uc740 \uc704 \ud45c\uc640 \uac19\ub2e4."
+    },
+    {
+     "severity": "low",
+     "quote": "\uac00\uc7a5 \uac00\uae4c\uc6b4 \uac83(\uc0ac\uc804 \ub4f1\ub85d \uacc4\uc5f4 \ucd5c\uc120) (line 6)",
+     "problem": "Reporting a 'family best' is pre-registered, but its ranking rule (gate count, then score) comes from DF5 convention and is not defined in the DF7 spec, as the audit noted.",
+     "correct_value": "\uac00\uc7a5 \uac00\uae4c\uc6b4 \uac83(\uc0ac\uc804 \ub4f1\ub85d \ubcf4\uace0 \ud56d\ubaa9 '\uacc4\uc5f4\ubcc4 \ucd5c\uc120'; \uc21c\uc704 \uaddc\uce59\uc740 DF5 \uad00\ub840)"
+    }
+   ],
+   "verdict": "Pass counts, tiers, selection, f* and the 0-pass headline all match the result files and the three verifiers. No finding changes any of them.\n\n- **(a) Post-hoc presented as a selection:** none. Every post-hoc item carries a label, except the RAW-table \ucd5c\ubc29\uc5b4 row (line 31), which has none.\n- **(b) \ucd5c\ubc29\uc5b4 row:** fails. The name implies the most defensive rule, but under PRIM 54 of 198 pre-registered rules have a larger minimum drawdown margin, and it trails QQQ on return everywhere except REAL. It is a post-hoc pick at trend 100%/RAW with f* 0.95. Its label and condition need fixing (high).\n- **(c) P3:** the return claim is true at every horizon and on REAL. The drawdown framing is materially misleading (high): P3 fails the 10% margin on 4 of 5 gate keys. Its X10/X30 margins are only 1.5%/2.6%, and it still fails at RAW.\n- **(d) Why results were tied to QQQ:** partly supported. 'No managed-futures axis' holds, but DF1~DF6 did have Nasdaq and per-asset trend rules. Zero gold/bond excess applies to DF5/DF6 only. The post-hoc RAW run shows F1 still fails, and its best member holds no gold or bonds even with raw gold/bond returns. So the binding constraint is the crash-free-world QQQ hurdle (20.5~21.8%), not just the zero-excess assumption.\n- **(e) Trend calibration:** matches the proxy verifier: PRIM fair to mildly optimistic, 25% a reasonable pessimistic case, 70~80% optimistic.\n- **(f) Reader of the conclusion and first table only:** misled by the P3 sentence, the \ucd5c\ubc29\uc5b4 row, '\uc804\ubd80 QLD+RSST+GDE+DBMF(\uc0ac\uc6a9\uc790 \ubc29\uc2dd)' (several passers hold no DBMF), and the 'verified, difference 0' claim. That claim does not cover the post-hoc scan or picks, which were run after the verifiers.\n- **(g) Arithmetic means across paths:** none used for judgement. The only pooled mean is the pre-registered calibration shift (TR[sel].mean() in panel7).\n\nPer the task's write limit, no REPORT.md was written. The check scripts are /tmp/df7c_meaning/a1.py, /tmp/df7c_meaning/a2.py and /tmp/df7c_meaning/a3.py."
+  },
+  "remoteControlDeviceReport": false,
+  "toolsUsed": [
+   "Read",
+   "Bash",
+   "StructuredOutput"
+  ],
+  "sessionId": "6f3e91de-e49a-5fe5-84c0-235a69554919"
+ }
+]
