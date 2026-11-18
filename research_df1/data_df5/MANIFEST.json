@@ -1,0 +1,1746 @@
+{
+ "_meta": {
+  "built": "2026-11-18",
+  "builder": "df5 merge step (/tmp/df5d_merge/merge.py); inputs clean/proj/MANIFEST_proj.json + clean/pub/_manifest_pub.json",
+  "cut": "2014-12-31 (every series truncated on load; no 2015+ value read into the outputs)",
+  "format": "clean/<ID>.csv: columns date,r; r = simple daily total return in decimal, USD; DatetimeIndex",
+  "selection_rule": "1) longer daily USD total-return coverage (price-only pieces do not count), 2) ACTUAL over PROXY, 3) tie -> project build (NYSE calendar). Overrides are marked QUALITY OVERRIDE in choice_reason.",
+  "calendar_note": "KF-based series start 1926 and include NYSE Saturday sessions before 1952-05; the only gap > 5 weekdays is the 1933-03-03..1933-03-15 bank holiday (market closed, not missing data). research/data/INDEX.md restricts pre-1970 rows for some threads.",
+  "origin_copies": "clean/proj/<ID>.csv and clean/pub/<ID>.csv are the per-builder copies; clean/<ID>.csv is the chosen series (byte copy of its origin file).",
+  "license": "Ken French data: internal research use, no redistribution; Yahoo/Twelve Data/FRED/Bundesbank: internal use"
+ },
+ "assets": {
+  "GOLD": {
+   "id": "GOLD",
+   "etf": "GLD",
+   "file": "/mnt/project-files/research/df5/data/clean/GOLD.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/GOLD.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY spot XAU/USD daily close (Twelve Data, no income; price = TR for bullion) -> ACTUAL GLD adjclose TR",
+   "source": [
+    "research/broad_etf/data/raw/gold/xauusd_td_1985_1998.csv (1985-01-02..1998-12-31)",
+    "research/data/gold/xauusd_twelvedata_1day_raw.csv (1999-01-04..2014-12-30)",
+    "research/data/panel_f32.npz.xz GLD adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1985-01-03",
+     "to": "2004-11-18",
+     "type": "PROXY",
+     "source": "spot XAU/USD daily close (Twelve Data; bullion, price = TR, no fee)",
+     "n": 5017
+    },
+    {
+     "from": "2004-11-19",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "GLD adjclose total return",
+     "n": 2546
+    }
+   ],
+   "total_return_from": "1985-01-03",
+   "actual_etf_from": "2004-11-19",
+   "start": "1985-01-03",
+   "end": "2014-12-31",
+   "n": 7563,
+   "ann_vol": 0.1637,
+   "daily": true,
+   "usd": true,
+   "sha256": "d1236ff5704ea50395f6d9d3fef974f43a8e9a179cff1f14ee94935ba93cbc13",
+   "choice_reason": "proj covers 1985-01 vs pub 2000-08 (pub pre-GLD piece is COMEX front futures with roll jumps). Longer coverage wins.",
+   "notes": "spot has no 0.40%/yr GLD fee; 227 spot dates off the NYSE calendar compounded into next NYSE day, 4 NYSE days without a spot quote (carried 0); 1985-1998 file has 431 rows with o=h=l=c (single fix), 96 repeated closes 1985-1998. Pre-1985 project gold is World Bank MONTHLY log-interpolated (BEARPROFIT/assets.py) -> not daily, excluded (look-ahead).",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/GOLD.csv",
+     "kind": "PROXY (GC=F front futures price change) then ACTUAL ETF total return (GLD)",
+     "start": "2000-08-31",
+     "end": "2014-12-31",
+     "n": 3598,
+     "ann_vol": 0.1896
+    },
+    {
+     "role": "proj unspliced variant: spot_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/GOLD__spot_only.csv",
+     "start": "1985-01-03",
+     "end": "2014-12-31",
+     "n": 7563,
+     "ann_vol": 0.1619
+    },
+    {
+     "role": "pub variant GOLD_FFM",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/GOLD_FFM.csv",
+     "kind": "PROXY (spot gold fixing in USD, price-only; no fee/storage)",
+     "notes": "German (Frankfurt) business-day calendar, not US. Converted to USD at the same-day Frankfurt USD/DEM fixing. Ends 1998-12-30 (DEM abolished). Gap to GOLD (starts 2000-08-31).",
+     "start": "1968-06-19",
+     "end": "1998-12-30",
+     "n": 7621,
+     "ann_vol": 0.2091
+    }
+   ],
+   "ko_src": "금 현물 XAU/USD (Twelve Data) → GLD",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.35
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "LTT": {
+   "id": "LTT",
+   "etf": "TLT",
+   "file": "/mnt/project-files/research/df5/data/clean/LTT.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/LTT.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY synthetic 25y constant-maturity par bond TR from daily ^TYX (30y yield), RECON -> ACTUAL TLT adjclose TR",
+   "source": [
+    "research/data/panel_ext_f32.npz.xz _TYX close (Yahoo ^TYX, 1977-02-15+)",
+    "formula = research/c3_multi/code/md.py bond() with n=50 semiannual periods (md B30 uses n=60)",
+    "research/data/panel_f32.npz.xz TLT adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1977-02-16",
+     "to": "2002-07-30",
+     "type": "PROXY",
+     "source": "synthetic 25y constant-maturity par bond TR from daily ^TYX 30y yield",
+     "n": 6426
+    },
+    {
+     "from": "2002-07-31",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "TLT adjclose total return",
+     "n": 3128
+    }
+   ],
+   "total_return_from": "1977-02-16",
+   "actual_etf_from": "2002-07-31",
+   "start": "1977-02-16",
+   "end": "2014-12-31",
+   "n": 9554,
+   "ann_vol": 0.1194,
+   "daily": true,
+   "usd": true,
+   "sha256": "24db642223ff8267646fdfbb25698362abd5a076f22aec2cd05abd8a373b5615",
+   "choice_reason": "proj covers 1977-02 vs pub 1986-05; proj proxy is vol-matched to TLT (pub VUSTX is an actual fund but shorter duration, vol 11.5% vs TLT 13.8%). Longer coverage wins; pub kept as alternative.",
+   "notes": "25y maturity chosen a priori as TLT-like (TLT avg maturity ~25y; BE1 also used M=25 on the 30y CMT); proxy is gross of the 0.15%/yr TLT fee and ignores roll-down. Project B30 (n=60) given as alt. H.15 20y CMT par tracks TLT slightly better daily but has a gap 1987-01..1993-09 (raw in research/broad_etf/data/raw/h15/H15_all_daily.csv).",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/LTT.csv",
+     "kind": "ACTUAL mutual-fund total return (VUSTX) then ACTUAL ETF total return (TLT)",
+     "start": "1986-05-20",
+     "end": "2014-12-31",
+     "n": 7216,
+     "ann_vol": 0.1124
+    },
+    {
+     "role": "proj unspliced variant: b25_proxy_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/LTT__b25_proxy_only.csv",
+     "start": "1977-02-16",
+     "end": "2014-12-31",
+     "n": 9554,
+     "ann_vol": 0.1197
+    },
+    {
+     "role": "proj unspliced variant: B30_project_n60",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/LTT__B30_project_n60.csv",
+     "start": "1977-02-16",
+     "end": "2014-12-31",
+     "n": 9554,
+     "ann_vol": 0.1285
+    }
+   ],
+   "ko_src": "^TYX 30년 금리로 만든 25년 만기 채권 TR → TLT",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.06,
+     0.25
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "DEVX": {
+   "id": "DEVX",
+   "etf": "EFA",
+   "file": "/mnt/project-files/research/df5/data/clean/DEVX.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/DEVX.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY Ken French Developed ex US market (Mkt-RF+RF, USD, TR, value-weighted, Bloomberg) -> ACTUAL EFA adjclose TR",
+   "source": [
+    "research/etf_ext/data/raw/kf/Developed_ex_US_3_Factors_Daily_CSV.zip (1990-07-02+)",
+    "research/data/panel_f32.npz.xz EFA adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1990-07-02",
+     "to": "2001-08-27",
+     "type": "PROXY",
+     "source": "Ken French Developed ex US market (Mkt-RF+RF) USD, local-close timing",
+     "n": 2819
+    },
+    {
+     "from": "2001-08-28",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "EFA adjclose total return",
+     "n": 3356
+    }
+   ],
+   "total_return_from": "1990-07-02",
+   "actual_etf_from": "2001-08-28",
+   "start": "1990-07-02",
+   "end": "2014-12-31",
+   "n": 6175,
+   "ann_vol": 0.1987,
+   "daily": true,
+   "usd": true,
+   "sha256": "0216f3b070ae37cae0d21a93d76e07ae985a74ceea3a1a8eb5367742f38b7ca1",
+   "choice_reason": "same construction and start in both; proj chosen because off-NYSE KF dates are compounded into the next NYSE day (pub keeps KF dates incl. some US holidays, 6267 vs 6175 rows).",
+   "notes": "KF international daily returns are stamped at LOCAL closes (asynchronous to NYSE): daily corr with EFA only ~0.75 (weekly 0.95), corr(EFA_t, KF_t+1)~0.31; KF daily vol ~17% vs EFA ~23%. 218 KF dates off the NYSE calendar compounded into next NYSE day. Pre-1990 needs daily FX: project has local-currency PRICE indices (research/gx1/data, research/at2/data: UK ^FTSE 1984, CA ^GSPTSE 1979, AU ^AORD 1984, DE ^GDAXI 1987(TR index), FR ^FCHI 1990, JP ^N225 1970) but no daily FX except KRW -> not built.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/DEVX.csv",
+     "kind": "PROXY (KF Developed ex US market TR in USD) then ACTUAL ETF total return (EFA)",
+     "start": "1990-07-02",
+     "end": "2014-12-31",
+     "n": 6267,
+     "ann_vol": 0.1972
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/DEVX__kf_only.csv",
+     "start": "1990-07-02",
+     "end": "2014-12-31",
+     "n": 6175,
+     "ann_vol": 0.1616
+    },
+    {
+     "role": "pub variant DEVX_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/DEVX_KF.csv",
+     "kind": "PROXY (KF Developed ex US market TR in USD, full period)",
+     "notes": "Local-close timing; see DEVX notes.",
+     "start": "1990-07-02",
+     "end": "2014-12-31",
+     "n": 6393,
+     "ann_vol": 0.1583
+    }
+   ],
+   "ko_src": "Ken French 선진국(미국 제외) 시장 USD → EFA",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "EM": {
+   "id": "EM",
+   "etf": "EEM",
+   "file": "/mnt/project-files/research/df5/data/clean/EM.csv",
+   "origin": "pub",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/pub/EM.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "ACTUAL index-fund total return (VEIEX, NAV with fair-value pricing; purchase/redemption fees not included) then ACTUAL ETF total return (EEM)",
+   "source": [
+    "Yahoo VEIEX (Vanguard Emerging Markets Stock Index fund, MSCI EM benchmark until 2013) close+distributions",
+    "Yahoo EEM adjclose (ACTUAL ETF TR)"
+   ],
+   "segments": [
+    {
+     "from": "1994-05-05",
+     "to": "2003-04-14",
+     "type": "PROXY",
+     "source": "VEIEX (Vanguard EM index fund) NAV total return; an actual fund, not the ETF",
+     "n": 2253
+    },
+    {
+     "from": "2003-04-15",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "EEM adjclose total return",
+     "n": 2950
+    }
+   ],
+   "total_return_from": "1994-05-05",
+   "actual_etf_from": "2003-04-15",
+   "start": "1994-05-05",
+   "end": "2014-12-31",
+   "n": 5203,
+   "ann_vol": 0.2719,
+   "daily": true,
+   "usd": true,
+   "sha256": "0e32b8a7daa0ff5370e4a8459d3f53bf322b9cb7bafcc469a52163df96cde41a",
+   "choice_reason": "pub covers 1994-05 vs proj 2003-04 (EEM only). Longer coverage wins. VEIEX NAV is less volatile than EEM (fair-value pricing, timing).",
+   "notes": "VEIEX vs EEM 2003-2014: daily corr 0.931, weekly 0.967, vol 0.243 vs 0.321 (EEM US-close pricing noisier). Ken French Emerging factors are MONTHLY only (from 1989-07; raw/pub/kf_Emerging_5_Factors__main_monthly.csv); no public daily EM before 1994-05. No distributions re-dated (detector found none).",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/EM.csv",
+     "kind": "ACTUAL EEM adjclose TR (no project proxy before 2003-04)",
+     "start": "2003-04-15",
+     "end": "2014-12-31",
+     "n": 2950,
+     "ann_vol": 0.3206
+    }
+   ],
+   "ko_src": "VEIEX 인덱스펀드 NAV TR → EEM",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.12,
+     0.45
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "CMDTY": {
+   "id": "CMDTY",
+   "etf": "DBC",
+   "file": "/mnt/project-files/research/df5/data/clean/CMDTY.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/CMDTY.csv",
+   "label": "ACTUAL",
+   "kind": "ACTUAL DBC adjclose TR (futures-based, includes collateral yield)",
+   "source": [
+    "research/data/panel_f32.npz.xz DBC adjclose"
+   ],
+   "segments": [
+    {
+     "from": "2006-02-07",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "DBC adjclose total return (futures + collateral yield)",
+     "n": 2241
+    }
+   ],
+   "total_return_from": "2006-02-07",
+   "actual_etf_from": "2006-02-07",
+   "start": "2006-02-07",
+   "end": "2014-12-31",
+   "n": 2241,
+   "ann_vol": 0.2093,
+   "daily": true,
+   "usd": true,
+   "sha256": "099cae3aca7eb9ed87df8ee02100555908351ddf06d2a49a5f7c0d8545450ee9",
+   "choice_reason": "pub is longer (1984) but its pre-2006-07 piece is the PRICE-ONLY S&P GSCI spot index (no roll, no collateral; runs about 7.6%/yr ahead of GSG), so it is not total return. Total-return coverage: proj DBC 2006-02-07 vs pub GSG 2006-07-24, and DBC is ACTUAL. pub spot splice kept as alternative.",
+   "notes": "USO 2006-04, DBA 2007-01 also in panel; no daily commodity index or WTI spot in project before 2006 (open_data/raw/CMO_monthly.xlsx = World Bank monthly).",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/CMDTY.csv",
+     "kind": "PRICE-ONLY spot index proxy (S&P GSCI spot) then ACTUAL ETF total return (GSG)",
+     "start": "1984-01-04",
+     "end": "2014-12-31",
+     "n": 7815,
+     "ann_vol": 0.2026
+    },
+    {
+     "role": "pub variant CMDTY_SPOT",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/CMDTY_SPOT.csv",
+     "kind": "PRICE-ONLY (S&P GSCI spot, not investable)",
+     "notes": "Full period 1984-2014 single source.",
+     "start": "1984-01-04",
+     "end": "2014-12-31",
+     "n": 7815,
+     "ann_vol": 0.2001
+    },
+    {
+     "role": "pub variant CMDTY_WTI",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/CMDTY_WTI.csv",
+     "kind": "PRICE-ONLY (WTI spot, not investable)",
+     "notes": "Returns between consecutive valid FRED observations (holidays skipped). WTI vs GSG daily corr 0.817; vol 0.38 vs 0.25.",
+     "start": "1986-01-03",
+     "end": "2014-12-31",
+     "n": 6580,
+     "ann_vol": 0.42
+    }
+   ],
+   "ko_src": "DBC 실제 TR",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.1,
+     0.45
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "USD": {
+   "id": "USD",
+   "etf": "UUP",
+   "file": "/mnt/project-files/research/df5/data/clean/USD.csv",
+   "origin": "pub",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/pub/USD.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "PROXY (DXY spot + T-bill + rate-differential carry = synthetic fully-collateralized USDX futures) then ACTUAL ETF total return (UUP)",
+   "source": [
+    "Yahoo DX-Y.NYB (ICE US Dollar Index spot) change + KF daily RF + (US 3m - DXY-weighted foreign 3m interbank rate, prior-month avg, FRED OECD)/252",
+    "Yahoo UUP adjclose (ACTUAL ETF TR)"
+   ],
+   "segments": [
+    {
+     "from": "1982-02-01",
+     "to": "2007-03-01",
+     "type": "PROXY",
+     "source": "synthetic fully collateralized USDX futures: DXY spot change + KF RF + DXY-weighted 3m rate differential",
+     "n": 6461
+    },
+    {
+     "from": "2007-03-02",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "UUP adjclose total return",
+     "n": 1974
+    }
+   ],
+   "total_return_from": "1982-02-01",
+   "actual_etf_from": "2007-03-02",
+   "start": "1982-02-01",
+   "end": "2014-12-31",
+   "n": 8435,
+   "ann_vol": 0.087,
+   "daily": true,
+   "usd": true,
+   "sha256": "30899ab80be33ecc3beef984c973846b213484a0775f51e0a3b7dc5023af0cdc",
+   "choice_reason": "pub covers 1982-02 vs proj 2007-03 (UUP only); the pub proxy includes carry and collateral, so it is a total-return proxy. Longer coverage wins.",
+   "notes": "Carry weights = DXY weights EUR .576 (Germany 3m pre-1999), JPY .136 (3m CD rate pre-2002-04), GBP .119, CAD .091, SEK .042, CHF .036 (CHF pre-1999-07 filled with German rate). Starts 1982-02 because SEK 3m starts 1982-01. Synthetic vs UUP 2007-03..2014: see stats; daily corr ~0.90 (DXY spot index timing vs ETF close). DTWEXM/DTWEXB/DTWEXO (FRED, noon NY) raw in raw/pub. Overlap 2007-03..2014: synthetic vs UUP daily corr 0.903, weekly 0.962, TE 3.9%/yr, ann gap +1.7%/yr (UUP fee 0.75% + futures/roll effects); DXY spot alone gap +1.3%/yr.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/USD.csv",
+     "kind": "ACTUAL UUP adjclose TR (USDX futures, carry included)",
+     "start": "2007-03-02",
+     "end": "2014-12-31",
+     "n": 1974,
+     "ann_vol": 0.0918
+    },
+    {
+     "role": "pub variant USD_SPOT",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/USD_SPOT.csv",
+     "kind": "PRICE-ONLY (ICE US Dollar Index spot)",
+     "notes": "No carry, no T-bill. 1971+.",
+     "start": "1971-01-05",
+     "end": "2014-12-31",
+     "n": 11199,
+     "ann_vol": 0.0807
+    },
+    {
+     "role": "pub auxiliary (daily carry used in the USD proxy)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/_aux_USD_carry.csv"
+    }
+   ],
+   "ko_src": "달러인덱스 현물+T-bill+금리차 캐리 합성 선물 → UUP",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.04,
+     0.15
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "LOWVOL": {
+   "id": "LOWVOL",
+   "etf": "SPLV",
+   "file": "/mnt/project-files/research/df5/data/clean/LOWVOL.csv",
+   "origin": "pub",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/pub/LOWVOL.csv",
+   "label": "ACTUAL",
+   "kind": "ACTUAL ETF total return (SPLV) - starts 2011-05-06 only",
+   "source": [
+    "Yahoo SPLV adjclose (ACTUAL ETF TR)"
+   ],
+   "segments": [
+    {
+     "from": "2011-05-06",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "SPLV adjclose total return",
+     "n": 920
+    }
+   ],
+   "total_return_from": "2011-05-06",
+   "actual_etf_from": "2011-05-06",
+   "start": "2011-05-06",
+   "end": "2014-12-31",
+   "n": 920,
+   "ann_vol": 0.1189,
+   "daily": true,
+   "usd": true,
+   "sha256": "c8e7f8aab9b9f831c2c533f5e9df26d89bad3bb3a0a32b515b35aee87723a630",
+   "choice_reason": "both ACTUAL; pub SPLV starts 2011-05-06 vs proj USMV 2011-10-21. Longer coverage wins (ETF changes from USMV to SPLV; SPLV-USMV daily corr 0.905 per pub).",
+   "notes": "No daily public pre-2011 low-vol series: Ken French Portfolios_Formed_on_VAR is MONTHLY only (raw/pub/kf_Portfolios_Formed_on_VAR__VW_monthly.csv, Lo 20 / Lo 10 from 1963-07). USMV raw in raw/pub/yahoo_USMV.csv (2011-10-20+); SPLV vs USMV daily corr 0.905.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/LOWVOL.csv",
+     "kind": "ACTUAL USMV adjclose TR (2011-10+ only)",
+     "start": "2011-10-21",
+     "end": "2014-12-31",
+     "n": 803,
+     "ann_vol": 0.098
+    }
+   ],
+   "ko_src": "SPLV 실제 TR (2011년부터만)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.05,
+     0.2
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "SMALL": {
+   "id": "SMALL",
+   "etf": "IWM",
+   "file": "/mnt/project-files/research/df5/data/clean/SMALL.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/SMALL.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF size quintile 2 VW (project SMALL, TR) -> ACTUAL IWM adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Qnt 2 (= jp/md SMALL)",
+    "research/data/panel_f32.npz.xz IWM adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2000-05-26",
+     "type": "PROXY",
+     "source": "Ken French size quintile 2 (Qnt 2) VW TR",
+     "n": 19714
+    },
+    {
+     "from": "2000-05-30",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "IWM adjclose total return",
+     "n": 3671
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "2000-05-30",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.1932,
+   "daily": true,
+   "usd": true,
+   "sha256": "730219d84e80af5ece88bfbd24e8acbb47356f1598acbd65af88803f7f5b1d59",
+   "choice_reason": "same construction, start and n in both; tie -> proj (project jp/md SMALL).",
+   "notes": "",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/SMALL.csv",
+     "kind": "PROXY (KF size quintile 2 VW TR) then ACTUAL ETF total return (IWM)",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1932
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/SMALL__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1927
+    },
+    {
+     "role": "pub variant SMALL_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/SMALL_KF.csv",
+     "kind": "PROXY (KF size quintile 2 VW TR, full period)",
+     "notes": "Single source.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1927
+    }
+   ],
+   "ko_src": "Ken French 규모 2분위 VW → IWM",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "VALUE": {
+   "id": "VALUE",
+   "etf": "IWD",
+   "file": "/mnt/project-files/research/df5/data/clean/VALUE.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/VALUE.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY 0.5*(KF6 BIG HiBM + KF6 ME2 BM2) VW daily TR -> ACTUAL IWD adjclose TR",
+   "source": [
+    "research/broad_etf/data/raw/kf/6_Portfolios_2x3_daily_CSV.zip (VW block)",
+    "research/data/panel_f32.npz.xz IWD adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2000-05-26",
+     "type": "PROXY",
+     "source": "0.5*KF BIG HiBM + 0.5*KF ME2 BM2 VW TR",
+     "n": 19714
+    },
+    {
+     "from": "2000-05-30",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "IWD adjclose total return",
+     "n": 3671
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "2000-05-30",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.1906,
+   "daily": true,
+   "usd": true,
+   "sha256": "14e90d87c41db9a3b97a7862b5bae37c6705790e5b25910245783c262338165d",
+   "choice_reason": "same construction, start and n in both; tie -> proj.",
+   "notes": "equal mix of big-value and big-neutral rebalanced daily; project VAL (BIG HiBM only, D_EDGEMIX/sl.py) tracks IWD worse (alt). Long-only; HML is long-short and not used.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/VALUE.csv",
+     "kind": "PROXY (KF big value/neutral VW blend TR) then ACTUAL ETF total return (IWD)",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1906
+    },
+    {
+     "role": "proj unspliced variant: kf_mix_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/VALUE__kf_mix_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1952
+    },
+    {
+     "role": "proj unspliced variant: kf_BIG_HiBM_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/VALUE__kf_BIG_HiBM_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2231
+    },
+    {
+     "role": "pub variant VALUE_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/VALUE_KF.csv",
+     "kind": "PROXY (KF blend, full period)",
+     "notes": "Single source.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1952
+    }
+   ],
+   "ko_src": "Ken French 대형 가치/중립 혼합 → IWD",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "MOM": {
+   "id": "MOM",
+   "etf": "MTUM",
+   "file": "/mnt/project-files/research/df5/data/clean/MOM.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/MOM.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 6 ME x Prior(12-2) BIG HiPRIOR VW daily TR -> ACTUAL MTUM adjclose TR",
+   "source": [
+    "research/etf_ext/data/raw/kf/6_Portfolios_ME_Prior_12_2_Daily_CSV.zip (VW block, 1926-11-03+)",
+    "research/data/panel_f32.npz.xz MTUM adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-11-03",
+     "to": "2013-04-18",
+     "type": "PROXY",
+     "source": "Ken French BIG HiPRIOR (6 ME x Prior 12-2) VW TR",
+     "n": 22854
+    },
+    {
+     "from": "2013-04-19",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "MTUM adjclose total return",
+     "n": 430
+    }
+   ],
+   "total_return_from": "1926-11-03",
+   "actual_etf_from": "2013-04-19",
+   "start": "1926-11-03",
+   "end": "2014-12-31",
+   "n": 23284,
+   "ann_vol": 0.1873,
+   "daily": true,
+   "usd": true,
+   "sha256": "31315854169e77b5293d8309826447d669f7a923b474f9a3c5ee843572747d5e",
+   "choice_reason": "same construction, start and n in both; tie -> proj.",
+   "notes": "KF momentum portfolios re-formed daily (prior -250..-21); MTUM is semiannual, risk-adjusted, cap-weighted (beta ~0.82 to proxy on the short overlap).",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/MOM.csv",
+     "kind": "PROXY (KF big-cap high-momentum VW TR) then ACTUAL ETF total return (MTUM)",
+     "start": "1926-11-03",
+     "end": "2014-12-31",
+     "n": 23284,
+     "ann_vol": 0.1873
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/MOM__kf_only.csv",
+     "start": "1926-11-03",
+     "end": "2014-12-31",
+     "n": 23284,
+     "ann_vol": 0.1876
+    },
+    {
+     "role": "pub variant MOM_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/MOM_KF.csv",
+     "kind": "PROXY (KF big high-momentum VW TR, full period)",
+     "notes": "Single source.",
+     "start": "1926-11-03",
+     "end": "2014-12-31",
+     "n": 23284,
+     "ann_vol": 0.1876
+    }
+   ],
+   "ko_src": "Ken French 대형 고모멘텀 VW → MTUM",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "SOX": {
+   "id": "SOX",
+   "etf": "SOXX",
+   "file": "/mnt/project-files/research/df5/data/clean/SOX.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/SOX.csv",
+   "label": "PROXY->PRICE-ONLY->ACTUAL",
+   "kind": "SPLICED: PROXY KF/FF48 Chips VW daily TR (1926-) -> ^SOX PRICE index (Yahoo, no dividends) -> ACTUAL SOXX adjclose TR",
+   "source": [
+    "research/formulas_v42/inputs/FF48_chips_vw_daily_20260831.csv (== KF49 Chips, research/broad_etf/data/raw/kf/49_Industry_Portfolios_daily_CSV.zip)",
+    "research/soxx_targets_20261112/data/raw_SOX.json (Yahoo ^SOX close, 1994-05-04+)",
+    "research/data/panel_f32.npz.xz SOXX adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "1994-05-04",
+     "type": "PROXY",
+     "source": "Ken French 49-industry Chips VW TR (unscaled; broader than semis)",
+     "n": 18182
+    },
+    {
+     "from": "1994-05-05",
+     "to": "2001-07-13",
+     "type": "PRICE-ONLY",
+     "source": "^SOX index close (no dividends)",
+     "n": 1816
+    },
+    {
+     "from": "2001-07-16",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "SOXX adjclose total return",
+     "n": 3387
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "2001-07-16",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.3003,
+   "daily": true,
+   "usd": true,
+   "sha256": "c128b3e10d6fc7288946b609c139b609db78e35131bd9f6992e7ba1de153f7e1",
+   "choice_reason": "proj covers 1926 vs pub 1985 (FSELX active fund). Longer coverage wins; the 1994-2014 pieces are the same (^SOX then SOXX). Chips is less volatile than ^SOX (37% vs 48% in 1994-2001); project x1.16 scaling NOT applied.",
+   "notes": "Chips proxy is less volatile than SOX (beta ^SOX on Chips ~1.17 1994-2001; project convention V76/V104 scales Chips x1.16, NOT applied here). ^SOX segment 1994-05-05..2001-07-13 is price-only (semis dividend yield small, <1%/yr). 3 ^SOX zero-return days.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/SOX.csv",
+     "kind": "PROXY (active semis fund TR 1985-94) then PRICE-ONLY index (^SOX 1994-2001) then ACTUAL ETF total return (SOXX)",
+     "start": "1985-07-30",
+     "end": "2014-12-31",
+     "n": 7419,
+     "ann_vol": 0.3533
+    },
+    {
+     "role": "proj unspliced variant: chips_kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/SOX__chips_kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2804
+    },
+    {
+     "role": "proj unspliced variant: sox_index_price_1994",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/SOX__sox_index_price_1994.csv",
+     "start": "1994-05-05",
+     "end": "2014-12-31",
+     "n": 5203,
+     "ann_vol": 0.4015
+    },
+    {
+     "role": "pub variant SOX_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/SOX_KF.csv",
+     "kind": "PROXY (KF49 Chips industry VW TR, broader than semis)",
+     "notes": "vs ^SOX 1994-2014 daily corr 0.924, vol 0.323 vs 0.401.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2804
+    }
+   ],
+   "ko_src": "KF 반도체(Chips) → ^SOX 지수(가격만) → SOXX",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.2,
+     0.7
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "TECH": {
+   "id": "TECH",
+   "etf": "XLK",
+   "file": "/mnt/project-files/research/df5/data/clean/TECH.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/TECH.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 12-industry BusEq VW daily TR -> ACTUAL XLK adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col BusEq",
+    "research/data/panel_f32.npz.xz XLK adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "1998-12-22",
+     "type": "PROXY",
+     "source": "Ken French 12-industry BusEq VW TR",
+     "n": 19354
+    },
+    {
+     "from": "1998-12-23",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "XLK adjclose total return",
+     "n": 4031
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "1998-12-23",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.2409,
+   "daily": true,
+   "usd": true,
+   "sha256": "943f122b4e619a5ccd9ed36b86fd4a0f755e8cd781495e97628ee58b1d60bb87",
+   "choice_reason": "same construction, start and n in both; tie -> proj.",
+   "notes": "KF 12-industry (CRSP, VW) = project jp/md column TECH.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/TECH.csv",
+     "kind": "PROXY (KF 12-industry VW total return, BusEq) then ACTUAL ETF total return (XLK)",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2409
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/TECH__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2437
+    },
+    {
+     "role": "pub variant TECH_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/TECH_KF.csv",
+     "kind": "PROXY (KF 12-industry VW total return, full period, no ETF splice)",
+     "notes": "Consistent single-source version.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2437
+    }
+   ],
+   "ko_src": "KF BusEq 산업 → XLK",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "ENER": {
+   "id": "ENER",
+   "etf": "XLE",
+   "file": "/mnt/project-files/research/df5/data/clean/ENER.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/ENER.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 12-industry Enrgy VW daily TR -> ACTUAL XLE adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Enrgy",
+    "research/data/panel_f32.npz.xz XLE adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "1998-12-22",
+     "type": "PROXY",
+     "source": "Ken French 12-industry Enrgy VW TR",
+     "n": 19354
+    },
+    {
+     "from": "1998-12-23",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "XLE adjclose total return",
+     "n": 4031
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "1998-12-23",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.2046,
+   "daily": true,
+   "usd": true,
+   "sha256": "bbc6d6dabc409fdfca55007210d3d847f790b374ca2cd962922ccc6649560c6f",
+   "choice_reason": "same construction, start and n in both; tie -> proj.",
+   "notes": "KF 12-industry (CRSP, VW) = project jp/md column ENER.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/ENER.csv",
+     "kind": "PROXY (KF 12-industry VW total return, Enrgy) then ACTUAL ETF total return (XLE)",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2046
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/ENER__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2018
+    },
+    {
+     "role": "pub variant ENER_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/ENER_KF.csv",
+     "kind": "PROXY (KF 12-industry VW total return, full period, no ETF splice)",
+     "notes": "Consistent single-source version.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2018
+    }
+   ],
+   "ko_src": "KF Enrgy 산업 → XLE",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "HLTH": {
+   "id": "HLTH",
+   "etf": "XLV",
+   "file": "/mnt/project-files/research/df5/data/clean/HLTH.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/HLTH.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 12-industry Hlth VW daily TR -> ACTUAL XLV adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Hlth",
+    "research/data/panel_f32.npz.xz XLV adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2001-12-31",
+     "type": "PROXY",
+     "source": "Ken French 12-industry Hlth VW TR",
+     "n": 20112
+    },
+    {
+     "from": "2002-01-02",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "XLV adjclose total return",
+     "n": 3273
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "2002-01-02",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.1742,
+   "daily": true,
+   "usd": true,
+   "sha256": "4742a9d18c003ea1c18dcc92d02f5a147420dc07a354978739e34f2544cdfd20",
+   "choice_reason": "QUALITY OVERRIDE of the ACTUAL-over-PROXY tiebreak: same coverage (1926); pub splices XLV from 1998-12-23 but the 1998-12..2001 XLV prints are thinly traded (median 6-16k shares/day) and track the sector poorly (yearly corr 0.28-0.72), so the proj KF-through-2001 version is kept. pub version is the alternative.",
+   "notes": "KF 12-industry (CRSP, VW) = project jp/md column HLTH. XLV actual used only from 2002-01-02: 1998-12..2001 Yahoo prints thinly traded (median volume <20k-65k sh/day) and track the KF sector poorly (yearly daily corr 0.28-0.73) -> KF proxy kept through 2001.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/HLTH.csv",
+     "kind": "PROXY (KF 12-industry VW total return, Hlth) then ACTUAL ETF total return (XLV)",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1741
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/HLTH__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1746
+    },
+    {
+     "role": "pub variant HLTH_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/HLTH_KF.csv",
+     "kind": "PROXY (KF 12-industry VW total return, full period, no ETF splice)",
+     "notes": "Consistent single-source version.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1746
+    }
+   ],
+   "ko_src": "KF Hlth 산업 → XLV(2002~)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "UTIL": {
+   "id": "UTIL",
+   "etf": "XLU",
+   "file": "/mnt/project-files/research/df5/data/clean/UTIL.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/UTIL.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 12-industry Utils VW daily TR -> ACTUAL XLU adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Utils",
+    "research/data/panel_f32.npz.xz XLU adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2001-12-31",
+     "type": "PROXY",
+     "source": "Ken French 12-industry Utils VW TR",
+     "n": 20112
+    },
+    {
+     "from": "2002-01-02",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "XLU adjclose total return",
+     "n": 3273
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "2002-01-02",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.1737,
+   "daily": true,
+   "usd": true,
+   "sha256": "4c86cb1484843cb171d32c98b8b894949e3f4726f23df3c6f77cb76ab82a8d9b",
+   "choice_reason": "QUALITY OVERRIDE (as HLTH): early XLU prints 1998-12..2001 track poorly (yearly corr 0.57-0.72); proj keeps KF through 2001. pub (XLU from 1998-12-23) is the alternative.",
+   "notes": "KF 12-industry (CRSP, VW) = project jp/md column UTIL. XLU actual used only from 2002-01-02: 1998-12..2001 Yahoo prints thinly traded (median volume <20k-65k sh/day) and track the KF sector poorly (yearly daily corr 0.28-0.73) -> KF proxy kept through 2001.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/UTIL.csv",
+     "kind": "PROXY (KF 12-industry VW total return, Utils) then ACTUAL ETF total return (XLU)",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1746
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/UTIL__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1735
+    },
+    {
+     "role": "pub variant UTIL_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/UTIL_KF.csv",
+     "kind": "PROXY (KF 12-industry VW total return, full period, no ETF splice)",
+     "notes": "Consistent single-source version.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1735
+    }
+   ],
+   "ko_src": "KF Utils 산업 → XLU(2002~)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "STAP": {
+   "id": "STAP",
+   "etf": "XLP",
+   "file": "/mnt/project-files/research/df5/data/clean/STAP.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/STAP.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 12-industry NoDur VW daily TR -> ACTUAL XLP adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col NoDur",
+    "research/data/panel_f32.npz.xz XLP adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2001-12-31",
+     "type": "PROXY",
+     "source": "Ken French 12-industry NoDur VW TR",
+     "n": 20112
+    },
+    {
+     "from": "2002-01-02",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "XLP adjclose total return",
+     "n": 3273
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "2002-01-02",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.1359,
+   "daily": true,
+   "usd": true,
+   "sha256": "202342207e11ee15c80d006254b535533cc6df4877ef36589f7acb7b8578b438",
+   "choice_reason": "QUALITY OVERRIDE (as HLTH): early XLP prints 1998-12..2001 track poorly (yearly corr 0.57-0.73); proj keeps KF through 2001. pub (XLP from 1998-12-23) is the alternative.",
+   "notes": "KF 12-industry (CRSP, VW) = project jp/md column STAP. XLP actual used only from 2002-01-02: 1998-12..2001 Yahoo prints thinly traded (median volume <20k-65k sh/day) and track the KF sector poorly (yearly daily corr 0.28-0.73) -> KF proxy kept through 2001.",
+   "alternatives": [
+    {
+     "role": "other builder, same ID (not chosen)",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/STAP.csv",
+     "kind": "PROXY (KF 12-industry VW total return, NoDur) then ACTUAL ETF total return (XLP)",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1385
+    },
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/STAP__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1375
+    },
+    {
+     "role": "pub variant STAP_KF",
+     "origin": "pub",
+     "file": "/mnt/project-files/research/df5/data/clean/pub/STAP_KF.csv",
+     "kind": "PROXY (KF 12-industry VW total return, full period, no ETF splice)",
+     "notes": "Consistent single-source version.",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.1375
+    }
+   ],
+   "ko_src": "KF NoDur 산업 → XLP(2002~)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "FIN": {
+   "id": "FIN",
+   "etf": "XLF",
+   "file": "/mnt/project-files/research/df5/data/clean/FIN.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/FIN.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 12-industry Money VW daily TR -> ACTUAL XLF adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Money",
+    "research/data/panel_f32.npz.xz XLF adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "1998-12-22",
+     "type": "PROXY",
+     "source": "Ken French 12-industry Money VW TR",
+     "n": 19354
+    },
+    {
+     "from": "1998-12-23",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "XLF adjclose total return",
+     "n": 4031
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "1998-12-23",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.2173,
+   "daily": true,
+   "usd": true,
+   "sha256": "5051a503f7aac3dc588297148da094fd03f1402c205e6852b398328fd900a377",
+   "choice_reason": "project only.",
+   "notes": "KF 12-industry (CRSP, VW) = project jp/md column FIN.",
+   "alternatives": [
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/FIN__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2083
+    }
+   ],
+   "ko_src": "KF Money 산업 → XLF",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "MANU": {
+   "id": "MANU",
+   "etf": "XLI",
+   "file": "/mnt/project-files/research/df5/data/clean/MANU.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/MANU.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "SPLICED: PROXY KF 12-industry Manuf VW daily TR -> ACTUAL XLI adjclose TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Manuf",
+    "research/data/panel_f32.npz.xz XLI adjclose"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2001-12-31",
+     "type": "PROXY",
+     "source": "Ken French 12-industry Manuf VW TR",
+     "n": 20112
+    },
+    {
+     "from": "2002-01-02",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "XLI adjclose total return",
+     "n": 3273
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "2002-01-02",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.199,
+   "daily": true,
+   "usd": true,
+   "sha256": "39037c655f3a170432b2d59b2fb1727dd94ae0aa31caba02bf1cc11522c4e9d6",
+   "choice_reason": "project only (early XLI thinly traded, so KF kept through 2001).",
+   "notes": "KF 12-industry (CRSP, VW) = project jp/md column MANU. XLI actual used only from 2002-01-02: 1998-12..2001 Yahoo prints thinly traded (median volume <20k-65k sh/day) and track the KF sector poorly (yearly daily corr 0.28-0.73) -> KF proxy kept through 2001.",
+   "alternatives": [
+    {
+     "role": "proj unspliced variant: kf_only",
+     "origin": "proj",
+     "file": "/mnt/project-files/research/df5/data/clean/proj/alt/MANU__kf_only.csv",
+     "start": "1926-07-01",
+     "end": "2014-12-31",
+     "n": 23385,
+     "ann_vol": 0.2014
+    }
+   ],
+   "ko_src": "KF Manuf 산업 → XLI(2002~)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "SHOP": {
+   "id": "SHOP",
+   "etf": "XRT (not spliced)",
+   "file": "/mnt/project-files/research/df5/data/clean/SHOP.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/SHOP.csv",
+   "label": "PROXY",
+   "kind": "PROXY only: KF 12-industry Shops (retail+wholesale) VW daily TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Shops"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2014-12-31",
+     "type": "PROXY",
+     "source": "Ken French 12-industry Shops VW TR",
+     "n": 23385
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": null,
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.1735,
+   "daily": true,
+   "usd": true,
+   "sha256": "70f0608f7cfb16102fe6e9ec176665fdba7b02155cdb8de6c5938700b85a732a",
+   "choice_reason": "project only. XRT is equal-weight (beta 1.30 to Shops), so not spliced.",
+   "notes": "XRT (2006-06, equal-weight retail) tracks poorly (beta 1.30) -> not spliced; XLY (1998-12) is consumer discretionary, a different scope.",
+   "alternatives": [],
+   "ko_src": "KF Shops 산업 (ETF 미연결)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "TELE": {
+   "id": "TELE",
+   "etf": "none (XLC 2018)",
+   "file": "/mnt/project-files/research/df5/data/clean/TELE.csv",
+   "origin": "proj",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/proj/TELE.csv",
+   "label": "PROXY",
+   "kind": "PROXY only: KF 12-industry Telcm VW daily TR",
+   "source": [
+    "research/c3_multi/data/kf_sel.bin.xz col Telcm"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2014-12-31",
+     "type": "PROXY",
+     "source": "Ken French 12-industry Telcm VW TR",
+     "n": 23385
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": null,
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.1634,
+   "daily": true,
+   "usd": true,
+   "sha256": "a9f3ad370f83f505f11728dda372156648491a2b8e5705c841ef4c4ac7142dbf",
+   "choice_reason": "project only. No telecom ETF in the data before 2015.",
+   "notes": "no telecom ETF in panel before 2018 (XLC).",
+   "alternatives": [],
+   "ko_src": "KF Telcm 산업 (ETF 없음)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.45
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  },
+  "DIV": {
+   "id": "DIV",
+   "etf": "SCHD",
+   "file": "/mnt/project-files/research/df5/data/clean/DIV.csv",
+   "origin": "pub",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/pub/DIV.csv",
+   "label": "PROXY->ACTUAL",
+   "kind": "PROXY (active dividend fund TR, VEIPX) then ACTUAL ETF total return (SCHD)",
+   "source": [
+    "Yahoo VEIPX (Vanguard Equity Income, active high-dividend large-cap value fund) close+distributions",
+    "Yahoo SCHD adjclose (ACTUAL ETF TR)"
+   ],
+   "segments": [
+    {
+     "from": "1988-03-22",
+     "to": "2011-10-20",
+     "type": "PROXY",
+     "source": "VEIPX (Vanguard Equity Income, active fund) close + distributions TR",
+     "n": 5948
+    },
+    {
+     "from": "2011-10-21",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "SCHD adjclose total return",
+     "n": 803
+    }
+   ],
+   "total_return_from": "1988-03-22",
+   "actual_etf_from": "2011-10-21",
+   "start": "1988-03-22",
+   "end": "2014-12-31",
+   "n": 6751,
+   "ann_vol": 0.1559,
+   "daily": true,
+   "usd": true,
+   "sha256": "26fdba1355ad5acc350a5f15a7378224936c89a97800b9f60479e973f62f0764",
+   "choice_reason": "public only (project has no dividend series).",
+   "notes": "VEIPX vs SCHD 2011-10..2014: daily corr 0.979, TE 2.5%/yr, vol 0.118 vs 0.111. Ken French dividend-yield portfolios exist only MONTHLY (raw/pub/kf_Portfolios_Formed_on_D-P__VW_monthly.csv, 1927-2014) - no daily KF D/P series. No distributions re-dated (detector found none).",
+   "alternatives": [],
+   "ko_src": "VEIPX 배당 액티브펀드 TR → SCHD",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.08,
+     0.3
+    ],
+    "gaps_gt5_weekdays": []
+   }
+  },
+  "RF": {
+   "id": "RF",
+   "etf": "BIL (cash)",
+   "file": "/mnt/project-files/research/df5/data/clean/RF.csv",
+   "origin": "pub",
+   "origin_file": "/mnt/project-files/research/df5/data/clean/pub/RF.csv",
+   "label": "ACTUAL",
+   "kind": "ACTUAL T-bill daily return (KF)",
+   "source": [
+    "Ken French F-F_Research_Data_Factors_daily RF (1m T-bill, simple daily rate)"
+   ],
+   "segments": [
+    {
+     "from": "1926-07-01",
+     "to": "2014-12-31",
+     "type": "ACTUAL",
+     "source": "Ken French daily RF (1-month T-bill)",
+     "n": 23385
+    }
+   ],
+   "total_return_from": "1926-07-01",
+   "actual_etf_from": "1926-07-01",
+   "start": "1926-07-01",
+   "end": "2014-12-31",
+   "n": 23385,
+   "ann_vol": 0.002,
+   "daily": true,
+   "usd": true,
+   "sha256": "054788f481844c0fc028ccc42683a1c56ad64eba30077efee1acf2f45fbc0aab",
+   "choice_reason": "public only. Cash / financing rate for synthetic leverage.",
+   "notes": "Financing/cash rate for synthetic leverage and excess-return conversion.",
+   "alternatives": [],
+   "ko_src": "Ken French 일별 무위험수익률(T-bill)",
+   "checks": {
+    "loads": true,
+    "no_post2014": true,
+    "nan_run_le5": true,
+    "vol_plausible": true,
+    "no_dups": true,
+    "r_gt_minus1": true,
+    "max_nan_run": 0,
+    "vol_band": [
+     0.0,
+     0.01
+    ],
+    "gaps_gt5_weekdays": [
+     "1933-03-03->1933-03-15(7)"
+    ]
+   }
+  }
+ },
+ "missing": [
+  "GOLD before 1985-01-03: not in the chosen series. pub GOLD_FFM (Frankfurt fixing in USD, price-only, German business days) covers 1968-06-19..1998-12-30 as an unspliced alternative.",
+  "LTT before 1977-02-16: none (^TYX starts 1977).",
+  "DEVX before 1990-07: no daily USD series; would need the project PX1/AT2/GX1 local indices plus FX (raw/pub has FRED DEX* and Bundesbank DEM).",
+  "EM before 1994-05: Ken French Emerging is monthly only (from 1989-07).",
+  "CMDTY total return before 2006-02-07: only price-only S&P GSCI spot (1984) and WTI spot (1986) exist, as alternatives; no free GSCI ER/TR index found.",
+  "USD before 1982-02: only DXY spot price (USD_SPOT, from 1971) without carry.",
+  "LOWVOL before 2011-05: Ken French variance portfolios are monthly only.",
+  "DIV before 1988-03: Ken French D/P portfolios are monthly only.",
+  "Short actual-ETF history: MTUM (2013-04), SPLV (2011-05), SCHD (2011-10).",
+  "TELE has no telecom ETF before 2015 and SHOP is not spliced to XRT: both are KF proxy only."
+ ]
+}
