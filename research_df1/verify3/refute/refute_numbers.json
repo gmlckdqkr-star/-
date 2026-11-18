@@ -1,0 +1,85 @@
+{
+ "v2_gap": {
+  "bx0_diff_of_medians_pp": 0.67,
+  "bx0_median_paired_diff_pp": 0.463,
+  "bx0_share_paths_v2_ahead": 0.566,
+  "base_diff_of_medians_pp": 1.62,
+  "base_median_paired_diff_pp": 1.441,
+  "base_share": 0.722,
+  "double_shift_paired_pp": -0.458,
+  "cape_l3_shift_per_day_over_EX": 3.0,
+  "cape_l3_days_shifted": 0.892,
+  "valprof4_days_shifted": 0.0
+ },
+ "bond_excess_per_year": {
+  "EX_calendar_1986_2014": 0.0353,
+  "dev250_path_realised": 0.0316,
+  "X_world_sampling_weighted": 0.0272,
+  "excluded_windows": 0.0632
+ },
+ "X_world": {
+  "sampling_weight_1988_10_to_2000_03": 0.568,
+  "ndx_ann_mean_X": 0.228,
+  "ndx_ann_mean_full": 0.155,
+  "ndx_vol_X": 0.208,
+  "ndx_vol_full": 0.276,
+  "next60d_logret_after_vol20_gt_30pct_X": 0.118,
+  "same_full": -0.001,
+  "next60d_logret_low_vol_X": 0.0435,
+  "low_vol_full": 0.0356,
+  "highvol_days_1999": 174
+ },
+ "W40_vs_T40_paths": {
+  "P_paired_median_pp": 0.37,
+  "P_diff_medians_pp": 0.363,
+  "P_share_W40_ahead": 0.714,
+  "P0_paired_median_pp": 0.353,
+  "P0_diff_medians_pp": 0.401,
+  "P0_share_W40_ahead": 0.66,
+  "P0_paired_p10_pp": -1.7,
+  "mdd_worse_share_P": 0.702,
+  "ntr_median": [
+   141,
+   290
+  ]
+ },
+ "tier_ties": {
+  "-40": "top P0 is DF2|M0|b2|v1|s0.3|L1.0|K2|RB 10.26% WD -34.9%; W40 10.22% won N tie-break",
+  "-50": "top P0 is DF2|M0|b3|v1|s0.3|L1.5|K2|RB 10.47% WD -41.0%; P50 10.46% WD -47.7% won N tie-break",
+  "-60": "pick WD -59.48% (0.52pp margin); at -61% top is DF3|N3|M2|v1|s0.3|L1.0|K0|RB 11.11%",
+  "frontier_beyond_-60": {
+   "-65": 0.1111,
+   "-70": 0.136,
+   "-80": 0.1555,
+   "-85": 0.164
+  }
+ },
+ "bond_neutral_WD_of_picks": {
+  "T25": -0.2985,
+  "W40": -0.4267,
+  "P50": -0.5192,
+  "T60": -0.6187
+ },
+ "v1_real_ndx_worst_dd": [
+  [
+   "2007-10-31",
+   "2009-03-09",
+   -0.7
+  ],
+  [
+   "2000-03-10",
+   "2002-10-07",
+   -0.69
+  ],
+  [
+   "1997-08-06",
+   "1997-12-24",
+   -0.604
+  ],
+  [
+   "1998-07-20",
+   "1998-10-08",
+   -0.583
+  ]
+ ]
+}
