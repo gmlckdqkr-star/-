@@ -403,7 +403,7 @@ def report_rows(cfgs, ans, kd):
     for wname, cv, pa, hs in plan:
         if isinstance(cv, tuple): cv, tag, pa = cv
         else: tag = cv
-        X = W6(wname, cv, pa, ['DEF3', 'STAP', 'HLTH', 'UTIL'])
+        X = W6(wname, cv, pa, ['DEF3'] if tag in ('N3ks', 'N3low', 'NA') else ['DEF3', 'STAP', 'HLTH', 'UTIL'])   # post-lock crash fix (N3/NA params exist for DEF3 only)
         for h in hs:
             key = (wname + str(h or 30) if wname in ('P', 'X') else wname) + ('' if tag == 'N1' else '_' + tag)
             qcg, qmd, _ = bench(X, h); out['BENCH'][key] = R.summ(qcg, qmd)
@@ -428,9 +428,24 @@ def report_rows(cfgs, ans, kd):
         cg, md, qcg, qmd = g6_run(c, GO); out[c['id']]['G6_OLD6'] = R.summ(cg, md, qcg); out['BENCH']['G6_OLD6'] = R.summ(qcg, qmd)
     return out
 
+def report_only():
+    """post-lock: final() crashed inside report_rows after gates/H tests/selection were saved. Re-run only the report rows (no gate,
+    H test, tier or selection logic changes). With no tier-1/2 answer, k* is computed REPORT-ONLY for the top N1 score config."""
+    D = json.load(open(RES + 'df6_main.json')); C = D['configs']; idx = {c['id']: c for c in C}; G1 = D['gates']
+    out = json.load(open(RES + 'df6_final.json')); kd = KV()['DEF3']
+    sel = out['select']; ans = (sel.get('1') or sel.get('2') or {}) or {}
+    ans = ans.get('answer') if ans else None
+    top = max(out['gpass'], key=lambda i: G1[i]['score']) if out['gpass'] else None
+    ids = list(dict.fromkeys([x for x in [ans, top] if x] + list(out['best'].values())))
+    if top and not ans: out['kstar_top_reportonly'] = dict(id=top, **kstar(idx[top]))
+    out['report'] = report_rows([idx[i] for i in ids], ans and idx[ans], kd); out['report_ids'] = ids
+    json.dump(out, open(RES + 'df6_final.json', 'w'), indent=1, default=str)
+    log('report saved')
+
 if __name__ == '__main__':
     a = sys.argv[1] if len(sys.argv) > 1 else 'main'
     if a == 'k': print(json.dumps(kvals(), indent=1)[:200])
     elif a == 'harness': harness()
     elif a == 'main': main()
     elif a == 'final': final()
+    elif a == 'report': report_only()

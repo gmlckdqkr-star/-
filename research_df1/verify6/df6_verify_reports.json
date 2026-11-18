@@ -1,0 +1,534 @@
+{
+  "summary": "Independently verify the DF6 result (levered NDX + defensive-sector mixes: 47 pass the three bases under N1, 0 survive robustness/pre-1986 tests)",
+  "agentCount": 5,
+  "logs": [
+    "verifiers done: 4/4"
+  ],
+  "result": {
+    "verifiers": [
+      {
+        "key": "audit",
+        "res": {
+          "verdict": "claims_hold",
+          "summary": "The code matches PRECOMMIT_DF6 on every point I checked: conventions, kvals, G6, H1-H7, tiers and selection. The result \"0 configs survive (tier 1 = tier 2 = 0)\" is robust. Every one of the 47 N1 passers fails H4 under the locked radius of 0.10 (I recomputed this from the stored N1 gates). All 47 also fail H6, H7 and G6, and the G6 margins are far from the threshold: drawdown margin at most 4.0% where 10% is needed. All of the following I confirmed by my own computation:\n- G1-G5 recomputed from the df6_main rows give exactly 47 (single-gate counts 167/132/96/72/91); report 52; negative controls 0.\n- The k values recomputed from the raw Ken French zips match df6_k.json exactly.\n- N3, N4 and NA shifts give exactly the target daily Sharpe ratios.\n- The DF5 parity harness re-runs at 0.0.\n- Offset 0 reproduces reb_every bit-for-bit in REAL, P and X.\n- Saturdays are compounded correctly in G6, and the G6 result reproduces.\n- Report-only k* = 1.164 confirmed (fails at 1.155, passes at 1.165).\n- Selection and stability code run without error.\nThe post-lock diff is report-only. The final.log traceback line numbers match the locked file, so gates, H tests, tiers and selection in df6_final.json came from the locked code.\nTwo caveats:\n1. One claimed number is wrong: 38 of the 47 fail H5, not 34. Nine pass N2.\n2. The N1 count of 47 is mostly an effect of the N1 convention. N1 sets DEF3's mean equal to the S&P mean in each world. In the crash-free X world that adds +1.44%/yr to DEF3; in REAL and P it removes 0.84 and 0.37. Under raw data only 11 of the 47 pass G4 (X30), so the drop from 47 to 9 under N2 happens entirely in the X world. This convention was pre-registered (inherited from DF5), so it is not a code bug, and it cannot change the \"0 survive\" result.",
+          "issues": [
+            {
+              "severity": "major",
+              "what": "N1 convention (DEF3 arithmetic mean set equal to the S&P mean in each world) boosts DEF3 by +1.44%/yr in the crash-free X world: raw DEF3 mean 15.19% vs S&P 16.63%. In REAL and P it lowers DEF3 by 0.84 and 0.37 %/yr. Implied DEF3/S&P daily Sharpe ratio under N1 is REAL 1.294, P 1.297, X 1.209; raw is 1.425, 1.356, 1.075. Most of the 47 N1 passers therefore depend on the X-world boost.",
+              "where": "df6.py:130 (panel6 N1); identical to df5data.py:95",
+              "direction": "for candidates (N1 stage)",
+              "evidence": "Confirmed by my own computation (chk_world.py; chk_n2x.py). Re-running the 47 N1 passers under N2 on REAL and X gives G1 47/47, G4 (X30) 11/47, G5 32/47, all three 9/47. That equals the total N2 count of 9, so P30/P10 cause no N2 losses. Moving from N1 to N2 lowers X30 median CAGR by 1.02pp on average. N1 was pre-registered (DF5 convention), and H5 is the planned check against it.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "The claimed '34 also fail H5' is wrong: 38 of the 47 fail H5 and 9 pass. The N2 count of 9 is correct.",
+              "where": "df6_final.json H[*].H5 / fails",
+              "direction": "neutral",
+              "evidence": "Confirmed by my own count over df6_final.json: H5 pass 9, fail 38. Other failure counts: H1 1, H2 10, H3 5, H4/H6/H7/G6 47 each.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "H4 (radius 0.10, at least 75% of neighbours passing, other R passing) is the filter that decides tier 2, and it is sensitive to the radius. Under the locked radius the best share is 6/8 (R252 e0.50 c0.80, which fails the other-R condition); all others are at most 7/10. With a radius of 0.05 (not pre-registered), 7 configs would pass H4. One of them, L|TQQQ|DEF3|R252|e0.60|c0.75, also passes H1, H2, H3 and H5, so it would be tier 2 (still failing H6, H7, G6).",
+              "where": "df6.py:267-276, 316-319",
+              "direction": "against candidates (strict, but pre-registered)",
+              "evidence": "Confirmed by my own computation (chk_h4.py, chk_h4r1.py). My H4 recomputation matches the stored n, npass and other_R for all 47. No a=0 config is a passer, so the both-V rule for a=0 configs does not matter here.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "The expense ratio is counted twice from 2002 to 2014. The STAP/HLTH/UTIL series are actual XLP/XLV/XLU adjusted-close total returns from 2002, which are already net of the fund fee, and the code subtracts ER 0.15% again. N1, N3 and NA re-centre the mean, so only N2 (H5) is affected: about 0.07%/yr on DEF3, at most about 0.06%/yr on the portfolio.",
+              "where": "df6.py:127,139 with MANIFEST STAP/HLTH/UTIL segments; inherited from df5data.py:100",
+              "direction": "against candidates",
+              "evidence": "Inferred by reading the MANIFEST ('ACTUAL XLP adjclose total return' from 2002-01-02) and the code. Not run. It could flip at most marginal H5 cases. H4 fails for all configs, so tiers do not change.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "k is estimated from monthly Sharpe ratios (as pre-registered) but applied to daily Sharpe in the 1986-2014 worlds. DEF3 shows more positive autocorrelation than the market (variance ratio 1.50 vs 1.39), so monthly k is lower than daily k: 1.135 vs 1.181. Daily k_low would be 0.957 (1928-55), still far below the top config's k* of 1.164, so H7 does not flip. The report-only N3ks count would rise.",
+              "where": "df6.py:73-102 vs panel6 N3",
+              "direction": "against candidates (report-only N3ks only)",
+              "evidence": "Confirmed by my own computation from the raw KF zips (chk_k.py): daily k_all 1.1806, k28_55 0.9567, k56_85 1.6303.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The additive NA convention is much harsher in the X world. The S&P daily Sharpe there is 0.058, double the REAL/P value of 0.028, so Δ = +0.00314/day implies a DEF3/S&P Sharpe ratio of only 1.054 in X, against 1.111 in REAL and 1.112 in P. Conversely, N3 at k_s gives DEF3 a boost in X (implied 1.135 vs raw 1.075).",
+              "where": "df6.py:134-135",
+              "direction": "against candidates for H6 in X; for candidates under N3ks in X",
+              "evidence": "Confirmed by my own computation of implied Sharpe ratios per world (chk_world.py). Pre-registered. H6 failure is not decisive anyway because H4 and G6 fail.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The negative controls are not matched on volatility. N1 mechanically rewards low-volatility sleeves (equal mean, lower vol, higher Sharpe), and ENER, MANU, FIN and SHOP are higher-vol sleeves. So 0/576 does not separate a 'defensive' effect from 'low vol plus mean matching'. UTIL (pre-1986 k_s 0.862) passes 36 under N1, which shows N1 passes follow 1986-2014 volatility, not pre-1986 Sharpe evidence.",
+              "where": "df6.py:37-38 (neg design); counts_report",
+              "direction": "for candidates (interpretation)",
+              "evidence": "Inferred by reading, plus the stored counts (UTIL 36/322, STAP 8, HLTH 0, DEF2 8) and the k values.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "_weekday maps every KF day before 1928 (1926-07-01 to 1927-12-31) onto the first calendar day, 1928-01-03 (TECH +63.2%, DEF3 +57.5%, RF +4.6%). This is harmless: in R2885 index 0 falls in the warm-up period (dfk applies returns only from t = WARM+1), and the OLD6 bootstrap (boot_idx with lo=1) never samples index 0.",
+              "where": "df6.py:202-214, 218-219",
+              "direction": "neutral",
+              "evidence": "Confirmed by my own computation (chk_g6.py): first-day lumps equal the pre-1928 compounded returns, and the products over 1928-01-04..1985-12-31 match the source exactly. Read in ov.boot_idx: starts are drawn from [lo, n-block). Saturdays map correctly: 1929-10-26 to 10-28 (-18.72% combined), 1931-09-19 to 09-21, 1951-12-29 to 12-31, 1937-07-03 to Tuesday 07-06 because Monday was a holiday.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "G6 annualises with 252 days per year (56.5 years for R2885), while the weekday calendar averages about 250.7 days per year (56.8 calendar years). The G6 dividend yields (core 2%, DEF3 2.67%) are below the 1928-85 actuals, which understates tax drag. Both effects apply equally to candidate and core and are tiny next to the G6 drawdown shortfall.",
+              "where": "dfk.stats; df6.py:221-224",
+              "direction": "neutral / slightly for candidates",
+              "evidence": "Confirmed by my own computation (calendar 14,538 days). G6 reproduced exactly: top config 9.59%/-90.53% vs core 8.06%/-92.19%. An independent gross simulation without tax, cost or delay gives -90.4%. Drawdown margins are at most 4.0% (R2885) and at most 3.6% (OLD6), against the 10% required.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The stability re-selection uses a plain argmax of the neighbourhood-min score and omits the 0.05pp tie-break on drawdown margin that the main selection uses. Never triggered, since there is no tier-1/2 answer.",
+              "where": "df6.py:387-388 vs 345-346",
+              "direction": "neutral",
+              "evidence": "Inferred by reading. I ran stability() on a hypothetical tier made of all 47 configs (200 reps): it runs (selected 0.80, passes_G2G4 0.99). The selection code also runs (hypothetical answer = top config, nscore 0.0054).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Post-lock change: report_rows now loads only DEF3 for the N3ks, N3low and NA tags, and report_only() is added. The locked report_rows would have crashed whatever the tier outcome, but only after df6_final.json (gates, H, tiers, select, best, and k*/stability when an answer exists) had been saved. report_only reloads that JSON and only adds report, report_ids and kstar_top_reportonly.",
+              "where": "/tmp/df6w/df6_locked.py vs df6.py lines 406, 431-444, 451",
+              "direction": "neutral",
+              "evidence": "Confirmed by diff and sha256: the locked copy hashes to cd8918c6..., matching PRECOMMIT_DF6.sha256. The final.log traceback line numbers (436, 361, 406) match the locked file. No gate, H, tier or selection lines changed.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "'Byte-identical to DF5' is true in practice, not literally. The N1 DEF3 return array differs from DF5 by at most 2.2e-19 (floating rounding from adding and subtracting ER/252); QQQ, TQQQ, QLD and SPX are exactly equal. The harness summary differences are 0.0 for all five keys and for QQQ.",
+              "where": "df6.py:127,139",
+              "direction": "neutral",
+              "evidence": "Confirmed by my own computation (chk_world.py in REAL/P/X; harness() re-run).",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "All computed by me in /tmp/df6v/audit.\n- **Gates recomputed from df6_main rows:** main unique 322, 47 pass G1-G5 (G1 167, G2 132, G3 96, G4 72, G5 91). Report 52/1288 (STAP 8, HLTH 0, UTIL 36, DEF2 8). Negative controls 0/576. All agree with stored gates. QLD a=0 duplicates equal their canonical rows (difference 0). Grid: TQQQ 96 points (c<=0.80), QLD 70 (c<=0.75), five a=0 points each, exposure identity error under 3e-16.\n- **H4 recomputed:** 0/47 pass. Best shares: 6/8 = 75% (TQQQ R252 e0.50 c0.80, other R fails), 7/10 (e0.55 c0.80), 9/14. Sensitivity, not pre-registered: radius 0.05 gives 7 H4 passes, one of which (TQQQ R252 e0.60 c0.75) also passes H1/H2/H3/H5.\n- **H failure counts over the 47:** H1 1, H2 10, H3 5, H5 38 (9 pass), H6 47, H7 47, G6 47; N3ks passers 4.\n- **k from raw KF zips (cut at 1985), DEF3 vs KF market:** k_all 1.1352, k28_55 0.9429, k56_85 1.4899, boot p20 0.9851, k_low 0.9429, Δ_ann 0.0498. Exact match to df6_k.json, also for STAP, HLTH, UTIL, TECH, ENER, TELE. Variants: daily-frequency k 1.181 (k_low 0.957); annual 1.156; dropping Saturdays 1.309.\n- **Implied DEF3/S&P daily Sharpe by convention:**\n\n| World | N1 | N2 (raw) | N3(k_s) | N3(k_low) | N4 | NA |\n|---|---|---|---|---|---|---|\n| REAL | 1.294 | 1.425 | 1.1352 | 0.9429 | 1.000 | 1.111 |\n| P | 1.297 | 1.356 | 1.1352 | 0.9429 | 1.000 | 1.112 |\n| X | 1.209 | 1.075 | 1.1352 | 0.9429 | 1.000 | 1.054 |\n\n- **N1 shift (DEF3 mean change):** REAL -0.84%/yr, P -0.37%/yr, X +1.44%/yr.\n- **N2 re-run for the 47 N1 passers:** G1 47, G4 11, G5 32, all three 9.\n- **Offset 0 vs reb_every:** zero difference (CAGR and MDD) in REAL, P30 and X30 for the R63 and R252 top configs. The H2 offsets also pass for both.\n- **Top config L|TQQQ|DEF3|R252|e0.60|c0.80 reproduces stored rows exactly:**\n\n| Basis | Top config (CAGR / MDD) | QQQ (CAGR / MDD) |\n|---|---|---|\n| REAL | 14.65% / -62.3% | 12.15% / -82.8% |\n| P30 | 13.69% / -68.4% (p10 MDD) | 12.20% / -84.5% |\n| X30 | 23.63% / -33.3% (p10 MDD) | 21.78% / -38.3% |\n\n- **Report-only k\\*:** fails at k = 1.155 (G3 pair only), passes at 1.165, so the bisection result 1.164 is confirmed.\n- **G6 R2885 (top config):** 9.59% / -90.53% vs core 8.06% / -92.19% (independent gross simulation: -90.4%). Best drawdown margin across the 47: 4.0% (R2885), 3.6% (OLD6), against 10% required. QLD R252 e0.70 c0.60: 8.31% / -91.87%.\n- **Harness re-run:** max absolute difference 0.0 on REAL, P30, P10, X30, X10 and QQQ. N1 DEF3 return array vs DF5 differs by at most 2.2e-19.\n- **Budget:** about 140 config-world evaluations.\n\nScripts: /tmp/df6v/audit/chk_gates.py, /tmp/df6v/audit/chk_h4.py, /tmp/df6v/audit/chk_h4r1.py, /tmp/df6v/audit/chk_k.py, /tmp/df6v/audit/chk_g6.py, /tmp/df6v/audit/chk_g6run.py, /tmp/df6v/audit/chk_world.py, /tmp/df6v/audit/chk_n2x.py, /tmp/df6v/audit/chk_kstar.py, /tmp/df6v/audit/chk_grid_sel.py"
+        }
+      },
+      {
+        "key": "repro",
+        "res": {
+          "verdict": "claims_hold",
+          "summary": "I rebuilt the portfolio accounting from scratch in numpy (/tmp/df6v/repro/mysim.py), working from a reading of dfk.run1 without calling dfk, df5run.run_job or df6.run. It reproduces every requested DF6 number exactly, to 3 decimals in pp, so all differences are 0.000.\n\nConfirmed by my own computation:\n(a) QQQ: REAL 12.152% CAGR / -82.787% MDD. P30 median 12.199, p10 6.050, p10 MDD -84.541. X30 21.776 / 16.674 / -38.298.\n(b) Under N1, L|TQQQ|DEF3|R252|e0.60|c0.80 and L|TQQQ|DEF3|R63|e0.65|c0.75 match df6_main.json in REAL, P30, P10, X30 and X10, including the paired medians (see numbers). Both pass G1-G5.\n(c) Under N2 (raw DEF3):\n- R252 top config: REAL 15.359/-61.487; X30 22.316/17.712/-34.046, pair +0.421. It fails X10 by a hair (ddm 0.0988 vs 0.10), so H5 fails.\n- R63 config: REAL 14.275/-67.074; X30 22.068/17.965/-32.982, pair +0.400. It passes all five gates, so H5 passes.\nThese match the report rows that df6_final.json now contains.\n(d) G6 on my own weekday calendar (14,538 days; 1,084 Saturdays folded into the next weekday): R2885 9.586/-90.534 vs BusEq 1x 8.064/-92.188. The candidate's MDD is only 1.8% shallower in relative terms, so it fails the 10% rule. OLD6 p10 MDD -88.281 vs -88.411 (ddm 0.0015).\n- k values also reproduce: 1.1352, 0.9429 (1928-55), 1.4899 (1956-85).\n- Recomputing the gates from the stored rows with my own gate function gives the same counts: 47 passers; single-gate counts 167/132/96/72/91; report sleeves 52; negative controls 0/576. There are 0 mismatches with the stored gates.\n- My own runs under N3(k_s), N3(k_low), NA and N4 give the same H5/H6/H7/N3ks flags for both configs as df6_final.json.\n\nInferred by reading:\n- The post-lock change only touches the report rows. The locked copy's sha256 cd8918c6... matches PRECOMMIT_DF6.sha256, and the gate/H/tier/selection code is byte-identical. H, select and best were saved before the crash.\n\nOne small reporting error: df6_final.json shows 38 of the 47 N1 passers failing H5, not 34. That leaves 9 passing, which matches the N2 count of 9. H2 (10 fails), H3 (5) and H1 (1) are also not mentioned in the claim. Tier 1 = tier 2 = 0 holds.\n\nHow robust is the top config's N1 pass? Path sampling is not the risk: G2 and G4 hold in 98.7% of 1,000 path resamples. The risk is the DEF3 mean assumption.\n- Margins under N1: P30 pair +1.195pp, X30 pair +1.710pp, REAL excess +2.493pp. Drawdown margins against the 10% requirement: REAL 0.248, P30 0.191, P10 0.166, X30 0.131, X10 0.116.\n- DEF3 mean lowered by 0.5pp/yr: still passes all five gates (P30 0.782, X30 1.260, REAL 2.070; drawdown margins 0.243/0.182/0.156/0.125/0.112).\n- Lowered by 1.0pp/yr: fails G3 (P10 pair -0.092). Break-even is about 0.89pp/yr, which matches the report-only k* = 1.164. X10 drawdown fails at about 1.25pp and P30 pair at about 1.45pp.\n- N1 is optimistic. It implies DEF3's Sharpe is 1.29x (REAL), 1.30x (P) and 1.21x (X) that of S&P, above the pre-1986 k_s of 1.135. N3(k_s) is about N1 minus 1.0pp/yr, and under it the top config fails.\n- In X, N1 lifts DEF3 1.44pp/yr above raw. With the shift calibrated in P and applied unchanged in X, the top config fails X10 drawdown (0.092) and the R63 config fails the X30 median.\n\nThings working against the candidates (none changes the tier-0 outcome):\n- G6 fails only because of the 10% margin. The candidate is directionally better on every G6 metric.\n- Two rejections are hairline: H5 for the top config and H6 for the R63 config.\n- 0.15% expense ratio is double-counted on the 2002-14 ETF segment of the sleeve files. It is too small to flip H5.\n- H7's k_low is the minimum of four noisy estimates, so it is strict by construction.\n- H4 uses a square neighbourhood around a diagonal pass band.",
+          "issues": [
+            {
+              "severity": "minor",
+              "what": "Claimed '34 also fail H5' is wrong per df6_final.json: 38 of 47 N1 passers fail H5 (9 pass = N2 count 9). Claim also omits H2 fails (10), H3 (5), H1 (1).",
+              "where": "df6_final.json H[*].fails vs claimed summary",
+              "direction": "neutral",
+              "evidence": "Counter of fails tuples: (H4,H5,H6,H7,G6):30, (H4,H6,H7,G6):7, (H2,H4,H5,..):4, (H2,H3,H4,H5,..):3, (H2,H3,H4,H6,..):2, (H1,H2,H4,H5,..):1 -> H5 fails 38. Read from file, not recomputed by simulation (my own N2 runs of the two configs agree with their H5 flags).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "major",
+              "what": "N1 convention (sleeve arithmetic mean = S&P mean per world) implies DEF3 has a Sharpe advantage larger than the pre-1986 point estimate, so the N1 pass rests on an optimistic assumption",
+              "where": "df6.py panel6 N1 branch; df6_k.json",
+              "direction": "for candidates",
+              "evidence": "My computation: implied k under N1 = sigma(SPX ex)/sigma(DEF3 ex) = 1.295 (REAL), 1.297 (P), 1.209 (X) vs k_s 1.135, k_low 0.943. N3(k_s) equals N1 minus 1.02pp/yr (REAL), 1.03 (P), 0.79 (X). Top config fails under N3(k_s): P10 pair -0.104pp. Its break-even is a DEF3 mean cut of about 0.89pp/yr (report-only k* = 1.164 in df6_final.json is consistent).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "major",
+              "what": "In the X (crash-free) world, N1 re-equalises DEF3 to the inflated crash-free S&P mean, lifting DEF3 +1.44pp/yr above its raw mean. In P and REAL, N1 lowers DEF3 by 0.37 and 0.84pp. The X-gate passes depend on this.",
+              "where": "df6.py panel6 (shift computed per world)",
+              "direction": "for candidates",
+              "evidence": "Computed means: X raw DEF3 15.19%/yr vs SPX 16.63; P 12.11 vs 11.74; REAL 12.66 vs 11.83. Using the P-calibrated shift (raw - 0.372pp) in X: top config X30 pair falls to +0.096pp and X10 ddm to 0.0919 (FAIL); R63 config fails the X30 median (-0.032pp).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "G6 fails only because of the 10% relative MDD margin applied to near-total drawdowns. The candidate is directionally better than the BusEq core on every G6 metric. The required -83.0% vs -92.2% is a 2.1x trough-wealth ratio, far stricter in log terms than the main gates.",
+              "where": "df6.py final() G6 via df5stress.gate_conds",
+              "direction": "against candidates",
+              "evidence": "My own calendar and simulation: R2885 9.586% vs 8.064%, MDD -90.53 vs -92.19 (ddm 0.018). OLD6 pair +0.625, median 9.18 vs 8.64, p10 1.54 vs 1.31, p10 MDD -88.28 vs -88.41 (ddm 0.0015). Max R2885 ddm over all 47 passers is 0.040 (read from final.json).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "Some rejections are hairline: top config H5 fails by X10 ddm 0.0988 (needs 0.10); R63 config H6 (NA) fails by P10 ddm 0.0994. The sleeve CSVs splice XLP/XLV/XLU adjclose (already net of expense ratio) from 2002, and df6 subtracts 0.15% ER again (39% of X sampled days). This double count is too small to flip H5.",
+              "where": "df6.py panel6 (ER) and /mnt/project-files/research/df5/data/MANIFEST.json segments",
+              "direction": "against candidates",
+              "evidence": "My N2 run with ER only on pre-2002 days: X10 ddm still 0.0988 (fail), X30 pair 0.479 vs 0.421. NA run of the R63 config: P10 ddm 0.0994.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "H7 is strict by construction: k_low = min of 4 noisy estimates (the 1928-55 subsample, 0.943), so it requires passing even if DEF3's Sharpe were below the market's. NA's additive Delta is harsher in X (k-equivalent 1.054) than in P/REAL (1.11).",
+              "where": "df6.py kvals / panel6 NA branch",
+              "direction": "against candidates",
+              "evidence": "My k reproduction: 1.1352 / 0.9429 / 1.4899. NA mean vs N1: REAL -1.18, P -1.17, X -1.66pp/yr. Under N4 (k=1), both configs already fail.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "H4 compares a radius-0.10 square neighbourhood with a thin diagonal pass band (return vs drawdown trade-off), and the top config sits on the b=0 boundary (12 neighbours)",
+              "where": "df6.py nbrs/H4",
+              "direction": "against candidates",
+              "evidence": "From df6_main gates: higher-exposure neighbours fail on drawdown (e0.65c0.75 G5 dd; e0.70c0.70/c0.75 G4+G5 dd). Lower-exposure neighbours fail on return (e0.50c0.70/c0.75 G3 pair, G4 pair/median). 7/12 pass = 58% < 75%.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "Latent bug in g6 _weekday: searchsorted folds all KF rows 1926-07-01..1928-01-02 into day 0 of the G6 calendar. Harmless: day 0 is warm-up (returns are applied only for k>0) and OLD6 draws blocks with lo=1.",
+              "where": "df6.py _weekday / g6_data",
+              "direction": "neutral",
+              "evidence": "My calendar drops pre-1928 rows and gives identical R2885 and OLD6 numbers to many decimals.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "DEF3 is modelled as a costless daily-rebalanced equal-weight basket. Holding the three sleeves separately with annual rebalancing (raw) is slightly worse.",
+              "where": "df5data.src_series DEF3",
+              "direction": "for candidates",
+              "evidence": "Top-config weights with STAP/HLTH/UTIL held separately, R252, raw: REAL excess 3.097 vs 3.207; P30 pair 1.470 vs 1.509; X30 pair 0.437 vs 0.421; X10 ddm 0.0969 vs 0.0988.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The post-lock change is confined to report_rows' sleeve list plus a new report_only() and a CLI branch. Gate, H, tier and selection logic is unchanged.",
+              "where": "/tmp/df6w/df6_locked.py vs code/df6.py",
+              "direction": "neutral",
+              "evidence": "diff: line 406 only, plus 14 added lines for report_only and the 'report' CLI branch. sha256 of the locked copy is cd8918c6..., matching PRECOMMIT_DF6.sha256; the current file is 29667337....",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "All numbers below are from my own numpy accounting (/tmp/df6v/repro/mysim.py), in pp; every one matches df6_main.json/df6_final.json exactly.\n\nQQQ benchmark:\n- REAL 12.152 CAGR, MDD -82.787.\n- P30 median 12.199, p10 6.050, p10 MDD -84.541. P10: 13.295 / 2.021 / -71.726.\n- X30 21.776 / 16.674 / -38.298. X10: 20.459 / 14.387 / -33.255.\n\nTop config R252 e0.60 c0.80 (TQQQ .20, DEF3 .80), N1:\n- REAL 14.645 / -62.255.\n- P30 13.692, p10 8.392, p10 MDD -68.379, pair +1.195 (win 70.6%).\n- P10 pair +0.742, p10 MDD -59.851.\n- X30 23.630 / 18.946 / -33.289, pair +1.710.\n- X10 pair +2.546, p10 MDD -29.405.\n\nR63 e0.65 c0.75 (TQQQ .20, QQQ .05, DEF3 .75), N1:\n- REAL 13.612 / -67.588.\n- P30 13.379 / 7.993 / -72.740, pair +0.924.\n- X30 23.322 / 19.154 / -32.161, pair +1.624.\n\nN2 (raw DEF3):\n- Top config: REAL 15.359 / -61.487. P30 pair 1.509. X30 22.316 / 17.712 / -34.046, pair 0.421. X10 ddm 0.0988 (fail).\n- R63 config: REAL 14.275 / -67.074. X30 22.068 / 17.965 / -32.982, pair 0.400. Passes all five gates.\n\nG6:\n- R2885 (eval 1929-03-15..1985-12-31, 56.5 yrs): candidate 9.586 / -90.534 vs core 8.064 / -92.188. Required MDD -82.97; ddm 0.018.\n- OLD6: p10 MDD -88.281 vs -88.411 (ddm 0.0015), pair +0.625.\n- R63 config on R2885: 8.841 / -91.637.\n\nk (monthly 1928-85, vs KF market): k_s 1.1352, 1928-55 0.9429, 1956-85 1.4899.\n\nN1 DEF3 mean shift (raw minus S&P, pp/yr): REAL +0.836, P +0.372, X -1.440. In X, N1 raises DEF3 by 1.44pp.\nImplied k under N1: REAL 1.295, P 1.297, X 1.209. Raw-data k: 1.425 / 1.356 / 1.075.\nOther conventions relative to N1 (pp/yr):\n- N3(k_s): -1.02 (REAL), -1.03 (P), -0.79 (X).\n- N3(k_low): -2.26 / -2.24 / -2.85.\n- NA: -1.18 / -1.17 / -1.66.\n\nTop-config margins under N1 (pair, then drawdown margin vs the 0.10 requirement):\n- REAL excess +2.493, ddm 0.248.\n- P30 pair +1.195, ddm 0.191.\n- P10 pair +0.742, ddm 0.166.\n- X30 pair +1.710, ddm 0.131.\n- X10 pair +2.546, ddm 0.116.\n- Score = 1.195.\n\nTop config with DEF3 mean lowered by delta (pp/yr):\n- -0.25: P30 0.993, X30 1.481, REAL 2.280, P10 0.534; X10 ddm 0.115. Passes.\n- -0.50: P30 0.782, X30 1.260, REAL 2.070, P10 0.326; ddm REAL/P30/P10/X30/X10 = 0.243/0.182/0.156/0.125/0.112. Passes.\n- -0.75: P10 pair 0.118, X10 ddm 0.110. Passes.\n- -1.00: P30 0.369, X30 0.815, REAL 1.651, P10 -0.092 (fails G3); ddm 0.237/0.175/0.150/0.117/0.104.\n- -1.25: X10 ddm 0.100 (fails) and P10 still fails.\n- -1.50: P30 pair -0.042 (fails).\n- Break-even is about 0.89pp/yr (P10 pair).\n\nR63 config with DEF3 mean lowered by 1.0pp: still passes all five; tightest are P10 ddm 0.102 and P30 pair 0.167.\n\nPath resampling (1,000 resamples, seed 11): top config keeps G2 and G4 in 98.7% of resamples. 90% interval of P30 pair 0.97..1.48; X30 pair 1.57..1.88.\n\nX world with the P-calibrated shift: top config X30 pair 0.096, X10 ddm 0.092 (fail). R63 config X30 median -0.032 (fail).\n\nGate recount from the stored rows: 47 passers; single-gate counts 167/132/96/72/91; report sleeves 52; negative controls 0/576.\n\nAbout 100 config-world evaluations in total.\n\nScripts and outputs:\n- /tmp/df6v/repro/mysim.py\n- /tmp/df6v/repro/repro_main.py\n- /tmp/df6v/repro/repro_conv.py\n- /tmp/df6v/repro/repro_g6.py\n- /tmp/df6v/repro/repro_extra.py\n- /tmp/df6v/repro/repro_k.py\n- /tmp/df6v/repro/gates.py\n- /tmp/df6v/repro/res_REAL.json, /tmp/df6v/repro/res_P.json, /tmp/df6v/repro/res_X.json\n- /tmp/df6v/repro/conv_REAL.json, /tmp/df6v/repro/conv_P.json, /tmp/df6v/repro/conv_X.json\n- /tmp/df6v/repro/res_G6.json"
+        }
+      },
+      {
+        "key": "gates",
+        "res": {
+          "verdict": "claims_hold",
+          "summary": "I recomputed the main gate, count and k claims myself, and they hold. One sub-claim is wrong: 38 of the 47 N1 passers fail H5, not 34. That does not change any tier.\n\nCONFIRMED BY MY OWN COMPUTATION (my code, not df5gate):\n- G1-G5 recomputed on all 2236 configs in df6_main.json: 0 gate mismatches, 0 score difference. Main grid: 322 unique, 47 pass all five; single-gate counts G1 167, G2 132, G3 96, G4 72, G5 91. Report sleeves: STAP 8, HLTH 0, UTIL 36, DEF2 8. Negative controls: 0/576.\n- Dedupe: 50 QLD a=0 configs (10 main, 40 report) have rows identical to their TQQQ twins (max abs diff 0.0). The 47 split as TQQQ-R252 19, TQQQ-R63 14, QLD-R252 9, QLD-R63 5. My gpass list equals df6_final.json gpass.\n- H4 recomputed from my own gates: matches final.json on n, npass and other-R for all 47, and all 47 fail.\n- k_s recomputed independently from the clean CSVs and the KF zip (cut at 1985-12-31 at load): DEF3 k_all 1.1352, 1928-55 0.9429, 1956-85 1.4899, delta_ann 0.0498, k_low 0.9429. These match df6_k.json to 4 decimals. Bootstrap p20 is 0.987 with my RNG vs 0.985 stored. STAP, HLTH, UTIL, TECH, ENER and TELE also match.\n- k* found by bisection with df6.run_set (N3), 0.02 resolution, range 1.0-2.0:\n  - top config e0.60/c0.80 R252: k* in (1.156, 1.172], consistent with the stored report-only 1.164\n  - e0.65/c0.70 R252: 1.156\n  - e0.70/c0.60 R252: in (1.135, 1.141]\n  All three are above k_s = 1.135 and far above k_low = 0.943. At k_s, G3 (the P10 world) is the only failing gate for all three, and only on its paired-median condition, by -0.10, -0.06 and -0.01 %/yr. At k_low, G2-G5 all fail clearly.\n  Report-only extra: L|TQQQ|DEF3|R63|e0.65|c0.75 (one of the 4 configs passing N3 at k_s) has k* in (1.111, 1.123]. So passing needs a DEF3 Sharpe at least about 1.11 times the market's, which is above both the 1928-55 subperiod value (0.94) and the bootstrap p20 (0.985).\n- G6 for the top config reproduced exactly with df6.g6_run. Real path: mix 9.586%/-90.53% vs core 8.064%/-92.19%. Return passes; drawdown margin is 0.018 against the 0.10 needed, so it fails. OLD6 bootstrap: median 9.18 vs 8.64, pair +0.62%, p10 1.54 vs 1.31 (all pass); p10 MDD -88.28 vs -88.41, margin 0.0015, so it fails. The stored real_v, boot_v and boot_core agree with each other and with the report rows.\n  - An independent pre-tax numpy simulation gives the same picture: margin 0.018. DEF3 alone fell 75% in 1929-32 and the 3x leg goes to -100%.\n  - All 47 configs fail the G6 drawdown condition in both real and bootstrap.\n\nINFERRED BY READING:\n- The post-lock diff touches only the sleeve list in report_rows and adds report_only(); no gate, H-test, tier or selection logic changed. The locked copy's sha256 (cd8918c6...) matches the registered sha. final() saved H, tiers and selection with the locked code before it crashed in report_rows.\n- The H5-H7 and N3ks values in final.json are consistent with the stated convention counts (9, 0, 0, 4).\n\nOTHER POINTS THAT AFFECT INTERPRETATION:\n- N1 favours the candidates. It implicitly sets DEF3's Sharpe to about 1.29-1.30 times the S&P's in REAL/P and 1.21 times in X, above k_s. In X it raises DEF3's mean by 1.44%/yr over the raw data. UTIL, whose pre-1986 ratio is only 0.86, still passes 36 configs under N1.\n- H4 alone is what makes tier 2 zero. 7 configs pass H1-H3 and H5 and fail only H4 among H1-H5. The passing region is a ridge about two cells wide, so a 75% share of neighbours within ±0.10 is nearly unreachable. Relaxing H4 to 50% would give one tier-2 config; at 60%, none. Tier 1 stays 0 in every case, because all 47 fail H6, H7 and G6.",
+          "issues": [
+            {
+              "severity": "minor",
+              "what": "The claim says 34 of the 47 N1 passers also fail H5. In fact 38 fail and 9 pass H5, matching the N2 count of 9. 34 is the number that satisfy the other-R part of H4.",
+              "where": "df6_final.json H[*].H5 and fails lists; the claim text",
+              "direction": "neutral",
+              "evidence": "Counter of fails: 30 with H4,H5,H6,H7,G6; 7 with H4,H6,H7,G6; 4 with H2,H4,H5,...; 3 with H2,H3,H4,H5,...; 2 with H2,H3,H4,H6,...; 1 with H1,H2,H4,H5,... H5 true = 9/47. My H4 recomputation: other-R passes 34/47.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "major",
+              "what": "The N1 stage is generous to the candidates. Setting DEF3's mean equal to the S&P mean implies k = sigma_SPX/sigma_DEF3 (daily), about 1.29-1.30 in REAL/P and 1.21 in X. That is above k_s = 1.135 and k_low = 0.943. In X, N1 raises DEF3's mean above raw. N1 rewards low volatility rather than any proven Sharpe premium: UTIL (k_s 0.86) passes 36, while ENER (k_s 1.14, close to DEF3) passes 0. So the negative-control contrast under N1 does not show a defensive premium.",
+              "where": "df6.py panel6 lines 129-135 (N1 branch); worlds REAL/P/X",
+              "direction": "for candidates (N1 stage)",
+              "evidence": "My run: implied k under N1 = REAL 1.2945, P 1.2974, X 1.2090. N1 DEF3 shift (annual, subtracted from the raw mean): REAL +0.0084, P +0.0037, X -0.0144 (DEF3 raised 1.44%/yr). N3(k_s) shifts: +0.0186, +0.0140, -0.0065. UTIL N1 passes 36/322 (my gate recomputation).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "H4 is the only reason tier 2 is 0. The N1 pass region is a diagonal ridge about two grid cells wide (e+c roughly 1.25-1.4), so a ±0.10 neighbourhood with a 75% pass share is structurally near-unreachable. 7 configs pass H1, H2, H3 and H5 and fail only H4. The test is pre-registered and correctly implemented.",
+              "where": "df6.py nbrs()/final() lines 267-276 and 316-319; PRECOMMIT_DF6 section 4 H4",
+              "direction": "against candidates (tier 2 only)",
+              "evidence": "My H4 recomputation: max neighbour pass share 0.75 (TQQQ R252 e0.50 c0.80, 6/8, but its other-R twin fails); median 0.33. Full H4 passes at 60%: 3; at 50%: 8. With H4 at 50%, tier 2 would become 1 (L|TQQQ|DEF3|R252|e0.60|c0.75); at 60%, still 0. Tier 1 is 0 under every threshold, because all 47 fail H6, H7 and G6.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "The N3(k_s) verdict for the top configs is on a knife edge. At k_s the only failure is G3's paired median, by -0.01 to -0.10 %/yr, and k* for the top 3 lies 0.006-0.037 above k_s. Some R63 configs pass at k_s. The H7 verdict at k_low is robust.",
+              "where": "run_set N3 with param DEF3=k (my bisection)",
+              "direction": "neutral",
+              "evidence": "k* top3: 1.172 (lo 1.156), 1.156 (lo 1.141), 1.141 (lo 1.125, and fails at 1.1352). G3 pair at k_s: -0.0010, -0.0006, -0.0001. Top config at k=1.15625: G3 pair = -1.5e-7. At k_low = 0.943: G2-G5 fail with pair -0.4 to -1.1 %/yr; the X30 drawdown margin is 0.0875-0.103 and X10 is 0.082-0.088. L|TQQQ|DEF3|R63|e0.65|c0.75: k* in (1.111, 1.123].",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The additive NA convention (H6) uses a Sharpe delta calibrated against the 1928-85 market Sharpe of 0.368 per year. In the crash-free X world the S&P Sharpe is much higher, so the same delta corresponds to a smaller multiplicative k there. This makes H6 harsher in X than N3(k_s).",
+              "where": "df6.py panel6 NA branch line 135; final() conv NA line 287",
+              "direction": "against candidates (H6)",
+              "evidence": "Inferred from shifts: S&P annual excess return about 8.3% in REAL vs 12.9% in X (derived from the N1 and N3(k_s) shifts and implied k). The top config's X30 pair under NA is +0.0023 vs +0.0100 under N3(k_s) (report rows).",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "k is measured against the KF value-weighted market. Against S&P TR it is lower (DEF3 1.105, k_low 0.872), so using KF slightly favours the candidates. Applying a monthly k to daily volatilities is not materially biased.",
+              "where": "df6_k.json; df6.kvals",
+              "direction": "for candidates (slight)",
+              "evidence": "df6_k.json DEF3 vs SPXTR: k_all 1.1049, k_28_55 0.8722. My check: MKT/DEF3 volatility ratio for 1986-2014 is 1.261 daily vs 1.245 monthly; for 1928-85 it is 1.155 daily vs 1.111 monthly.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The G6 drawdown condition is demanding. A -92% core drawdown in 1929-32 means the mix must hold its drawdown to -83% or better. The failure is genuine, not an artifact: the return condition passes for the top config and the drawdown shortfall is large.",
+              "where": "df6.py g6_world/g6_run and final() lines 325-331",
+              "direction": "neutral",
+              "evidence": "Reproduced: real margin 0.0179, OLD6 p10 margin 0.0015. Independent pre-tax simulation: core 8.80%/-92.12%, mix 10.65%/-90.43%, margin 0.018; DEF3 alone MDD -75.1%; 3x leg MDD -100%. Across the 47 configs: real margins -0.003 to 0.040, bootstrap margins -0.021 to 0.036. Return fails on the real path for 5 configs and on bootstrap return-type conditions for 17.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The post-lock change is confined to the report path: the N3/NA report rows load only the DEF3 sleeve, and report_only() was added. H, tiers and selection in final.json come from the locked code, which saved them before it crashed.",
+              "where": "diff /tmp/df6w/df6_locked.py vs code/df6.py (line 406; lines 431-451)",
+              "direction": "neutral",
+              "evidence": "Locked copy sha256 cd8918c6... matches PRECOMMIT_DF6.sha256; the current df6.py is 29667337... final.log shows the crash in report_rows after the N4 run. The stored report-only k* (bisection over 0.5-2.5 to 0.01) is 1.164, consistent with my (1.156, 1.172].",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "Gates, from my own code on df6_main.json rows:\n- 0 mismatches over 2236 configs.\n- Main: 322 unique, 47 pass. G1 167, G2 132, G3 96, G4 72, G5 91.\n- Report sleeves: STAP 8 (G4 20, G5 38), HLTH 0 (G4 0), UTIL 36, DEF2 8.\n- Negative controls: ENER, MANU, SHOP, FIN, TELE and SPX all 0/96, total 0/576. Their single-gate passes: G1 6, G4 8, G5 13.\n- Dedupe: 50 QLD a=0 duplicates (10 main, 40 report), max abs row difference 0.\n- Passers by group: TQQQ-R252 19, TQQQ-R63 14, QLD-R252 9, QLD-R63 5.\n- Main configs failing exactly one gate: 35 (G4 20, G5 8, G3 7).\n\nTop config L|TQQQ|DEF3|R252|e0.60|c0.80 (score 0.01195):\n- REAL 14.65%/-62.3% vs QQQ 12.15%/-82.8%\n- P30 median 13.69%, p10 MDD -68.4% vs 12.20%/-84.5%\n- X30 23.63%/-33.3% vs 21.78%/-38.3%\n\nH4:\n- 47/47 fail; my values match final.json n/npass/other-R exactly.\n- At 75%: 1 meets the neighbour share, 0 full H4. At 60%: 4 share / 3 full. At 50%: 11 share / 8 full.\n- Other-R passes: 34/47. Neighbour pass share: max 0.75, median 0.33.\n- 7 configs fail only H4 among H1-H5. At a 50% threshold, tier 2 would be 1.\n- H5 passes 9/47, so 38 fail (not 34).\n\nk, monthly 1928-01 to 1985-12 (696 months) vs KF market (mine / stored):\n- DEF3: k_all 1.1352/1.1352; 1928-55 0.9429/0.9429; 1956-85 1.4899/1.4899; p20 0.9873/0.9851; k_low 0.9429/0.9429; delta_ann 0.0498.\n- STAP 1.1518; HLTH 1.1448 (p20 0.922/0.915); UTIL 0.8619; TECH 1.0079; ENER 1.1402; TELE 1.1848. All k_all values match the stored values.\n- The KF RF and the clean RF.csv agree exactly (max difference 0).\n\nWhat the conventions imply:\n- Implied k under N1: REAL 1.295, P 1.297, X 1.209.\n- N1 DEF3 mean shift vs raw: REAL -0.84%/yr, P -0.37%/yr, X +1.44%/yr.\n- N3(k_s) DEF3 shift vs raw: -1.86%, -1.40%, +0.65%.\n- MKT/DEF3 volatility ratio, daily vs monthly: 1986-2014 1.261/1.245; 1928-85 1.155/1.111.\n\nk* (bisection, 0.02 resolution):\n- top 1.172 (fails at 1.156)\n- e0.65/c0.70 R252 1.156 (fails at 1.141)\n- e0.70/c0.60 R252 1.141 (fails at 1.1352)\n- R63 e0.65/c0.75: (1.111, 1.123]\n- At k_s, G3 pair: -0.0010, -0.0006, -0.0001 (only G3 fails).\n- At k_low: G2-G5 fail; X30 drawdown margin 0.0875-0.103, X10 0.082-0.088.\n\nG6, top config:\n- R2885: 9.586%/-90.534% vs 8.064%/-92.188%, drawdown margin 0.0179.\n- OLD6: median 9.183 vs 8.636, pair +0.625, p10 1.544 vs 1.310, p10 MDD -88.281 vs -88.411, margin 0.0015.\n- Independent pre-tax simulation: margin 0.018.\n\nCompute used: about 104 config-world evaluations (90 for top-3 k*, 12 for the R63 k*, 2 for G6), plus 6 panel-only world loads for the N1/N2 shifts.\n\nScripts are in /tmp/df6v/gates: g1.py, h4.py, kcalc.py, kstar.py (output kstar_out.json), kstar2.py, extra.py, g6chk.py, vr.py."
+        }
+      },
+      {
+        "key": "limit",
+        "res": {
+          "verdict": "claims_hold",
+          "summary": "Verdict: the DF6 rejection of these mixes is mostly an economic fact, not a quirk of the test design. G6 and H7 reject them for real reasons. H6 (NA) is the one soft spot: it is borderline and depends on the 0.05 grid. That still does not change tier1 = 0 or tier2 = 0. Everything below is report-only. Work dir /tmp/df6v/limit (e1.py, e2.py, e3.py, e3v.py, e3g6.py, e4.py; results in e1.json, e2.json, e3*.json, e4.json). All numbers are my own computation unless marked \"read\".\n\nE1, G6 strictness (1928-85 weekday KF data, BusEq core, raw DEF3). My figures match df6_final.json exactly.\nSingle paths, mix CAGR / MDD vs BusEq 1x CAGR / MDD:\n| config | R2885 (eval 1929-03..1985) | R2932 | R3385 (1933-85) | R4685 (1946-85) | R5585 |\n|---|---|---|---|---|---|\n| e.60 c.80 | 9.59/-90.5 vs 8.06/-92.2 | -32.9/-90.5 vs -34.6/-92.2 | 12.14/-67.1 vs 11.99/-55.5 | 11.58/-61.6 vs 11.09/-54.7 | 10.97/-61.2 vs 9.88/-54.7 |\n| e.65 c.70 | 9.46/-90.7 | | 12.16/-65.6 | 11.55/-60.7 | |\n| e.70 c.60 | 9.32/-90.9 | | 12.17/-64.1 | 11.52/-59.8 | |\n| e.60 c.75 | 9.49/-90.1 | | 12.10/-65.2 | 11.54/-60.4 | |\n| e.55 c.80 | 9.51/-89.6 | | 12.03/-64.9 | 11.52/-60.2 | |\n- R2885: the 10%-shallower drawdown margin (ddm) is only 0.014 to 0.028.\n- R3385: ddm -0.16 to -0.21. The worst drawdown is 1937-01 to 1942-04.\n- R4685: ddm -0.09 to -0.13. The worst drawdown is 1973-74.\n- DEF3 alone: -75.4% in 1929-32 and -48.3% in 1973-74.\n\nBootstraps, median / p10 CAGR and p10 MDD (mix vs core):\n- OLD6: top config 9.18 / 1.54 / -88.3 vs 8.64 / 1.31 / -88.4. ddm 0.001 to 0.016 across the top 5.\n- OLD6 with blocks drawn only from 1933 on: 11.82 / 5.36 / -73.6 vs 10.82 / 5.40 / -69.0. ddm -0.03 to -0.07.\n- OLD6 with Depression blocks excluded: 12.66 / 6.57 / -73.1 vs 11.58 / 6.21 / -67.5. ddm -0.05 to -0.08.\n- Answer: the levered mix has no drawdown edge before 1986 outside the Depression; its drawdown is 6-12pp deeper than BusEq. The return edge survives (+0.1 to +1.1%/yr). So the G6 failure is not just the 1929-32 crash and not an effect of the relative rule at -92%.\n- A log-drawdown rule (my alternative, report-only) would also fail 4/5 configs on R2885 (log-DD ratios 0.886-0.938) and all of them on OLD6.\n\nE2, where the N1 edge comes from (top config L|TQQQ|DEF3|R252|e0.60|c0.80).\nDaily, annualised statistics:\n| world | DEF3 vol / NDX vol | corr(DEF3, NDX) | SPX vol / corr | k implied by N1 |\n|---|---|---|---|---|\n| REAL and P | 14.3% / 27.3% | 0.61 | 18.5% / 0.82 | 1.30 |\n| X | 11.6% / 20.7% | 0.68 | 14.1% / 0.815 | 1.21 |\n| 1928-85 (vs BusEq) | 16.6% / 26.0% | 0.86 (0.81 from 1933, 0.79 from 1946) | DEF3 vs KF market corr 0.93 | n/a |\n- On the core's worst 1% of days: 1986-2014 NDX averaged -6.34% while DEF3 averaged -1.59%. In 1928-85 BusEq averaged -6.43% while DEF3 averaged -3.98%.\n\nSleeve swaps, paired median %/yr and ddm:\n| sleeve | X30 | P30 |\n|---|---|---|\n| DEF3 | +1.71 / 0.131 (pass) | +1.19 / 0.191 |\n| SPX retail | +1.08 / -0.061 | +0.19 / 0.036 |\n| SPX with DEF3 costs | +0.97 / -0.063 | +0.11 / 0.034 |\n| DEF3 scaled to SPX vol (low corr only) | +1.37 / 0.046 | +0.51 / 0.100 |\n| SPX scaled to DEF3 vol, equal mean (low vol only) | +1.37 / 0.029 | +0.88 / 0.122 |\n| 0.7 DEF3 + 0.3 SPX, same mean | +1.49 / 0.093 | +0.94 / 0.145 |\n| DEF3 at k=1 | -0.28 / 0.097 | -0.36 / 0.166 |\n| DEF3 at N3(k_low) | -0.81 / 0.087 | -0.64 / 0.163 |\n| DEF3 at NA | +0.23 / 0.106 | +0.23 / 0.174 |\n- The X drawdown edge needs both properties. Low correlation and low vol each add about 0.09-0.11 ddm on their own, and neither reaches 0.10 alone.\n- The X return edge is partly structural: SPX at equal mean already gets +0.97. The rest is the N1 Sharpe premium. At Sharpe parity the return edge turns negative in both P30 and X30.\n\nE3, search for any static mix passing under the pre-1986 priors. Grid: V in {TQQQ, QLD}, R in {63, 252}, e and c on 0.025 steps.\n- Evaluated: 1,200 configs on REAL under both conventions (single path). Then 94 config-conventions in X (30 and 10 years) and 25 in P (30 and 10 years).\n- N3(k_low = 0.943): nothing passes. The best maximin (smallest slack over all G1-G5 conditions, %/yr or pp of ddm) is -0.98, for TQQQ R252 e0.725 c0.475. X30 return and X10/X30 drawdown conflict by 0.4-1.0%/yr everywhere. The best DF6 score (min of P30 pair, X30 pair, REAL excess) is about -0.69.\n- NA (+0.050/yr annual Sharpe): two off-grid configs pass all of G1-G5 under the official gates code (df6.run_set plus df6.gates):\n  - F|TQQQ|R63|e0.700|c0.625: score +0.048%/yr, minimum ddm 0.1013.\n  - F|TQQQ|R63|e0.675|c0.675: score +0.024%/yr, ddm 0.106.\n- Their 0.025 neighbours fail (G4 return or G3 drawdown). They pass G2-G5 jointly in only about 14% of 1,000 path resamples. Both fail G6 (R2885 -91.5% vs -92.2%; OLD6 p10 MDD -89.4% vs -88.4%), and both would fail H4.\n- The best on-grid NA maximin is -0.13. So \"NA 0\" is true for the locked grid, but the feasible region under NA is a thin sliver, not empty.\n\nE4, theory. In 1986-2014 NDX and SPX have the same Sharpe (P 0.445 vs 0.444; X 0.91 vs 0.92). With a sleeve at Sharpe parity (k=1), a static mix with less than 1x NDX exposure must repay the dropped (1-e)·mu_NDX from its own premium. The only extra returns are diversification and less volatility drag. At Sharpe parity with no frictions, that is worth +0.94%/yr (P30) and +1.60%/yr (X30). The same diversification is what gives the 0.17-0.18 ddm margin, because DEF3 fell only 0.25x as much as NDX on its worst days.\n\nReal frictions then take it back. Fund fees plus the dividend tax cost 1.1-1.3%/yr. Capital-gains tax and trading costs cost a further 0.1-0.6%/yr. After them the paired margin is -0.36%/yr in P30 and -0.28%/yr in X30, and X30 ddm is 0.097.\n\nSo the return gates need a sleeve Sharpe premium of about k ≈ 1.16 (k* for the top config is 1.164). N1 grants 1.21-1.30. Pre-1986 the point estimate is 1.135 and k_low is 0.943. The drawdown side depends on DEF3 not crashing with tech, which held in 2000-02 but not in 1929-32, 1937-42 or 1973-74 (corr 0.79-0.86, worst-day ratio 0.62). Without a Sharpe premium the mix cannot beat QQQ on both return and drawdown in all three bases. Even the 1928-85 additive premium (NA) leaves only a knife-edge.",
+          "issues": [
+            {
+              "severity": "minor",
+              "what": "H6 (NA, additive Sharpe delta +0.050/yr) '0 passers' depends on the 0.05 grid: two off-grid points pass G1-G5 under the official gate code, but by a thin margin and not robustly",
+              "where": "df6.py final() H6 = allconv['NA'] on the locked 0.05 grid; my check is /tmp/df6v/limit/e3v.py",
+              "direction": "against candidates (the coarse grid hides a thin feasible sliver), but only slightly",
+              "evidence": "Confirmed by my own computation. The off-grid configs are F|TQQQ|R63|e0.700|c0.625 (npass 5, score +0.048%/yr, min ddm 0.1013) and F|TQQQ|R63|e0.675|c0.675 (npass 5, score +0.024%/yr, ddm 0.1059). Their 0.025 neighbours e0.70 c0.60, e0.70 c0.65, e0.675 c0.65 and e0.725 c0.60 fail. The two configs pass G2-G5 jointly in 14.2% and 14.4% of 1,000 path resamples (seed 11). Both fail G6: R2885 MDD -91.5 vs -92.2, OLD6 p10 MDD -89.4/-89.5 vs -88.4. The best on-grid NA maximin is -0.13 (TQQQ R63 e0.70 c0.60). They are post hoc picks from about 94 configs evaluated in X.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "minor",
+              "what": "N1, the main gate convention, is generous: equal arithmetic mean at lower volatility gives DEF3 an in-sample Sharpe of 1.21-1.30 times SPX. That is above the pre-1986 k_s of 1.135 and above the top config's k* of 1.164. This inflates the N1 count of 47",
+              "where": "df6.py panel6 conv N1 (sh = mean(A) - mean(SPX))",
+              "direction": "for candidates at the N1 stage",
+              "evidence": "Confirmed by my own computation: Sharpe ratio DEF3/SPX after the N1 shift is 1.295 (REAL), 1.297 (P) and 1.209 (X). Under k=1 the top config's paired median is -0.36 (P30) and -0.28 (X30). Inferred by reading df6_final.json counts_report: UTIL, whose pre-1986 k_s is 0.862 (below the market), passes 36/322 under N1, more than STAP's 8. So N1 passes reflect the 'low vol at equal mean' convention, not each sector's historical Sharpe.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "The G6 rejection is not caused by the 1929-32 Depression or by the relative 10% drawdown rule at -92%. Outside the Depression the levered mix has a deeper drawdown than BusEq 1x",
+              "where": "df6.py g6_world / g6_run; my sub-windows in /tmp/df6v/limit/e1.py",
+              "direction": "neutral (the test is fair; the strict relative rule at -92% does not drive the result)",
+              "evidence": "Confirmed by my own computation. Top 5 configs, mix MDD vs core MDD: R3385 (1933-85) -64.1 to -67.1 vs -55.5 (worst drawdown 1937-01 to 1942-04); R4685 (1946-85) -59.8 to -61.6 vs -54.7 (1973-74). Bootstrap with blocks from 1933 on: p10 MDD -71.0 to -73.6 vs -69.0. Bootstrap excluding Depression blocks: -70.8 to -73.1 vs -67.5. The return edge holds (+0.04 to +1.1%/yr), so drawdown is what fails. A log-drawdown rule also fails R2885 for 4 of 5 (ratios 0.909-0.938 against a 0.9 limit) and fails OLD6. DEF3-BusEq daily correlation is 0.857 (1928-85) and 0.787 (1946-85), against 0.61 for DEF3-NDX in 1986-2014.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "k_low is the minimum of four estimates, which biases it downward and makes H7 conservative. The rejection does not depend on that: the top config needs k* = 1.164, above even the point estimate k_s = 1.135, and nothing in the fine-grid search passes under N3(k_low)",
+              "where": "df6.py kvals k_low = min(k_all, k_boot_p20, k_28_55, k_56_85)",
+              "direction": "against candidates (a conservative prior)",
+              "evidence": "Confirmed by my own computation: under N3(k_low) the best maximin over about 31 X-evaluated fine-grid configs is -0.98 (TQQQ R252 e0.725 c0.475, X30 pair binding). Inferred by reading df6_final.json: the 4 configs that pass at the point estimate N3(k_s), all TQQQ R63, fail H4 and G6.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "In the crash-free X world, an equal-mean SPX sleeve already beats QQQ on return (paired median +0.97 to +1.08%/yr in X30). So the X return gates barely discriminate; the X drawdown gate does the discriminating",
+              "where": "X world gates G4/G5",
+              "direction": "neutral",
+              "evidence": "Confirmed by my own computation. SPX retail in X30: paired median +1.08, ddm -0.061 (fails). DEF3 scaled to SPX vol: ddm 0.046. SPX scaled to DEF3 vol: ddm 0.029. Only DEF3 itself, with both low vol and low correlation, reaches 0.131.",
+              "changes_conclusion": false
+            },
+            {
+              "severity": "note",
+              "what": "I somewhat exceeded the requested budget of about 150 config-world evaluations. Heavy (500-path P/X/OLD) evaluations came to about 180 when the 30- and 10-year horizons in one world load count as one. Total wall time was about 4 minutes, with one world loaded at a time",
+              "where": "/tmp/df6v/limit/e3*.py",
+              "direction": "neutral",
+              "evidence": "E1: 15 OLD-bootstrap and 25 single-path G6 runs. E2: 10 sleeve variants in 3 worlds. E3: 94 X and 25 P config-conventions, plus 2,400 single-path REAL runs (about 9 s). Verification: 2 configs in REAL/P/X. E4: 8 runs. All data used is 2014 or earlier; G6 uses 1985 or earlier, and the KF factor file is cut at load inside df6._kf_market, with nothing printed.",
+              "changes_conclusion": false
+            }
+          ],
+          "numbers": "E1 (my computation):\n- R2885 top config 9.586% / -90.53% vs core 8.064 / -92.19 (matches df6_final).\n- OLD6 top config 9.18 / 1.54 / -88.28 vs 8.64 / 1.31 / -88.41.\n- R3385 top config 12.14 / -67.1 vs 11.99 / -55.5; R4685 11.58 / -61.6 vs 11.09 / -54.7; R5585 10.97 / -61.2 vs 9.88 / -54.7.\n- Bootstrap from 1933 on: p10 MDD -73.6 vs -69.0. Bootstrap without Depression blocks: -73.1 vs -67.5. Paired median +0.87 and +1.08.\n- DEF3 alone MDD: -75.4 (1929-32), -48.3 (1973-74).\n\nE2:\n- Implied k under N1: REAL 1.295, P 1.297, X 1.209.\n- corr(DEF3, NDX): 0.61 (REAL/P), 0.68 (X). corr(DEF3, BusEq) 1928-85: 0.857, 1933-85 0.812, 1946-85 0.787.\n- Vol: DEF3 14.3 / NDX 27.3 (P); 11.6 / 20.7 (X); DEF3 16.6 / BusEq 26.0 (1928-85).\n- Worst-1%-day ratio DEF3/core: 0.25 (1986-2014) vs 0.62 (1928-85).\n- X30 paired median / ddm by sleeve: DEF3 +1.71/0.131; SPX with DEF3 costs +0.97/-0.063; low corr only +1.37/0.046; low vol only +1.37/0.029; 0.7/0.3 mix +1.49/0.093; k=1 -0.28/0.097; N3(k_low) -0.81/0.087; NA +0.23/0.106.\n\nE3:\n- REAL passers on the fine grid: N3(k_low) 136 of 1,200; NA 372 of 1,200.\n- Best maximin under N3(k_low): -0.98 (TQQQ R252 e0.725 c0.475).\n- Best under NA: +0.05 (TQQQ R63 e0.700 c0.625, official score +0.048%/yr, ddm 0.1013) and +0.02 (TQQQ R63 e0.675 c0.675, score +0.024, ddm 0.1059). Joint resample survival 14%. Both fail G6.\n- Best on-grid NA maximin: -0.13.\n\nE4, top config at k=1:\n- Frictionless paired median +0.94 (P30) and +1.60 (X30).\n- Without capital-gains tax and trading costs: -0.18 / +0.32.\n- With all frictions (base): -0.36 / -0.28.\n- k* for the top config is 1.164 (read), against k_s 1.135 and k_low 0.943."
+        }
+      }
+    ],
+    "critic": {
+      "verdict": "claims_hold",
+      "summary": "(1) STATUS OF THE DF6 CLAIMS\n\nConfirmed by independent computation (at least one verifier; my additions marked \"me\"):\n- Grid: 322 unique main configs (TQQQ 96, QLD 70, five a=0 points).\n- G1-G5 under N1: 47 pass; single-gate counts 167/132/96/72/91. Three verifiers recomputed the gates from the stored rows.\n  - Rows re-simulated: repro's own numpy engine on 2 configs.\n  - Me: all 47 passers plus the 8 failing neighbours of the config closest to passing H4, in REAL, P and X with df6.run_set. Row difference 0.0, 0 gate mismatches, 47/47 pass.\n- k values from the raw KF zips: k_s 1.1352, k_1928-55 0.9429, k_1956-85 1.4899, k_low 0.9429, ENER 1.140, TELE 1.185.\n- Top config REAL/P30/X30 numbers and its G6 numbers (real path and OLD6), reproduced independently by repro.\n- Report-only k* = 1.164.\n- All 47 fail H4 (recomputed by audit and gates).\n- All 47 fail G6. Me: recomputed the R2885 real path for all 47; none meets the 10% drawdown rule (largest margin 0.040; 0.0 difference from stored).\n- Post-lock change is report-only (code diff plus hashes). Me: PRECOMMIT_DF6.md sha256 5fbb6548... also matches the registered value.\n- X world matches its description. Me: excluded windows run peak to trough plus 250 days for 1987, 2000-02 and 2007-08; 0 sampled days fall inside them.\n\nOnly read-checked:\n- H1, H2, H3 results for 45 of the 47.\n- OLD6 for 44 of the 47 (does not matter, since the real path already fails).\n- H6 and H7 flags for the 47. Simulated for only 2-4 configs, but backed by k* (1.11-1.17) being above k_s and k_low, and by the limit verifier's fine-grid search.\n- Full-grid counts N3low/NA/N4 = 0.\n- Report-sleeve and negative-control counts: gates were recomputed from stored rows, but the rows were not re-simulated.\n- Data layer inherited from DF5: every verifier used the same input panels.\n\nContradicted:\n- \"34 also fail H5\" is wrong: 38 of the 47 fail H5 and 9 pass, which equals the N2 count.\n- The claim also leaves out the H1 (1), H2 (10) and H3 (5) failures. Neither error changes any tier.\n\n(2) No verifier flagged changes_conclusion = true. I tested the issues most likely to flip the result:\n- H4: the 7 configs that fail only H4 among H1-H5 have neighbour pass shares of 33-53% against the 75% required. The closest (9/17) would need 4 neighbours to flip, and I re-simulated its 8 failing neighbours: all fail again.\n- G6: none of the 47 pass on the real path.\n- Off-grid NA sliver: post hoc and not on the locked grid.\n- Double-counted expense ratio: too small, and H4 fails regardless.\nNone of these is credible as a conclusion-changer.\n\n(3) Still unverified that matters for the user statement:\n- The DF5 data layer: synthetic TQQQ/QLD before launch (3r - 2rf - 2.45%), the KF-to-XLP/XLV/XLU splice in 2002 (with the expense ratio counted twice), and the tax engine. These are shared inputs, so no DF6 verifier checked them independently.\n- The user-facing horizon tables. /tmp/df6w/top_conv_horizons.json is an extra post-hoc author file.\n\nThe tier-0 conclusion does not depend on any of these.\n\n(4) VERDICT\nThe statement is supported, but it must carry these qualifiers:\n- (a) \"47\" is in-sample. REAL, P and X are all built from the same 1986-2014 data, and the DEF3 region was picked after DF5 had seen that data. So these are not three independent confirmations.\n- (b) \"47\" depends on N1, the DF5 convention. N1 implies DEF3 has a Sharpe 1.21-1.30 times the S&P's, and in X it adds +1.44%/yr to DEF3.\n  - Raw 1986-2014 data: 9 pass.\n  - Pre-1986 point estimate (k_s = 1.135): 4 pass.\n  - k_low, NA or k = 1: none pass.\n  - The top config needs k >= 1.164.\n- (c) The 47 are one narrow diagonal band of neighbouring weights, not 47 separate methods.\n- (d) Tier 2 = 0 rests on H4 alone for 7 configs, but by wide margins. Only relaxations that were not pre-registered (radius 0.05, or a 50% share) would create one tier-2 config, TQQQ R252 e0.60 c0.75, and it still fails H6, H7 and G6.\n- (e) G6 fails on a 10% drawdown margin measured at -92% in the Depression, which is demanding. But the limit verifier's post-1933 windows show the mixes falling further than unlevered BusEq, so the pre-1986 rejection is real: DEF3's low correlation with tech (0.61 in 1986-2014) did not hold before 1986 (0.79-0.86).\n- (f) H6 and H7 only move DEF3's mean and can only reject. G6 is the one test of the whole structure in another era.\n- (g) Results are in USD, after the modelled Korean tax and costs; the tax on currency gains is not modelled.\n- (h) Correct the H5 count to 38 of 47.",
+      "issues": [
+        {
+          "severity": "minor",
+          "what": "The claim '34 of the 47 N1 passers also fail H5' is wrong: 38 fail and 9 pass, matching the N2 count of 9. The claim also omits the H1 (1), H2 (10) and H3 (5) failures.",
+          "where": "df6_final.json H[*].fails; the claim text",
+          "direction": "neutral",
+          "evidence": "Read by me: fails-tuple counts are (H4,H5,H6,H7,G6) 30; (H4,H6,H7,G6) 7; (H2,H4,H5,...) 4; (H2,H3,H4,H5,...) 3; (H2,H3,H4,H6,...) 2; (H1,H2,H4,H5,...) 1. That gives H5 pass 9/47. Audit, repro and gates found the same independently, and audit's N2 re-run of the 47 also gives 9.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "major",
+          "what": "'47 beat QQQ in all three bases' holds only under the N1 convention, which is generous where it matters. N1 implies DEF3 has a Sharpe 1.21-1.30 times the S&P's (above the pre-1986 k_s of 1.135) and adds +1.44%/yr to DEF3 in the crash-free X world. Pass counts under other conventions: raw data 9, N3(k_s) 4, N3(k_low) 0, NA 0, k=1 0. The top config needs k >= 1.164.",
+          "where": "df6.py panel6 N1 branch (line 130); df6_final.json counts",
+          "direction": "for candidates (N1 stage)",
+          "evidence": "Computed by audit, repro and gates (implied k 1.295/1.297/1.209; X shift +1.44pp). Report-only k* of 1.164 confirmed by two verifiers. Counts read by me from df6_final.json: {N1 47, N2 9, N3ks 4, N3low 0, NA 0, N4 0}. N1 was pre-registered, so this is not a bug, but it must be stated whenever the 47 is quoted.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "note",
+          "what": "Tier 2 = 0 rests solely on H4 for 7 configs, which pass H1, H2, H3 and H5. The margins are wide, so this is not a knife-edge. H4 is implemented exactly as registered: Chebyshev radius 0.10, a=0 points counted for both V, and the other R must pass.",
+          "where": "df6.py nbrs()/final() H4; PRECOMMIT_DF6 section 4",
+          "direction": "against candidates (strict but pre-registered)",
+          "evidence": "Neighbour pass shares for the 7, read by me from final.json: 8/16, 9/17, 10/24, 10/21, 8/24, 9/24, 6/18, i.e. 33-53% against the 75% required. My computation: re-simulating the 8 failing neighbours of L|TQQQ|DEF3|R252|e0.60|c0.75 (9/17) in REAL/P/X reproduces their stored rows exactly, and all 8 still fail. Lower-exposure neighbours fail on G3/G4 pair or median; higher-exposure ones fail on G4/G5 drawdown. Rules that were not pre-registered (radius 0.05, or a 50% share) would produce one tier-2 config, e0.60 c0.75 R252 TQQQ, which still fails H6, H7 and G6.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "note",
+          "what": "G6 rejects all 47. The 10%-shallower drawdown rule against a -92% core drawdown is demanding, but the failure is substantive and not an artifact of the Depression.",
+          "where": "df6.py g6_world/g6_run; final() G6",
+          "direction": "neutral",
+          "evidence": "My computation with df6.g6_run on R2885 for all 47: 0/47 meet the real-path condition. Drawdown margins range from -0.003 to 0.040 (0.10 needed); core 8.064%/-92.188%; 0.0 difference from stored values. Repro independently reproduced the top config on its own calendar. The limit verifier found the mixes' drawdown deeper than unlevered BusEq in 1933-85 and 1946-85, and in bootstraps that exclude the Depression. DEF3's correlation with the tech core was 0.79-0.86 before 1986, against 0.61 with NDX in 1986-2014.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "note",
+          "what": "In-sample versus pre-1986 evidence. G1-G5 and H1-H5 all use 1986-2014 data. REAL, P and X resample the same 29 years, and the DEF3 region was chosen after DF5 had seen that data. Only H6, H7 and G6 are pre-1986 evidence, and they can only reject. H6 and H7 shift only DEF3's mean and keep its 1986-2014 correlations, so G6 is the only test of the whole structure in another era.",
+          "where": "PRECOMMIT_DF6 section 6",
+          "direction": "for candidates (interpretation of the 47)",
+          "evidence": "Read from PRECOMMIT_DF6.md section 6, which requires this caveat in the report. Cumulative tests: about 2,300 (DF1-DF5), plus about 300 exploration runs in the DF5 verification, plus 322 here.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "minor",
+          "what": "The data layer inherited from DF5 was not independently verified in DF6. It covers the synthetic TQQQ/QLD series before launch (3r-2rf-2.45% and 2r-rf-1.70%), the splice of KF industries into XLP/XLV/XLU in 2002 (expense ratio counted twice from 2002), DEF3 as a costless daily-rebalanced basket, and the Korean tax engine. Every verifier used the same input panels; repro re-implemented the accounting but not the inputs.",
+          "where": "df5data.src_series / DD.panel; dfk",
+          "direction": "unknown (expense double count and daily-rebalanced DEF3 roughly offset; small either way)",
+          "evidence": "Inferred by reading: repro and audit numbers are derived from DD.panel/src_series. The DF5 parity harness shows consistency with DF5, not correctness of the inputs. It could move marginal H5 cases but not H4 or G6.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "note",
+          "what": "The X (crash-free) world is built as described.",
+          "where": "df5lib._xworld",
+          "direction": "neutral",
+          "evidence": "My computation; all dates are 2014 or earlier. Excluded windows: 1987-10-05 to 1987-10-26 plus 250 days (to 1988-10-20, NDX -39.9%); 2000-03-27 to 2002-10-07 (to 2003-10-03, -82.9%); 2007-10-31 to 2008-11-20 (to 2009-11-18, -53.7%). 4,645 of 7,061 block starts are allowed, and 0 sampled post-warm-up days fall in an excluded window.",
+          "changes_conclusion": false
+        },
+        {
+          "severity": "note",
+          "what": "These remain read-only: H1, H2 and H3 for 45 configs; OLD6 for 44; the full-grid N3low/NA/N4 counts; and the report-sleeve and negative-control rows (gates recomputed from them, rows not re-simulated). None of them can change the tier result, because H4 and the G6 real path fail for all 47.",
+          "where": "df6_final.json H, counts, counts_report",
+          "direction": "neutral",
+          "evidence": "Coverage audit of the four verifier reports plus my own re-simulations.",
+          "changes_conclusion": false
+        }
+      ],
+      "numbers": "My own computations (scripts in /tmp/df6v/critic: s1.py, s2.py, s3.py; output in /tmp/df6v/critic/g6_all47.json).\n\nN1 re-simulation (df6.run_set):\n- Configs: all 47 N1 passers plus the 8 failing neighbours of L|TQQQ|DEF3|R252|e0.60|c0.75, in REAL, P and X.\n- Max absolute row difference from df6_main.json: 0.0. QQQ difference: 0.0. Gate mismatches: 0.\n- 47/47 pass; 0/8 neighbours pass.\n- Failing neighbours: e0.50 and e0.55 fail on G3/G4 pair or median; e0.65 and e0.70 fail on G4/G5 drawdown.\n- Cost: 55 configs × 3 worlds, 88 s.\n\nG6 real path (R2885), all 47:\n- 0/47 meet the real-path condition.\n- Drawdown margin from -0.0031 to 0.0399 (0.10 needed).\n- Core 8.064% / -92.188%.\n- 0.0 difference from stored real_v.\n- Stored OLD6 margins (read): -0.021 to 0.036.\n\nX world construction:\n- Excluded windows: 1987-10-05 to 1987-10-26 (to 1988-10-20, NDX -39.9%); 2000-03-27 to 2002-10-07 (to 2003-10-03, -82.9%); 2007-10-31 to 2008-11-20 (to 2009-11-18, -53.7%).\n- 4,645 block starts allowed out of 7,061.\n- 0 sampled days fall inside the windows.\n\nRead from df6_final.json:\n- Counts: N1 47, N2 9, N3ks 4, N3low 0, NA 0, N4 0. Tiers: all 47 are tier 0. select: tier 1 and tier 2 both None. kstar_top_reportonly: 1.164.\n- Failures among the 47: H1 1, H2 10, H3 5, H4 47, H5 38 (9 pass), H6 47, H7 47, G6 47.\n- 7 configs fail only H4 among H1-H5. Their neighbour pass shares are 8/16, 9/17, 10/24, 10/21, 8/24, 9/24 and 6/18 (75% needed). L|TQQQ|DEF3|R63|e0.65|c0.75 also fails the other-R condition.\n\nHashes:\n- PRECOMMIT_DF6.md: 5fbb6548..., matches the registered value.\n- Locked df6.py: cd8918c6..., matches.\n- Current df6.py: 29667337....\n- Timing: main.log starts at 10:11:59 and the lock is 10:11Z.\n\nBudget: about 110 heavy (500-path) config-world runs, about 102 single-path runs, and no data after 2014."
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Verify"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Critic"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "verify:audit",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a3adfb00b1850257c",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1795001503278,
+      "queuedAt": 1795001503247,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "claims_hold",
+      "promptPreview": "CONTEXT (DF6 research, already computed; you are an independent verifier, not the author):\n- User goal: a trading method that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in EACH of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap (same source, blocks overlappin…",
+      "promptFramed": true,
+      "lastProgressAt": 1795002406758,
+      "tokens": 251614,
+      "toolCalls": 37,
+      "durationMs": 903479,
+      "resultPreview": "{\"verdict\":\"claims_hold\",\"summary\":\"The code matches PRECOMMIT_DF6 on every point I checked: conventions, kvals, G6, H1-H7, tiers and selection. The result \\\"0 configs survive (tier 1 = tier 2 = 0)\\\" is robust. Every one of the 47 N1 passers fails H4 under the locked radius of 0.10 (I recomputed this from the stored N1 gates). All 47 also fail H6, H7 and G6, and the G6 margins are far from the thr…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "verify:repro",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a899ca2900fc60e3a",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1795001503278,
+      "queuedAt": 1795001503248,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "claims_hold",
+      "promptPreview": "CONTEXT (DF6 research, already computed; you are an independent verifier, not the author):\n- User goal: a trading method that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in EACH of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap (same source, blocks overlappin…",
+      "promptFramed": true,
+      "lastProgressAt": 1795002138196,
+      "tokens": 234013,
+      "toolCalls": 33,
+      "durationMs": 633853,
+      "resultPreview": "{\"verdict\":\"claims_hold\",\"summary\":\"I rebuilt the portfolio accounting from scratch in numpy (/tmp/df6v/repro/mysim.py), working from a reading of dfk.run1 without calling dfk, df5run.run_job or df6.run. It reproduces every requested DF6 number exactly, to 3 decimals in pp, so all differences are 0.000.\\n\\nConfirmed by my own computation:\\n(a) QQQ: REAL 12.152% CAGR / -82.787% MDD. P30 median 12.1…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "verify:gates",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a2b648dc09fc45966",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1795002140656,
+      "queuedAt": 1795001503248,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "claims_hold",
+      "promptPreview": "CONTEXT (DF6 research, already computed; you are an independent verifier, not the author):\n- User goal: a trading method that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in EACH of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap (same source, blocks overlappin…",
+      "promptFramed": true,
+      "lastProgressAt": 1795002835770,
+      "tokens": 222179,
+      "toolCalls": 43,
+      "durationMs": 695113,
+      "resultPreview": "{\"verdict\":\"claims_hold\",\"summary\":\"I recomputed the main gate, count and k claims myself, and they hold. One sub-claim is wrong: 38 of the 47 N1 passers fail H5, not 34. That does not change any tier.\\n\\nCONFIRMED BY MY OWN COMPUTATION (my code, not df5gate):\\n- G1-G5 recomputed on all 2236 configs in df6_main.json: 0 gate mismatches, 0 score difference. Main grid: 322 unique, 47 pass all five; s…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "verify:limit",
+      "phaseIndex": 1,
+      "phaseTitle": "Verify",
+      "agentId": "a6924847ef3dbd59c",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1795002408438,
+      "queuedAt": 1795001503248,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "claims_hold",
+      "promptPreview": "CONTEXT (DF6 research, already computed; you are an independent verifier, not the author):\n- User goal: a trading method that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in EACH of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap (same source, blocks overlappin…",
+      "promptFramed": true,
+      "lastProgressAt": 1795003329031,
+      "tokens": 261885,
+      "toolCalls": 36,
+      "durationMs": 920592,
+      "resultPreview": "{\"verdict\":\"claims_hold\",\"summary\":\"Verdict: the DF6 rejection of these mixes is mostly an economic fact, not a quirk of the test design. G6 and H7 reject them for real reasons. H6 (NA) is the one soft spot: it is borderline and depends on the 0.05 grid. That still does not change tier1 = 0 or tier2 = 0. Everything below is report-only. Work dir /tmp/df6v/limit (e1.py, e2.py, e3.py, e3v.py, e3g6.p…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "critic",
+      "phaseIndex": 2,
+      "phaseTitle": "Critic",
+      "agentId": "a67e044a90467c3ab",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1795003331145,
+      "queuedAt": 1795003331136,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "claims_hold",
+      "promptPreview": "CONTEXT (DF6 research, already computed; you are an independent verifier, not the author):\n- User goal: a trading method that beats \"QQQ buy-and-hold\" on return AND has a shallower drawdown in EACH of three bases:\n  REAL = real NDX path 1986-2014 (one path); P = bootstrap world dev250_path (500 paths, 30y, 250-day blocks from 1986-2014);\n  X = \"crash-free\" bootstrap (same source, blocks overlappin…",
+      "promptFramed": true,
+      "lastProgressAt": 1795003788895,
+      "tokens": 185830,
+      "toolCalls": 11,
+      "durationMs": 457749,
+      "resultPreview": "{\"verdict\":\"claims_hold\",\"summary\":\"(1) STATUS OF THE DF6 CLAIMS\\n\\nConfirmed by independent computation (at least one verifier; my additions marked \\\"me\\\"):\\n- Grid: 322 unique main configs (TQQQ 96, QLD 70, five a=0 points).\\n- G1-G5 under N1: 47 pass; single-gate counts 167/132/96/72/91. Three verifiers recomputed the gates from the stored rows.\\n  - Rows re-simulated: repro's own numpy engine …"
+    }
+  ],
+  "totalTokens": 1155521,
+  "totalToolCalls": 160
+}

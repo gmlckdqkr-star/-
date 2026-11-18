@@ -1,0 +1,284 @@
+{
+"L|TQQQ|DEF3|R63|e0.55|c0.75": {
+"n": 14,
+"npass": 7,
+"frac": 0.5,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.55|c0.80": {
+"n": 10,
+"npass": 6,
+"frac": 0.6,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.60|c0.70": {
+"n": 22,
+"npass": 10,
+"frac": 0.45454545454545453,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.60|c0.75": {
+"n": 17,
+"npass": 8,
+"frac": 0.47058823529411764,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.60|c0.80": {
+"n": 12,
+"npass": 6,
+"frac": 0.5,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.65|c0.60": {
+"n": 24,
+"npass": 7,
+"frac": 0.2916666666666667,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.65|c0.65": {
+"n": 24,
+"npass": 9,
+"frac": 0.375,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.65|c0.70": {
+"n": 21,
+"npass": 10,
+"frac": 0.47619047619047616,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.65|c0.75": {
+"n": 16,
+"npass": 8,
+"frac": 0.5,
+"other": false
+},
+"L|TQQQ|DEF3|R63|e0.70|c0.50": {
+"n": 24,
+"npass": 4,
+"frac": 0.16666666666666666,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.70|c0.55": {
+"n": 24,
+"npass": 6,
+"frac": 0.25,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.70|c0.60": {
+"n": 24,
+"npass": 7,
+"frac": 0.2916666666666667,
+"other": true
+},
+"L|TQQQ|DEF3|R63|e0.70|c0.65": {
+"n": 23,
+"npass": 8,
+"frac": 0.34782608695652173,
+"other": false
+},
+"L|TQQQ|DEF3|R63|e0.75|c0.45": {
+"n": 24,
+"npass": 2,
+"frac": 0.08333333333333333,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.50|c0.80": {
+"n": 8,
+"npass": 6,
+"frac": 0.75,
+"other": false
+},
+"L|TQQQ|DEF3|R252|e0.55|c0.70": {
+"n": 18,
+"npass": 10,
+"frac": 0.5555555555555556,
+"other": false
+},
+"L|TQQQ|DEF3|R252|e0.55|c0.75": {
+"n": 14,
+"npass": 9,
+"frac": 0.6428571428571429,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.55|c0.80": {
+"n": 10,
+"npass": 7,
+"frac": 0.7,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.60|c0.65": {
+"n": 24,
+"npass": 10,
+"frac": 0.4166666666666667,
+"other": false
+},
+"L|TQQQ|DEF3|R252|e0.60|c0.70": {
+"n": 22,
+"npass": 11,
+"frac": 0.5,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.60|c0.75": {
+"n": 17,
+"npass": 9,
+"frac": 0.5294117647058824,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.60|c0.80": {
+"n": 12,
+"npass": 7,
+"frac": 0.5833333333333334,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.65|c0.55": {
+"n": 24,
+"npass": 8,
+"frac": 0.3333333333333333,
+"other": false
+},
+"L|TQQQ|DEF3|R252|e0.65|c0.60": {
+"n": 24,
+"npass": 10,
+"frac": 0.4166666666666667,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.65|c0.65": {
+"n": 24,
+"npass": 10,
+"frac": 0.4166666666666667,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.65|c0.70": {
+"n": 21,
+"npass": 10,
+"frac": 0.47619047619047616,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.70|c0.50": {
+"n": 24,
+"npass": 7,
+"frac": 0.2916666666666667,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.70|c0.55": {
+"n": 24,
+"npass": 8,
+"frac": 0.3333333333333333,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.70|c0.60": {
+"n": 24,
+"npass": 9,
+"frac": 0.375,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.75|c0.40": {
+"n": 23,
+"npass": 4,
+"frac": 0.17391304347826086,
+"other": false
+},
+"L|TQQQ|DEF3|R252|e0.75|c0.45": {
+"n": 24,
+"npass": 5,
+"frac": 0.20833333333333334,
+"other": true
+},
+"L|TQQQ|DEF3|R252|e0.75|c0.50": {
+"n": 24,
+"npass": 7,
+"frac": 0.2916666666666667,
+"other": false
+},
+"L|TQQQ|DEF3|R252|e0.80|c0.30": {
+"n": 14,
+"npass": 1,
+"frac": 0.07142857142857142,
+"other": false
+},
+"L|QLD|DEF3|R63|e0.60|c0.70": {
+"n": 13,
+"npass": 3,
+"frac": 0.23076923076923078,
+"other": true
+},
+"L|QLD|DEF3|R63|e0.65|c0.60": {
+"n": 20,
+"npass": 4,
+"frac": 0.2,
+"other": true
+},
+"L|QLD|DEF3|R63|e0.65|c0.65": {
+"n": 15,
+"npass": 4,
+"frac": 0.26666666666666666,
+"other": true
+},
+"L|QLD|DEF3|R63|e0.70|c0.55": {
+"n": 22,
+"npass": 3,
+"frac": 0.13636363636363635,
+"other": true
+},
+"L|QLD|DEF3|R63|e0.70|c0.60": {
+"n": 18,
+"npass": 4,
+"frac": 0.2222222222222222,
+"other": true
+},
+"L|QLD|DEF3|R252|e0.60|c0.70": {
+"n": 13,
+"npass": 3,
+"frac": 0.23076923076923078,
+"other": true
+},
+"L|QLD|DEF3|R252|e0.65|c0.55": {
+"n": 23,
+"npass": 6,
+"frac": 0.2608695652173913,
+"other": false
+},
+"L|QLD|DEF3|R252|e0.65|c0.60": {
+"n": 20,
+"npass": 6,
+"frac": 0.3,
+"other": true
+},
+"L|QLD|DEF3|R252|e0.65|c0.65": {
+"n": 15,
+"npass": 5,
+"frac": 0.3333333333333333,
+"other": true
+},
+"L|QLD|DEF3|R252|e0.70|c0.50": {
+"n": 24,
+"npass": 6,
+"frac": 0.25,
+"other": false
+},
+"L|QLD|DEF3|R252|e0.70|c0.55": {
+"n": 22,
+"npass": 6,
+"frac": 0.2727272727272727,
+"other": true
+},
+"L|QLD|DEF3|R252|e0.70|c0.60": {
+"n": 18,
+"npass": 6,
+"frac": 0.3333333333333333,
+"other": true
+},
+"L|QLD|DEF3|R252|e0.75|c0.40": {
+"n": 23,
+"npass": 2,
+"frac": 0.08695652173913043,
+"other": false
+},
+"L|QLD|DEF3|R252|e0.75|c0.45": {
+"n": 24,
+"npass": 4,
+"frac": 0.16666666666666666,
+"other": false
+}
+}
