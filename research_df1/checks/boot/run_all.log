@@ -1,0 +1,64 @@
+s11_b250       build 3s total 115s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 8 union v1|s0.1|L1.0|K1|RB adopted v1|s0.1|L1.0|K1|RB cagr 0.08815267192130938 gate None
+  T30 n_in 104 union DF2|M2|b1|v1|s0.2|L1.0|K1|RB adopted DF2|M2|b1|v1|s0.2|L1.0|K1|RB cagr 0.11570310265709804 gate {'df2_bondx0': 0.08598619978030175, 'df1_bondx0': 0.08131199466289996, 'df2_cost2x': 0.10575177633829225, 'df1_cost2x': 0.07606228703771922}
+  T40 n_in 430 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB adopted v1|snone|L1.0|K2|RB cagr 0.11357175191288627 gate {'df2_bondx0': 0.09936671279421627, 'df1_bondx0': 0.10035437362475663, 'df2_cost2x': 0.116865418382599, 'df1_cost2x': 0.08799099528651255}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0882 mddp10 -0.2458 wd -0.2458
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.1019 mddp10 -0.3031 wd -0.3031
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1309 mddp10 -0.3999 wd -0.3999
+s23_b250       build 2s total 133s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 8 union v1|s0.1|L1.0|K1|RB adopted v1|s0.1|L1.0|K1|RB cagr 0.09010793946373497 gate None
+  T30 n_in 112 union DF2|M2|b1|v1|s0.2|L1.0|K1|RB adopted v1|s0.2|L1.0|K1|RB cagr 0.10419812151936614 gate {'df2_bondx0': 0.08367006055908921, 'df1_bondx0': 0.0851576417183404, 'df2_cost2x': 0.10847661060835778, 'df1_cost2x': 0.07684645631464626}
+  T40 n_in 436 union DF2|M2|b2|v1|s0.3|L1.5|K2|RB adopted v1|s0.3|L1.0|K2|RB cagr 0.11504131020061092 gate {'df2_bondx0': 0.10092844059919381, 'df1_bondx0': 0.10183281909174968, 'df2_cost2x': 0.12431893907020897, 'df1_cost2x': 0.09295600600257492}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0901 mddp10 -0.2422 wd -0.2422
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.1042 mddp10 -0.2968 wd -0.2968
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1339 mddp10 -0.3918 wd -0.3918
+s37_b250       build 2s total 105s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 10 union DF2|M0|b2|v1|s0.1|L1.0|K1|RB adopted DF2|M0|b2|v1|s0.1|L1.0|K1|RB cagr 0.09602440444509763 gate {'df2_bondx0': 0.07859064563703144, 'df1_bondx0': 0.07211793374831521, 'df2_cost2x': 0.08504633669281303, 'df1_cost2x': 0.07244137052865118}
+  T30 n_in 110 union DF2|M2|b1|v1|s0.2|L1.0|K1|RB adopted DF2|M2|b1|v1|s0.2|L1.0|K1|RB cagr 0.118556072722519 gate {'df2_bondx0': 0.08562014720544164, 'df1_bondx0': 0.08470725904050236, 'df2_cost2x': 0.10927334941920064, 'df1_cost2x': 0.0764063352591009}
+  T40 n_in 432 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB adopted DF2|M2|b1|v1|s0.3|L1.5|K2|RB cagr 0.1354461661367119 gate {'df2_bondx0': 0.1041212946011012, 'df1_bondx0': 0.10084627562583415, 'df2_cost2x': 0.12015672992408422, 'df1_cost2x': 0.09072367858032382}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0900 mddp10 -0.2372 wd -0.2396
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.1030 mddp10 -0.2982 wd -0.2982
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1354 mddp10 -0.3888 wd -0.3888
+s51_b250       build 2s total 111s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 8 union v1|s0.1|L1.0|K1|RB adopted v1|s0.1|L1.0|K1|RB cagr 0.08882621574301253 gate None
+  T30 n_in 107 union DF2|M2|b1|v1|s0.2|L1.0|K1|RB adopted DF2|M2|b1|v1|s0.2|L1.0|K1|RB cagr 0.11774952578492381 gate {'df2_bondx0': 0.08425558538219202, 'df1_bondx0': 0.07935687916401457, 'df2_cost2x': 0.10760626232969783, 'df1_cost2x': 0.07679061476515125}
+  T40 n_in 428 union DF2|M2|b1|v1|s0.3|L1.5|K2|RB adopted DF2|M2|b1|v1|s0.3|L1.5|K2|RB cagr 0.13130388795237868 gate {'df2_bondx0': 0.10151232870252713, 'df1_bondx0': 0.10113123454474071, 'df2_cost2x': 0.12051863193856971, 'df1_cost2x': 0.09055818181545738}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0888 mddp10 -0.2377 wd -0.2396
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.1027 mddp10 -0.3013 wd -0.3013
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1313 mddp10 -0.3931 wd -0.3931
+s7_b125        build 2s total 107s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 7 union v1|s0.1|L1.0|K1|RT adopted v1|s0.1|L1.0|K1|RT cagr 0.05927817726213591 gate None
+  T30 n_in 83 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB adopted DF2|M2|b1|v1|s0.15|L1.0|K1|RB cagr 0.1032206247625923 gate {'df2_bondx0': 0.07071927571460568, 'df1_bondx0': 0.06911600009133567, 'df2_cost2x': 0.09541730406451443, 'df1_cost2x': 0.06826780760613538}
+  T40 n_in 421 union DF2|M2|b1|v1|s0.3|L1.0|K2|RB adopted DF2|M2|b1|v1|s0.3|L1.0|K2|RB cagr 0.11914901743550743 gate {'df2_bondx0': 0.086402834489681, 'df1_bondx0': 0.08381841839227999, 'df2_cost2x': 0.1103109088171369, 'df1_cost2x': 0.07711750289166586}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0844 mddp10 -0.2576 wd -0.2576
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.0914 mddp10 -0.3233 wd -0.3233
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1186 mddp10 -0.4248 wd -0.4248
+s7_b500        build 2s total 105s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 30 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB adopted DF2|M2|b1|v1|s0.15|L1.0|K1|RB cagr 0.11671243393486164 gate {'df2_bondx0': 0.08611184448528153, 'df1_bondx0': 0.07702021102345746, 'df2_cost2x': 0.10973072978344944, 'df1_cost2x': 0.07833781228943881}
+  T30 n_in 166 union DF2|M2|b2|v1|s0.15|L1.0|K2|RB adopted DF2|M2|b2|v1|s0.15|L1.0|K2|RB cagr 0.1255605279829609 gate {'df2_bondx0': 0.09940963233180988, 'df1_bondx0': 0.09109698200899019, 'df2_cost2x': 0.1200631687291196, 'df1_cost2x': 0.08116155694948579}
+  T40 n_in 453 union DF2|M2|b3|v1|s0.3|L1.5|K2|RB adopted v1|s0.3|L1.0|K2|RB cagr 0.12605562279548677 gate {'df2_bondx0': 0.111474639269047, 'df1_bondx0': 0.11459315127134395, 'df2_cost2x': 0.13479523686509165, 'df1_cost2x': 0.10398452033233019}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0954 mddp10 -0.2159 wd -0.2396
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.1112 mddp10 -0.2600 wd -0.2717
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1458 mddp10 -0.3617 wd -0.3693
+iv_dev125_s21  build 2s total 105s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 7 union v1|s0.1|L1.0|K1|RT adopted v1|s0.1|L1.0|K1|RT cagr 0.05870124492904494 gate None
+  T30 n_in 87 union DF2|M2|b1|v1|s0.1|L3.0|K2|RB adopted v1|s0.1|L3.0|K2|RB cagr 0.088748071088953 gate {'df2_bondx0': 0.07088811895368052, 'df1_bondx0': 0.07152026319509708, 'df2_cost2x': 0.09279070066642392, 'df1_cost2x': 0.07155356099751187}
+  T40 n_in 428 union DF2|M2|b2|v1|s0.3|L1.0|K2|RB adopted DF2|M2|b2|v1|s0.3|L1.0|K2|RB cagr 0.119020829327117 gate {'df2_bondx0': 0.08657559178813834, 'df1_bondx0': 0.08237037908768097, 'df2_cost2x': 0.1116854930139477, 'df1_cost2x': 0.07499821325140077}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0819 mddp10 -0.2626 wd -0.2626
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.0900 mddp10 -0.3232 wd -0.3232
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1178 mddp10 -0.4111 wd -0.4111
+iv_dev500_s33  build 2s total 107s
+  T20 n_in 0 union None adopted None cagr None gate None
+  T25 n_in 38 union DF2|M2|b1|v1|s0.15|L1.0|K1|RB adopted DF2|M2|b1|v1|s0.15|L1.0|K1|RB cagr 0.11731140404623275 gate {'df2_bondx0': 0.08724587258507965, 'df1_bondx0': 0.07675394345043463, 'df2_cost2x': 0.10931896161355903, 'df1_cost2x': 0.07801557313973617}
+  T30 n_in 174 union DF2|M2|b2|v1|s0.15|L1.0|K2|RB adopted v1|s0.2|L1.0|K2|RB cagr 0.11998772111333567 gate {'df2_bondx0': 0.09666571030745075, 'df1_bondx0': 0.10886897921680228, 'df2_cost2x': 0.11880229015745047, 'df1_cost2x': 0.10065523903264628}
+  T40 n_in 456 union DF2|M2|b3|v1|s0.3|L1.5|K2|RB adopted v1|s0.3|L1.0|K2|RB cagr 0.12409061112107334 gate {'df2_bondx0': 0.10972223912649282, 'df1_bondx0': 0.11366083735390686, 'df2_cost2x': 0.13402707369979994, 'df1_cost2x': 0.10302316884593343}
+  pick T25 v1|s0.1|L1.0|K1|RB path 0.0942 mddp10 -0.2119 wd -0.2396
+  pick T30 v1|s0.2|L1.0|K1|RB path 0.1097 mddp10 -0.2568 wd -0.2717
+  pick T40 DF2|M2|b1|v1|s0.3|L1.5|K2|RB path 0.1388 mddp10 -0.3473 wd -0.3693

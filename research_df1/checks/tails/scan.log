@@ -1,0 +1,31 @@
+== scan real_ndx_86_14 g-0.20 (732 dates) 14s
+   T25             mddmed -0.1905 p10 -0.2367 min -0.3584 P<-25 0.074 P<-30 0.020 P<-40 0.000 base -0.1905 Pbreach 0.074 worst 1986-11-14 exp 0.90
+   T30             mddmed -0.2303 p10 -0.2966 min -0.3706 P<-25 0.337 P<-30 0.096 P<-40 0.000 base -0.2102 Pbreach 0.096 worst 1987-01-28 exp 0.90
+   T40             mddmed -0.3656 p10 -0.4291 min -0.5297 P<-25 1.000 P<-30 0.989 P<-40 0.280 base -0.3090 Pbreach 0.280 worst 1995-07-17 exp 2.13
+   T40alt_df1      mddmed -0.2590 p10 -0.3023 min -0.4033 P<-25 0.980 P<-30 0.108 P<-40 0.004 base -0.2564 Pbreach 0.004 worst 1986-12-30 exp 1.00
+   QQQ_1x_hold     mddmed -0.8299 p10 -0.8386 min -0.8764 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+   v1_locked_cash0 mddmed -0.7174 p10 -0.8097 min -0.8511 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+== scan real_ndx_86_14 g-0.25 (732 dates) 3s
+   T25             mddmed -0.1905 p10 -0.2758 min -0.3975 P<-25 0.193 P<-30 0.063 P<-40 0.000 base -0.1905 Pbreach 0.193 worst 1986-12-30 exp 0.90
+   T30             mddmed -0.2703 p10 -0.3364 min -0.4028 P<-25 0.645 P<-30 0.269 P<-40 0.001 base -0.2102 Pbreach 0.269 worst 2013-04-18 exp 1.00
+   T40             mddmed -0.4249 p10 -0.4971 min -0.5977 P<-25 1.000 P<-30 0.989 P<-40 0.574 base -0.3090 Pbreach 0.574 worst 1995-07-17 exp 2.13
+   T40alt_df1      mddmed -0.2867 p10 -0.3475 min -0.4490 P<-25 0.980 P<-30 0.407 P<-40 0.015 base -0.2564 Pbreach 0.015 worst 1986-12-30 exp 1.00
+   QQQ_1x_hold     mddmed -0.8299 p10 -0.8487 min -0.8841 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+   v1_locked_cash0 mddmed -0.8046 p10 -0.8548 min -0.9089 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+   1987-10-19 actual r -0.1508 -> -0.20: {'T25': {'cagr': 0.1028, 'mdd': -0.1905, 'base_mdd': -0.1905, 'base_cagr': 0.1036, 'exp_on_day': 0.3102}, 'T30': {'cagr': 0.1147, 'mdd': -0.2103, 'base_mdd': -0.2102, 'base_cagr': 0.1161, 'exp_on_day': 0.3102}, 'T40': {'cagr': 0.1625, 'mdd': -0.309, 'base_mdd': -0.309, 'base_cagr': 0.163, 'exp_on_day': 0.4492}, 'T40alt_df1': {'cagr': 0.1471, 'mdd': -0.2564, 'base_mdd': -0.2564, 'base_cagr': 0.1476, 'exp_on_day': 0.2591}, 'QQQ_1x_hold': {'cagr': 0.1146, 'mdd': -0.8299}, 'v1_locked_cash0': {'cagr': 0.304, 'mdd': -0.6997}}
+   1987-10-19 actual r -0.1508 -> -0.25: {'T25': {'cagr': 0.1027, 'mdd': -0.1905, 'base_mdd': -0.1905, 'base_cagr': 0.1036, 'exp_on_day': 0.3102}, 'T30': {'cagr': 0.1147, 'mdd': -0.2103, 'base_mdd': -0.2102, 'base_cagr': 0.1161, 'exp_on_day': 0.3102}, 'T40': {'cagr': 0.1618, 'mdd': -0.3091, 'base_mdd': -0.309, 'base_cagr': 0.163, 'exp_on_day': 0.4492}, 'T40alt_df1': {'cagr': 0.1466, 'mdd': -0.2563, 'base_mdd': -0.2564, 'base_cagr': 0.1476, 'exp_on_day': 0.2591}, 'QQQ_1x_hold': {'cagr': 0.1122, 'mdd': -0.8299}, 'v1_locked_cash0': {'cagr': 0.3028, 'mdd': -0.6997}}
+== scan real_spx_29_54 g-0.20 (645 dates) 2s
+   T25             mddmed -0.2396 p10 -0.2543 min -0.3018 P<-25 0.115 P<-30 0.002 P<-40 0.000 base -0.2396 Pbreach 0.115 worst 1953-09-15 exp 1.00
+   T30             mddmed -0.2717 p10 -0.2748 min -0.3319 P<-25 0.967 P<-30 0.023 P<-40 0.000 base -0.2717 Pbreach 0.023 worst 1946-08-30 exp 0.89
+   T40             mddmed -0.3693 p10 -0.4411 min -0.5626 P<-25 1.000 P<-30 1.000 P<-40 0.233 base -0.3693 Pbreach 0.233 worst 1953-04-27 exp 2.27
+   T40alt_df1      mddmed -0.3031 p10 -0.3199 min -0.3948 P<-25 1.000 P<-30 0.989 P<-40 0.000 base -0.3031 Pbreach 0.000 worst 1938-03-08 exp 0.59
+   QQQ_1x_hold     mddmed -0.8370 p10 -0.8657 min -0.8759 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+   v1_locked_cash0 mddmed -0.8751 p10 -0.8882 min -0.9015 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+== scan real_spx_29_54 g-0.25 (645 dates) 2s
+   T25             mddmed -0.2396 p10 -0.2827 min -0.3455 P<-25 0.271 P<-30 0.051 P<-40 0.000 base -0.2396 Pbreach 0.271 worst 1953-09-15 exp 1.00
+   T30             mddmed -0.2717 p10 -0.2983 min -0.3678 P<-25 0.963 P<-30 0.087 P<-40 0.000 base -0.2717 Pbreach 0.087 worst 1946-08-30 exp 0.89
+   T40             mddmed -0.3762 p10 -0.5220 min -0.6530 P<-25 1.000 P<-30 1.000 P<-40 0.411 base -0.3693 Pbreach 0.411 worst 1953-04-27 exp 2.27
+   T40alt_df1      mddmed -0.3048 p10 -0.3496 min -0.4361 P<-25 1.000 P<-30 0.989 P<-40 0.008 base -0.3031 Pbreach 0.008 worst 1938-03-08 exp 0.59
+   QQQ_1x_hold     mddmed -0.8370 p10 -0.8741 min -0.8837 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+   v1_locked_cash0 mddmed -0.8751 p10 -0.8947 min -0.9093 P<-25 1.000 P<-30 1.000 P<-40 1.000 
+stage scan done 25s

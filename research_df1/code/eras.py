@@ -3,7 +3,7 @@ import sys, json, numpy as np, pandas as pd
 sys.path.insert(0, '/mnt/project-files/research/df1/code')
 import dfctx as DC, dfe, run_df2 as R2, std
 G = json.load(open('/mnt/project-files/research/df1/results/grid.json'))['configs']; G.update(json.load(open('/mnt/project-files/research/df1/results/grid_df2.json'))['configs'])
-PK = {'T25': 'v1|s0.1|L1.0|K1|RB', 'T30': 'v1|s0.2|L1.0|K1|RB', 'T40': 'DF2|M2|b1|v1|s0.3|L1.5|K2|RB'}
+PK = {'T25': 'v1|s0.1|L1.0|K1|RB', 'T30': 'v1|s0.2|L1.0|K1|RB', 'T40': 'v1|s0.3|L1.0|K2|RB', 'T40_DF2old': 'DF2|M2|b1|v1|s0.3|L1.5|K2|RB'}  # T40 corrected by gate_fix.py (audit F1)
 SEG = {'real_ndx_86_14': [('1986-01-01', '1999-12-31'), ('2000-01-01', '2002-12-31'), ('2003-01-01', '2007-12-31'), ('2008-01-01', '2009-12-31'), ('2010-01-01', '2014-12-31')],
        'real_spx_29_54': [('1929-03-01', '1932-12-31'), ('1933-01-01', '1945-12-31'), ('1946-01-01', '1954-12-31')],
        'real_spx_55_85': [('1955-01-01', '1969-12-31'), ('1970-01-01', '1975-12-31'), ('1976-01-01', '1985-12-31')]}
